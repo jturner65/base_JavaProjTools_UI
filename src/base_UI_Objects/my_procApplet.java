@@ -34,8 +34,6 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public int curFocusWin;		
 	//need 1 per display window
 	public String[] winTitles,winDescr;
-	//background color - specified in instancing application
-	private int[] _bground;
 
 	//whether or not the display windows will accept a drawn trajectory
 	protected boolean[][] dispWinFlags;
@@ -80,8 +78,10 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public static final float mouseWhlSens = 1.0f;
 
 	//display-related size variables
-	public final int grid2D_X=800, grid2D_Y=800;	
-	public final int gridDimX = 800, gridDimY = 800, gridDimZ = 800;				//dimensions of 3d region
+	public int grid2D_X = 800, grid2D_Y = 800;	
+	public int gridDimX = 800, gridDimY = 800, gridDimZ = 800;				//dimensions of 3d region
+	public myVectorf gridHalfDim = new myVectorf(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
+
 	//boundary regions for enclosing cube - given as min and difference of min and max
 	public float[][] cubeBnds = new float[][]{//idx 0 is min, 1 is diffs
 		new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},//mins
@@ -113,17 +113,12 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected float menuWidth;			//side menu is 15% of screen grid2D_X, 
 
 	protected float menuWidthMult = .15f;
-
 	protected float hideWinWidth;
-
 	protected float hideWinWidthMult = .03f;
-
 	protected float hidWinHeight;
-
 	protected float hideWinHeightMult = .05f;
 	
-	private ArrayList<String> DebugInfoAra;										//enable drawing dbug info onto screen
-	private String debugInfoString;
+	private ArrayList<String> DebugInfoAra;										//enable drawing dbug info onto screen	
 	
 	//animation control variables	
 	public final float maxAnimCntr = PI*1000.0f, baseAnimSpd = 1.0f;
@@ -159,9 +154,9 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			runSim				= 9,			//run simulation
 			singleStep			= 10,			//run single sim step
 			showRtSideMenu		= 11,			//display the right side info menu for the current window, if it supports that display
-			flipDrawnTraj  		= 12;			//whether or not to flip the direction of the drawn trajectory
-			
-	public final int numBaseFlags = 13;
+			flipDrawnTraj  		= 12,			//whether or not to flip the direction of the drawn trajectory
+			clearBKG 			= 13;			//whether or not background should be cleared for every draw.  defaults to true
+	public final int numBaseFlags = 14;
 	
 	public final int numDebugVisFlags = 6;
 	//flags to actually display in menu as clickable text labels - order does matter
@@ -224,6 +219,22 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		noSmooth();
 	}	
 	/**
+	 * modify 3D grid dimensions to be cube of passed value per side
+	 * @param _gVal
+	 */
+	protected void setDesired3DGridDims(int _gVal) {setDesired3DGridDims(_gVal,_gVal,_gVal);}
+	/**
+	 * modify 3D grid dimensions to be cube of passed value dims
+	 * @param _gx desired x dim
+	 * @param _gy desired y dim
+	 * @param _gz desired z dim
+	 */
+	protected void setDesired3DGridDims(int _gx, int _gy, int _gz) {
+		gridDimX = _gx;gridDimY = _gy;gridDimZ = _gz;				//dimensions of 3d region
+		gridHalfDim.set(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
+	}
+	
+	/**
 	 * This will return the desired dimensions of the application, to be called in setup
 	 * @return int[] { desired application window width, desired application window height}
 	 */
@@ -252,23 +263,19 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	public final void setup() {
 		colorMode(RGB, 255, 255, 255, 255);
-		_bground = getBackgroundClr();
 		frameRate(frate);
 		setup_indiv();
-		initVisOnce();
+		initVisOnce();						//always first
 		//call this in first draw loop?
 		initOnce();		
 	}//setup()
-	/**
-	 * return the default background color set in the calling application
-	 * @return
-	 */
-	protected abstract int[] getBackgroundClr();
 	
 	protected abstract void setup_indiv();
+	
+	public int getNumThreadsAvailable() {return Runtime.getRuntime().availableProcessors();}
 		//1 time initialization of visualization things that won't change
 	public final void initVisOnce(){	
-		int numThreadsAvail = Runtime.getRuntime().availableProcessors();
+		int numThreadsAvail = getNumThreadsAvailable();
 		
 		now = Calendar.getInstance();
 		//mouse scrolling scale
@@ -284,7 +291,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		hidWinHeight = height * hideWinHeightMult;
 		c = new my3DCanvas(this);			
 		strokeCap(SQUARE);//makes the ends of stroke lines squared off		
-		//this is to determine which main flags to display on window
+
 		initMainFlags_Priv();
 		
 		//instancing class version
@@ -293,9 +300,11 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		//after all display windows are drawn
 		finalDispWinInit();
 		initVisFlags();
-		
+
 		//init initernal state flags structure
 		initBaseFlags();			
+		//this is to determine which main flags to display on window
+		setBaseFlag(clearBKG,true);
 		//camVals = new float[]{width/2.0f, height/2.0f, (height/2.0f) / tan(PI/6.0f), width/2.0f, height/2.0f, 0, 0, 1, 0};
 		camVals = new float[]{0, 0, (height/2.0f) / tan(PI/6.0f), 0, 0, 0, 0,1,0};
 		
@@ -321,7 +330,6 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected abstract void initVisOnce_Priv();
 		//1 time initialization of programmatic things that won't change
 	public final void initOnce() {
-		//th_exec = Executors.newCachedThreadPool();
 		//1-time init for program and windows
 		initOnce_Priv();
 		//initProgram is called every time reinitialization is desired
@@ -335,8 +343,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 		//called every time re-initialized
 	public final void initVisProg(){	
-		drawCount = 0;		
-		debugInfoString = "";		
+		drawCount = 0;			
 		reInitInfoStr();
 	}
 	protected abstract void initVisProg_Indiv();
@@ -447,7 +454,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	///////////////////////////////////////////
 	// draw routines
 	
-	protected void setBkgrnd(){	background(_bground[0],_bground[1],_bground[2],_bground[3]);}//setBkgrnd	
+	protected abstract void setBkgrnd();//{	background(_bground[0],_bground[1],_bground[2],_bground[3]);}//setBkgrnd	
 	
 	protected boolean isShowingWindow(int i){return getVisFlag(i);}//showUIMenu is first flag of window showing flags, visFlags are defined in instancing class
 	
@@ -461,8 +468,10 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	
 	@Override
-	//main draw loop
-	public final void draw(){
+	/**
+	 * main draw loop - override if handling draw differently
+	 */
+	public void draw(){
 		if(!isFinalInitDone()) {initOnce(); return;}	
 		float modAmtMillis = getModAmtMillis();
 		//simulation section
@@ -479,11 +488,16 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		drawSetup();																//initialize camera, lights and scene orientation and set up eye movement		
 		if((curFocusWin == -1) || (curDispWinIs3D())){	//allow for single window to have focus, but display multiple windows	
 			//if refreshing screen, this clears screen, sets background
-			setBkgrnd();				
-			draw3D_solve3D(modAmtMillis);
-			c.buildCanvas();			
-			if(curDispWinCanShow3dbox()){drawBoxBnds();}
-			if(dispWinFrames[curFocusWin].chkDrawMseRet()){			c.drawMseEdge();	}			
+			if(getBaseFlag(clearBKG)) {
+				setBkgrnd();				
+				draw3D_solve3D(modAmtMillis);
+				c.buildCanvas();
+				if(curDispWinCanShow3dbox()){drawBoxBnds();}
+				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			c.drawMseEdge();	}		
+			} else {
+				draw3D_solve3D(modAmtMillis);
+				c.buildCanvas();
+			}
 			popStyle();popMatrix(); 
 		} else {	//either/or 2d window
 			//2d windows paint window box so background is always cleared
@@ -541,7 +555,8 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			else {		line(ctr.x,ctr.y,ctr.z,ctr.x+len,ctr.y,ctr.z);stroke(0,255,0,alpha);line(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y+len,ctr.z);stroke(0,0,255,alpha);line(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y,ctr.z+len);}
 		popStyle();	popMatrix();	
 	}//	drawAxes
-	private final void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int alpha, boolean drawVerts){//RGB -> XYZ axes
+	@Override
+	public final void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int alpha, boolean drawVerts){//RGB -> XYZ axes
 		pushMatrix();pushStyle();
 		if(drawVerts){
 			show(ctr,3,gui_Black,gui_Black, false);
@@ -551,7 +566,8 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		for(int i =0; i<3;++i){	setColorValStroke(rgbClrs[i],255);	showVec(ctr,len, _axis[i]);	}
 		popStyle();	popMatrix();	
 	}//	drawAxes
-	private final void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int[] clr, boolean drawVerts){//all axes same color
+	@Override
+	public final void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int[] clr, boolean drawVerts){//all axes same color
 		pushMatrix();pushStyle();
 			if(drawVerts){
 				show(ctr,2,gui_Black,gui_Black, false);
@@ -561,9 +577,20 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			for(int i =0; i<3;++i){	showVec(ctr,len, _axis[i]);	}
 		popStyle();	popMatrix();	
 	}//	drawAxes
-	private final void showVec( myPoint ctr, double len, myVector v){line(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
-
+	@Override
+	public void drawAxes(double len, double stW, myPoint ctr, myVectorf[] _axis, int alpha){
+		pushMatrix();pushStyle();
+			strokeWeight((float)stW);
+			stroke(255,0,0,alpha);
+			line(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[0].x)*len,ctr.y+(_axis[0].y)*len,ctr.z+(_axis[0].z)*len);
+			stroke(0,255,0,alpha);
+			line(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[1].x)*len,ctr.y+(_axis[1].y)*len,ctr.z+(_axis[1].z)*len);	
+			stroke(0,0,255,alpha);	
+			line(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[2].x)*len,ctr.y+(_axis[2].y)*len,ctr.z+(_axis[2].z)*len);
+		popStyle();	popMatrix();	
+	}//	drawAxes
 	
+	private final void showVec( myPoint ctr, double len, myVector v){line(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
 	
 	public final int addInfoStr(String str){return addInfoStr(DebugInfoAra.size(), str);}
 	public final int addInfoStr(int idx, String str){	
@@ -672,6 +699,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			case showRtSideMenu		: {	for(int i =1; i<dispWinFrames.length;++i){dispWinFrames[i].setRtSideInfoWinSt(val);}break;}	//set value for every window - to show or not to show info window
 			case flipDrawnTraj		: { for(int i =1; i<dispWinFrames.length;++i){dispWinFrames[i].rebuildAllDrawnTrajs();}break;}						//whether or not to flip the drawn melody trajectory, width-wise
 			case singleStep 		: { break;}
+			case clearBKG			: { break;}
 		}				
 	}//setBaseFlag
 	//force base flag - bypass any window setting
@@ -714,6 +742,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void toggleSimIsRunning() {setBaseFlag(runSim, !getBaseFlag(runSim));}
 	public final void setSimIsSingleStep(boolean val) {setBaseFlag(singleStep,val);}
 	public final void setShowRtSideMenu(boolean val) {setBaseFlag(showRtSideMenu,val);}
+	public final void setClearBackgroundEveryStep(boolean val) {setBaseFlag(clearBKG,val);}
 	
 	public final void setShiftPressed(boolean val) {setBaseFlag(shiftKeyPressed,val);}
 	public final void setAltPressed(boolean val) {setBaseFlag(altKeyPressed,val);}
@@ -736,24 +765,19 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			if(!cntlIsPressed()){setCntlPressed(keyCode  == 17);}//17 == KeyEvent.VK_CONTROL			
 			if(!altIsPressed()){setAltPressed(keyCode  == 18);}//18 == KeyEvent.VK_ALT
 		} else {	
-			//handle pressing keys 0-9 (with or without shift,alt, cntl)
-			if ((keyCode>=48) && (keyCode <=57)) { 	handleNumberKeyPress(((int)key),keyCode);}
-			else {									handleNonNumberKeyPress(key,keyCode);}	//handle all other (non-numeric) keys
+			handleKeyPress(key,keyCode);	//handle all other (non-numeric) keys
 		}
 	}//keyPressed()
+
+//	//handle pressing keys 0-9 (with or without shift,alt, cntl)
+//	if ((keyCode>=48) && (keyCode <=57)) { 	handleNumberKeyPress(((int)key),keyCode);}
+//	else {									
 	/**
-	 * handle numeric keys being pressed
+	 * handle key pressed
 	 * @param keyVal 0-9, with or without shift ((keyCode>=48) && (keyCode <=57))
 	 * @param keyCode actual code of key having been pressed
 	 */
-	protected abstract void handleNumberKeyPress(int keyVal, int keyCode);
-	
-	/**
-	 * handle non-numeric keys being pressed
-	 * @param keyVal 0-9, with or without shift ((keyCode>=48) && (keyCode <=57))
-	 * @param keyCode actual code of key having been pressed
-	 */
-	protected abstract void handleNonNumberKeyPress(char keyVal, int keyCode);
+	protected abstract void handleKeyPress(char key, int keyCode);
 	
 	protected void saveSS(String prjNmShrt) {save(getScreenShotSaveName(prjNmShrt));}
 	
@@ -906,8 +930,8 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	//2d range checking of point
 	public final boolean ptInRange(double x, double y, double minX, double minY, double maxX, double maxY){return ((x > minX)&&(x <= maxX)&&(y > minY)&&(y <= maxY));}	
 
-	public final void setCamOrient(){rotateX(rx);rotateY(ry); rotateX(PI/(2.0f));		}//sets the rx, ry, pi/2 orientation of the camera eye	
-	public final void unSetCamOrient(){rotateX(-PI/(2.0f)); rotateY(-ry);   rotateX(-rx); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
+	public final void setCamOrient_Glbl(){rotateX(rx);rotateY(ry); rotateX(PI/(2.0f));		}//sets the rx, ry, pi/2 orientation of the camera eye	
+	public final void unSetCamOrient_Glbl(){rotateX(-PI/(2.0f)); rotateY(-ry);   rotateX(-rx); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
 
 	//save screenshot
 	public final void savePic(){	
@@ -921,9 +945,19 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		animCounter++;		
 	}
 	
-	public final void line(double x1, double y1, double z1, double x2, double y2, double z2){line((float)x1,(float)y1,(float)z1,(float)x2,(float)y2,(float)z2 );}
-	public final void line(myPoint p1, myPoint p2){line((float)p1.x,(float)p1.y,(float)p1.z,(float)p2.x,(float)p2.y,(float)p2.z);}
-	public final void line(myPointf p1, myPointf p2){line(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z);}
+	public void line(double x1, double y1, double z1, double x2, double y2, double z2){line((float)x1,(float)y1,(float)z1,(float)x2,(float)y2,(float)z2 );}
+	public void line(myPoint p1, myPoint p2){line((float)p1.x,(float)p1.y,(float)p1.z,(float)p2.x,(float)p2.y,(float)p2.z);}
+	public void line(myPointf p1, myPointf p2){line(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z);}
+	public void line(myPointf a, myPointf b, int stClr, int endClr){
+		beginShape();
+		this.strokeWeight(1.0f);
+		this.setColorValStroke(stClr, 255);
+		this.vertex((float)a.x,(float)a.y,(float)a.z);
+		this.setColorValStroke(endClr,255);
+		this.vertex((float)b.x,(float)b.y,(float)b.z);
+		endShape();
+	}
+	
 	//print out multiple-line text to screen
 	public final void ml_text(String str, float x, float y){
 		String[] res = str.split("\\r?\\n");
@@ -1023,7 +1057,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	    fill(0); text("Shift-Click-Drag to change view.",width-190, stVal*idx++); noFill(); 
 	    fill(0); text("Shift-RClick-Drag to zoom.",width-160, stVal*idx++); noFill();
 	    fill(0); text("John Turner",width-75, stVal*idx++); noFill();	
-	    }
+	}
 	
 	//project passed point onto box surface based on location - to help visualize the location in 3d
 	public final void drawProjOnBox(myPoint p){
@@ -1064,6 +1098,16 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		return pos;
 	}
 	
+	//find mouse "force" exerted upon a particular location - distance from mouse to passed location
+	public myVectorf mouseForceAtLoc(float msClickForce, myPointf _loc, boolean attractMode){
+		myPointf mouseFrcLoc = c.getTransMseLoc(new myPointf(gridDimX/2.0f, gridDimY/2.0f,gridDimZ/2.0f));// new myPointf(c.dfCtr.x+gridDimX/2.0f,c.dfCtr.y+gridDimY/2.0f,c.dfCtr.z+gridDimZ/2.0f);// new myVector(lstClkX,0,lstClkY);//translate click location to where the space where the boids are	
+		myVectorf resFrc = new myVectorf(_loc, mouseFrcLoc);		
+		float sqDist = resFrc.sqMagn;
+		if(sqDist<MyMathUtils.eps_f){sqDist=MyMathUtils.eps_f;}
+		float mag = (attractMode? 1 : -1) * msClickForce / sqDist;
+		resFrc._scale(mag);
+		return resFrc;	
+	}//mouseForceAtLoc
 	
 	//very fast mechanism for setting an array of doubles to a specific val - takes advantage of caching
 	public final void dAraFill(double[] ara, double val){
@@ -1196,27 +1240,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 				gl_vertex(myPoint._add(P,r*cos(a),I,r*sin(a),J,1,V));}
 		endShape();
 	}
-	
-	//point functions
-//	public final myPoint P() {return new myPoint(); };                                                                          // point (x,y,z)
-//	public final myPoint P(double x, double y, double z) {return new myPoint(x,y,z); };                                            // point (x,y,z)
-//	public final myPoint P(myPoint A) {return new myPoint(A.x,A.y,A.z); };                                                           // copy of point P
-//	public final myPoint P(myPoint A, double s, myPoint B) {return new myPoint(A.x+s*(B.x-A.x),A.y+s*(B.y-A.y),A.z+s*(B.z-A.z)); };        // A+sAB
-//	public final myPoint L(myPoint A, double s, myPoint B) {return new myPoint(A.x+s*(B.x-A.x),A.y+s*(B.y-A.y),A.z+s*(B.z-A.z)); };        // A+sAB
-//	public final myPoint P(myPoint A, myPoint B) {return new myPoint((A.x+B.x)/2.0,(A.y+B.y)/2.0,(A.z+B.z)/2.0); }                             // (A+B)/2
-//	public final myPoint P(myPoint A, myPoint B, myPoint C) {return new myPoint((A.x+B.x+C.x)/3.0,(A.y+B.y+C.y)/3.0,(A.z+B.z+C.z)/3.0); };     // (A+B+C)/3
-//	public final myPoint P(myPoint A, myPoint B, myPoint C, myPoint D) {return A._avgWithMe(B)._avgWithMe(C._avgWithMe(D)); };                                            // (A+B+C+D)/4
-//	public final myPoint P(double s, myPoint A) {return new myPoint(s*A.x,s*A.y,s*A.z); };                                            // sA
-//	public final myPoint A(myPoint A, myPoint B) {return new myPoint(A.x+B.x,A.y+B.y,A.z+B.z); };                                         // A+B
-//	public final myPoint P(double a, myPoint A, double b, myPoint B) {return A(new myPoint(a*A.x,a*A.y,a*A.z),new myPoint(b*B.x,b*B.y,b*B.z));}                                        // aA+bB 
-//	public final myPoint P(double a, myPoint A, double b, myPoint B, double c, myPoint C) {return A(new myPoint(a*A.x,a*A.y,a*A.z),P(b,B,c,C));}                     // aA+bB+cC 
-//	public final myPoint P(double a, myPoint A, double b, myPoint B, double c, myPoint C, double d, myPoint D){return A(P(a,A,b,B),P(c,C,d,D));}   // aA+bB+cC+dD
-//	public final myPoint P(myPoint P, myVector V) {return new myPoint(P.x + V.x, P.y + V.y, P.z + V.z); }                                 // P+V
-//	public final myPoint P(myPoint P, double s, myVector V) {return new myPoint(P.x+s*V.x,P.y+s*V.y,P.z+s*V.z);}                           // P+sV
-//	public final myPoint P(myPoint O, double x, myVector I, double y, myVector J) {return new myPoint(O.x+x*I.x+y*J.x,O.y+x*I.y+y*J.y,O.z+x*I.z+y*J.z);}  // O+xI+yJ
-//	public final myPoint P(myPoint O, double x, myVector I, double y, myVector J, double z, myVector K) {return new myPoint(O.x+x*I.x+y*J.x+z*K.x,O.y+x*I.y+y*J.y+z*K.y,O.z+x*I.z+y*J.z+z*K.z);}  // O+xI+yJ+kZ
-//	void makePts(myPoint[] C) {for(int i=0; i<C.length; i++) C[i]=new myPoint();}
-	
+
 	//draw a circle - JT
 	/**
 	 * draw a circle centered at P with specified radius r in plane proscribed by passed axes using n number of points
@@ -1263,7 +1287,13 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	//public final int color(myPoint p){return color((int)p.x,(int)p.z,(int)p.y);}	//needs to be x,z,y for some reason - to match orientation of color frames in z-up 3d geometry
 	public final int color(myPoint p){return color((int)p.x,(int)p.y,(int)p.z);}	
-	
+	/**
+	 * vertex with texture coordinates
+	 * @param P vertex location
+	 * @param u,v txtr coords
+	 */
+	public void vTextured(myPointf P, float u, float v) {vertex((float)P.x,(float)P.y,(float)P.z,(float)u,(float)v);};                         
+
 	@Override
 	public final void gl_normal(myVector V) {normal((float)V.x,(float)V.y,(float)V.z);}                                          // changes normal for smooth shading
 	@Override
@@ -1627,9 +1657,17 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			case gui_TransMagenta  	         : { return new int[] {110,0,110,alpha/2};}	
 			case gui_TransWhite  	         : { return new int[] {220,220,220,alpha/2};}	
 			case gui_OffWhite				 : { return new int[] {255,255,235,alpha};}
-			default         		         : { return new int[] {255,255,255,alpha};}    
+			default         		         : { return getClr_Custom(colorVal,alpha);}    
 		}//switch
 	}//getClr
+	/**
+	 * any instancing-class-specific colors - colorVal set to be higher than IRenderInterface.gui_OffWhite
+	 * @param colorVal
+	 * @param alpha
+	 * @return
+	 */
+	protected abstract int[] getClr_Custom(int colorVal, int alpha);
+	
 	
 	public final int getRndClrInt(){return (int)random(0,23);}		//return a random color flag value from below
 	public final int[] getRndClr(int alpha){return new int[]{(int)random(0,255),(int)random(0,255),(int)random(0,255),alpha};	}

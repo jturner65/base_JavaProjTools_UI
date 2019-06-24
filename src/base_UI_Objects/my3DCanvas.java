@@ -190,7 +190,7 @@ public class my3DCanvas {
 	private final void drawText(String str, float x, float y, float z){
 		p.pushMatrix();	p.pushStyle();
 			p.fill(mseFillClr[0],mseFillClr[1],mseFillClr[2],mseFillClr[3]);
-			p.unSetCamOrient();
+			p.unSetCamOrient_Glbl();
 			p.translate(x,y,z);
 			p.text(str,0,0,0);		
 		p.popStyle();	p.popMatrix();	

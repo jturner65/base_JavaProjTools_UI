@@ -19,7 +19,9 @@ public abstract class myDispWindow {
 	public int ID;	
 	public String name, winText;		
 	public int[] fillClr, strkClr, rtSideUIFillClr, rtSideUIStrkClr;
-	public int[] trajFillClrCnst, trajStrkClrCnst;
+	public int[] 
+		trajFillClrCnst = new int[] {0,120,120,255},		//trajectory default colors - can override
+		trajStrkClrCnst = new int[] {0,255,255,255};
 	public float[] rectDim, closeBox, rectDimClosed, mseClickCrnr;	
 	//current visible screen width and height
 	public float[] curVisScrDims;
@@ -157,8 +159,6 @@ public abstract class myDispWindow {
 		ssPathBase = pa.sketchPath() +File.separatorChar +name+"_"+tmpNow + File.separatorChar;
 		initClrDims( fc, sc, rd, rdClosed);
 		winText = _winTxt;
-		trajFillClrCnst = new int[] {0,0,0,255};		//override this in the ctor of the instancing window class
-		trajStrkClrCnst = new int[] {0,0,0,255};		
 		msClkObj = -1;
 		msOvrObj = -1;
 	}	

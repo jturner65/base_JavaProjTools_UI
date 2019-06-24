@@ -139,6 +139,16 @@ public class myVector extends myPoint{
 		return angle;
 	}//_angleBetween
 	
+	public double angleWithMe(myVector v2) {
+		double 	_v1Mag = _mag(), 
+				_v2Mag = v2._mag(), 
+				dotProd = _dot(v2),
+				cosAngle = dotProd/(_v1Mag * _v2Mag),
+				angle = Math.acos(cosAngle);
+		return angle;
+	}//_angleBetween
+
+	
 	/**
 	 * alternate formulation of above?
 	 * @param U

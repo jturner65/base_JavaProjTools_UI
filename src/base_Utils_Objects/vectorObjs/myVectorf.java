@@ -137,6 +137,16 @@ public class myVectorf extends myPointf{
 				angle = (float)(Math.acos(cosAngle));
 		return angle;
 	}//_angleBetween
+	
+	public float angleWithMe(myVectorf v2) {
+		float 	_v1Mag = _mag(), 
+				_v2Mag = v2._mag(), 
+				dotProd = _dot(v2),
+				cosAngle = dotProd/(_v1Mag * _v2Mag),
+				angle = (float) Math.acos(cosAngle);
+		return angle;
+	}//_angleBetween
+
 	public static myVectorf _rotAroundAxis(myVectorf v1, myVectorf u){return _rotAroundAxis(v1, u, (float)Math.PI*.5f);}
 	//rotate v1 around axis unit vector u, by give angle thet, around origin
 	public static myVectorf _rotAroundAxis(myVectorf v1, myVectorf u, float thet){		

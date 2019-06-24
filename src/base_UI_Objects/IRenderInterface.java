@@ -80,6 +80,10 @@ public interface IRenderInterface {
 	public int gui_TransCyan = 38;	
 	public int gui_TransWhite = 39;	
 	public int gui_OffWhite = 40;
+	/**
+	 * index of color definition next after static IRenderInterface defs
+	 */
+	public int gui_nextColorIDX = 41;
 	
 	///////////////////////
 	// required methods
@@ -224,9 +228,36 @@ public interface IRenderInterface {
 	 * @param centered whether axis should be centered at ctr or just in positive direction at ctr
 	 */
 	public void drawAxes(double len, float stW, myPoint ctr, int alpha, boolean centered);
+	/**
+	 * Draw Axes at ctr point
+	 * @param len length of axis
+	 * @param stW stroke weight (line thickness)
+	 * @param ctr ctr point to draw axes
+	 * @param _axis : orientation
+	 * @param alpha
+	 * @param drawVerts
+	 */
+	public void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int alpha, boolean drawVerts);//RGB -> XYZ axes
 	
-	
-
+	/**
+	 * Draw Axes at ctr point
+	 * @param len length of axis
+	 * @param stW stroke weight (line thickness)
+	 * @param ctr ctr point to draw axes
+	 * @param _axis : orientation
+	 * @param clr
+	 * @param drawVerts
+	 */
+	public void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int[] clr, boolean drawVerts);
+	/**
+	 * Draw Axes at ctr point
+	 * @param len length of axis
+	 * @param stW stroke weight (line thickness)
+	 * @param ctr ctr point to draw axes
+	 * @param _axis : orientation
+	 * @param alpha
+	 */
+	public void drawAxes(double len, double stW, myPoint ctr, myVectorf[] _axis, int alpha);
 	
 	//TODO put all functions commonly used from myDispWindow and its inheritors in here to support different rendering engines
 
