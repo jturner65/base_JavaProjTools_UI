@@ -13,11 +13,10 @@ import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
 import base_Utils_Objects.vectorObjs.myVectorf;
-import processing.core.PApplet;
-import processing.core.PConstants;
+
 import processing.event.MouseEvent;
 
-public abstract class my_procApplet extends PApplet implements IRenderInterface {
+public abstract class my_procApplet extends processing.core.PApplet implements IRenderInterface {
 	
 	protected int glblStartSimFrameTime,			//begin of draw
 		glblLastSimFrameTime,					//begin of last draw
@@ -35,6 +34,8 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 	public int curFocusWin;		
 	//need 1 per display window
 	public String[] winTitles,winDescr;
+	//background color - specified in instancing application
+	private int[] _bground;
 
 	//whether or not the display windows will accept a drawn trajectory
 	protected boolean[][] dispWinFlags;
@@ -210,15 +211,59 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 	///////////////////////////////////
 	/// inits
 	///////////////////////////////////
+
+	//needs main to run project - do not modify this code in any way 
+	//needs to be called in instancing class
+	public static void main(String[] appletArgs, String[] passedArgs) {	
+	    if (passedArgs != null) {processing.core.PApplet.main(processing.core.PApplet.concat(appletArgs, passedArgs)); } else {processing.core.PApplet.main(appletArgs);		    }
+	}//main	
+	
+	public final void settings(){	
+		int[] desDims = getDesiredAppDims();
+		size(desDims[0], desDims[1],P3D);	
+		noSmooth();
+	}	
+	/**
+	 * This will return the desired dimensions of the application, to be called in setup
+	 * @return int[] { desired application window width, desired application window height}
+	 */
+	protected abstract int[] getDesiredAppDims();
+	/**
+	 * returns the width of the visible display in pxls
+	 * @return
+	 */
+	protected final int getDisplayWidth() {return displayWidth;}
+	/**
+	 * returns the height of the visible display in pxls
+	 * @return
+	 */
+	protected final int getDisplayHeight() {return displayHeight;}
+	/**
+	 * returns application window width in pxls
+	 * @return
+	 */
+	protected final int getWidth() {return width;}
+	/**
+	 * returns application window height in pxls
+	 * @return
+	 */
+	protected final int getHeight() {return height;}
+	
 	
 	public final void setup() {
 		colorMode(RGB, 255, 255, 255, 255);
+		_bground = getBackgroundClr();
 		frameRate(frate);
 		setup_indiv();
 		initVisOnce();
 		//call this in first draw loop?
 		initOnce();		
 	}//setup()
+	/**
+	 * return the default background color set in the calling application
+	 * @return
+	 */
+	protected abstract int[] getBackgroundClr();
 	
 	protected abstract void setup_indiv();
 		//1 time initialization of visualization things that won't change
@@ -402,7 +447,7 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 	///////////////////////////////////////////
 	// draw routines
 	
-	protected abstract void setBkgrnd();
+	protected void setBkgrnd(){	background(_bground[0],_bground[1],_bground[2],_bground[3]);}//setBkgrnd	
 	
 	protected boolean isShowingWindow(int i){return getVisFlag(i);}//showUIMenu is first flag of window showing flags, visFlags are defined in instancing class
 	
@@ -414,8 +459,10 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 		return modAmtMillis;
 	}
 	
+	
+	@Override
 	//main draw loop
-	protected void _drawPriv(){	
+	public final void draw(){
 		if(!isFinalInitDone()) {initOnce(); return;}	
 		float modAmtMillis = getModAmtMillis();
 		//simulation section
@@ -448,7 +495,11 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 		drawUI(modAmtMillis);																	//draw UI overlay on top of rendered results			
 		if (doSaveAnim()) {	savePic();}
 		updateConsoleStrs();
+		surface.setTitle(getPrjNmLong() + " : " + (int)(frameRate) + " fps|cyc curFocusWin : " + curFocusWin);
 	}//draw	
+	protected abstract String getPrjNmLong();
+	protected abstract String getPrjNmShrt();
+
 	
 	private void draw3D_solve3D(float modAmtMillis){
 		//System.out.println("drawSolve");
@@ -673,6 +724,38 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 	public final void setFinalInitDone(boolean val) {setBaseFlag(finalInitDone, val);}	
 	public final void setSaveAnim(boolean val) {setBaseFlag(saveAnim, val);}
 	public final void toggleSaveAnim() {setBaseFlag(saveAnim, !getBaseFlag(saveAnim));}
+	
+	//////////////////////////////////////////////////////
+	/// user interaction
+	//////////////////////////////////////////////////////	
+	//key is key pressed
+	//keycode is actual physical key pressed == key if shift/alt/cntl not pressed.,so shift-1 gives key 33 ('!') but keycode 49 ('1')
+	public final void keyPressed(){
+		if(key==CODED) {
+			if(!shiftIsPressed()){setShiftPressed(keyCode  == 16);} //16 == KeyEvent.VK_SHIFT
+			if(!cntlIsPressed()){setCntlPressed(keyCode  == 17);}//17 == KeyEvent.VK_CONTROL			
+			if(!altIsPressed()){setAltPressed(keyCode  == 18);}//18 == KeyEvent.VK_ALT
+		} else {	
+			//handle pressing keys 0-9 (with or without shift,alt, cntl)
+			if ((keyCode>=48) && (keyCode <=57)) { 	handleNumberKeyPress(((int)key),keyCode);}
+			else {									handleNonNumberKeyPress(key,keyCode);}	//handle all other (non-numeric) keys
+		}
+	}//keyPressed()
+	/**
+	 * handle numeric keys being pressed
+	 * @param keyVal 0-9, with or without shift ((keyCode>=48) && (keyCode <=57))
+	 * @param keyCode actual code of key having been pressed
+	 */
+	protected abstract void handleNumberKeyPress(int keyVal, int keyCode);
+	
+	/**
+	 * handle non-numeric keys being pressed
+	 * @param keyVal 0-9, with or without shift ((keyCode>=48) && (keyCode <=57))
+	 * @param keyCode actual code of key having been pressed
+	 */
+	protected abstract void handleNonNumberKeyPress(char keyVal, int keyCode);
+	
+	protected void saveSS(String prjNmShrt) {save(getScreenShotSaveName(prjNmShrt));}
 	
 	public final void keyReleased(){
 		if(key==CODED) {
@@ -961,7 +1044,7 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 		do{
 			double u = ThreadLocalRandom.current().nextDouble(0,1), r = rad * Math.pow(u, third),
 					cosTheta = ThreadLocalRandom.current().nextDouble(-1,1), sinTheta =  Math.sin(Math.acos(cosTheta)),
-					phi = ThreadLocalRandom.current().nextDouble(0,PConstants.TWO_PI);
+					phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.twoPi_f);
 			pos.set(sinTheta * Math.cos(phi), sinTheta * Math.sin(phi),cosTheta);
 			pos._mult(r);
 			pos._add(ctr);
@@ -973,7 +1056,7 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 		myVectorf pos = new myVectorf();
 		//do{
 			double 	cosTheta = ThreadLocalRandom.current().nextDouble(-1,1), sinTheta =  Math.sin(Math.acos(cosTheta)),
-					phi = ThreadLocalRandom.current().nextDouble(0,PConstants.TWO_PI);
+					phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.twoPi_f);
 			pos.set(sinTheta * Math.cos(phi), sinTheta * Math.sin(phi),cosTheta);
 			pos._mult(rad);
 			pos._add(ctr);
@@ -1088,7 +1171,7 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 		double m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
 		myVector rotAxis = myVector._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find f
 		
-		myVector rAB = myVector._rotAroundAxis(AB, rotAxis, PConstants.HALF_PI);
+		myVector rAB = myVector._rotAroundAxis(AB, rotAxis, MyMathUtils.halfPi_f);
 		double c=AB._dot(CD)/n, 
 				s=rAB._dot(CD)/n;
 		double AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2;
@@ -1180,61 +1263,6 @@ public abstract class my_procApplet extends PApplet implements IRenderInterface 
 	
 	//public final int color(myPoint p){return color((int)p.x,(int)p.z,(int)p.y);}	//needs to be x,z,y for some reason - to match orientation of color frames in z-up 3d geometry
 	public final int color(myPoint p){return color((int)p.x,(int)p.y,(int)p.z);}	
-	
-	// =====  vector functions
-	//public myVector V() {return new myVector(); };                                                                          // make vector (x,y,z)
-	//public myVector V(double x, double y, double z) {return new myVector(x,y,z); };                                            // make vector (x,y,z)
-	//public myVector V(myVector V) {return new myVector(V.x,V.y,V.z); };                                                          // make copy of vector V
-	//public myVector A(myVector A, myVector B) {return new myVector(A.x+B.x,A.y+B.y,A.z+B.z); };                                       // A+B
-	//public myVector A(myVector U, float s, myVector V) {return new myVector(U.x+s*V.x,U.y+s*V.y,U.z+s*V.z);};                               // U+sV
-	//private myVector M(myVector U, myVector V) {return new myVector(U.x-V.x,U.y-V.y,U.z-V.z);};                                              // U-V
-	//private myVector V(myVector A, myVector B) {return new myVector((A.x+B.x)/2.0,(A.y+B.y)/2.0,(A.z+B.z)/2.0); }                      // (A+B)/2
-	//public myVector V(double a, myVector A, double b, myVector B) {return myVector._add(myVector._mult(A,a),(myVector._mult(B,b)));}                                       // aA+bB 
-	//public myVector V(double a, myVector A, double b, myVector B, double c, myVector C) {return A(V(a,A,b,B),V(c,C));}                   // aA+bB+cC
-	//public myVector V(myPoint P, myPoint Q) {return new myVector(P,Q);};                                          // PQ
-	//private myVector vecCross(myVector U, myVector V) {return U._cross(V);};                  // UxV cross product (normal to both)
-	//private myVector vecCross(myPoint A, myPoint B, myPoint C) {myVector x = new myVector(A,B), y = new myVector(A,C);return x._cross(y); };          // normal to triangle (A,B,C), not normalized (proportional to area)
-	
-	//private double d(myVector U, myVector V) {return U.x*V.x+U.y*V.y+U.z*V.z; };                                            //U*V dot product
-	//private double dot(myVector U, myVector V) {return U.x*V.x+U.y*V.y+U.z*V.z; };                                            //U*V dot product
-	//private double det2(myVector U, myVector V) {return -U.y*V.x+U.x*V.y; };                                       		      // U|V det product
-	
-	//private double det3(myVector U, myVector V) {double dist = U._dot(V); return Math.sqrt(U._dot(U)*V._dot(V) - (dist*dist)); };                                // U|V det product
-	
-//	private double mixProd(myVector U, myVector V, myVector W) {return U._dot(V._cross(W)); };                                                 // U * (VxW)  mixed product, determinant - measures 6x the volume of the parallelapiped formed by myVectortors
-	//private double mixProd(myPoint E, myPoint A, myPoint B, myPoint C) {return mixProd(new myVector(E,A),new myVector(E,B),new myVector(E,C));}                                    // det (EA EB EC) is >0 when E sees (A,B,C) clockwise
-	//private double normSqr(myVector V) {return (V.x*V.x)+(V.y*V.y)+(V.z*V.z);};                                                   // V*V    norm squared
-	//private double norm(myVector V) {return  V.magn;};                                                                // ||V||  norm
-	//private double d(myPoint P, myPoint Q) {return  myPoint._dist(P, Q); };                            // ||AB|| distance
-//	private double area(myPoint A, myPoint B, myPoint C) {	myVector x = new myVector(A,B), y = new myVector(A,C), z = x._cross(y); 	return z.magn/2.0; };                                               // area of triangle 
-//	private double volume(myPoint A, myPoint B, myPoint C, myPoint D) {return mixProd(new myVector(A,B),new myVector(A,C),new myVector(A,D))/6.0; };                           // volume of tet 
-//	private boolean isParallel(myVector U, myVector V) {return U._cross(V).magn<U.magn*V.magn*0.00001; }                              // true if U and V are almost parallel
-	
-//	private double angle(myPoint A, myPoint B, myPoint C){return angle(new myVector(A,B),new myVector(A,C));}												//angle between AB and AC
-//	private double angle(myPoint A, myPoint B, myPoint C, myPoint D){return angle(U(A,B),U(C,D));}							//angle between AB and CD
-//	private double angle(myVector U, myVector V){double angle = Math.atan2(norm(U._cross(V)),U._dot(V)),sign = mixProd(U,V,new myVector(0,0,1));if(sign<0){    angle=-angle;}	return angle;}
-	
-//	private boolean cw(myVector U, myVector V, myVector W) {return mixProd(U,V,W)>0; };                                               // U * (VxW)>0  U,V,W are clockwise
-//	private boolean cw(myPoint A, myPoint B, myPoint C, myPoint D) {return volume(A,B,C,D)>0; };                                     // tet is oriented so that A sees B, C, D clockwise 
-	
-	//private boolean projectsBetween(myPoint P, myPoint A, myPoint B) {return dot(new myVector(A,P),new myVector(A,B))>0 && dot(new myVector(B,P),new myVector(B,A))>0 ; };
-	//private boolean projectsBetween(myPoint P, myPoint A, myPoint B) {return dot(new myVector(A,P),new myVector(A,B))>0 && dot(new myVector(B,P),new myVector(B,A))>0 ; };
-	
-//	private double distToLine(myPoint P, myPoint A, myPoint B) {double res = myVector._det3(U(A,B),new myVector(A,P)); return Double.isNaN(res) ? 0 : res; };		//MAY RETURN NAN IF point P is on line
-//	//private final myPoint projectionOnLine(myPoint P, myPoint A, myPoint B) {return new myPoint(A,dot(new myVector(A,B),new myVector(A,P))/dot(new myVector(A,B),new myVector(A,B)),new myVector(A,B));}
-//	private boolean isSame(myPoint A, myPoint B) {return (A.x==B.x)&&(A.y==B.y)&&(A.z==B.z) ;}                                         // A==B
-//	private boolean isSame(myPoint A, myPoint B, double e) {return ((Math.abs(A.x-B.x)<e)&&(Math.abs(A.y-B.y)<e)&&(Math.abs(A.z-B.z)<e));}                   // ||A-B||<e
-	
-//	private myVector W(double s,myVector V) {return new myVector(s*V.x,s*V.y,s*V.z);}                                                      // sV
-	
-	//private myVector U(myVector v){myVector u = new myVector(v); return u._normalize(); }
-//	private myVector U(myVector v, float d, myVector u){myVector r = new myVector(v,d,u); return r._normalize(); }
-//	private myVector Upt(myPoint v){myVector u = new myVector(v); return u._normalize(); }
-//	private myVector U(myPoint a, myPoint b){myVector u = new myVector(a,b); return u._normalize(); }
-//	private myVectorf Uf(myPoint a, myPoint b){myVectorf u = new myVectorf(a,b); return u._normalize(); }
-//	private myVector U(double x, double y, double z) {myVector u = new myVector(x,y,z); return u._normalize();}
-	
-//	public myVector normToPlane(myPoint A, myPoint B, myPoint C) {return myVector._cross(new myVector(A,B),new myVector(A,C)); };   // normal to triangle (A,B,C), not normalized (proportional to area)
 	
 	@Override
 	public final void gl_normal(myVector V) {normal((float)V.x,(float)V.y,(float)V.z);}                                          // changes normal for smooth shading
