@@ -832,7 +832,11 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		//skip first window - ui menu
 		for(int i =0;i<winDispIdxXOR.length;++i){		dispWinFrames[winDispIdxXOR[i]].setRectDimsY( dispWinFrames[popUpWinIDX].getRectDim(1));	}						
 	}
-	
+	/**
+	 * allow only 1 window to display
+	 * @param idx idx of window whose display is being modified
+	 * @param val whether window idx is turned on(true) or off(false)
+	 */
 	public final void setWinFlagsXOR(int idx, boolean val){
 		//outStr2Scr("SetWinFlagsXOR : idx " + idx + " val : " + val);
 		if(val){//turning one on
@@ -849,9 +853,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 				}
 			}
 		} else {//if turning off a window - need a default uncloseable window - for now just turn on next window
-			//idx is dispXXXIDX idx of allowable windows (1+ since idx 0 is sidebar menu), so use idx-1 for mod function
-			//add 1 to (idx-1) to get next window index, modulo for range adherence, and then add 1 to move back to 1+ from 0+ result from mod		
-			//setWinFlagsXOR((((idx-1) + 1) % winFlagsXOR.length)+1, true);
+			//idx is dispXXXIDX idx of allowable windows (1+ since idx 0 is sidebar menu), so use idx-1 for mod function			
 			setWinFlagsXOR((idx % winFlagsXOR.length)+1, true);
 		}			
 	}//setWinFlagsXOR
@@ -1121,6 +1123,11 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		return new int[]{(int)(255*(t[0]-cubeBnds[0][0])/cubeBnds[1][0]),(int)(255*(t[1]-cubeBnds[0][1])/cubeBnds[1][1]),(int)(255*(t[2]-cubeBnds[0][2])/cubeBnds[1][2]),255};
 	}
 	
+	//convert a world location within the bounded cube region to be a 4-int color array
+	public final int[] getClrFromCubeLoc(myVectorf t){
+		return new int[]{(int)(255*(t.x-cubeBnds[0][0])/cubeBnds[1][0]),(int)(255*(t.y-cubeBnds[0][1])/cubeBnds[1][1]),(int)(255*(t.z-cubeBnds[0][2])/cubeBnds[1][2]),255};
+	}
+	
 	//performs shuffle
 	public String[] shuffleStrList(String[] _list, String type){
 		String tmp = "";
@@ -1318,6 +1325,14 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	/////////////
 	// show functions 
+	public final void show(myPointf P, float rad, int det, int[] fclr, int[] sclr) {
+		pushMatrix(); pushStyle(); 
+		if((fclr!= null) && (sclr!= null)){setFill(fclr,255); setStroke(sclr,255);}
+		sphereDetail(det);
+		translate(P.x,P.y,P.z); 
+		sphere(rad); 
+		popStyle(); popMatrix();
+	}// render sphere of radius r and center P)
 	public final void show(myPoint P, double r,int fclr, int sclr, boolean flat) {//TODO make flat circles for points if flat
 		pushMatrix(); pushStyle(); 
 		if((fclr!= -1) && (sclr!= -1)){setColorValFill(fclr,255); setColorValStroke(sclr,255);}
