@@ -1182,6 +1182,12 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		double iXVal = x*c-x-y*s, jYVal= x*s+y*c-y;			
 		return myPoint._add(P,iXVal,I,jYVal,J); }; 
 		
+	public final myPointf R(myPointf P, float a, myVectorf I, myVectorf J, myPointf G) {
+		double x= myVectorf._dot(new myVectorf(G,P),myVectorf._unit(I)), y=myVectorf._dot(new myVectorf(G,P),myVectorf._unit(J)); 
+		double c=Math.cos(a), s=Math.sin(a); 
+		float iXVal = (float) (x*c-x-y*s), jYVal= (float) (x*s+y*c-y);			
+		return myPointf._add(P,iXVal,I,jYVal,J); }; 
+			
 	public myCntlPt R(myCntlPt P, double a, myVector I, myVector J, myPoint G) {
 		double x= myVector._dot(new myVector(G,P),myVector._unit(I)), y=myVector._dot(new myVector(G,P),myVector._unit(J)); 
 		double c=Math.cos(a), s=Math.sin(a); 
@@ -1249,6 +1255,30 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	}
 
 	//draw a circle - JT
+	
+	/**
+	 * Build a set of n points inscribed on a circle centered at p in plane I,J
+	 * @param p center point
+	 * @param r circle radius
+	 * @param I, J axes of plane
+	 * @param n # of points
+	 * @return array of n equal-arc-length points centered around p
+	 */
+	public myPoint[] buildCircleInscribedPoints(myPoint p,  float r, myVector I, myVector J,int n) {
+		myPoint[] pts = new myPoint[n];
+		pts[0] = new myPoint(p,r,myVector._unit(I));
+		float a = (twoPi_f)/(1.0f*n);
+		for(int i=1;i<n;++i){pts[i] = R(pts[i-1],a,J,I,p);}
+		return pts;
+	}
+	public myPointf[] buildCircleInscribedPoints(myPointf p,  float r, myVectorf I, myVectorf J,int n) {
+		myPointf[] pts = new myPointf[n];
+		pts[0] = new myPointf(p,r,myVectorf._unit(I));
+		float a = (twoPi_f)/(1.0f*n);
+		for(int i=1;i<n;++i){pts[i] = R(pts[i-1],a,J,I,p);}
+		return pts;
+	}
+	
 	/**
 	 * draw a circle centered at P with specified radius r in plane proscribed by passed axes using n number of points
 	 * @param P center
@@ -1259,23 +1289,30 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	 */
 	@Override
 	public final void drawCircle(myPoint P, float r, myVector I, myVector J, int n) {
-		myPoint[] pts = new myPoint[n];
-		pts[0] = new myPoint(P,r,myVector._unit(I));
-		float a = (twoPi_f)/(1.0f*n);
-		for(int i=1;i<n;++i){pts[i] = R(pts[i-1],a,J,I,P);}pushMatrix(); pushStyle();noFill(); show(pts);popStyle();popMatrix();
+		myPoint[] pts = buildCircleInscribedPoints(P,r,I,J,n);
+		pushMatrix(); pushStyle();noFill(); show(pts);popStyle();popMatrix();
 	}; 
 	
 	public final void circle(myPoint p, float r){ellipse((float)p.x, (float)p.y, r, r);}
-	void circle(float x, float y, float r1, float r2){ellipse(x,y, r1, r2);}
+	public void circle(float x, float y, float r1, float r2){ellipse(x,y, r1, r2);}
+	/**
+	 * draw a 6 pointed star centered at p inscribed in circle radius r
+	 */
+	public final void star(myPointf p, float r) {
+		myPointf[] pts = buildCircleInscribedPoints(p,r,myVectorf.FORWARD,myVectorf.RIGHT,6);
+		triangle(pts[0], pts[2],pts[4]);
+		triangle(pts[1], pts[3],pts[5]);
+	}
+	public final void triangle(myPointf a, myPointf b, myPointf c) {triangle(a.x,a.y, b.x, b.y, c.x, c.y);}
 	
-	void noteArc(float[] dims, int[] noteClr){
+	public void noteArc(float[] dims, int[] noteClr){
 		noFill();
 		setStroke(noteClr, noteClr[3]);
 		strokeWeight(1.5f*dims[3]);
 		arc(0,0, dims[2], dims[2], dims[0] - HALF_PI, dims[1] - HALF_PI);
 	}
 	//draw a ring segment from alphaSt in radians to alphaEnd in radians
-	void noteArc(myPoint ctr, float alphaSt, float alphaEnd, float rad, float thickness, int[] noteClr){
+	public void noteArc(myPoint ctr, float alphaSt, float alphaEnd, float rad, float thickness, int[] noteClr){
 		noFill();
 		setStroke(noteClr,noteClr[3]);
 		strokeWeight(thickness);

@@ -7,14 +7,25 @@ import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
 import base_Utils_Objects.*;
+import base_Utils_Objects.io.MessageObject;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myVector;
 import base_Utils_Objects.vectorObjs.myVectorf;
 import processing.core.*;
 
-//abstract class to hold base code for a menu/display window (2D for gui, etc), to handle displaying and controlling the window, and calling the implementing class for the specifics
+/**
+ * abstract class to hold base code for a menu/display window (2D for gui, etc), 
+ * to handle displaying and controlling the window, and calling the implementing 
+ * class for the specifics
+ * @author john
+ *
+ */
 public abstract class myDispWindow {
-	public my_procApplet pa;
+	public static my_procApplet pa;
+	/**
+	 * msg object for output to console or log
+	 */
+	protected MessageObject msgObj;
 	public static int winCnt = 0;
 	public int ID;	
 	public String name, winText;		
@@ -143,13 +154,15 @@ public abstract class myDispWindow {
 	
 	//these ints hold the index of which custom functions or debug functions should be launched.  
 	//these are set when the sidebar menu is clicked and these processes are requested, and they are set to -1 when these processes are launched.  this is so the buttons can be turned on before the process starts
-	protected int[] curCustBtn = new int[] {-1,-1,-1,-1};// curCustFunc = -1, curCustDbg = -1;
+	//this is sub-optimal solution - needs an index per sidebar button on each row; using more than necessary, otherwise will crash if btn idx >= curCustBtn.length
+	protected int[] curCustBtn = new int[] {-1,-1,-1,-1,-1,-1,-1,-1};
 	protected int curCustBtnType = -1;//type/row of current button selected
 	//this is set to true when curCustXXX vals are set to != -1; this is used as a 1-frame buffer to allow the UI to turn on the source buttons of these functions
 	private boolean custClickSetThisFrame = false, custFuncDoLaunch = false;
 	
 	public myDispWindow(my_procApplet _p, String _n, int _flagIdx, int[] fc,  int[] sc, float[] rd, float[] rdClosed, String _winTxt, boolean _canDrawTraj) {
 		pa=_p;
+		msgObj = MessageObject.buildMe(pa);
 		ID = winCnt++;
 		name = _n;
 		pFlagIdx = _flagIdx;
@@ -161,17 +174,15 @@ public abstract class myDispWindow {
 		winText = _winTxt;
 		msClkObj = -1;
 		msOvrObj = -1;
-	}	
+	}//ctor
 	
 	public void initThisWin(boolean _canDrawTraj, boolean _trajIsFlat, boolean _isMenu){
 		initTmpTrajStuff(_trajIsFlat);	
 		initFlags();	
 		setFlags(canDrawTraj, _canDrawTraj);
 		setFlags(trajPointsAreFlat, _trajIsFlat);
-		//setFlags(closeable, true);
-		//setFlags(drawMseEdge,true);
 		if(!_isMenu){
-			initUIBox();				//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar
+			initUIBox();				//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
 		}
 		curTrajAraIDX = 0;		
 		setupGUIObjsAras();				//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
@@ -256,22 +267,29 @@ public abstract class myDispWindow {
 		for (int i = 0; i < privFlagColors.length; ++i) { privFlagColors[i] = new int[]{(int) pa.random(150),(int) pa.random(100),(int) pa.random(150), 255}; }			
 	}
 	
-	//set up child class button rectangles
+	/**
+	 * set up child class button rectangles
+	 */
 	protected void initUIBox(){		
 		float [] menuUIClkCoords = pa.getUIRectVals(ID); 
 		initUIClickCoords(menuUIClkCoords[0],menuUIClkCoords[3],menuUIClkCoords[2],menuUIClkCoords[3]);			
 	}
 	
-	//calculate button length
+	/**
+	 * calculate button length
+	 */
 	private static final float ltrLen = 5.0f;private static final int btnStep = 5;
 	private float calcBtnLength(String tStr, String fStr){return btnStep * (int)(((PApplet.max(tStr.length(),fStr.length())+4) * ltrLen)/btnStep);}
 	
 	private void setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {(float)(uiClkCoords[0])+oldBtnLen, (float) uiClkCoords[3], btnLen, yOff };}
 	
-	//set up child class button rectangles TODO
-	//yDisp is displacement for button to be drawn
+	/**
+	 * set up child class boolean button rectangles using initialized truePrivFlagNames and falsePrivFlagNames
+	 * @param yDisp displacement for button to be drawn
+	 * @param numBtns number of buttons to make
+	 */
 	protected void initPrivBtnRects(float yDisp, int numBtns){
-		//pa.outStr2Scr("initPrivBtnRects in :"+ name + "st value for uiClkCoords[3]");
+		//msgObj.dispInfoMessage("myDispWindow","initPrivBtnRects","initPrivBtnRects in :"+ name + "st value for uiClkCoords[3]");
 		float maxBtnLen = maxBtnWidthMult * pa.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
 		//pa.pr("maxBtnLen : " + maxBtnLen);
 		privFlagBtns = new float[numBtns][];
@@ -316,14 +334,22 @@ public abstract class myDispWindow {
 		this.uiClkCoords[3] += yOff;
 		initPrivFlagColors();
 	}//initPrivBtnRects
-	//find index in flag name arrays of passed boolean IDX
+	/**
+	 * find index in flag name arrays of passed boolean IDX
+	 * @param idx
+	 * @return
+	 */
 	protected int getFlagAraIdxOfBool(int idx) {
 		for(int i=0;i<privModFlgIdxs.length;++i) {if(idx == privModFlgIdxs[i]) {return i;}	}
 		//not found
 		return -1;
 	}
 	
-	//set baseclass flags  //setFlags(showIDX, 
+	/**
+	 * set baseclass flags  //setFlags(showIDX, 
+	 * @param idx
+	 * @param val
+	 */
 	public void setFlags(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		dispFlags[flIDX] = (val ?  dispFlags[flIDX] | mask : dispFlags[flIDX] & ~mask);
@@ -363,15 +389,30 @@ public abstract class myDispWindow {
 		}				
 	}//setFlags
 
-	//set the right side menu state for this window - if it is actually present, show it
+	/**
+	 * set the right side menu state for this window - if it is actually present, show it
+	 * @param visible
+	 */
 	public void setRtSideInfoWinSt(boolean visible) {if(getFlags(drawRightSideMenu)) {setFlags(showRightSideMenu,visible);}}		
-	//get baseclass flag
+	/**
+	 * get baseclass flag
+	 * @param idx
+	 * @return
+	 */
 	public boolean getFlags(int idx){int bitLoc = 1<<(idx%32);return (dispFlags[idx/32] & bitLoc) == bitLoc;}	
-	//check list of flags
+	/**
+	 * check list of flags
+	 * @param idxs
+	 * @return
+	 */
 	public boolean getAllFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
 	public boolean getAnyFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
 	
-	//set/get child class flags
+	/**
+	 * set/get child class flags
+	 * @param idx
+	 * @param val
+	 */
 	public abstract void setPrivFlags(int idx, boolean val);
 	public boolean getPrivFlags(int idx){int bitLoc = 1<<(idx%32);return (privFlags[idx/32] & bitLoc) == bitLoc;}	
 	public boolean getAllPrivFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((privFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
@@ -389,7 +430,7 @@ public abstract class myDispWindow {
 		float [] tmpVsblStLoc = new float[tmpNumSubScrInWin];
 		int [] tmpSeqVisStTime = new int[tmpNumSubScrInWin];
 		if(modVal == 0){			//deleted a screen's map
-			if(tmpNumSubScrInWin != (numSubScrInWin -1)){pa.outStr2Scr("Error in rbldTrnsprtAras : screen traj map not removed at idx : " + modScrKey); return;}
+			if(tmpNumSubScrInWin != (numSubScrInWin -1)){msgObj.dispErrorMessage("myDispWindow","rbldTrnsprtAras","Error in rbldTrnsprtAras : screen traj map not removed at idx : " + modScrKey); return;}
 			for(int i =0; i< numSubScrInWin; ++i){					
 			}			
 			
@@ -415,26 +456,26 @@ public abstract class myDispWindow {
 		if(del){//delete a screen's worth of traj arrays, or a single traj array from a screen 
 			if((trajAraKey == null) || (trajAraKey == "") ){		//delete screen map				
 				TreeMap<String,ArrayList<myDrawnSmplTraj>> tmpTrajMap = drwnTrajMap.remove(scrKey);
-				if(null != tmpTrajMap){			pa.outStr2Scr("Screen trajectory map removed for scr : " + scrKey);				modMthd = 0;}
-				else {							pa.outStr2Scr("Error : Screen trajectory map not found for scr : " + scrKey); 	modMthd = -1; }
+				if(null != tmpTrajMap){			msgObj.dispInfoMessage("myDispWindow","modTrajStructs","Screen trajectory map removed for scr : " + scrKey);				modMthd = 0;}
+				else {							msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : Screen trajectory map not found for scr : " + scrKey); 	modMthd = -1; }
 			} else {												//delete a submap within a screen
 				modMthd = 2;					//modifying existing map at this location
 				TreeMap<String,ArrayList<myDrawnSmplTraj>> tmpTrajMap = drwnTrajMap.get(scrKey);
-				if(null == tmpTrajMap){pa.outStr2Scr("Error : Screen trajectory map not found for scr : " + scrKey + " when trying to remove arraylist : "+trajAraKey); modMthd = -1;}
+				if(null == tmpTrajMap){			msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : Screen trajectory map not found for scr : " + scrKey + " when trying to remove arraylist : "+trajAraKey); modMthd = -1;}
 				else { 
 					ArrayList<myDrawnSmplTraj> tmpTrajAra = drwnTrajMap.get(scrKey).remove(trajAraKey);modMthd = 2;
-					if(null == tmpTrajAra){pa.outStr2Scr("Error : attempting to remove a trajectory array from a screen but trajAra not found. scr : " + scrKey + " | trajAraKey : "+trajAraKey);modMthd = -1; }
+					if(null == tmpTrajAra){		msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : attempting to remove a trajectory array from a screen but trajAra not found. scr : " + scrKey + " | trajAraKey : "+trajAraKey);modMthd = -1; }
 				}
 			}			 
 		} else {													//add
 			TreeMap<String,ArrayList<myDrawnSmplTraj>> tmpTrajMap = drwnTrajMap.get(scrKey);
 			if((trajAraKey == null) || (trajAraKey == "") ){		//add map of maps - added a new screen				
-				if(null != tmpTrajMap){pa.outStr2Scr("Error : attempting to add a new drwnTrajMap where one exists. scr : " + scrKey);modMthd = -1; }
+				if(null != tmpTrajMap){msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : attempting to add a new drwnTrajMap where one exists. scr : " + scrKey);modMthd = -1; }
 				else {tmpTrajMap = new TreeMap<String,ArrayList<myDrawnSmplTraj>>();	drwnTrajMap.put(scrKey, tmpTrajMap);modMthd = 1;}
 			} else {												//add new map of trajs to existing screen's map
 				ArrayList<myDrawnSmplTraj> tmpTrajAra = drwnTrajMap.get(scrKey).get(trajAraKey);	
-				if(null == tmpTrajMap){pa.outStr2Scr("Error : attempting to add a new trajectory array to a screen that doesn't exist. scr : " + scrKey + " | trajAraKey : "+trajAraKey); modMthd = -1; }
-				else if(null != tmpTrajAra){pa.outStr2Scr("Error : attempting to add a new trajectory array to a screen where one already exists. scr : " + scrKey + " | trajAraKey : "+trajAraKey);modMthd = -1; }
+				if(null == tmpTrajMap){msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : attempting to add a new trajectory array to a screen that doesn't exist. scr : " + scrKey + " | trajAraKey : "+trajAraKey); modMthd = -1; }
+				else if(null != tmpTrajAra){msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : attempting to add a new trajectory array to a screen where one already exists. scr : " + scrKey + " | trajAraKey : "+trajAraKey);modMthd = -1; }
 				else {	tmpTrajAra = new ArrayList<myDrawnSmplTraj>();			tmpTrajMap.put(trajAraKey, tmpTrajAra);	drwnTrajMap.put(scrKey, tmpTrajMap);modMthd = 2;}
 			}			
 		}//if del else add
@@ -442,8 +483,12 @@ public abstract class myDispWindow {
 		rbldTrnsprtAras(scrKey, modMthd);
 	}
 	
-	//this will set the height of the rectangle enclosing this window - this will be called when a window pushes up or pulls down this window
-	//this resizes any drawn trajectories in this window, and calls the instance class's code for resizing
+	/**
+	 * this will set the height of the rectangle enclosing this window - this will be called when a 
+	 * window pushes up or pulls down this window - this resizes any drawn trajectories in this 
+	 * window, and calls the instance class's code for resizing
+	 * @param height
+	 */
 	public void setRectDimsY(float height){
 		float oldVal = getFlags(showIDX) ? rectDim[3] : rectDimClosed[3];
 		rectDim[3] = height;
@@ -474,24 +519,41 @@ public abstract class myDispWindow {
 //			}
 //		}
 	
-	//build myGUIObj objects for interaction - call from setupMenuClkRegions of window, 
-	//uiClkCoords needs to be derived before this is called by child class - maxY val(for vertical stack) or maxX val(for horizontal stack) will be derived here
-	protected void buildGUIObjs(String[] guiObjNames, double[] guiStVals, double[][] guiMinMaxModVals, boolean[][] guiBoolVals, double[] off){
+	/**
+	 * build myGUIObj objects for interaction - call from setupMenuClkRegions of window, uiClkCoords 
+	 * needs to be derived before this is called by child class - maxY val(for vertical stack) or 
+	 * maxX val(for horizontal stack) will be derived here
+	 * @param guiObjNames
+	 * @param guiStVals
+	 * @param guiMinMaxModVals
+	 * @param guiBoolVals
+	 * @param off
+	 * @param listVals : keyed by object IDX i guiObjs, value is String array of list values
+	 */
+	protected void buildGUIObjs(String[] guiObjNames, double[] guiStVals, double[][] guiMinMaxModVals, boolean[][] guiBoolVals, double[] off, TreeMap<Integer, String[]> listVals){
 		//myGUIObj tmp; 
 //			if(getFlags(uiObjsAreVert]){		//vertical stack of UI components - clickable region x is unchanged, y changes with # of objects
 		float stClkY = uiClkCoords[1];
+		int numListObjs = 0;
 		for(int i =0; i< guiObjs.length; ++i){
-			guiObjs[i] = buildGUIObj(i,guiObjNames[i],guiStVals[i], guiMinMaxModVals[i], guiBoolVals[i], new double[]{uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff},off);
+			//guiObjs[i] = buildGUIObj(i,guiObjNames[i],guiStVals[i], guiMinMaxModVals[i], guiBoolVals[i], new double[]{uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff},off);
+			if(guiBoolVals[i][1]) {++numListObjs;}
+			guiObjs[i] = new myGUIObj(pa, this,i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], off);
 			stClkY += yOff;
 		}
-		uiClkCoords[3] = stClkY;	
+		uiClkCoords[3] = stClkY;
+		if(numListObjs != listVals.size()) {
+			msgObj.dispWarningMessage("myDispWindow", "buildGUIObjs", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+listVals.size()+") - some or all of specified list objects will not display properly.");
+		}
+		//build lists of data for all list UI objects
+		for(Integer listIDX : listVals.keySet()) {	guiObjs[listIDX].setListVals(listVals.get(listIDX));}		
 	}//
-	
-	protected myGUIObj buildGUIObj(int i, String guiObjName, double guiStVal, double[] guiMinMaxModVals, boolean[] guiBoolVals, double[] xyDims, double[] off){
-//			myGUIObj tmp;
-//			tmp = new myGUIObj(pa, this,i, guiObjName, xyDims[0], xyDims[1], xyDims[2], xyDims[3], guiMinMaxModVals, guiStVal, guiBoolVals, off);		
-		return new myGUIObj(pa, this,i, guiObjName, xyDims[0], xyDims[1], xyDims[2], xyDims[3], guiMinMaxModVals, guiStVal, guiBoolVals, off);
-	}	
+
+//	protected myGUIObj buildGUIObj(int i, String guiObjName, double guiStVal, double[] guiMinMaxModVals, boolean[] guiBoolVals, double[] xyDims, double[] off){
+////			myGUIObj tmp;
+////			tmp = new myGUIObj(pa, this,i, guiObjName, xyDims[0], xyDims[1], xyDims[2], xyDims[3], guiMinMaxModVals, guiStVal, guiBoolVals, off);		
+//		return new myGUIObj(pa, this,i, guiObjName, xyDims[0], xyDims[1], xyDims[2], xyDims[3], guiMinMaxModVals, guiStVal, guiBoolVals, off);
+//	}	
 	
 	//this returns a formatted string holding the UI data
 	protected String getStrFromUIObj(int idx){
@@ -528,7 +590,7 @@ public abstract class myDispWindow {
 
 	public void loadFromFile(File file){
 		if (file == null) {
-		    pa.outStr2Scr("Load was cancelled.");
+			msgObj.dispWarningMessage("myDispWindow","loadFromFile","Load was cancelled.");
 		    return;
 		} 
 		String[] res = pa.loadStrings(file.getAbsolutePath());
@@ -538,7 +600,7 @@ public abstract class myDispWindow {
 	
 	public void saveToFile(File file){
 		if (file == null) {
-		    pa.outStr2Scr("Save was cancelled.");
+			msgObj.dispWarningMessage("myDispWindow","loadFromFile","Save was cancelled.");
 		    return;
 		} 
 		ArrayList<String> res = new ArrayList<String>();
@@ -732,7 +794,7 @@ public abstract class myDispWindow {
 	}
 	public void drawSmall(){
 		pa.pushMatrix();				pa.pushStyle();	
-		//pa.outStr2Scr("Hitting hint code draw small");
+		//msgObj.dispInfoMessage("myDispWindow","drawSmall","Hitting hint code draw small");
 		pa.hint(PConstants.DISABLE_DEPTH_TEST);
 		pa.noLights();		
 		pa.setStroke(strkClr, strkClr[3]);
@@ -752,7 +814,7 @@ public abstract class myDispWindow {
 	public void drawHeader(float modAmtMillis){
 		if(!getFlags(showIDX)){return;}
 		pa.pushMatrix();				pa.pushStyle();			
-		//pa.outStr2Scr("Hitting hint code drawHeader");
+		//msgObj.dispInfoMessage("myDispWindow","drawHeader","Hitting hint code drawHeader");
 		pa.hint(PConstants.DISABLE_DEPTH_TEST);
 		pa.noLights();		
 		pa.setStroke(strkClr, strkClr[3]);
@@ -818,7 +880,7 @@ public abstract class myDispWindow {
 	}//draw3D
 	
 	public void drawTraj3D(float animTimeMod,myPoint trans){
-		pa.outStr2Scr("myDispWindow.drawTraj3D() : I should be overridden in 3d instancing class", true);
+		msgObj.dispWarningMessage("myDispWindow","drawTraj3D","I should be overridden in 3d instancing class");
 //			pa.pushMatrix();pa.pushStyle();	
 //			if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
 //			TreeMap<String,ArrayList<myDrawnNoteTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
@@ -837,7 +899,7 @@ public abstract class myDispWindow {
 		float animTimeMod = (modAmtMillis/1000.0f);
 		//lastAnimTime = pa.millis();
 		pa.pushMatrix();				pa.pushStyle();	
-		//pa.outStr2Scr("Hitting hint code draw2D");
+		//msgObj.dispInfoMessage("myDispWindow","draw2D","Hitting hint code draw2D");
 		pa.hint(PConstants.DISABLE_DEPTH_TEST);
 		pa.setStroke(strkClr,strkClr[3]);
 		pa.setFill(fillClr,fillClr[3]);
@@ -903,16 +965,16 @@ public abstract class myDispWindow {
 	protected boolean handleTrajClick(boolean keysToDrawClicked, myPoint mse){
 		boolean mod = false;
 		if(keysToDrawClicked){					//drawing curve with click+alt - drawing on canvas
-			//pa.outStr2Scr("Current trajectory key IDX " + curTrajAraIDX);
+			//msgObj.dispInfoMessage("myDispWindow","handleTrajClick","Current trajectory key IDX " + curTrajAraIDX);
 			startBuildDrawObj();	
 			mod = true;
 			//
 		} else {
-		//	pa.outStr2Scr("Current trajectory key IDX edit " + curTrajAraIDX);
+		//	msgObj.dispInfoMessage("myDispWindow","handleTrajClick","Current trajectory key IDX edit " + curTrajAraIDX);
 			this.tmpDrawnTraj = findTraj(mse);							//find closest trajectory to the mouse's click location
 			
 			if ((null != this.tmpDrawnTraj)  && (null != this.tmpDrawnTraj.drawnTraj)) {					//alt key not pressed means we're possibly editing a curve, if it exists and if we click within "sight" of it, or moving endpoints
-				//pa.outStr2Scr("Current trajectory ID " + tmpDrawnTraj.ID);
+				//msgObj.dispInfoMessage("myDispWindow","handleTrajClick","Current trajectory ID " + tmpDrawnTraj.ID);
 				mod = this.tmpDrawnTraj.startEditObj(mse);
 			}
 		}
@@ -942,7 +1004,7 @@ public abstract class myDispWindow {
 	}
 	
 	protected void toggleWindowState(){
-		//pa.outStr2Scr("Attempting to close window : " + this.name);
+		//msgObj.dispInfoMessage("myDispWindow","toggleWindowState","Attempting to close window : " + this.name);
 		setFlags(showIDX,!getFlags(showIDX));
 		pa.setBaseFlag(pFlagIdx, getFlags(showIDX));		//value has been changed above by close box
 	}
@@ -961,7 +1023,7 @@ public abstract class myDispWindow {
 			//mx = (int)(mouseX - rectDim[0]); my = (int)(mouseY - rectDim[1]);
 			mx = (int)(mouseX - mseClickCrnr[0]); my = (int)(mouseY - mseClickCrnr[1]);
 			mod = msePtInRect(mx, my, privFlagBtns[i]); 
-			//pa.outStr2Scr("Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
+			//msgObj.dispInfoMessage("myDispWindow","checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
 			if (mod){ 
 				setPrivFlags(privModFlgIdxs[i],!getPrivFlags(privModFlgIdxs[i])); 
 				return mod;
@@ -1021,7 +1083,7 @@ public abstract class myDispWindow {
 					if(pa.isClickModUIVal()){//allows for click-mod
 						setUIObjValFromClickAlone(j);
 						//float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
-						//pa.outStr2Scr("Mult : " + (mult *pa.clickValModMult()));
+						//msgObj.dispInfoMessage("myDispWindow","handleMouseClick","Mult : " + (mult *pa.clickValModMult()));
 						//guiObjs[j].modVal(mult * pa.clickValModMult());
 						setFlags(uiObjMod,true);
 					} //else {										//has drag mod					
@@ -1063,20 +1125,20 @@ public abstract class myDispWindow {
 			//modify object that was clicked in by mouse motion
 			if(msClkObj!=-1){	guiObjs[msClkObj].modVal((mouseX-pmouseX)+(mouseY-pmouseY)*-(pa.shiftIsPressed() ? 50.0f : 5.0f));setFlags(uiObjMod, true); return true;}		
 			if(getFlags(drawingTraj)){ 		//if drawing trajectory has started, then process it
-				//pa.outStr2Scr("drawing traj");
+				//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","drawing traj");
 				myPoint pt =  getMsePoint(mouseX, mouseY);
 				if(null==pt){return false;}
 				this.tmpDrawnTraj.addPoint(pt);
 				mod = true;
 			}else if(getFlags(editingTraj)){		//if editing trajectory has started, then process it
-				//pa.outStr2Scr("edit traj");	
+				//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","edit traj");	
 				myPoint pt =  getMsePoint(mouseX, mouseY);
 				if(null==pt){return false;}
 				mod = this.tmpDrawnTraj.editTraj(mouseX, mouseY,pmouseX, pmouseY,pt,mseDragInWorld);
 			}
 			else {
 				if((!pa.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle
-				//pa.outStr2Scr("before handle indiv drag traj for window : " + this.name);
+				//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","before handle indiv drag traj for window : " + this.name);
 				myPoint mouseClickIn3D = pa.c.getMseLoc(sceneCtrVal);
 				mod = hndlMouseDragIndiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);		//handle specific, non-trajectory functionality for implementation of window
 			}
@@ -1089,7 +1151,7 @@ public abstract class myDispWindow {
 	//set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	private void setUIObjValFromClickAlone(int j) {
 		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
-		//pa.outStr2Scr("Mult : " + (mult *pa.clickValModMult()));
+		//msgObj.dispInfoMessage("myDispWindow","setUIObjValFromClickAlone","Mult : " + (mult *pa.clickValModMult()));
 		guiObjs[j].modVal(mult * pa.clickValModMult());
 	}//setUIObjValFromClickAlone
 	
@@ -1298,9 +1360,12 @@ public abstract class myDispWindow {
 	protected abstract void setCustMenuBtnNames();
 	
 	//ui init routines
+	/**
+	 * Initialize all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 */
 	protected abstract void setupGUIObjsAras();	
-	protected abstract void setUIWinVals(int UIidx);		//set prog values from ui
-	protected abstract String getUIListValStr(int UIidx, int validx);
+	protected abstract void setUIWinVals(int UIidx);
+	
 	protected abstract void processTrajIndiv(myDrawnSmplTraj drawnTraj);
 	
 	//file io used from selectOutput/selectInput - 

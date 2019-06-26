@@ -41,6 +41,8 @@ public class myGUIObj {
 	
 	private final float[] boxDim = new float[] {-2.5f, -2.5f, 5.0f, 5.0f};
 	
+	private String[] listVals = new String[] {"None"};
+	
 	public myGUIObj(IRenderInterface _p, myDispWindow _win, int _winID, String _name, myVector _start, myVector _end, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off) {
 		p=_p;
 		win = _win;
@@ -94,11 +96,11 @@ public class myGUIObj {
 		else if(val>maxVal){val = maxVal;}
 		return val;		
 	}
-	public int valAsInt(){return (int)(val) ;}
-	public float valAsFloat(){return (float)( val);}
+	public final int valAsInt(){return (int)(val) ;}
+	public final float valAsFloat(){return (float)( val);}
 	
-	public boolean checkIn(float _clkx, float _clky){return (_clkx > start.x)&&(_clkx < end.x)&&(_clky > start.y)&&(_clky < end.y);}
-	public void draw(){
+	public final boolean checkIn(float _clkx, float _clky){return (_clkx > start.x)&&(_clkx < end.x)&&(_clky > start.y)&&(_clky < end.y);}
+	public final void draw(){
 		p.pushMatrix();p.pushStyle();
 			p.translate(initDrawTrans[0],initDrawTrans[1],0);
 			p.setFill(_cVal,255);
@@ -111,12 +113,53 @@ public class myGUIObj {
 			p.popStyle();p.popMatrix();
 			if(!getFlags(treatAsIntIDX)){		((PApplet) p).text(dispText + String.format("%.5f",val), 0,0);}
 			else{
-				String resStr = getFlags(hasListValsIDX) ?  win.getUIListValStr(winID, (int)val) : String.format("%.0f",val);
-				((PApplet) p).text(dispText + resStr, 0,0);
+				//String resStr = getFlags(hasListValsIDX) ?  win.getUIListValStr(winID, (int)val) : String.format("%.0f",val);
+				((PApplet) p).text(dispText + getListValStr((int)val), 0,0);
 			}
 		p.popStyle();p.popMatrix();
 	}
+	/**
+	 * return the string representation corresponding to the passed index in the list of this object's values, if any exist
+	 * @param idx index in list of value to retrieve
+	 * @return
+	 */
+	public final String getListValStr(int idx) {
+		if(getFlags(hasListValsIDX)) {	return listVals[(idx % listVals.length)];} 
+		else {							return String.format("%.0f",val);		}
+	}
+	/**
+	 * Set this list object's list of values
+	 * @param _vals
+	 * @return returns current val cast to int as idx
+	 */
+	public final int setListVals(String[] _vals) {
+		if((null == _vals) || (_vals.length == 0)) {			
+			String dfltEntry = (getFlags(hasListValsIDX)) ? "List Not Initialized!" : "None";
+			listVals = new String[] {dfltEntry};			
+		} 
+		else {
+			listVals = new String[_vals.length];
+			System.arraycopy(_vals, 0, listVals, 0, listVals.length);			
+		}
+		double curVal = getVal();
+		setNewMax(listVals.length-1);
+		curVal = setVal(curVal);
+		return (int) curVal;
 		
+	}//setListVals
+	/**
+	 * set list to display passed token, if it exists, otherwise return -1
+	 * @param tok string in list to display
+	 * @return ara [idx of string in list, otherwise -1, 0 if ok, 1 if bad]
+	 */
+	public final int[] setValInList(String tok) {
+		int idx = getIDXofStringInArray(tok);
+		if(idx >=0){		return new int[] {(int) setVal(idx), 0};}
+		return new int[] {idx, 1};
+	}
+	
+	public final int getIDXofStringInArray(String tok) {for(int i=0;i<listVals.length;++i) {if(listVals[i].trim().equals(tok.trim())) {return i;}}return -1;}
+	
 	public String[] getStrData(){
 		ArrayList<String> tmpRes = new ArrayList<String>();
 		tmpRes.add("ID : "+ ID+" Win ID : " + winID  + " Name : "+ name + " distText : " + dispText);

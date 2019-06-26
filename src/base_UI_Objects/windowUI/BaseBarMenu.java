@@ -89,27 +89,24 @@ public abstract class BaseBarMenu extends myDispWindow{
 	//whether buttons are disabled(-1), enabled but not clicked/on (0), or enabled and on/clicked(1)
 	public int[][] guiBtnSt;
 	
-	public int[] guiBtnStFillClr;
-	public int[] guiBtnStTxtClr;
+	public final int[] guiBtnStFillClr = new int[]{		//button colors based on state
+			my_procApplet.gui_White,								//disabled color for buttons
+			my_procApplet.gui_LightGray,								//not clicked button color
+			my_procApplet.gui_LightBlue,									//clicked button color
+		};
+	public final int[] guiBtnStTxtClr = new int[]{			//text color for buttons
+			my_procApplet.gui_LightGray,									//disabled color for buttons
+			my_procApplet.gui_Black,									//not clicked button color
+			my_procApplet.gui_Black,									//clicked button color
+		};	
 	//row and column of currently clicked-on button (for display highlight as pressing)
 	public int[] curBtnClick = new int[]{-1,-1};
 
 	public BaseBarMenu(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, boolean _canDrawTraj) {
 		super(_p, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt, _canDrawTraj);
+		//these have to be set before setupGUIObjsAras is called from initThisWin
 		numMainFlagsToShow = pa.getNumFlagsToShow();
 		mainFlagsToShow = pa.getMainFlagsToShow();
-		
-		guiBtnStFillClr = new int[]{		//button colors based on state
-				my_procApplet.gui_White,								//disabled color for buttons
-				my_procApplet.gui_LightGray,								//not clicked button color
-				my_procApplet.gui_LightBlue,									//clicked button color
-			};
-		guiBtnStTxtClr = new int[]{			//text color for buttons
-				my_procApplet.gui_LightGray,									//disabled color for buttons
-				my_procApplet.gui_Black,									//not clicked button color
-				my_procApplet.gui_Black,									//clicked button color
-			};	
-		initSideBarMenuBtns_Priv();
 		super.initThisWin(_canDrawTraj, false, true);
 	}
 	
@@ -151,7 +148,10 @@ public abstract class BaseBarMenu extends myDispWindow{
 		initPrivFlags(numPrivFlags);	
 	}	
 	
-	//initialize application-specific windows and titles
+	/**
+	 * initialize application-specific windows and titles in structs :
+	 *  guiBtnRowNames, guiBtnNames, defaultUIBtnNames, guiBtnInst, guiBtnWaitForProc;
+	 */
 	protected abstract void initSideBarMenuBtns_Priv();
 	//set flag values and execute special functionality for this sequencer
 	@Override
@@ -167,6 +167,8 @@ public abstract class BaseBarMenu extends myDispWindow{
 	//initialize structure to hold modifiable menu regions
 	@Override
 	protected void setupGUIObjsAras(){						//called from super.initThisWin
+		//set up side bar menu buttons with format specific to instancing application
+		initSideBarMenuBtns_Priv();
 		guiMinMaxModVals = new double [][]{	{}};//min max mod values		
 		guiStVals = new double[]{};
 		guiObjNames = new String[]{};		
@@ -178,7 +180,8 @@ public abstract class BaseBarMenu extends myDispWindow{
 		//all ui ojbects for all windows will follow this format and share the x[0] value
 		initUIClickCoords(rectDim[0] + xLblOffsetMult * rectDim[2],minBtnClkY + (guiBtnRowNames.length * 2.0f) * yOff,rectDim[0] + .99f * rectDim[2],0);//last val over-written by actual value in buildGuiObjs
 		guiObjs = new myGUIObj[numGUIObjs];			//list of modifiable gui objects
-		if(0!=numGUIObjs){			buildGUIObjs(guiObjNames,guiStVals,guiMinMaxModVals,guiBoolVals, new double[]{xOff,yOff});		} 
+		TreeMap<Integer, String[]> listObjs = new TreeMap<Integer, String[]>();
+		if(0!=numGUIObjs){			buildGUIObjs(guiObjNames,guiStVals,guiMinMaxModVals,guiBoolVals, new double[]{xOff,yOff}, listObjs);		} 
 		else {			uiClkCoords[3] = uiClkCoords[1];	}	//set y start values
 	}//setupGUIObjsAras
 	
@@ -219,13 +222,6 @@ public abstract class BaseBarMenu extends myDispWindow{
 	//handle click on button region of menubar
 	protected abstract void handleButtonClick(int row, int col);
 
-	//handle the display of UI objects backed by a list
-	@Override
-	protected String getUIListValStr(int UIidx, int validx){
-		switch(UIidx){
-		}
-		return "";
-	}//dispUIListObj
 	//uses passed time
 	@Override //only send new values if actually new values
 	protected void setUIWinVals(int UIidx){

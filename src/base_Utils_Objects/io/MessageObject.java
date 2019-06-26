@@ -108,8 +108,31 @@ public class MessageObject {
 			_dispMessage_base( _callingClass,_callingMethod,s, useCode,onlyConsole);
 		}
 	}//dispMessageAra
+	
 	//pass single-line messages - only 1 display of timestamp and class/method prefix
+	/**
+	 * default info message
+	 * @param srcClass
+	 * @param srcMethod
+	 * @param msgText
+	 */
 	public void dispInfoMessage(String srcClass, String srcMethod, String msgText){										_dispMessage_base(srcClass,srcMethod,msgText, MsgCodes.info1,true);	}	
+	/**
+	 * default warning message
+	 * @param srcClass
+	 * @param srcMethod
+	 * @param msgText
+	 */
+	public void dispWarningMessage(String srcClass, String srcMethod, String msgText){										_dispMessage_base(srcClass,srcMethod,msgText, MsgCodes.warning1,true);	}	
+	/**
+	 * default error message
+	 * @param srcClass
+	 * @param srcMethod
+	 * @param msgText
+	 */
+	public void dispErrorMessage(String srcClass, String srcMethod, String msgText){										_dispMessage_base(srcClass,srcMethod,msgText, MsgCodes.error1,true);	}	
+	
+	
 	public void dispMessage(String srcClass, String srcMethod, String msgText, MsgCodes useCode){						_dispMessage_base(srcClass,srcMethod,msgText, useCode,true);}	
 	public void dispMessage(String srcClass, String srcMethod, String msgText, MsgCodes useCode, boolean onlyConsole) {	_dispMessage_base(srcClass,srcMethod,msgText, useCode,onlyConsole);	}	
 	//parse string on \n characters
