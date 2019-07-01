@@ -120,8 +120,6 @@ public abstract class BaseBarMenu extends myDispWindow{
 		stBoolFlagColors[2] = new int[]{0,0,255};		
 		for (int i = 3; i < pa.numStFlagsToShow; ++i) { stBoolFlagColors[i] = new int[]{100+((int) pa.random(150)),150+((int) pa.random(100)),150+((int) pa.random(150))};		}
 	}
-	@Override
-	protected void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc){}//not a snap-to window
 		
 	//call this from each new window to set function names, if specified, when window gets focus
 	public void setAllBtnNames(int rowIdx, String[] btnNames) {
@@ -142,7 +140,7 @@ public abstract class BaseBarMenu extends myDispWindow{
 	}//
 	
 	@Override
-	protected void initMe() {//init/reinit this window
+	protected final void initMe() {//init/reinit this window
 		setFlags(closeable, false);
 //		setFlags(uiObjsAreVert, true);
 		initPrivFlags(numPrivFlags);	
@@ -166,7 +164,7 @@ public abstract class BaseBarMenu extends myDispWindow{
 
 	//initialize structure to hold modifiable menu regions
 	@Override
-	protected void setupGUIObjsAras(){						//called from super.initThisWin
+	protected final void setupGUIObjsAras(){						//called from super.initThisWin
 		//set up side bar menu buttons with format specific to instancing application
 		initSideBarMenuBtns_Priv();
 		guiMinMaxModVals = new double [][]{	{}};//min max mod values		
@@ -317,11 +315,11 @@ public abstract class BaseBarMenu extends myDispWindow{
 		}
 	}//drawSideBarButtons	
 	@Override
-	protected void drawOnScreenStuffPriv(float modAmtMillis) {}
+	protected final void drawOnScreenStuffPriv(float modAmtMillis) {}
 	@Override//for windows to draw on screen
-	protected void drawRightSideInfoBarPriv(float modAmtMillis) {}
+	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {}
 	@Override
-	protected void drawMe(float animTimeMod) {
+	protected final void drawMe(float animTimeMod) {
 		pa.pushMatrix();pa.pushStyle();
 			drawSideBarBooleans();				//toggleable booleans 
 		pa.popStyle();	pa.popMatrix();	
@@ -343,11 +341,10 @@ public abstract class BaseBarMenu extends myDispWindow{
 	public void drawCustMenuObjs(){}	
 	//no custom camera handling for menu , float rx, float ry, float dz are all now member variables of every window
 	@Override
-	protected void setCameraIndiv(float[] camVals){}
+	protected final void setCameraIndiv(float[] camVals){}
 	@Override
 	public void hndlFileLoad(File file, String[] vals, int[] stIdx) {
 		hndlFileLoad_GUI(vals, stIdx);
-		
 	}
 	@Override
 	public ArrayList<String> hndlFileSave(File file) {
@@ -360,42 +357,44 @@ public abstract class BaseBarMenu extends myDispWindow{
 	@Override
 	public void drawClickableBooleans() {	}//this is only for non-sidebar menu windows, to display their own personal buttons
 	@Override
-	protected void setVisScreenDimsPriv() {}
+	protected final void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc){}//not a snap-to window
+	@Override
+	protected final void setVisScreenDimsPriv() {}
 	@Override
 	protected myPoint getMsePtAs3DPt(myPoint mseLoc){return new myPoint(mseLoc.x,mseLoc.y,0);}
 	@Override
-	protected void initTrajStructs() {}
+	protected final void initTrajStructs() {}
 	@Override
-	protected void endShiftKeyI() {}
+	protected final void endShiftKeyI() {}
 	@Override
-	protected void endAltKeyI() {}
+	protected final void endAltKeyI() {}
 	@Override
-	protected void endCntlKeyI() {}
+	protected final void endCntlKeyI() {}
 	@Override
-	protected void closeMe() {}
+	protected final void closeMe() {}
 	@Override
-	protected void showMe() {}
+	protected final void showMe() {}
 	@Override
-	protected void resizeMe(float scale) {}	
+	protected final void resizeMe(float scale) {}	
 	@Override
-	protected void setCustMenuBtnNames() {}
+	protected final void setCustMenuBtnNames() {}
 	@Override
 	protected boolean simMe(float modAmtSec) {return false;}
 	@Override
-	protected void stopMe() {}
+	protected final void stopMe() {}
 	@Override
-	protected void addSScrToWinIndiv(int newWinKey){}
+	protected final void addSScrToWinIndiv(int newWinKey){}
 	@Override
-	protected void addTrajToScrIndiv(int subScrKey, String newTrajKey){}
+	protected final void addTrajToScrIndiv(int subScrKey, String newTrajKey){}
 	@Override
-	protected void delSScrToWinIndiv(int idx) {}	
+	protected final void delSScrToWinIndiv(int idx) {}	
 	@Override
-	protected void delTrajToScrIndiv(int subScrKey, String newTrajKey) {}		
+	protected final void delTrajToScrIndiv(int subScrKey, String newTrajKey) {}		
 	//no trajectory here
 	@Override
-	protected void processTrajIndiv(myDrawnSmplTraj drawnTraj){}	
+	protected final void processTrajIndiv(myDrawnSmplTraj drawnTraj){}	
 	@Override
-	protected void initDrwnTrajIndiv(){}
+	protected final void initDrwnTrajIndiv(){}
 	@Override
 	public String toString(){
 		String res = super.toString();

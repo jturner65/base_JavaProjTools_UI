@@ -232,6 +232,16 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected void setDesired3DGridDims(int _gx, int _gy, int _gz) {
 		gridDimX = _gx;gridDimY = _gy;gridDimZ = _gz;				//dimensions of 3d region
 		gridHalfDim.set(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
+		//2D, 3D
+		sceneFcsValsBase = new myVector[]{						//set these values to be different targets of focus
+				new myVector(-grid2D_X/2,-grid2D_Y/1.75f,0),
+				new myVector(0,0,0)
+		};
+		//2D, 3D
+		sceneCtrValsBase = new myPoint[]{				//set these values to be different display center translations -
+			new myPoint(0,0,0),										// to be used to calculate mouse offset in world for pick
+			new myPoint(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
+		};
 	}
 	
 	/**
