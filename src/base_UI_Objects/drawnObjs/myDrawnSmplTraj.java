@@ -1,8 +1,8 @@
 package base_UI_Objects.drawnObjs;
 
-import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.myDispWindow;
+import base_UI_Objects.windowUI.myTrajManager;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myVector;
 
@@ -10,6 +10,7 @@ import base_Utils_Objects.vectorObjs.myVector;
 public class myDrawnSmplTraj {
 	public my_procApplet pa;
 	public myDispWindow win;
+	public myTrajManager trajMgr;
 	public static int trjCnt = 0;
 	public int ID;
 
@@ -33,23 +34,25 @@ public class myDrawnSmplTraj {
 		
 	public boolean[] trajFlags;
 	public static final int 
-				flatPtIDX = 0,						//whether this should draw plat circles or spheres for its points
-				smCntlPtsIDX = 1;					//whether the 4 cntl points should be as small as regular points or larger
-	public static final int numTrajFlags = 2;
+				flatPtIDX 		= 0,						//whether this should draw plat circles or spheres for its points
+				smCntlPtsIDX 	= 1,						//whether the 4 cntl points should be as small as regular points or larger
+				ownrWinIs3dIDX 	= 2;					
+	public static final int numTrajFlags = 3;
 	
 	public int ctlRad;
 	
-	public myDrawnSmplTraj(my_procApplet _p, myDispWindow _win,float _topOffy, int[] _fillClrCnst, int[] _strkClrCnst, boolean _flat, boolean _smCntl){
-		pa = _p;
+	public myDrawnSmplTraj(my_procApplet _p, myDispWindow _win, myTrajManager _trajMgr, float _topOffy, int[] _fillClrCnst, int[] _strkClrCnst, boolean _flat, boolean _smCntl){
+		pa = _p;win = _win;trajMgr=_trajMgr;
 		fillClrCnst = _fillClrCnst; 
 		strkClrCnst = _strkClrCnst;
-		win = _win;
+		
 		ID = trjCnt++;
 		setTopOffy(_topOffy);			//offset in y from top of screen
 		initTrajFlags();
 		initTrajStuff();		
 		trajFlags[flatPtIDX] = _flat;
 		trajFlags[smCntlPtsIDX] = _smCntl;
+		trajFlags[ownrWinIs3dIDX] = win.getFlags(_win.is3DWin);
 		ctlRad = (trajFlags[smCntlPtsIDX] ? myDrawnObject.trajPtRad : 5 );
 	}
 	protected void initTrajFlags(){trajFlags = new boolean[numTrajFlags];for(int i=0;i<numTrajFlags;++i){trajFlags[i]=false;}}
@@ -65,7 +68,7 @@ public class myDrawnSmplTraj {
 		edtCrvEndPts[0] = new myPoint(win.rectDim[0] + .25 * win.rectDim[2], .5 * (2*win.rectDim[1] + win.rectDim[3]),0);
 		edtCrvEndPts[1] = new myPoint(win.rectDim[0] + .75 * win.rectDim[2], .5 * (2*win.rectDim[1] + win.rectDim[3]),0);		
 	}
-	
+
 	public void calcPerpPoints(){
 		//myVector dir = pa.U(myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), pa.c.getDrawSNorm()));
 		myVector dir = (myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), pa.c.getDrawSNorm()))._normalize();
@@ -77,7 +80,7 @@ public class myDrawnSmplTraj {
 	}
 	//scale edit points and cntl points
 	public void reCalcCntlPoints(float scale){
-		for(int i = 0; i<edtCrvEndPts.length; ++i){	edtCrvEndPts[i].y = win.calcOffsetScale(edtCrvEndPts[i].y,scale,topOffY);edtCrvEndPts[i].z = 0; }//edtCrvEndPts[curDrnTrajScrIDX][i].y -= topOffY; edtCrvEndPts[curDrnTrajScrIDX][i].y *= scale;edtCrvEndPts[curDrnTrajScrIDX][i].y += topOffY;	}	
+		for(int i = 0; i<edtCrvEndPts.length; ++i){	edtCrvEndPts[i].y = trajMgr.calcOffsetScale(edtCrvEndPts[i].y,scale,topOffY);edtCrvEndPts[i].z = 0; }//edtCrvEndPts[curDrnTrajScrIDX][i].y -= topOffY; edtCrvEndPts[curDrnTrajScrIDX][i].y *= scale;edtCrvEndPts[curDrnTrajScrIDX][i].y += topOffY;	}	
 		if(drawnTraj != null){
 			((myVariStroke)drawnTraj).scaleMeY(false,scale,topOffY);//only for display - rescaling changes the notes slightly so don't recalc notes
 		}
@@ -91,46 +94,46 @@ public class myDrawnSmplTraj {
 		drawnTraj.startDrawing();
 	}
 	public boolean startEditEndPoint(int idx){
-		editEndPt = idx; win.setFlags(myDispWindow.editingTraj, true);
+		editEndPt = idx; trajMgr.setFlags(trajMgr.editingTraj, true);
 		//pa.outStr2Scr("Handle TrajClick 2 startEditEndPoint : " + name + " | Move endpoint : "+editEndPt);
 		return true;
 	}
 	//check if initiating an edit on an existing object, if so then set up edit
 	public boolean startEditObj(myPoint mse){
 		boolean doEdit = false; 
-		float chkDist = win.getFlags(myDispWindow.is3DWin) ? msClkPt3DRad : msClkPtRad;
+		float chkDist = trajFlags[ownrWinIs3dIDX] ? msClkPt3DRad : msClkPtRad;
 		//first check endpoints, then check curve points
 		double[] distTocPts = new double[1];			//using array as pointer, passing by reference
-		int cntpIdx = win.findClosestPt(mse, distTocPts, edtCrvEndPts);	
+		int cntpIdx = trajMgr.findClosestPt(mse, distTocPts, edtCrvEndPts);	
 		if(distTocPts[0] < chkDist){						startEditEndPoint(cntpIdx);} 
 		else {
 			double[] distToPts = new double[1];			//using array as pointer, passing by reference
 			myPoint[] pts = ((myVariStroke)drawnTraj).getDrawnPtAra(false);
-			int pIdx = win.findClosestPt(mse, distToPts, pts);
+			int pIdx = trajMgr.findClosestPt(mse, distToPts, pts);
 			//pa.outStr2Scr("Handle TrajClick 2 startEditObj : " + name);
 			if(distToPts[0] < chkDist){//close enough to mod
-				win.setEditCueCircle(0,mse);
-				win.setFlags(myDispWindow.editingTraj, true);
+				trajMgr.setEditCueCircle(0,mse);
+				trajMgr.setFlags(trajMgr.editingTraj, true);
 				doEdit = true;
 				//pa.outStr2Scr("Handle TrajClick 3 startEditObj modPt : " + name + " : pIdx : "+ pIdx);
 				drawnTrajPickedIdx = pIdx;	
 				editEndPt = -1;
 			} else if (distToPts[0] < sqMsClkRad){//not close enough to mod but close to curve
-				win.setEditCueCircle(1,mse);
-				win.setFlags(myDispWindow.smoothTraj, true);
+				trajMgr.setEditCueCircle(1,mse);
+				trajMgr.setFlags(trajMgr.smoothTraj, true);
 			}
 		}
 		return doEdit;
-	}//startEditObj//rectDim
+	}//startEditObj//rectDim trajFlags[ownrWinIs3dIDX]
 	
 	//returns true if within eps of any of the points of this trajector
 	public boolean clickedMe(myPoint mse){
-		float chkDist = win.getFlags(myDispWindow.is3DWin) ? msClkPt3DRad : msClkPtRad;	
+		float chkDist = trajFlags[ownrWinIs3dIDX] ? msClkPt3DRad : msClkPtRad;	
 		double[] distToPts = new double[1];			//using array as pointer, passing by reference
-		int cntpIdx = win.findClosestPt(mse, distToPts, edtCrvEndPts);	
+		int cntpIdx = trajMgr.findClosestPt(mse, distToPts, edtCrvEndPts);	
 		if(distToPts[0] < chkDist){return true;}
 		distToPts[0] = 9999;
-		int pIdx = win.findClosestPt(mse, distToPts, ((myVariStroke)drawnTraj).getDrawnPtAra(false));
+		int pIdx = trajMgr.findClosestPt(mse, distToPts, ((myVariStroke)drawnTraj).getDrawnPtAra(false));
 		return (distToPts[0] < chkDist);
 	}
 	
@@ -143,8 +146,7 @@ public class myDrawnSmplTraj {
 			calcPerpPoints();
 			drawnTraj.remakeDrawnTraj(false);
 			rebuildDrawnTraj();	
-		} else {//scale all traj points based on modification of pts 2 or 3 - only allow them to move along the perp axis
-			
+		} else {//scale all traj points based on modification of pts 2 or 3 - only allow them to move along the perp axis			
 			//myVector abRotAxis = pa.U(myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), pa.c.getDrawSNorm()));
 			myVector abRotAxis = myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), pa.c.getDrawSNorm())._normalize();
 			float dist = (float)myPoint._dist(edtCrvEndPts[2], edtCrvEndPts[3]);
@@ -162,8 +164,8 @@ public class myDrawnSmplTraj {
 	//edit the trajectory used for UI input in this window
 	public boolean editTraj(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld){
 		boolean mod = false;
-		if((drawnTrajPickedIdx == -1) && (editEndPt == -1) && (!win.getFlags(myDispWindow.smoothTraj))){return mod;}			//neither endpoints nor drawn points have been edited, and we're not smoothing
-		myVector diff = win.getFlags(myDispWindow.is3DWin) ? mseDragInWorld : new myVector(mouseX-pmouseX, mouseY-pmouseY,0);		
+		if((drawnTrajPickedIdx == -1) && (editEndPt == -1) && (!trajMgr.getFlags(trajMgr.smoothTraj))){return mod;}			//neither endpoints nor drawn points have been edited, and we're not smoothing
+		myVector diff = trajFlags[ownrWinIs3dIDX] ? mseDragInWorld : new myVector(mouseX-pmouseX, mouseY-pmouseY,0);		
 		//pa.outStr2Scr("Diff in editTraj for  " + name + "  : " +diff.toStrBrf());
 		//needs to be before templateZoneY check
 		if (editEndPt != -1){//modify scale of ornament here, or modify drawn trajectory	
@@ -179,7 +181,7 @@ public class myDrawnSmplTraj {
 	
 	public void endEditObj(){
 		if((drawnTrajPickedIdx != -1) || (editEndPt != -1)
-			|| ( win.getFlags(myDispWindow.smoothTraj))){//editing curve
+			|| ( trajMgr.getFlags(trajMgr.smoothTraj))){//editing curve
 			drawnTraj.remakeDrawnTraj(false);
 			rebuildDrawnTraj();		
 		}
@@ -188,11 +190,11 @@ public class myDrawnSmplTraj {
 //			rebuildDrawnTraj();	
 //		}
 		//pa.outStr2Scr("In Traj : " + this.ID + " endEditObj ");
-		win.processTrajectory(this);//dispFlags[trajDirty, true);
+		trajMgr.processTrajectory(this);//dispFlags[trajDirty, true);
 		drawnTrajPickedIdx = -1;
 		editEndPt = -1;
-		win.setFlags(myDispWindow.editingTraj, false);
-		win.setFlags(myDispWindow.smoothTraj, false);
+		trajMgr.setFlags(trajMgr.editingTraj, false);
+		trajMgr.setFlags(trajMgr.smoothTraj, false);
 	}
 	
 	public void endDrawObj(myPoint endPoint){
@@ -206,11 +208,11 @@ public class myDrawnSmplTraj {
 			edtCrvEndPts[1] = new myPoint(pts[pts.length-1]);
 			rebuildDrawnTraj();
 			//pa.outStr2Scr("In Traj : " + this.ID + " endDrawObj ");
-			win.processTrajectory(this);
+			trajMgr.processTrajectory(this);
 		} else {
 			drawnTraj = new myVariStroke(pa, new myVector(pa.c.getDrawSNorm()),fillClrCnst, strkClrCnst);
 		}
-		win.setFlags(myDispWindow.drawingTraj, false);
+		trajMgr.setFlags(trajMgr.drawingTraj, false);
 	}//endDrawObj
 	
 	public void addPoint(myPoint mse){
@@ -228,7 +230,7 @@ public class myDrawnSmplTraj {
 			pa.setFill(fillClrCnst,255);
 			pa.setStroke(strkClrCnst,255);
 			for(int i =0; i< edtCrvEndPts.length; ++i){
-				win.showKeyPt(edtCrvEndPts[i],""+ (i+1),ctlRad);
+				trajMgr.showKeyPt(edtCrvEndPts[i],""+ (i+1),ctlRad);
 			}	
 			((myVariStroke)drawnTraj).drawMe(false,trajFlags[flatPtIDX]);
 		} 

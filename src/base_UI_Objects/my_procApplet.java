@@ -434,14 +434,21 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	//call once for each display window before calling constructor
 	protected void setInitDispWinVals(int _winIDX, float[] _dimOpen, float[] _dimClosed, boolean[] _dispFlags, int[] _fill, int[] _strk, int[] _trajFill, int[] _trajStrk) {
-		winRectDimOpen[_winIDX] = _dimOpen;
-		winRectDimClose[_winIDX] = _dimClosed;
-		//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
-		dispWinFlags[_winIDX] = _dispFlags;
-		winFillClrs[_winIDX] = _fill;
-		winStrkClrs[_winIDX] = _strk;
-		winTrajFillClrs[_winIDX] = _trajFill;		//set to color constants for each window
-		winTrajStrkClrs[_winIDX] = _trajStrk;		//set to color constants for each window		
+		winRectDimOpen[_winIDX] = new float[_dimOpen.length];
+		System.arraycopy(_dimOpen, 0, winRectDimOpen[_winIDX], 0, _dimOpen.length);
+		winRectDimClose[_winIDX] = new float[_dimClosed.length];
+		System.arraycopy(_dimClosed, 0, winRectDimClose[_winIDX], 0, _dimClosed.length);
+		dispWinFlags[_winIDX] = new boolean[ _dispFlags.length];
+		System.arraycopy(_dispFlags, 0, dispWinFlags[_winIDX], 0, _dispFlags.length);
+		winFillClrs[_winIDX] = new int[_fill.length];
+		System.arraycopy(_fill, 0, winFillClrs[_winIDX], 0, _fill.length);
+		winStrkClrs[_winIDX] = new int[_strk.length];
+		System.arraycopy(_strk, 0, winStrkClrs[_winIDX], 0, _strk.length);
+		winTrajFillClrs[_winIDX] = new int[_trajFill.length];		//set to color constants for each window
+		System.arraycopy(_trajFill, 0, winTrajFillClrs[_winIDX], 0, _trajFill.length);
+		winTrajStrkClrs[_winIDX] = new int[_trajStrk.length];	//set to color constants for each window		
+		System.arraycopy(_trajStrk, 0, winTrajStrkClrs[_winIDX], 0, _trajStrk.length);
+	
 	}//setInitDispWinVals
 	
 //	

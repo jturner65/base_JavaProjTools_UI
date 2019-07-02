@@ -363,8 +363,6 @@ public abstract class BaseBarMenu extends myDispWindow{
 	@Override
 	protected myPoint getMsePtAs3DPt(myPoint mseLoc){return new myPoint(mseLoc.x,mseLoc.y,0);}
 	@Override
-	protected final void initTrajStructs() {}
-	@Override
 	protected final void endShiftKeyI() {}
 	@Override
 	protected final void endAltKeyI() {}
