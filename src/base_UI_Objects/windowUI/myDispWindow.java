@@ -746,9 +746,10 @@ public abstract class myDispWindow {
 		pa.pushMatrix();				pa.pushStyle();			
 		pa.setFill(fillClr, fillClr[3]);
 		pa.setStroke(strkClr,strkClr[3]);
-		//if(getFlags(closeable)){drawMouseBox();}
-		drawMe(animTimeMod);			//call instance class's draw
+		//draw traj stuff if exists and appropriate
 		if(null!=trajMgr){		trajMgr.drawTraj_3d(animTimeMod, myPoint._add(sceneCtrVal,focusTar));}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		//draw instancing win-specific stuff
+		drawMe(animTimeMod);			//call instance class's draw
 		pa.popStyle();pa.popMatrix();		
 	}//draw3D
 	
@@ -778,9 +779,10 @@ public abstract class myDispWindow {
 		pa.setFill(fillClr,fillClr[3]);
 		//main window drawing
 		pa.drawRect(rectDim);
-		//close box drawing
-		drawMe(animTimeMod);			//call instance class's draw
+		//draw traj stuff if exists and appropriate
 		if(null!=trajMgr){		trajMgr.drawTraj_2d(animTimeMod);}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		//draw instancing win-specific stuff
+		drawMe(animTimeMod);			//call instance class's draw
 		pa.hint(PConstants.ENABLE_DEPTH_TEST);
 		pa.popStyle();pa.popMatrix();
 	}

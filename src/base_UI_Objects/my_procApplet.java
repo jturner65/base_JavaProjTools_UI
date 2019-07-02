@@ -532,7 +532,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected abstract String getPrjNmShrt();
 
 	
-	private void draw3D_solve3D(float modAmtMillis){
+	protected final void draw3D_solve3D(float modAmtMillis){
 		//System.out.println("drawSolve");
 		pushMatrix();pushStyle();
 		for(int i =1; i<numDispWins; ++i){
@@ -543,7 +543,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		drawAxes(100,3, new myPoint(-c.getViewDimW()/2.0f+40,0.0f,0.0f), 200, false); 		
 	}//draw3D_solve3D
 	
-	private final void drawUI(float modAmtMillis){					
+	protected final void drawUI(float modAmtMillis){					
 		//for(int i =1; i<numDispWins; ++i){if ( !(dispWinFrames[i].dispFlags[myDispWindow.is3DWin])){dispWinFrames[i].draw(sceneCtrVals[sceneIDX]);}}
 		//dispWinFrames[0].draw(sceneCtrVals[sceneIDX]);
 		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
