@@ -1141,7 +1141,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	}
 	
 	//convert a world location within the bounded cube region to be a 4-int color array
-	public final int[] getClrFromCubeLoc(myVectorf t){
+	public final int[] getClrFromCubeLoc(myPointf t){
 		return new int[]{(int)(255*(t.x-cubeBnds[0][0])/cubeBnds[1][0]),(int)(255*(t.y-cubeBnds[0][1])/cubeBnds[1][1]),(int)(255*(t.z-cubeBnds[0][2])/cubeBnds[1][2]),255};
 	}
 	
