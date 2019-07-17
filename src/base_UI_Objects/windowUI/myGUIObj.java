@@ -147,6 +147,15 @@ public class myGUIObj {
 		return (int) curVal;
 		
 	}//setListVals
+	
+	/**
+	 * set new display text for this UI object - doesn't change name
+	 * @param _str
+	 */
+	public final void setNewDispText(String _str) {
+		dispText = new String(""+_str + " : ");		
+	}
+	
 	/**
 	 * set list to display passed token, if it exists, otherwise return -1
 	 * @param tok string in list to display

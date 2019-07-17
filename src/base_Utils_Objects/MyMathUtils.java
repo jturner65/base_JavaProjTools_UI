@@ -1,7 +1,9 @@
 package base_Utils_Objects;
 
 import base_Utils_Objects.vectorObjs.myPoint;
+import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
+import base_Utils_Objects.vectorObjs.myVectorf;
 
 /**
  * mathematical functions and constants that might be of use in some applications
@@ -83,8 +85,56 @@ public class MyMathUtils {
 	public myVector normToPlane(myPoint A, myPoint B, myPoint C) {
 		return myVector._cross(new myVector(A,B),new myVector(A,C)); 
 	};   // normal to triangle (A,B,C), not normalized (proportional to area)
-	
 
+	/**
+	 * calculates the determinant of a Matrix
+	 * @param M n x n matrix - don't over do it
+	 * @return
+	 */
+	public static double detMat(float[][] M){ 
+		double sum=0, s;
+		if(M.length==1){	return(M[0][0]); }
+		for(int i=0;i < M.length;i++){ 														
+			float[][] minor= new float[M.length-1][M.length-1];
+			for(int b=0;b<M.length;++b){
+				if(b==i) {continue;}
+				int bIdx = (b<i)? b : b-1;
+				for(int a=1;a<M.length;++a){
+					minor[a-1][bIdx] = M[a][b];
+				}
+			}	
+			s = (i%2==0) ? 1.0f : -1.0f;
+			sum += s * M[0][i] * (detMat(minor)); 										
+		}
+		return(sum); //returns determinant value. once stack is finished, returns final determinant.
+	}//detMat
+
+	/**
+	 * calculates the determinant of a Matrix
+	 * @param M n x n matrix - don't over do it
+	 * @return
+	 */
+	public static double detMat(double[][] M){ 
+		double sum=0, s;
+		if(M.length==1){	return(M[0][0]); }
+		for(int i=0;i < M.length;i++){ 														
+			double[][] minor= new double[M.length-1][M.length-1];
+			for(int b=0;b<M.length;++b){
+				if(b==i) {continue;}
+				int bIdx = (b<i)? b : b-1;
+				for(int a=1;a<M.length;++a){
+					minor[a-1][bIdx] = M[a][b];
+				}
+			}	
+			s = (i%2==0) ? 1.0f : -1.0f;
+			sum += s * M[0][i] * (detMat(minor)); 										
+		}
+		return(sum); //returns determinant value. once stack is finished, returns final determinant.
+	}//detMat
+
+	
+	
+	
 	/**
 	 * quake inv sqrt calc - about 30% faster than 
 	 * @param x

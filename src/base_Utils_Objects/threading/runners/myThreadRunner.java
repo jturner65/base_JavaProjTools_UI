@@ -26,11 +26,11 @@ public abstract class myThreadRunner {
 	protected final int numUsableThreads;
 	//ref to thread executor
 	protected final ExecutorService th_exec;	
-	//# of work units to perform 
-	protected final int numWorkUnits;
+	//# of work units to perform - elements in list, possibly, to iterate through across multiple threads
+	protected int numWorkUnits;
 	
-	List<Future<Boolean>> ExMapperFtrs = new ArrayList<Future<Boolean>>();
-	List<Callable<Boolean>> ExMappers = new ArrayList<Callable<Boolean>>();
+	protected List<Future<Boolean>> ExMapperFtrs = new ArrayList<Future<Boolean>>();
+	protected List<Callable<Boolean>> ExMappers = new ArrayList<Callable<Boolean>>();
 
 	
 	public myThreadRunner(MessageObject _msgObj, ExecutorService _th_exec, boolean _canMT, int _numThds, int _numWorkUnits) {
@@ -40,6 +40,12 @@ public abstract class myThreadRunner {
 		numUsableThreads = _numThds;
 		numWorkUnits = _numWorkUnits;
 	}//myThreadRunner
+	
+	/**
+	 * set the total # of work units that need to be parsed near-equally amongst available threads
+	 * @param _num # of total work units
+	 */
+	public void setNumWorkUnits(int _num) {numWorkUnits = _num;}
 		
 	/**
 	 * determine how many work elements should be assigned per thread 

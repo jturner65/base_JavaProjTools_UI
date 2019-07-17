@@ -210,5 +210,6 @@ public class myVector extends myPoint{
 	}				
 	public String toStrCSV(){return toStrCSV("%.4f");}	
 	public String toStrCSV(String fmt){return super.toStrCSV(fmt) + ", " + String.format(fmt,this.magn) + ", " + String.format(fmt,this.sqMagn);}	
+	public String toStrBrf(){return super.toStrBrf() + ", " + String.format("%.4f",this.magn) + ", " + String.format("%.4f",this.sqMagn);}	
 	public String toString(){return super.toString()+ " | Mag:" + String.format("%.4f",this.magn)+ " | sqMag:" + String.format("%.4f",this.sqMagn);}
 }//myVector

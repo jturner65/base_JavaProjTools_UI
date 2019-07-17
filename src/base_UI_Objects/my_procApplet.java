@@ -98,6 +98,19 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		new myPoint(0,0,0),										// to be used to calculate mouse offset in world for pick
 		new myPoint(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
 	};
+	
+	//3dbox stuff
+	public myVector[] boxNorms = new myVector[] {new myVector(1,0,0),new myVector(-1,0,0),new myVector(0,1,0),new myVector(0,-1,0),new myVector(0,0,1),new myVector(0,0,-1)};//normals to 3 d bounding boxes
+	protected float hGDimX = gridDimX/2.0f, hGDimY = gridDimY/2.0f, hGDimZ = gridDimZ/2.0f;
+	protected float tGDimX = gridDimX*10, tGDimY = gridDimY*10, tGDimZ = gridDimZ*20;
+	public myPoint[][] boxWallPts = new myPoint[][] {//pts to check if intersection with 3D bounding box happens
+			new myPoint[] {new myPoint(hGDimX,tGDimY,tGDimZ), new myPoint(hGDimX,-tGDimY,tGDimZ), new myPoint(hGDimX,tGDimY,-tGDimZ)  },
+			new myPoint[] {new myPoint(-hGDimX,tGDimY,tGDimZ), new myPoint(-hGDimX,-tGDimY,tGDimZ), new myPoint(-hGDimX,tGDimY,-tGDimZ) },
+			new myPoint[] {new myPoint(tGDimX,hGDimY,tGDimZ), new myPoint(-tGDimX,hGDimY,tGDimZ), new myPoint(tGDimX,hGDimY,-tGDimZ) },
+			new myPoint[] {new myPoint(tGDimX,-hGDimY,tGDimZ),new myPoint(-tGDimX,-hGDimY,tGDimZ),new myPoint(tGDimX,-hGDimY,-tGDimZ) },
+			new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
+			new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }
+	};
 		
 	
 	public final float
@@ -180,19 +193,6 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			);
 	public final int numStFlagsToShow = stateFlagsToShow.size();	
 	
-	//3dbox stuff
-	public myVector[] boxNorms = new myVector[] {new myVector(1,0,0),new myVector(-1,0,0),new myVector(0,1,0),new myVector(0,-1,0),new myVector(0,0,1),new myVector(0,0,-1)};//normals to 3 d bounding boxes
-	protected final float hGDimX = gridDimX/2.0f, hGDimY = gridDimY/2.0f, hGDimZ = gridDimZ/2.0f;
-	protected final float tGDimX = gridDimX*10, tGDimY = gridDimY*10, tGDimZ = gridDimZ*20;
-	public final myPoint[][] boxWallPts = new myPoint[][] {//pts to check if intersection with 3D bounding box happens
-			new myPoint[] {new myPoint(hGDimX,tGDimY,tGDimZ), new myPoint(hGDimX,-tGDimY,tGDimZ), new myPoint(hGDimX,tGDimY,-tGDimZ)  },
-			new myPoint[] {new myPoint(-hGDimX,tGDimY,tGDimZ), new myPoint(-hGDimX,-tGDimY,tGDimZ), new myPoint(-hGDimX,tGDimY,-tGDimZ) },
-			new myPoint[] {new myPoint(tGDimX,hGDimY,tGDimZ), new myPoint(-tGDimX,hGDimY,tGDimZ), new myPoint(tGDimX,hGDimY,-tGDimZ) },
-			new myPoint[] {new myPoint(tGDimX,-hGDimY,tGDimZ),new myPoint(-tGDimX,-hGDimY,tGDimZ),new myPoint(tGDimX,-hGDimY,-tGDimZ) },
-			new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
-			new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }
-	};
-	
 	//whether or not to show start up instructions for code		
 	public boolean showInfo=false;			
 	
@@ -232,6 +232,11 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected void setDesired3DGridDims(int _gx, int _gy, int _gz) {
 		gridDimX = _gx;gridDimY = _gy;gridDimZ = _gz;				//dimensions of 3d region
 		gridHalfDim.set(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
+		
+		cubeBnds = new float[][]{//idx 0 is min, 1 is diffs
+			new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},//mins
+			new float[]{gridDimX,gridDimY,gridDimZ}};			//diffs
+		
 		//2D, 3D
 		sceneFcsValsBase = new myVector[]{						//set these values to be different targets of focus
 				new myVector(-grid2D_X/2,-grid2D_Y/1.75f,0),
@@ -242,6 +247,20 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			new myPoint(0,0,0),										// to be used to calculate mouse offset in world for pick
 			new myPoint(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
 		};
+		
+		hGDimX = gridDimX/2.0f;
+		hGDimY = gridDimY/2.0f;
+		hGDimZ = gridDimZ/2.0f;
+		tGDimX = gridDimX*10;
+		tGDimY = gridDimY*10;
+		tGDimZ = gridDimZ*20;
+		boxWallPts = new myPoint[][] {//pts to check if intersection with 3D bounding box happens
+				new myPoint[] {new myPoint(hGDimX,tGDimY,tGDimZ), new myPoint(hGDimX,-tGDimY,tGDimZ), new myPoint(hGDimX,tGDimY,-tGDimZ)  },
+				new myPoint[] {new myPoint(-hGDimX,tGDimY,tGDimZ), new myPoint(-hGDimX,-tGDimY,tGDimZ), new myPoint(-hGDimX,tGDimY,-tGDimZ) },
+				new myPoint[] {new myPoint(tGDimX,hGDimY,tGDimZ), new myPoint(-tGDimX,hGDimY,tGDimZ), new myPoint(tGDimX,hGDimY,-tGDimZ) },
+				new myPoint[] {new myPoint(tGDimX,-hGDimY,tGDimZ),new myPoint(-tGDimX,-hGDimY,tGDimZ),new myPoint(tGDimX,-hGDimY,-tGDimZ) },
+				new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
+				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
 	}
 	
 	/**
