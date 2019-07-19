@@ -3,6 +3,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.*;
 import base_Utils_Objects.vectorObjs.myEdge;
 import base_Utils_Objects.vectorObjs.myPoint;
@@ -187,17 +188,17 @@ public class my3DCanvas {
 	//hold depth when clicked
 	public myPoint MouseScr(float depth) {return pick(p.mouseX,p.mouseY,depth);} 	
 
-	private final void drawText(String str, float x, float y, float z){
+	private final void drawText(myDispWindow win, String str, float x, float y, float z){
 		p.pushMatrix();	p.pushStyle();
 			p.fill(mseFillClr[0],mseFillClr[1],mseFillClr[2],mseFillClr[3]);
-			p.unSetCamOrient_Glbl();
+			win.unSetCamOrient();
 			p.translate(x,y,z);
 			p.text(str,0,0,0);		
 		p.popStyle();	p.popMatrix();	
 	}//drawText	
 	
 
-	public void drawMseEdge(){//draw mouse sphere and edge normal to cam eye through mouse sphere 
+	public void drawMseEdge(myDispWindow win){//draw mouse sphere and edge normal to cam eye through mouse sphere 
 		p.pushMatrix();	p.pushStyle();
 			p.strokeWeight(1f);
 			p.setStroke(new int[] {255, 0,255}, 255);
@@ -211,7 +212,7 @@ public class my3DCanvas {
 			p.drawAxes(10000,1f, myPoint.ZEROPT, 100, true);//
 			//draw intercept with box
 			myPointf.ZEROPT.showMeSphere(p,3.0f);
-			drawText(""+dfCtr+ "|fr:"+p.frameRate,4.0f, 15.0f, 4.0f);
+			drawText(win, ""+dfCtr+ "|fr:"+p.frameRate,4.0f, 15.0f, 4.0f);
 			p.scale(1.5f,1.5f,1.5f);
 			//drawText(""+text_value_at_Cursor,4, -8, 4,0);getMseLoc(sceneCtrVals[sceneIDX])
 		p.popStyle();		p.popMatrix();		

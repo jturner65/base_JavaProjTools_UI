@@ -48,13 +48,6 @@ public abstract class myDispWindow {
 				isRunnable 			= 3,			//runs a simulation
 				closeable 			= 4,			//window is able to be closed
 				hasScrollBars 		= 5,			//this window has scroll bars (both vert and horizontal)
-//				canDrawTraj 		= 6,			//whether or not this window will accept a drawn trajectory
-//				drawingTraj 		= 7,			//whether a trajectory is being drawn in this window - all windows handle trajectory input, has different functions in each window
-//				editingTraj 		= 8,			//whether a trajectory is being edited in this window
-//				showTrajEditCrc 	= 9,			//set this when some editing mechanism has taken place - draw a circle of appropriate diameter at mouse and shrink it quickly, to act as visual cue
-//				smoothTraj 			= 10,			//trajectory has been clicked nearby, time to smooth
-//				trajDecays 			= 11,			//drawn trajectories eventually/immediately disappear
-//				trajPointsAreFlat 	= 12,			//trajectory drawn points are flat (for pick, to prevent weird casting collisions				
 				procMouseMove 		= 6,
 				mouseSnapMove		= 7,			//mouse locations for this window are discrete multiples - if so implement inherited function to calculate mouse snap location
 				uiObjMod			= 8,			//a ui object in this window has been modified
@@ -116,27 +109,7 @@ public abstract class myDispWindow {
 	 * object to manage any drawn trajectories
 	 */
 	protected myTrajManager trajMgr;
-	
-//	//drawn trajectory
-//	public myDrawnSmplTraj tmpDrawnTraj;						//currently drawn curve and all handling code - send to instanced owning screen
-//
-//	//all trajectories in this particular display window - String key is unique identifier for what component trajectory is connected to
-//	public TreeMap<Integer,TreeMap<String,ArrayList<myDrawnSmplTraj>>> drwnTrajMap;				
-//	
-//	//ara to hold uniquely-identifying strings for each trajectory-receiving component
-//	public String[] trajNameAra;		
-//	
-//	public int numSubScrInWin = 2;									//# of subscreens in a window.  will generally be 1, but with sequencer will have at least 2 (piano roll and score view)
-//	public int[] numTrajInSubScr;									//# of trajectories available for each sub screen
-//	public static final int 
-//				traj1IDX = 0,
-//				traj2IDX = 1;
-//	
-//	public int curDrnTrajScrIDX;									//currently used/shown drawn trajectory - 1st idx (which screen)
-//	public int curTrajAraIDX;										//currently used/shown drawn trajectory - 2nd idx (which staff trajectory applies to)
-//
-//	public int[][] drawTrajBoxFillClrs;
-	
+
 	///////////
 	//display and camera related variables - managed per window
 	//public static final float TWO_PI =(float) (Math.PI*2.0f), HALF_PI =(float) (Math.PI/2.0f);
@@ -934,19 +907,7 @@ public abstract class myDispWindow {
 			if(null!=trajMgr) {
 				mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn);
 			}
-//			if(getFlags(drawingTraj)){ 		//if drawing trajectory has started, then process it
-//				//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","drawing traj");
-//				myPoint pt =  getMsePoint(mouseX, mouseY);
-//				if(null==pt){return false;}
-//				this.tmpDrawnTraj.addPoint(pt);
-//				mod = true;
-//			}else if(getFlags(editingTraj)){		//if editing trajectory has started, then process it
-//				//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","edit traj");	
-//				myPoint pt =  getMsePoint(mouseX, mouseY);
-//				if(null==pt){return false;}
-//				mod = this.tmpDrawnTraj.editTraj(mouseX, mouseY,pmouseX, pmouseY,pt,mseDragInWorld);
-//			}
-			
+		
 			if(!mod) {
 				if((!pa.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle
 				//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","before handle indiv drag traj for window : " + this.name);
@@ -957,8 +918,10 @@ public abstract class myDispWindow {
 		return mod;
 	}//handleMouseDrag
 	
-	//set all window values for UI objects
-	private void setAllUIWinVals() {for(int i=0;i<guiObjs.length;++i){if(guiObjs[i].getFlags(myGUIObj.usedByWinsIDX)){setUIWinVals(i);}}}
+	/**
+	 * set all window values for UI objects
+	 */
+	protected void setAllUIWinVals() {for(int i=0;i<guiObjs.length;++i){if(guiObjs[i].getFlags(myGUIObj.usedByWinsIDX)){setUIWinVals(i);}}}
 	//set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	private void setUIObjValFromClickAlone(int j) {
 		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
@@ -1132,101 +1095,4 @@ public abstract class myDispWindow {
 	}
 }//dispWindow
 
-
-
-
-class myScrollBars{
-	public my_procApplet pa;
-	public myDispWindow win;
-	public static int scrBarCnt = 0;
-	public int ID;
-	//displacement for scrolling display - x/y location of window, x/y zoom - use scrollbars&zoomVals - displacement is translate, zoom is scale
-	public float[] scrollZoomDisp,
-	//start x,y, width, height of scroll bar region 
-	 	hScrlDims,	
-	//start x,y, width, height of scroll bar region 
-	 	vScrlDims;
-	private final float thk = 20, thmult = 1.5f;				//scrollbar dim is 25 pxls wide	
-	
-	public float[][] arrowDims = new float[][]{{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}};
-	//hthumb x,y width,height,vthumb x,y width,height
-	public float[][] thmbs = new float[][]{{0,0},{0,0}};
-	//hthumb min/max, vthumb min/max bounds
-	public float[][] thmbBnds = new float[][]{{0,0},{0,0}};
-	
-	public static final int
-		upIDX = 0,
-		dnIDX = 1,
-		ltIDX = 2,
-		rtIDX = 3,
-		hThmbIDX = 0,
-		vThmbIDX = 1;
-	
-	public int[][] clrs;			//colors for thumb and up/down/left/right arrows
-	
-	public myScrollBars(my_procApplet _pa,myDispWindow _win){
-		pa = _pa;
-		win = _win;
-		ID = scrBarCnt++;
-		setSize();
-		clrs = new int[][]{ pa.getRndClr(),pa.getRndClr(),pa.getRndClr(),pa.getRndClr(),pa.getRndClr(),pa.getRndClr()};
-	}//myScrollBars
-	
-	public void setSize(){
-		float rectWidth = win.rectDim[0]+win.rectDim[2],vScrlStartY = win.rectDim[1]+(win.closeBox[3]),
-				rectHeight = win.rectDim[3]-(vScrlStartY);
-		vScrlDims = new float[]{rectWidth - thk,vScrlStartY, thk,  rectHeight-thk};
-		hScrlDims = new float[]{win.rectDim[0], win.rectDim[1]+win.rectDim[3] - thk,win.rectDim[2]-thk,thk};
-
-		thmbs[hThmbIDX] = new float[]{hScrlDims[0]+thk,hScrlDims[1],thmult*thk,thk};			//location/dims of thumb
-		thmbBnds[hThmbIDX] = new float[]{thmbs[hThmbIDX][0],hScrlDims[2]-thmbs[hThmbIDX][2]-thk};		//min/max x val of horiz thumb
-		
-		thmbs[vThmbIDX] = new float[]{vScrlDims[0],(vScrlDims[1]+thk),thk,thmult*thk};			//location/dims of thumb
-		thmbBnds[vThmbIDX] = new float[]{thmbs[vThmbIDX][1],vScrlDims[3]-thmbs[vThmbIDX][3]-thk};		//min/max of y val of vert thumb
-		
-		//arrow boxes - x,y,widht,height
-		arrowDims = new float[][]{
-			{vScrlDims[0],vScrlDims[1],thk,thk},			//up
-			{vScrlDims[0],vScrlDims[1]+vScrlDims[3]-thk,thk,thk},		//down
-			{hScrlDims[0],					hScrlDims[1],thk,thk},			//left
-			{hScrlDims[0]+hScrlDims[2]-thk,hScrlDims[1],thk,thk}};		//right
-
-	}
-	public void drawMe(){
-		pa.pushMatrix(); pa.pushStyle();
-		pa.setColorValFill(pa.gui_LightGray,255);
-		pa.setColorValStroke(pa.gui_Black,255);
-		pa.strokeWeight(1.0f);
-		pa.drawRect(vScrlDims);
-		pa.drawRect(hScrlDims);
-		for(int i =0; i<arrowDims.length;++i){
-			pa.setFill(clrs[i],clrs[i][3]);
-			pa.drawRect(arrowDims[i]);
-		}
-		pa.popStyle();pa.popMatrix();
-		pa.pushMatrix(); pa.pushStyle();
-		for(int i =0; i<thmbs.length;++i){
-			pa.setFill(clrs[i + 4],clrs[i + 4][3]);
-			pa.drawRect(thmbs[i]);
-		}
-		
-		pa.popStyle();pa.popMatrix();
-	}//drawMe
-	
-	
-	public boolean msePtInRect(int x, int y, float[] r){return ((x > r[0])&&(x <= r[0]+r[2])&&(y > r[1])&&(y <= r[1]+r[3]));}		
-	public boolean handleMouseClick(int mouseX, int mouseY, myPoint mouseClickIn3D){
-		
-		return false;	
-	}//handleMouseClick
-	public boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld){	
-		
-		return false;
-	}//handleMouseDrag
-	public void handleMouseRelease(){
-		
-		
-	}//handleMouseRelease
-	
-}//myScrollBars
 

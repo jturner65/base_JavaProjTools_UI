@@ -529,7 +529,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 				draw3D_solve3D(modAmtMillis);
 				c.buildCanvas();
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}
-				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			c.drawMseEdge();	}		
+				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			c.drawMseEdge(dispWinFrames[curFocusWin]);	}		
 			} else {
 				draw3D_solve3D(modAmtMillis);
 				c.buildCanvas();
@@ -538,7 +538,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		} else {	//either/or 2d window
 			//2d windows paint window box so background is always cleared
 			c.buildCanvas();
-			c.drawMseEdge();
+			c.drawMseEdge(dispWinFrames[curFocusWin]);
 			popStyle();popMatrix(); 
 			for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getFlags(myDispWindow.is3DWin))){dispWinFrames[i].draw2D(modAmtMillis);}}
 		}
