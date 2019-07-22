@@ -16,30 +16,59 @@ public class FileIOManager{
 	protected String owner;
 	
 	public FileIOManager(MessageObject _msg, String _owner) {owner=_owner; msg=_msg;}	
-	//write data to file
-	public void saveStrings(String fname, String[] data) { saveStrings( fname, data, false);}
-	public void saveStrings(String fname, String[] data, boolean append) {
+	/**
+	 * write data to file
+	 * @param fname file name
+	 * @param data array of data
+	 * @return success
+	 */
+	public boolean saveStrings(String fname, String[] data) { return saveStrings( fname, data, false);}
+	/**
+	 * write data to file
+	 * @param fname file name
+	 * @param data array of data
+	 * @param append if should be appended to existing file
+	 * @return success 
+	 */
+	public boolean saveStrings(String fname, String[] data, boolean append) {
+		boolean success = false;
 		PrintWriter pw = null;
 		try {
 		     File file = new File(fname);
 		     FileWriter fw = new FileWriter(file, append);
 		     pw = new PrintWriter(fw);
 		     for (int i=0;i<data.length;++i) { pw.println(data[i]);}
-		     
-		} catch (IOException e) {	e.printStackTrace();}
+		     success = true;
+		} catch (IOException e) {	e.printStackTrace(); success = false;}
 		finally {			if (pw != null) {pw.close();}}
+		return success;
 	}//saveStrings
-	public void saveStrings(String fname, ArrayList<String> data) { saveStrings( fname, data, false);}
-	public void saveStrings(String fname, ArrayList<String> data, boolean append) {
+	/**
+	 * write data to file
+	 * @param fname file name
+	 * @param data arraylist of data
+	 * @return success
+	 */
+	public boolean saveStrings(String fname, ArrayList<String> data) { return saveStrings( fname, data, false);}
+	/**
+	 * write data to file
+	 * @param fname file name
+	 * @param data arraylist of data
+	 * @param append if should be appended to existing file
+	 * @return success 
+	 */
+	public boolean saveStrings(String fname, ArrayList<String> data, boolean append) {
+		boolean success = false;
 		PrintWriter pw = null;
 		try {
 		     File file = new File(fname);
 		     FileWriter fw = new FileWriter(file, append);
 		     pw = new PrintWriter(fw);
 		     for (int i=0;i<data.size();++i) { pw.println(data.get(i));}
-		     
-		} catch (IOException e) {	e.printStackTrace();}
+		     success = true;
+		} catch (IOException e) {	e.printStackTrace();success = false;}
 		finally {			if (pw != null) {pw.close();}}
+		return success;
 	}//saveStrings
 	
 	
