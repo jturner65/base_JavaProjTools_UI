@@ -178,14 +178,14 @@ public class MyMathUtils {
      * @param k bottom - size of choice
      * @return
      */
-    public static int choose(int n, int k) {		//entry point
+    public static long choose(long n, long k) {		//entry point
     	if(k>n) {return 0;} if (k==n) {return 1;}
     	if(n-k < k) {		return  _choose(n,n-k);   	}
     	return _choose(n,k);
     }
-    private static int _choose(int n, int k) {		//multiplicative formulation
-    	int res = 1;
-    	for(int i=1;i<k;++i) {    		res *= (n+1-i)/i;    	}
+    private static long _choose(long n, long k) {		//multiplicative formulation
+    	long res = 1;
+    	for(int i=1;i<=k;++i) {    		res *= (n+1-i);res /=i;    	}
     	return res;
     }
 

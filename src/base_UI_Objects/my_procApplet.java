@@ -487,6 +487,8 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	}//finalDispWinInit
 	
 	
+	public myDispWindow getCurrentWindow() {return dispWinFrames[curFocusWin];}
+
 	///////////////////////////////////////////
 	// draw routines
 	
