@@ -3,7 +3,6 @@ package base_UI_Objects.drawnObjs;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myCntlPt;
@@ -678,7 +677,7 @@ class myVariStroke extends myDrawnObject {
 //			//pa.outStr2Scr("NaN pts size at start of scalePointsAboveAxis",true);
 //			numPoints--;										//toss last NaN Point
 //		}
-		myPoint[] newPts = new myPoint[numPoints];
+		//myPoint[] newPts = new myPoint[numPoints];
 		double dist;
 		//pa.outStr2Scr("cntlPts size at scalePointsAboveAxis : " + pts.length,true);
 		for(int i =0; i<numPoints; ++i){
@@ -802,9 +801,9 @@ class myVariStroke extends myDrawnObject {
 			pa.setStroke(strkClr,255);
 			pa.setStrokeWt(1.0f);
         	if(useDrawnVels){
-        		int clrInt = 0;
+        		//int clrInt = 0;
     			for(int i = 0; i < interpCntlPts.length; ++i){
-    	        	clrInt = (int)(i/(1.0f * interpCntlPts.length) * 255.0f);
+    	        	//clrInt = (int)(i/(1.0f * interpCntlPts.length) * 255.0f);
     	            //pa.fill(clrInt,255,(255 - clrInt),255);  
     	            //pa.stroke(clrInt,255,(255 - clrInt),255); 
     				pa.show(interpCntlPts[i],trajPtRad,-1,-1, flat);

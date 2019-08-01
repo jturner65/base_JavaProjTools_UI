@@ -27,12 +27,12 @@ public class my3DCanvas {
 	private myPoint[] canvas3D;											//3d plane, normal to camera eye, to be used for drawing - need to be in "view space" not in "world space", so that if camera moves they don't change
 	private myVector eyeToMse,											//eye to 2d mouse location 
 					eyeToCtr,													//vector from eye to center of cube, to be used to determine which panels of bounding box to show or hide
-					eyeTodfCtr,
+					//eyeTodfCtr,
 					drawSNorm;													//current normal of viewport/screen
 		
 	private int viewDimW2, viewDimH2;
 	private final int viewDimW, viewDimH;
-	private float curDepth;
+	//private float curDepth;
 	
 	private int[] mseFillClr;
 	
@@ -41,7 +41,7 @@ public class my3DCanvas {
 	public my3DCanvas(my_procApplet _p) {
 		p = _p;
 		viewDimW = p.width; viewDimH = p.height;
-		curDepth = -1;		
+		//curDepth = -1;		
 		mseFillClr = new int[] {0,0,0,255};
 		initCanvas();
 	}
@@ -60,7 +60,7 @@ public class my3DCanvas {
 		camEdge = new myEdge(p);	
 		eyeToMse = new myVector();		
 		eyeToCtr = new myVector();	
-		eyeTodfCtr = new myVector();
+		//eyeTodfCtr = new myVector();
 		drawSNorm = new myVector();	
 		buildCanvas();
 	}

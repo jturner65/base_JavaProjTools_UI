@@ -52,7 +52,7 @@ public class myDrawnSmplTraj {
 		initTrajStuff();		
 		trajFlags[flatPtIDX] = _flat;
 		trajFlags[smCntlPtsIDX] = _smCntl;
-		trajFlags[ownrWinIs3dIDX] = win.getFlags(_win.is3DWin);
+		trajFlags[ownrWinIs3dIDX] = win.getFlags(myDispWindow.is3DWin);
 		ctlRad = (trajFlags[smCntlPtsIDX] ? myDrawnObject.trajPtRad : 5 );
 	}
 	protected void initTrajFlags(){trajFlags = new boolean[numTrajFlags];for(int i=0;i<numTrajFlags;++i){trajFlags[i]=false;}}
@@ -94,7 +94,7 @@ public class myDrawnSmplTraj {
 		drawnTraj.startDrawing();
 	}
 	public boolean startEditEndPoint(int idx){
-		editEndPt = idx; trajMgr.setFlags(trajMgr.editingTraj, true);
+		editEndPt = idx; trajMgr.setFlags(myTrajManager.editingTraj, true);
 		//pa.outStr2Scr("Handle TrajClick 2 startEditEndPoint : " + name + " | Move endpoint : "+editEndPt);
 		return true;
 	}
@@ -113,20 +113,21 @@ public class myDrawnSmplTraj {
 			//pa.outStr2Scr("Handle TrajClick 2 startEditObj : " + name);
 			if(distToPts[0] < chkDist){//close enough to mod
 				trajMgr.setEditCueCircle(0,mse);
-				trajMgr.setFlags(trajMgr.editingTraj, true);
+				trajMgr.setFlags(myTrajManager.editingTraj, true);
 				doEdit = true;
 				//pa.outStr2Scr("Handle TrajClick 3 startEditObj modPt : " + name + " : pIdx : "+ pIdx);
 				drawnTrajPickedIdx = pIdx;	
 				editEndPt = -1;
 			} else if (distToPts[0] < sqMsClkRad){//not close enough to mod but close to curve
 				trajMgr.setEditCueCircle(1,mse);
-				trajMgr.setFlags(trajMgr.smoothTraj, true);
+				trajMgr.setFlags(myTrajManager.smoothTraj, true);
 			}
 		}
 		return doEdit;
 	}//startEditObj//rectDim trajFlags[ownrWinIs3dIDX]
 	
 	//returns true if within eps of any of the points of this trajector
+	@SuppressWarnings("unused")
 	public boolean clickedMe(myPoint mse){
 		float chkDist = trajFlags[ownrWinIs3dIDX] ? msClkPt3DRad : msClkPtRad;	
 		double[] distToPts = new double[1];			//using array as pointer, passing by reference
@@ -164,7 +165,7 @@ public class myDrawnSmplTraj {
 	//edit the trajectory used for UI input in this window
 	public boolean editTraj(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld){
 		boolean mod = false;
-		if((drawnTrajPickedIdx == -1) && (editEndPt == -1) && (!trajMgr.getFlags(trajMgr.smoothTraj))){return mod;}			//neither endpoints nor drawn points have been edited, and we're not smoothing
+		if((drawnTrajPickedIdx == -1) && (editEndPt == -1) && (!trajMgr.getFlags(myTrajManager.smoothTraj))){return mod;}			//neither endpoints nor drawn points have been edited, and we're not smoothing
 		myVector diff = trajFlags[ownrWinIs3dIDX] ? mseDragInWorld : new myVector(mouseX-pmouseX, mouseY-pmouseY,0);		
 		//pa.outStr2Scr("Diff in editTraj for  " + name + "  : " +diff.toStrBrf());
 		//needs to be before templateZoneY check
@@ -181,7 +182,7 @@ public class myDrawnSmplTraj {
 	
 	public void endEditObj(){
 		if((drawnTrajPickedIdx != -1) || (editEndPt != -1)
-			|| ( trajMgr.getFlags(trajMgr.smoothTraj))){//editing curve
+			|| ( trajMgr.getFlags(myTrajManager.smoothTraj))){//editing curve
 			drawnTraj.remakeDrawnTraj(false);
 			rebuildDrawnTraj();		
 		}
@@ -193,8 +194,8 @@ public class myDrawnSmplTraj {
 		trajMgr.processTrajectory(this);//dispFlags[trajDirty, true);
 		drawnTrajPickedIdx = -1;
 		editEndPt = -1;
-		trajMgr.setFlags(trajMgr.editingTraj, false);
-		trajMgr.setFlags(trajMgr.smoothTraj, false);
+		trajMgr.setFlags(myTrajManager.editingTraj, false);
+		trajMgr.setFlags(myTrajManager.smoothTraj, false);
 	}
 	
 	public void endDrawObj(myPoint endPoint){
@@ -212,7 +213,7 @@ public class myDrawnSmplTraj {
 		} else {
 			drawnTraj = new myVariStroke(pa, new myVector(pa.c.getDrawSNorm()),fillClrCnst, strkClrCnst);
 		}
-		trajMgr.setFlags(trajMgr.drawingTraj, false);
+		trajMgr.setFlags(myTrajManager.drawingTraj, false);
 	}//endDrawObj
 	
 	public void addPoint(myPoint mse){
@@ -235,6 +236,7 @@ public class myDrawnSmplTraj {
 			((myVariStroke)drawnTraj).drawMe(false,trajFlags[flatPtIDX]);
 		} 
 	}
+	@SuppressWarnings("unused")
 	public void rebuildDrawnTraj(){
 		//Once edge is drawn
 		calcPerpPoints();

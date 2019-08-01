@@ -89,7 +89,7 @@ public class myTrajManager {
 	 * @return
 	 */
 	protected myDrawnSmplTraj buildTraj(boolean _trajIsFlat) {
-		return new myDrawnSmplTraj(pa,ownr, this, ownr.topOffY,trajFillClrCnst, trajStrkClrCnst, _trajIsFlat, !_trajIsFlat);		
+		return new myDrawnSmplTraj(pa,ownr, this, myDispWindow.topOffY,trajFillClrCnst, trajStrkClrCnst, _trajIsFlat, !_trajIsFlat);		
 	}
 	
 	/////////////////////
@@ -323,6 +323,7 @@ public class myTrajManager {
 	 * @param modScrKey
 	 * @param modVal
 	 */
+	@SuppressWarnings("unused")
 	protected void rbldTrnsprtAras(int modScrKey, int modVal){
 		if(modVal == -1){return;}//denotes no mod taken place
 		int tmpNumSubScrInWin = drwnTrajMap.size();
@@ -353,7 +354,7 @@ public class myTrajManager {
 
 	public void clearAllTrajectories(){//int instrIdx){
 		TreeMap<String,ArrayList<myDrawnSmplTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
-		ArrayList<myDrawnSmplTraj> tmpAra;
+		//ArrayList<myDrawnSmplTraj> tmpAra;
 		if(curTrajAraIDX != -1){		//make sure some trajectory/staff has been selected
 			if((tmpTreeMap != null) && (tmpTreeMap.size() != 0) ) {
 				tmpTreeMap.put(getTrajAraKeyStr(curTrajAraIDX), new ArrayList<myDrawnSmplTraj>());

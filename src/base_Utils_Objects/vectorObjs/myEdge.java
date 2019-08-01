@@ -1,7 +1,6 @@
 package base_Utils_Objects.vectorObjs;
 
 import base_UI_Objects.my_procApplet;
-import base_Utils_Objects.*;
 
 public class myEdge {
 	public my_procApplet p;

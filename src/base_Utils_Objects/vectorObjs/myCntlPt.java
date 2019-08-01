@@ -1,6 +1,5 @@
 package base_Utils_Objects.vectorObjs;
 
-import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 
 public class myCntlPt extends myPoint {

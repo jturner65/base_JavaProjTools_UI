@@ -305,6 +305,17 @@ public class myPointf {
 	public float[] asHAraVec(){return new float[]{this.x, this.y, this.z,0};}
 	
 	/**
+	 * return the values of this point as a homogenous point array
+	 * @return array of floats {x,y,z, 1}
+	 */
+	public double[] asHAraPt_Dbl(){return new double[]{this.x, this.y, this.z,1};}
+	/**
+	 * return the values of this point as a homogenous vector array
+	 * @return array of doubles {x,y,z, 0}
+	 */
+	public double[] asHAraVec_Dbl(){return new double[]{this.x, this.y, this.z,0};}
+	
+	/**
 	 * render this point as a black sphere in 3d
 	 * @param pa : render interface capable of drawing this point
 	 * @param r : radius of resultant sphere

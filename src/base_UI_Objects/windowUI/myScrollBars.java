@@ -1,5 +1,6 @@
 package base_UI_Objects.windowUI;
 
+import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myVector;
@@ -63,8 +64,8 @@ public class myScrollBars{
 	}
 	public void drawMe(){
 		pa.pushMatrix(); pa.pushStyle();
-		pa.setColorValFill(pa.gui_LightGray,255);
-		pa.setColorValStroke(pa.gui_Black,255);
+		pa.setColorValFill(IRenderInterface.gui_LightGray,255);
+		pa.setColorValStroke(IRenderInterface.gui_Black,255);
 		pa.strokeWeight(1.0f);
 		pa.drawRect(vScrlDims);
 		pa.drawRect(hScrlDims);

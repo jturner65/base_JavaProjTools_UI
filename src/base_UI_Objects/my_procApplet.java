@@ -138,7 +138,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public float msSclX, msSclY;											//scaling factors for mouse movement		
 	public my3DCanvas c;												//3d interaction stuff and mouse tracking
 	
-	private float dz=0, rx=-0.06f*TWO_PI, ry=-0.04f*TWO_PI;		// distance to camera. Manipulated with wheel or when,view angles manipulated when space pressed but not mouse	
+	protected float dz=0, rx=-0.06f*TWO_PI, ry=-0.04f*TWO_PI;		// distance to camera. Manipulated with wheel or when,view angles manipulated when space pressed but not mouse	
 	public final float camInitialDist = -200,		//initial distance camera is from scene - needs to be negative
 			camInitRy = ry,
 			camInitRx = rx;

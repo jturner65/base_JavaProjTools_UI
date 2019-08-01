@@ -5,7 +5,6 @@ import java.util.*;
 
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
-import base_Utils_Objects.*;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myVector;
 
@@ -163,6 +162,7 @@ public abstract class BaseBarMenu extends myDispWindow{
 	}
 
 	//initialize structure to hold modifiable menu regions
+	@SuppressWarnings("unused")
 	@Override
 	protected final void setupGUIObjsAras(){						//called from super.initThisWin
 		//set up side bar menu buttons with format specific to instancing application
@@ -179,7 +179,7 @@ public abstract class BaseBarMenu extends myDispWindow{
 		initUIClickCoords(rectDim[0] + xLblOffsetMult * rectDim[2],minBtnClkY + (guiBtnRowNames.length * 2.0f) * yOff,rectDim[0] + .99f * rectDim[2],0);//last val over-written by actual value in buildGuiObjs
 		guiObjs = new myGUIObj[numGUIObjs];			//list of modifiable gui objects
 		TreeMap<Integer, String[]> listObjs = new TreeMap<Integer, String[]>();
-		if(0!=numGUIObjs){			buildGUIObjs(guiObjNames,guiStVals,guiMinMaxModVals,guiBoolVals, new double[]{xOff,yOff}, listObjs);		} 
+		if(0!=guiObjs.length){			buildGUIObjs(guiObjNames,guiStVals,guiMinMaxModVals,guiBoolVals, new double[]{xOff,yOff}, listObjs);		} 
 		else {			uiClkCoords[3] = uiClkCoords[1];	}	//set y start values
 	}//setupGUIObjsAras
 	

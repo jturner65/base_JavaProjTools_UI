@@ -110,6 +110,7 @@ public class FileIOManager{
 	private String[][] _loadFileIntoStringAra_MT(String fileName, String dispYesStr, String dispNoStr, int numHdrLines, int numThds) throws IOException {		
 		FileInputStream inputStream = null;
 		Scanner sc = null;
+		@SuppressWarnings("unchecked")
 		List<String>[] lines = new ArrayList[numThds];
 		for (int i=0;i<numThds;++i) {lines[i]=new ArrayList<String>();	}
 		String[][] res = new String[numThds+1][];

@@ -1,9 +1,7 @@
 package base_Utils_Objects;
 
 import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
-import base_Utils_Objects.vectorObjs.myVectorf;
 
 /**
  * mathematical functions and constants that might be of use in some applications

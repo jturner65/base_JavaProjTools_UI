@@ -431,7 +431,7 @@ public abstract class myDispWindow {
 		sb.append(" |value: ");
 		sb.append(guiObjs[idx].getVal());
 		sb.append(" |flags: ");
-		for(int i =0;i<guiObjs[idx].numFlags; ++i){
+		for(int i =0;i<myGUIObj.numFlags; ++i){
 			sb.append(" ");
 			sb.append((guiObjs[idx].getFlags(i) ? "true" : "false"));
 		}
@@ -448,7 +448,7 @@ public abstract class myDispWindow {
 		//String name = toks[3];
 		double uiVal = Double.parseDouble(toks[2].split("\\s")[1].trim());	
 		guiObjs[uiIdx].setVal(uiVal);
-		for(int i =0;i<guiObjs[uiIdx].numFlags; ++i){
+		for(int i =0;i<myGUIObj.numFlags; ++i){
 			guiObjs[uiIdx].setFlags(i, Boolean.parseBoolean(toks[3].split("\\s")[i].trim()));
 		}	
 		setUIWinVals(uiIdx);//update window's values with UI construct's values
@@ -572,7 +572,7 @@ public abstract class myDispWindow {
 			pa.setFill(clrAra, 255); 
 			pa.setStroke(clrAra, 255);
 		} else {
-			pa.setColorValFill(pa.gui_DarkGray,255); 
+			pa.setColorValFill(IRenderInterface.gui_DarkGray,255); 
 			pa.noStroke();	
 		}
 		pa.sphere(5);
@@ -605,7 +605,7 @@ public abstract class myDispWindow {
 	//draw all boolean-based buttons for this window
 	public void drawClickableBooleans() {	
 		pa.pushMatrix();pa.pushStyle();	
-		pa.setColorValFill(pa.gui_Black,255);
+		pa.setColorValFill(IRenderInterface.gui_Black,255);
 		if(getFlags(useRndBtnClrs)){
 			for(int i =0; i<privModFlgIdxs.length; ++i){//prlFlagRects dispBttnAtLoc(String txt, float[] loc, int[] clrAra)
 				if(getPrivFlags(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagNames[i],privFlagBtns[i],privFlagColors[i]);			}
