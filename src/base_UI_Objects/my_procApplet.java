@@ -899,17 +899,26 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	//get the ui rect values of the "master" ui region (another window) -> this is so ui objects of one window can be made, clicked, and shown displaced from those of the parent windwo
 	public abstract float[] getUIRectVals(int idx);
 	
+	/**
+	 * return a list of names to apply to mse-over display select buttons - an empty or null list will not display option
+	 * @return
+	 */
+	public abstract String[] getMouseOverSelBtnNames();
 	//clear menu side bar buttons when window-specific processing is finished
 	//isSlowProc means original calling process lasted longer than mouse click release and so button state should be forced to be off
 	public final void clearBtnState(int _type, int col, boolean isSlowProc) {
 		int row = _type;
 		BaseBarMenu win = (BaseBarMenu)dispWinFrames[dispMenuIDX];
-		win.guiBtnWaitForProc[row][col] = false;
-		if(isSlowProc) {win.guiBtnSt[row][col] = 0;}		
+		win.getGuiBtnWaitForProc()[row][col] = false;
+		if(isSlowProc) {win.getGuiBtnSt()[row][col] = 0;}		
 	}//clearBtnState 
 	
+	/**
+	 * only send names of function and debug btns (if they exist) in 2d array
+	 * @param btnNames
+	 */
 	public final void setAllMenuBtnNames(String[][] btnNames) {
-		for(int _type = 0;_type<btnNames.length;++_type) {((BaseBarMenu)dispWinFrames[dispMenuIDX]).setAllBtnNames(_type,btnNames[_type]);}
+		for(int _type = 0;_type<btnNames.length;++_type) {((BaseBarMenu)dispWinFrames[dispMenuIDX]).setAllFuncBtnNames(_type,btnNames[_type]);}
 	}
 	
 	//these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
@@ -931,17 +940,35 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	//isSlowProc means function this was waiting on is a slow process and escaped the click release in the window (i.e. if isSlowProc then we must force button to be off)
 	//public final void clearFuncBtnSt(int btn, boolean isSlowProc) {clearBtnState(mySideBarMenu.btnAuxFuncIdx,btn, isSlowProc);}
 
-	public final void handleMenuBtnSelCmp(int _type, int btn, int val){handleMenuBtnSelCmp(_type, btn, val, true);}					//display specific windows - multi-select/ always on if sel
-	public final void handleMenuBtnSelCmp(int _type, int btn, int val, boolean callFlags){
-		if(!callFlags){			setMenuBtnState(_type,btn, val);		} 
-		else {					dispWinFrames[curFocusWin].clickSideMenuBtn(_type, btn);		}
+	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val){handleMenuBtnSelCmp(row, funcOffset, col, val, true);}					//display specific windows - multi-select/ always on if sel
+	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val, boolean callFlags){
+		if(!callFlags){			setMenuBtnState(row,col, val);		} 
+		else {					dispWinFrames[curFocusWin].clickSideMenuBtn(row, funcOffset, col);		}
 	}//handleAddDelSelCmp	
+	
+	/**
+	 * pass on to current display window the choice for mouse over display data
+	 * @param btn
+	 * @param val
+	 */
+	public final void handleMenuBtnMseOvDispSel(int btn,boolean val) {
+		dispWinFrames[curFocusWin].handleSideMenuMseOvrDispSel(btn, val);
+	}
+	
+	/**
+	 * pass on to current display window the choice for debug selection 
+	 * @param btn
+	 * @param val
+	 */
+	public final void handleMenuBtnDebugSel(int btn,int val) {
+		dispWinFrames[curFocusWin].handleSideMenuDebugSel(btn, val);
+	}
 	
 	
 	protected void setMenuBtnState(int row, int col, int val) {
-		((BaseBarMenu)dispWinFrames[dispMenuIDX]).guiBtnSt[row][col] = val;	
+		((BaseBarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
 		if (val == 1) {
-			outStr2Scr("turning on button row : " + row + "  col " + col);
+			outStr2Scr("Note!!! Turning on button at row : " + row + "  col " + col + " without processing button's command.");
 			((BaseBarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
 	}//setMenuBtnState	
 	

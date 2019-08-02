@@ -134,7 +134,8 @@ public abstract class myDispWindow {
 	//these are set when the sidebar menu is clicked and these processes are requested, and they are set to -1 when these processes are launched.  this is so the buttons can be turned on before the process starts
 	//this is sub-optimal solution - needs an index per sidebar button on each row; using more than necessary, otherwise will crash if btn idx >= curCustBtn.length
 	protected int[] curCustBtn = new int[] {-1,-1,-1,-1,-1,-1,-1,-1};
-	protected int curCustBtnType = -1;//type/row of current button selected
+	protected int curCstBtnRow = -1;//type/row of current button selected
+	protected int curCstFuncBtnOffset = 0;	//offset to where buttons begin, if using windows and/or mse control
 	//this is set to true when curCustXXX vals are set to != -1; this is used as a 1-frame buffer to allow the UI to turn on the source buttons of these functions
 	private boolean custClickSetThisFrame = false, custFuncDoLaunch = false;
 	
@@ -1008,28 +1009,43 @@ public abstract class myDispWindow {
 	//updates values in UI with programatic changes 
 	public boolean setWinToUIVals(int UIidx, double val){return val == guiObjs[UIidx].setVal(val);}	
 	//UI controlled auxiliary/debug functionality	
-	public final void clickSideMenuBtn(int _typeIDX, int btnNum) {	curCustBtnType = _typeIDX; curCustBtn[_typeIDX] = btnNum; custClickSetThisFrame = true;}
+	public final void clickSideMenuBtn(int _row, int _funcOffset, int btnNum) {	curCstBtnRow = _row; curCstFuncBtnOffset = _funcOffset; curCustBtn[_row] = btnNum; custClickSetThisFrame = true;}
 	
 	//check if either custom function or debugging has been launched and process if so, skip otherwise.latched by a frame so that button can be turned on
 	public final void checkCustMenuUIObjs() {
 		if (custClickSetThisFrame) { custClickSetThisFrame = false;custFuncDoLaunch=true;return;}	//was set last frame and processed, so clear all flags
 		if (!custFuncDoLaunch) {return;}//has been launched don't relaunch
-		launchMenuBtnHndlr();
+		
+		launchMenuBtnHndlr(curCstBtnRow-curCstFuncBtnOffset,curCustBtn[curCstBtnRow]);
 		custFuncDoLaunch=false;
 	}//checkCustMenuUIObjs
-
-	//type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
-	protected abstract void launchMenuBtnHndlr() ;
 	
 	//call from custFunc/custDbg functions being launched in threads
 	//these are launched in threads to allow UI to respond to user input
 	public void resetButtonState() {resetButtonState(true);}
 	public void resetButtonState(boolean isSlowProc) {
-		if (curCustBtnType == -1) {return;}
-		if (curCustBtn[curCustBtnType] == -1) {return;}
-		pa.clearBtnState(curCustBtnType,curCustBtn[curCustBtnType], isSlowProc);
-		curCustBtn[curCustBtnType] = -1;
-	}//resetButtonState
+		if (curCstBtnRow == -1) {return;}
+		if (curCustBtn[curCstBtnRow] == -1) {return;}
+		pa.clearBtnState(curCstBtnRow,curCustBtn[curCstBtnRow], isSlowProc);
+		curCustBtn[curCstBtnRow] = -1;
+	}//resetButtonState	
+	/**
+	 * set desired mouse over text to display from user choice on side bar menu
+	 * @param btn
+	 * @param val
+	 */
+	public abstract void handleSideMenuMseOvrDispSel(int btn,boolean val);	
+	/**
+	 * handle desired debug functionality based on buttons selected from side bar menu
+	 * @param btn
+	 * @param val
+	 */
+	public abstract void handleSideMenuDebugSel(int btn,int val);	
+
+	//type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
+	protected abstract void launchMenuBtnHndlr(int funcRow, int btn) ;
+	
+
 	
 	//return relevant name information for files and directories to be used to build screenshots/saved files	
 	protected abstract String[] getSaveFileDirNamesPriv();
