@@ -1005,6 +1005,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		//if(!flags[this.runSim]) {return;}//don't save until actually running simulation
 		//idx 0 is directory, idx 1 is file name prefix
 		String[] ssName = dispWinFrames[curFocusWin].getSaveFileDirName();
+		if(ssName.length != 2) {setBaseFlag(saveAnim, false);return;}
 		//save(screenShotPath + prjNmShrt + ((animCounter < 10) ? "0000" : ((animCounter < 100) ? "000" : ((animCounter < 1000) ? "00" : ((animCounter < 10000) ? "0" : "")))) + animCounter + ".jpg");		
 		String saveDirAndSubDir = ssName[0] + //"run_"+String.format("%02d", runCounter)  + 
 				ssName[1] + File.separatorChar;		

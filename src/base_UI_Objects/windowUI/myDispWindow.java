@@ -467,6 +467,7 @@ public abstract class myDispWindow {
 	
 	public String[] getSaveFileDirName() {
 		String[] vals = getSaveFileDirNamesPriv();
+		if(vals.length != 2) {return new String[0];}
 		String[] res = new String[] {
 			ssPathBase + vals[0] + File.separatorChar, vals[1]	
 		};
