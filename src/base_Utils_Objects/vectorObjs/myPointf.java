@@ -173,7 +173,7 @@ public class myPointf {
 	 * @param K : displacement vector
 	 * @return : O + aI + bJ + cK
 	 */
-	public static myPointf _add(myPointf O, float a, myVectorf I, float b, myVectorf J, float c, myVectorf K) {	return new myPointf(O.x+a*I.x+b*J.x+c*K.x,O.y+b*I.y+b*J.y+c*K.y,O.z+b*I.z+b*J.z+c*K.z);} // O+xI+yJ+kZ
+	public static myPointf _add(myPointf O, float a, myVectorf I, float b, myVectorf J, float c, myVectorf K) {	return new myPointf(O.x+a*I.x+b*J.x+c*K.x,O.y+a*I.y+b*J.y+c*K.y,O.z+a*I.z+b*J.z+c*K.z);} // O+xI+yJ+kZ
 	/**
 	 * Static Method : add two points and return result
 	 * @param p,q : points to add
