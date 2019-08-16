@@ -1,5 +1,9 @@
 package base_Utils_Objects;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
+
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myVector;
 
@@ -19,7 +23,9 @@ public class MyMathUtils {
 		invSqrt2 = .5 * sqrt2,
 		sqrt3 = Math.sqrt(3.0),
 		invSqrt3 = 1.0/sqrt3,
-		eps = 1e-8;
+		eps = 1e-8,
+		log2 = Math.log(2.0),
+		log10 = Math.log(10.0);
 
 	public static final float 
 		Pi_f = (float)Pi,
@@ -31,7 +37,16 @@ public class MyMathUtils {
 		invSqrt2_f = (float) invSqrt2,
 		sqrt3_f = (float) sqrt3,
 		invSqrt3_f = (float) invSqrt3,
-		eps_f = (float) eps;
+		eps_f = (float) eps,
+		log2_f = (float)log2,
+		log10_f = (float)log10;
+	
+
+    // numbers greater than 10^MAX_DIGITS_10 or e^MAX_DIGITS_EXP are considered unsafe ('too big') for floating point operations
+    protected static final int MAX_DIGITS_EXP = 677;
+    protected static final int MAX_DIGITS_10 = 294; // ~ MAX_DIGITS_EXP/LN(10)
+    protected static final int MAX_DIGITS_2 = 977; // ~ MAX_DIGITS_EXP/LN(2)
+	
 
 	//shouldn't be instanced
 	private MyMathUtils() {	}
@@ -187,6 +202,108 @@ public class MyMathUtils {
     	return res;
     }
 
+    /**
+     * n choose k == n!/(k! * (n-k)!) - ways to choose k items from a set of size n
+     * @param n top - size of pop
+     * @param k bottom - size of choice
+     * @return
+     */
+    public static BigInteger choose_BigInt(long n, long k) {		//entry point
+    	if(k>n) {return BigInteger.ZERO;} if (k==n) {return BigInteger.ONE;}
+    	if(n-k < k) {		return  _choose_BigInt(n,n-k);   	}
+    	return _choose_BigInt(n,k);
+    }
+    private static BigInteger _choose_BigInt(long n, long k) {		//multiplicative formulation
+    	BigInteger res = BigInteger.ONE;
+    	for(int i=1;i<=k;++i) {    
+    		res = res.multiply(BigInteger.valueOf(n+1-i));
+    		//res *= (n+1-i);
+    		//res /=i;    	
+    		res = res.divide(BigInteger.valueOf(i));
+    	}
+    	return res;
+    }
+
+    /**
+     * Computes the natural logarithm of a BigInteger. 
+     * Works for really big integers (practically unlimited), even when the argument 
+     * falls outside the double range
+     * Returns Nan if argument is negative, NEGATIVE_INFINITY if zero.
+     * @param val Argument
+     * @return Natural logarithm, as in Math.log()
+     */
+    public static double logBigInteger(BigInteger val) {
+        if (val.signum() < 1) { return val.signum() < 0 ? Double.NaN : Double.NEGATIVE_INFINITY;}
+        int blex = val.bitLength() - MAX_DIGITS_2; // any value in 60..1023 works ok here
+        if (blex > 0) {
+            val = val.shiftRight(blex);
+            double res = Math.log(val.doubleValue());
+            return res + blex * log2;
+        } else {        	return Math.log(val.doubleValue());        }
+    }
+
+    /**
+     * Computes the natural logarithm of a BigDecimal. 
+     * Works for really big (or really small) arguments, even outside the double range.
+     * Returns Nan if argument is negative, NEGATIVE_INFINITY if zero.
+    *
+     * @param val Argument
+     * @return Natural logarithm, as in <tt>Math.log()</tt>
+     */
+    public static double logBigDecimal(BigDecimal val) {
+        if (val.signum() < 1) { return val.signum() < 0 ? Double.NaN : Double.NEGATIVE_INFINITY;}
+        int digits = val.precision() - val.scale(); 
+        if (digits < MAX_DIGITS_10 && digits > -MAX_DIGITS_10) {return Math.log(val.doubleValue());}
+        else {            return logBigInteger(val.unscaledValue()) - val.scale() * log10;}
+    }
+
+    /**
+     * Computes the exponential function, returning a BigDecimal (precision ~ 16).       
+     * Works for very big and very small exponents, even when the result 
+     * falls outside the double range
+     *
+     * @param exponent Any finite value (infinite or Nan throws IllegalArgumentException)
+     * @return The value of e (base of the natural logarithms) raised to the given exponent, as in Math.exp()
+     */
+    public static BigDecimal expBig(double exponent) {
+        if (!Double.isFinite(exponent)) {throw new IllegalArgumentException("Infinite not accepted: " + exponent);}
+        // e^b = e^(b2+c) = e^b2 2^t with e^c = 2^t 
+        double bc = MAX_DIGITS_EXP;
+        if (exponent < bc && exponent > -bc) {return new BigDecimal(Math.exp(exponent), MathContext.DECIMAL64);}
+        boolean neg = false;
+        if (exponent < 0) {            neg = true;            exponent = -exponent;        }
+        double b2 = bc, c = exponent - bc;
+        int t = (int) Math.ceil(c / log10);
+        c = t * log10;
+        b2 = exponent - c;
+        if (neg) {          b2 = -b2;         t = -t;   }
+        return new BigDecimal(Math.exp(b2), MathContext.DECIMAL64).movePointRight(t);
+    }
+
+    /**
+     * Same as Math.pow(a,b) but returns a BigDecimal (precision ~ 16). 
+     * Works even for outputs that fall outside the double range
+     * 
+     * The only limit is that b * log(a) does not overflow the double range 
+     * 
+     * @param a Base. Should be non-negative 
+     * @param b Exponent. Should be finite (and non-negative if base is zero)
+     * @return Returns the value of the first argument raised to the power of the second argument.
+     */
+    public static BigDecimal powBig(double a, double b) {
+        if (!(Double.isFinite(a) && Double.isFinite(b)))
+            throw new IllegalArgumentException(Double.isFinite(b) ? "base not finite: a=" + a : "exponent not finite: b=" + b);
+        if (b == 0) {  return BigDecimal.ONE;}
+        if (b == 1) {  return BigDecimal.valueOf(a);}
+        if (a == 0) {
+            if (b >= 0) { return BigDecimal.ZERO;}
+            else {        throw new IllegalArgumentException("0**negative = infinite");}
+        }
+        if (a < 0) { throw new IllegalArgumentException("negative base a=" + a);}
+        double x = b * Math.log(a);
+        if (Math.abs(x) < MAX_DIGITS_EXP) { return BigDecimal.valueOf(Math.pow(a, b));}
+        else {          				    return expBig(x);}
+    }
     
     /**
      * return max value of any comparable type

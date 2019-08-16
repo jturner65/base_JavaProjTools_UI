@@ -252,6 +252,25 @@ public abstract class myDispWindow {
 	private void setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {(float)(uiClkCoords[0])+oldBtnLen, (float) uiClkCoords[3], btnLen, yOff };}
 	
 	/**
+	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
+	 * @param tmpBtnNamesArray arraylist of object arrays, each entry in object array holding a true string, a false string and an integer idx for the button
+	 */	
+	protected void _initAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray) {
+		// finalize setup for UI toggle buttons - convert to arrays
+		truePrivFlagNames = new String[tmpBtnNamesArray.size()];
+		falsePrivFlagNames = new String[truePrivFlagNames.length];
+		privModFlgIdxs = new int[truePrivFlagNames.length];
+		for (int i = 0; i < truePrivFlagNames.length; ++i) {
+			Object[] tmpAra = tmpBtnNamesArray.get(i);
+			truePrivFlagNames[i] = (String) tmpAra[0];
+			falsePrivFlagNames[i] = (String) tmpAra[1];
+			privModFlgIdxs[i] = (int) tmpAra[2];
+		}
+		numClickBools = truePrivFlagNames.length;
+		initPrivBtnRects(0, numClickBools);
+	}//_initAllPrivButtons
+	
+	/**
 	 * set up child class boolean button rectangles using initialized truePrivFlagNames and falsePrivFlagNames
 	 * @param yDisp displacement for button to be drawn
 	 * @param numBtns number of buttons to make
