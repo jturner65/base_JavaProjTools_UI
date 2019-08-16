@@ -83,6 +83,8 @@ public abstract class myDispWindow {
 	//UI objects in this window
 	//GUI Objects
 	public myGUIObj[] guiObjs;	
+	//raw values from ui components	
+	protected double[] uiVals;	
 	public int msClkObj, msOvrObj;												//myGUIObj object that was clicked on  - for modification, object mouse moved over
 	public int msBtnClcked;														//mouse button clicked
 	public float[] uiClkCoords;												//subregion of window where UI objects may be found
@@ -162,10 +164,26 @@ public abstract class myDispWindow {
 			initUIBox();				//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
 		}
 		
-		setupGUIObjsAras();				//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
+		// list box values - keyed by list obj IDX, value is string array of list obj values
+		TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
+		// ui object values - keyed by object idx, value is object array of describing values
+		TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
+		//  set up all gui objects for this window
+		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);				//setup all ui objects and record final y value in sidebar menu for UI Objects in this window		
+		if(!_isMenu){
+			//build ui objects
+			_buildGUIObjsFromMaps(tmpUIObjArray, tmpListObjVals);	
+		}
 		
 		privBtnsToClear = new ArrayList<Integer>();
-		initAllPrivBtns();
+		
+		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
+		//  set up all window-specific boolean buttons for this window
+		initAllPrivBtns(tmpBtnNamesArray);
+		//initialize all private buttons based on values put in arraylist
+		_initAllPrivButtons(tmpBtnNamesArray);
+		
+		
 		initMe();
 		
 		setClosedBox();
@@ -255,7 +273,7 @@ public abstract class myDispWindow {
 	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
 	 * @param tmpBtnNamesArray arraylist of object arrays, each entry in object array holding a true string, a false string and an integer idx for the button
 	 */	
-	protected void _initAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray) {
+	private void _initAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray) {
 		// finalize setup for UI toggle buttons - convert to arrays
 		truePrivFlagNames = new String[tmpBtnNamesArray.size()];
 		falsePrivFlagNames = new String[truePrivFlagNames.length];
@@ -275,7 +293,7 @@ public abstract class myDispWindow {
 	 * @param yDisp displacement for button to be drawn
 	 * @param numBtns number of buttons to make
 	 */
-	protected void initPrivBtnRects(float yDisp, int numBtns){
+	private void initPrivBtnRects(float yDisp, int numBtns){
 		//msgObj.dispInfoMessage("myDispWindow","initPrivBtnRects","initPrivBtnRects in :"+ name + "st value for uiClkCoords[3]");
 		float maxBtnLen = maxBtnWidthMult * pa.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
 		//pa.pr("maxBtnLen : " + maxBtnLen);
@@ -409,6 +427,34 @@ public abstract class myDispWindow {
 		if(null!=trajMgr) {		trajMgr.setTrajRectDimsY(height, scale);}
 		if(getFlags(hasScrollBars)){for(int i =0; i<scbrs.length;++i){scbrs[i].setSize();}}
 		resizeMe(scale);
+	}
+	
+	/**
+	 * build ui objects from maps, keyed by ui object idx, with value being data
+	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 *           the first element double array of min/max/mod values                                                   
+	 *           the 2nd element is starting value                                                                      
+	 *           the 3rd elem is label for object                                                                       
+	 *           the 4th element is boolean array of {treat as int, has list values, value is sent to owning window}    
+	 * @param tmpListObjVals
+	 */
+	private void _buildGUIObjsFromMaps(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
+		int numGUIObjs = tmpUIObjArray.size();
+		guiMinMaxModVals = new double[numGUIObjs][3];
+		guiStVals = new double[numGUIObjs];
+		guiObjNames = new String[numGUIObjs];
+		guiBoolVals = new boolean[numGUIObjs][4];
+		uiVals = new double[numGUIObjs];// raw values
+		for (int i = 0; i < numGUIObjs; ++i) {
+			guiMinMaxModVals[i] = (double[]) tmpUIObjArray.get(i)[0];
+			guiStVals[i] = (Double) tmpUIObjArray.get(i)[1];
+			guiObjNames[i] = (String) tmpUIObjArray.get(i)[2];
+			guiBoolVals[i] = (boolean[]) tmpUIObjArray.get(i)[3];
+			uiVals[i] = guiStVals[i];
+		}
+		// since horizontal row of UI comps, uiClkCoords[2] will be set in buildGUIObjs
+		guiObjs = new myGUIObj[numGUIObjs]; // list of modifiable gui objects
+		buildGUIObjs(guiObjNames, guiStVals, guiMinMaxModVals, guiBoolVals, new double[] { xOff, yOff },tmpListObjVals); // builds a horizontal list of UI comps
 	}
 	
 	/**
@@ -646,7 +692,11 @@ public abstract class myDispWindow {
 	//draw any custom menu objects for sidebar menu
 	public abstract void drawCustMenuObjs();
 	
-	public abstract void initAllPrivBtns();
+	/**
+	 * build button descriptive arrays : each object array holds true label, false label, and idx of button in owning child class
+	 * @param tmpBtnNamesArray
+	 */
+	public abstract void initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray);
 	
 	
 	//draw box to hide window
@@ -821,7 +871,8 @@ public abstract class myDispWindow {
 		return res;		
 	}
 	//check if mouse location is in UI buttons, and handle button click if so
-	protected boolean checkUIButtons(int mouseX, int mouseY){
+	private boolean checkUIButtons(int mouseX, int mouseY){
+		if(0==privFlagBtns.length) {return false;}
 		boolean mod = false;
 		int mx, my;
 		//keep checking -see if clicked in UI buttons (flag-based buttons)
@@ -896,6 +947,7 @@ public abstract class myDispWindow {
 		}			
 		if(getFlags(closeable)){mod = checkClsBox(mouseX, mouseY);}							//check if trying to close or open the window via click, if possible
 		if(!getFlags(showIDX)){return mod;}
+		if(!mod) {			mod = checkUIButtons(mouseX, mouseY);	}
 		if(!mod){
 			myPoint mouseClickIn3D = pa.c.getMseLoc(sceneCtrVal);
 			mod = hndlMouseClickIndiv(mouseX, mouseY,mouseClickIn3D, mseBtn);
@@ -1099,9 +1151,15 @@ public abstract class myDispWindow {
 	
 	//ui init routines
 	/**
-	 * Initialize all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 *           the first element double array of min/max/mod values                                                   
+	 *           the 2nd element is starting value                                                                      
+	 *           the 3rd elem is label for object                                                                       
+	 *           the 4th element is boolean array of {treat as int, has list values, value is sent to owning window}    
+	 * @param tmpListObjVals
 	 */
-	protected abstract void setupGUIObjsAras();	
+	protected abstract void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);	
 	protected abstract void setUIWinVals(int UIidx);
 	
 	protected abstract void processTrajIndiv(myDrawnSmplTraj drawnTraj);

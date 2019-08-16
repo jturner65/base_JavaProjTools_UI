@@ -60,12 +60,7 @@ public abstract class BaseBarMenu extends myDispWindow{
 	public final float[] StrWdMult = new float[]{-3.0f,-3.0f,-3.0f,-3.2f,-3.5f,-2.5f};
 	public int[][] stBoolFlagColors;
 
-	//	//GUI Objects	
-	//idx's of objects in gui objs array	
-	public static final int 
-		gIDX_TimeStep 			= 0;//, 
-	public final int numGUIObjs = 0;							//# of gui objects for ui
-	
+
 	//private child-class flags - window specific
 	public static final int 
 			mseClickedInBtnsIDX 		= 0,					//the mouse was clicked in the button region of the menu and a click event was processed
@@ -249,13 +244,7 @@ public abstract class BaseBarMenu extends myDispWindow{
 	
 	@Override
 	//initialize all private-flag based UI buttons here - called by base class
-	public final void initAllPrivBtns(){
-		truePrivFlagNames = new String[]{								//needs to be in order of flags
-		};
-		falsePrivFlagNames = new String[]{			//needs to be in order of flags
-		};
-		privModFlgIdxs = new int[]{};
-		numClickBools = privModFlgIdxs.length;	
+	public final void initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray){
 	}//
 	
 	@Override
@@ -288,25 +277,26 @@ public abstract class BaseBarMenu extends myDispWindow{
 	}
 
 	//initialize structure to hold modifiable menu regions
-	@SuppressWarnings("unused")
 	@Override
-	protected final void setupGUIObjsAras(){						//called from super.initThisWin
+	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals){						//called from super.initThisWin
 		//set up side bar menu buttons with format specific to instancing application
 		initSideBarMenuBtns_Priv();
+		
 		guiMinMaxModVals = new double [][]{	{}};//min max mod values		
 		guiStVals = new double[]{};
-		guiObjNames = new String[]{};		
-		
+		guiObjNames = new String[]{};			
 		//idx 0 is treat as int, idx 1 is obj has list vals, idx 2 is object gets sent to windows
 		guiBoolVals = new boolean [][]{{}};
+		
 		
 		minBtnClkY = (numMainFlagsToShow+3) * yOff + clkFlgsStY;										//start of buttons from under boolean flags
 		//all ui ojbects for all windows will follow this format and share the x[0] value
 		initUIClickCoords(rectDim[0] + xLblOffsetMult * rectDim[2],minBtnClkY + (guiBtnRowNames.length * 2.0f) * yOff,rectDim[0] + .99f * rectDim[2],0);//last val over-written by actual value in buildGuiObjs
-		guiObjs = new myGUIObj[numGUIObjs];			//list of modifiable gui objects
-		TreeMap<Integer, String[]> listObjs = new TreeMap<Integer, String[]>();
-		if(0!=guiObjs.length){			buildGUIObjs(guiObjNames,guiStVals,guiMinMaxModVals,guiBoolVals, new double[]{xOff,yOff}, listObjs);		} 
-		else {			uiClkCoords[3] = uiClkCoords[1];	}	//set y start values
+		guiObjs = new myGUIObj[0];			//list of modifiable gui objects
+//		TreeMap<Integer, String[]> listObjs = new TreeMap<Integer, String[]>();
+//		if(0!=guiObjs.length){			buildGUIObjs(guiObjNames,guiStVals,guiMinMaxModVals,guiBoolVals, new double[]{xOff,yOff}, listObjs);		} 
+//		else {			uiClkCoords[3] = uiClkCoords[1];	}	//set y start values
+		uiClkCoords[3] = uiClkCoords[1]-20;
 	}//setupGUIObjsAras
 	
 	//check if buttons clicked
