@@ -308,7 +308,7 @@ public abstract class myDrawnObject {
 				return makeNewPoint(pts,new int[]{i,((i+1)%pts.length)}, s[0]);		//put interpolant between adjacent axis points in s ara if needed		
 			}			
 		}		
-		return new myCntlPt(pa);
+		return new myCntlPt();
 	}//at_C	
 	
 	/**
@@ -545,7 +545,7 @@ class myVariStroke extends myDrawnObject {
 		ArrayList<myCntlPt> tmp = new ArrayList<myCntlPt>(Arrays.asList(cntlPts));
 		int i = tmp.size()-1;
 		if(i > 0 ){tmp.get(i).w = calcCntlWeight(p,tmp.get(i),tmp.get(i-1));}//previous point's weight 
-		myCntlPt tmpPt = new myCntlPt(pa, p);
+		myCntlPt tmpPt = new myCntlPt(p);
 		tmp.add(tmpPt);
 		setCPts(tmp);
 	}//
@@ -566,7 +566,7 @@ class myVariStroke extends myDrawnObject {
 	public void buildPointsUsingOffset(boolean procPts, int repCnt){
 		if(procPts){
 		    finalizeCntlW();
-		    for(int i=0;i<cntlPts.length;++i){cntlPts[i].calcRadFromWeight(cntl_len/cntlPts.length, flags[cntlWInvRad]);}           //sets all radii based on weights
+		    for(int i=0;i<cntlPts.length;++i){cntlPts[i].calcRadFromWeight(pa, cntl_len/cntlPts.length, flags[cntlWInvRad]);}           //sets all radii based on weights
 		    processCntlPts(flags[interpStroke] ? numIntCntlPts : numCntlPts, repCnt);
 	    }
 		buildCntlFrameVecAras();
@@ -1060,7 +1060,7 @@ class myNormOffset extends myOffset{
       	clrInt = (int)(i/(1.0f * myPoints.length) * 255.0f);
           pa.setFill(new int[] {clrInt,0,(255 - clrInt)},255);  
           pa.setStroke(new int[] {clrInt,0,(255 - clrInt)},255); 
-          myPoints[i].drawRad(nAra[i], tAra[i]);
+          myPoints[i].drawRad(pa, nAra[i], tAra[i]);
       }
       pa.popStyle();
   }

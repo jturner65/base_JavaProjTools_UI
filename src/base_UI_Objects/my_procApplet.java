@@ -1258,7 +1258,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		double x= myVector._dot(new myVector(G,P),myVector._unit(I)), y=myVector._dot(new myVector(G,P),myVector._unit(J)); 
 		double c=Math.cos(a), s=Math.sin(a); 
 		double iXVal = x*c-x-y*s, jYVal= x*s+y*c-y;		
-		return new myCntlPt(this, myPoint._add(P,iXVal,I,jYVal,J), P.r, P.w); };
+		return new myCntlPt( myPoint._add(P,iXVal,I,jYVal,J), P.r, P.w); };
 		
 	public final myPoint PtOnSpiral(myPoint A, myPoint B, myPoint C, double t) {
 		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
@@ -1359,7 +1359,14 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		pushMatrix(); pushStyle();noFill(); show(pts);popStyle();popMatrix();
 	}; 
 	
+	public final void drawCircle(myPointf P, float r, myVectorf I, myVectorf J, int n) {
+		myPointf[] pts = buildCircleInscribedPoints(P,r,I,J,n);
+		pushMatrix(); pushStyle();noFill(); show(pts);popStyle();popMatrix();
+	}; 
+	
 	public final void circle(myPoint p, float r){ellipse((float)p.x, (float)p.y, r, r);}
+	
+	public final void circle(myPointf p, float r){ellipse(p.x, p.y, r, r);}
 	public void circle(float x, float y, float r1, float r2){ellipse(x,y, r1, r2);}
 	/**
 	 * draw a 6 pointed star centered at p inscribed in circle radius r
