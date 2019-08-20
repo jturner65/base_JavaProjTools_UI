@@ -5,7 +5,9 @@ import java.math.BigInteger;
 import java.math.MathContext;
 
 import base_Utils_Objects.vectorObjs.myPoint;
+import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
+import base_Utils_Objects.vectorObjs.myVectorf;
 
 /**
  * mathematical functions and constants that might be of use in some applications
@@ -67,6 +69,15 @@ public class MyMathUtils {
 		return Math.sqrt(resSq); 
 	};		//MAY RETURN NAN IF point P is on line
 		
+	public synchronized static float distToLine(myPointf P, myPointf A, myPointf B) {
+		myVectorf AB = new myVectorf(A,B),AP = new myVectorf(A,P);
+		AB._normalize();
+		double udv = AB._dot(AP); //project AP onto line		
+		double resSq = AP.sqMagn - (udv*udv);		//AB mag is 1 so can be ignored
+		if(resSq < 0) {return 0;}
+		return (float) Math.sqrt(resSq); 
+	};		//MAY RETURN NAN IF point P is on line
+		
 	/**
 	 * return the projection point of P on line determined by AB between A and B
 	 * @param P point to investigate
@@ -76,6 +87,10 @@ public class MyMathUtils {
 	public synchronized static myPoint projectionOnLine(myPoint P, myPoint A, myPoint B) {
 		myVector AB = new myVector(A,B), AP = new myVector(A,P);
 		return new myPoint(A,AB._dot(AP)/(AB._dot(AB)),AB);
+	}
+	public synchronized static myPointf projectionOnLine(myPointf P, myPointf A, myPointf B) {
+		myVectorf AB = new myVectorf(A,B), AP = new myVectorf(A,P);
+		return new myPointf(A,AB._dot(AP)/(AB._dot(AB)),AB);
 	}
 	/**
 	 * return true if P orthogonally projects onto line determined by AB between A and B
@@ -89,6 +104,12 @@ public class MyMathUtils {
 		myVector BP = new myVector(B,P), BA = new myVector(B,A);		
 		return BP._dot(BA)>0 ; 						//if not greater than 0 than won't project onto AB - past B away from segment
 	}
+	public synchronized static boolean projectsBetween(myPointf P, myPointf A, myPointf B) {
+		myVectorf AP = new myVectorf(A,P), AB = new myVectorf(A,B);
+		if(AP._dot(AB) <= 0) {return false;}		//if not greater than 0 than won't project onto AB - past A away from segment
+		myVectorf BP = new myVectorf(B,P), BA = new myVectorf(B,A);		
+		return BP._dot(BA)>0 ; 						//if not greater than 0 than won't project onto AB - past B away from segment
+	}
 	
 	/**
 	 * Calculate normal to planed described by triangle ABC, non-normalized (proportional to area)
@@ -97,6 +118,10 @@ public class MyMathUtils {
 	 */
 	public myVector normToPlane(myPoint A, myPoint B, myPoint C) {
 		return myVector._cross(new myVector(A,B),new myVector(A,C)); 
+	};   // normal to triangle (A,B,C), not normalized (proportional to area)
+
+	public myVectorf normToPlane(myPointf A, myPointf B, myPointf C) {
+		return myVectorf._cross(new myVectorf(A,B),new myVectorf(A,C)); 
 	};   // normal to triangle (A,B,C), not normalized (proportional to area)
 
 	/**

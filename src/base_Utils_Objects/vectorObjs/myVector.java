@@ -66,7 +66,7 @@ public class myVector extends myPoint{
 	
 	public void _scale(double _newMag){this._normalize()._mult(_newMag);}
 	
-	public myVector _normalize(){this._mag();if(magn==0){return this;}this.x = this.x/magn; this.y = this.y/magn; this.z = this.z/magn; _mag();return this;}
+	public myVector _normalize(){this._mag();if(magn==0){return this;}this.x /= magn; this.y /=magn; this.z /=magn; _mag();return this;}
 	//returns normal but doesn't modify v
 	public static myVector _normalize(myVector v){double magn = v._mag(); if(magn==0){return v;} return new myVector( v.x / magn, v.y / magn, v.z / magn); }// newVec._mag(); return newVec;}
 	
@@ -77,7 +77,7 @@ public class myVector extends myPoint{
 	 * build new normalized version of this vector
 	 * @return
 	 */
-	public myVector _normalized(){double magn = this._mag(); myVector newVec = (magn == 0) ? (new myVector(0,0,0)) : (new myVector( this.x /= magn, this.y /= magn, this.z /= magn)); newVec._mag(); return newVec;}
+	public myVector _normalized(){double magn = this._mag(); myVector newVec = (magn == 0) ? (new myVector(0,0,0)) : (new myVector( this.x / magn, this.y / magn, this.z / magn)); newVec._mag(); return newVec;}
 	
 	public myVector cloneMe(){myVector retVal = new myVector(this.x, this.y, this.z); return retVal;}  
 		

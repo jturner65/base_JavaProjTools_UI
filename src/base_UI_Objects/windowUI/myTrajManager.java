@@ -7,6 +7,7 @@ import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
 import base_Utils_Objects.io.MessageObject;
 import base_Utils_Objects.vectorObjs.myPoint;
+import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
 
 /**
@@ -349,6 +350,13 @@ public class myTrajManager {
 		int res = -1;
 		double mindist = 99999999, _d;
 		for(int i=0; i<_pts.length; ++i){_d = myPoint._dist(p,_pts[i]);if(_d < mindist){mindist = _d; d[0]=_d;res = i;}}	
+		return res;
+	}
+
+	public final int findClosestPt(myPointf p, double[] d, myPointf[] _pts){
+		int res = -1;
+		double mindist = 99999999, _d;
+		for(int i=0; i<_pts.length; ++i){_d = myPointf._dist(p,_pts[i]);if(_d < mindist){mindist = _d; d[0]=_d;res = i;}}	
 		return res;
 	}
 

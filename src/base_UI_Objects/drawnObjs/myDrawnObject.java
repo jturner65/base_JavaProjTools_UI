@@ -967,13 +967,17 @@ class myVariStroke extends myDrawnObject {
 	
 }//myVariStroke
 
-//class to hold functionality to calculate offset "sidewalks"
-//3 types - normal, ball and radial, where normal is normal to 
-//stroke line, radial is normal to resultant curve (by centering
-//the ball on the center line) and ball is normal to both, by
-//centering the ball at a particular radius away from the stroke
-//line.
 
+
+/**
+ * class to hold functionality to calculate offset "sidewalks"   
+ * 3 types - normal, ball and radial, where normal is normal to 
+ * stroke line, radial is normal to resultant curve (by centering
+ * the ball on the center line) and ball is normal to both, by
+ * centering the ball at a particular radius away from the stroke line.                                                         
+ * @author john
+ *
+ */
 abstract class myOffset {
 	public static my_procApplet pa;
 	public int ID;
@@ -1022,7 +1026,6 @@ abstract class myOffset {
 /**
 * calculates normal offset - distance r, normal from stroke line
 * @author john
-*
 */
 //make other classes to use different offset mechanism
 class myNormOffset extends myOffset{

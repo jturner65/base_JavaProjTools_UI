@@ -9,6 +9,7 @@ import base_UI_Objects.windowUI.BaseBarMenu;
 import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.*;
 import base_Utils_Objects.vectorObjs.myCntlPt;
+import base_Utils_Objects.vectorObjs.myCntlPtf;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
@@ -1246,39 +1247,15 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		double x= myVector._dot(new myVector(G,P),myVector._unit(I)), y=myVector._dot(new myVector(G,P),myVector._unit(J)); 
 		double c=Math.cos(a), s=Math.sin(a); 
 		double iXVal = x*c-x-y*s, jYVal= x*s+y*c-y;			
-		return myPoint._add(P,iXVal,I,jYVal,J); }; 
-		
+		return myPoint._add(P,iXVal,I,jYVal,J); 
+	}; 
 	public final myPointf R(myPointf P, float a, myVectorf I, myVectorf J, myPointf G) {
 		double x= myVectorf._dot(new myVectorf(G,P),myVectorf._unit(I)), y=myVectorf._dot(new myVectorf(G,P),myVectorf._unit(J)); 
 		double c=Math.cos(a), s=Math.sin(a); 
 		float iXVal = (float) (x*c-x-y*s), jYVal= (float) (x*s+y*c-y);			
-		return myPointf._add(P,iXVal,I,jYVal,J); }; 
-			
-	public myCntlPt R(myCntlPt P, double a, myVector I, myVector J, myPoint G) {
-		double x= myVector._dot(new myVector(G,P),myVector._unit(I)), y=myVector._dot(new myVector(G,P),myVector._unit(J)); 
-		double c=Math.cos(a), s=Math.sin(a); 
-		double iXVal = x*c-x-y*s, jYVal= x*s+y*c-y;		
-		return new myCntlPt( myPoint._add(P,iXVal,I,jYVal,J), P.r, P.w); };
+		return myPointf._add(P,iXVal,I,jYVal,J); 
+	}; 
 		
-	public final myPoint PtOnSpiral(myPoint A, myPoint B, myPoint C, double t) {
-		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
-		//so center will be coplanar to mp(A,B) and mp(B,C) - use mpCA midpoint to determine plane mpAB-mpBC plane?
-		myPoint mAB = new myPoint(A,.5f, B);
-		myPoint mBC = new myPoint(B,.5f, C);
-		myPoint mCA = new myPoint(C,.5f, A);
-		myVector mI = myVector._unit(mCA,mAB);
-		myVector mTmp = myVector._cross(mI,myVector._unit(mCA,mBC));
-		myVector mJ = myVector._unit(mTmp._cross(mI));	//I and J are orthonormal
-		double a =spiralAngle(A,B,B,C); 
-		double s =spiralScale(A,B,B,C);
-		
-		//myPoint G = spiralCenter(a, s, A, B, mI, mJ); 
-		myPoint G = spiralCenter(A, mAB, B, mBC); 
-		return new myPoint(G, Math.pow(s,t), R(A,t*a,mI,mJ,G));
-	  }
-	public double spiralAngle(myPoint A, myPoint B, myPoint C, myPoint D) {return myVector._angleBetween(new myVector(A,B),new myVector(C,D));}
-	public double spiralScale(myPoint A, myPoint B, myPoint C, myPoint D) {return myPoint._dist(C,D)/ myPoint._dist(A,B);}
-	
 	public final myPoint R(myPoint Q, myPoint C, myPoint P, myPoint R) { // returns rotated version of Q by angle(CP,CR) parallel to plane (C,P,R)
 		myVector I0=myVector._unit(C,P), I1=myVector._unit(C,R), V=new myVector(C,Q); 
 		double c=myPoint._dist(I0,I1), s=Math.sqrt(1.-(c*c)); 
@@ -1288,6 +1265,46 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		double x=V._dot(I0), y=V._dot(J0);  
 		return myPoint._add(Q,x,myVector._sub(I1,I0),y,myVector._sub(J1,J0)); 
 	} 	
+		
+	public final myPointf R(myPointf Q, myPointf C, myPointf P, myPointf R) { // returns rotated version of Q by angle(CP,CR) parallel to plane (C,P,R)
+		myVectorf I0=myVectorf._unit(C,P), I1=myVectorf._unit(C,R), V=new myVectorf(C,Q); 
+		double c=myPointf._dist(I0,I1), s=Math.sqrt(1.-(c*c)); 
+		if(Math.abs(s)<0.00001) return Q;		
+		myVectorf J0=myVectorf._add(myVectorf._mult(I1,1./s),myVectorf._mult(I0,-c/s));  
+		myVectorf J1=myVectorf._add(myVectorf._mult(I0,-s),myVectorf._mult(J0,c));  
+		float x=V._dot(I0), y=V._dot(J0);  
+		return myPointf._add(Q,x,myVectorf._sub(I1,I0),y,myVectorf._sub(J1,J0)); 
+	} 	
+		
+			
+	public myCntlPt R(myCntlPt P, double a, myVector I, myVector J, myPoint G) {
+		double x= myVector._dot(new myVector(G,P),myVector._unit(I)), y=myVector._dot(new myVector(G,P),myVector._unit(J)); 
+		double c=Math.cos(a), s=Math.sin(a); 
+		double iXVal = x*c-x-y*s, jYVal= x*s+y*c-y;		
+		return new myCntlPt( myPoint._add(P,iXVal,I,jYVal,J), P.r, P.w); 
+	};
+		
+	public myCntlPtf R(myCntlPtf P, float a, myVectorf I, myVectorf J, myPointf G) {
+		float x= myVectorf._dot(new myVectorf(G,P),myVectorf._unit(I)), y=myVectorf._dot(new myVectorf(G,P),myVectorf._unit(J)); 
+		float c=(float) Math.cos(a), s=(float) Math.sin(a); 
+		float iXVal = x*c-x-y*s, jYVal= x*s+y*c-y;		
+		return new myCntlPtf( myPointf._add(P,iXVal,I,jYVal,J), P.r, P.w); 
+	};
+				
+	public final myPoint PtOnSpiral(myPoint A, myPoint B, myPoint C, double t) {
+		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
+		//so center will be coplanar to mp(A,B) and mp(B,C) - use mpCA midpoint to determine plane mpAB-mpBC plane?
+		myPoint mAB = new myPoint(A,.5f, B), mBC = new myPoint(B,.5f, C), mCA = new myPoint(C,.5f, A);
+		myVector mI = myVector._unit(mCA,mAB), mTmp = myVector._cross(mI,myVector._unit(mCA,mBC)), mJ = myVector._unit(mTmp._cross(mI));	//I and J are orthonormal
+		double a =spiralAngle(A,B,B,C), s =spiralScale(A,B,B,C);
+		
+		//myPoint G = spiralCenter(a, s, A, B, mI, mJ); 
+		myPoint G = spiralCenter(A, mAB, B, mBC); 
+		return new myPoint(G, Math.pow(s,t), R(A,t*a,mI,mJ,G));
+	}	
+	public double spiralAngle(myPoint A, myPoint B, myPoint C, myPoint D) {return myVector._angleBetween(new myVector(A,B),new myVector(C,D));}
+	public double spiralScale(myPoint A, myPoint B, myPoint C, myPoint D) {return myPoint._dist(C,D)/ myPoint._dist(A,B);}
+	
 	// spiral given 4 points, AB and CD are edges corresponding through rotation
 	public final myPoint spiralCenter(myPoint A, myPoint B, myPoint C, myPoint D) {         // new spiral center
 		myVector AB=new myVector(A,B), CD=new myVector(C,D), AC=new myVector(A,C);
@@ -1295,13 +1312,39 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		myVector rotAxis = myVector._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find f
 		
 		myVector rAB = myVector._rotAroundAxis(AB, rotAxis, MyMathUtils.halfPi_f);
-		double c=AB._dot(CD)/n, 
-				s=rAB._dot(CD)/n;
-		double AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2;
-		double x=(a-m*( a*c+b*s)), y=(b-m*(-a*s+b*c));
-		double d=1+m*(m-2*c);  if((c!=1)&&(m!=1)) { x/=d; y/=d; };
+		double c=AB._dot(CD)/n,	s=rAB._dot(CD)/n;
+		double AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2, x=(a-m*( a*c+b*s)), y=(b-m*(-a*s+b*c)), d=1+m*(m-2*c);  if((c!=1)&&(m!=1)) { x/=d; y/=d; };
 		return new myPoint(new myPoint(A,x,AB),y,rAB);
 	  }
+	
+	public final myPointf PtOnSpiral(myPointf A, myPointf B, myPointf C, float t) {
+		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
+		//so center will be coplanar to mp(A,B) and mp(B,C) - use mpCA midpoint to determine plane mpAB-mpBC plane?
+		myPointf mAB = new myPointf(A,.5f, B), mBC = new myPointf(B,.5f, C), mCA = new myPointf(C,.5f, A);
+		myVectorf mI = myVectorf._unit(mCA,mAB), mTmp = myVectorf._cross(mI,myVectorf._unit(mCA,mBC)), mJ = myVectorf._unit(mTmp._cross(mI));	//I and J are orthonormal
+		float a =spiralAngle(A,B,B,C), s =spiralScale(A,B,B,C);
+		
+		//myPoint G = spiralCenter(a, s, A, B, mI, mJ); 
+		myPointf G = spiralCenter(A, mAB, B, mBC); 
+		return new myPointf(G, (float)Math.pow(s,t), R(A,t*a,mI,mJ,G));
+	}	
+	public float spiralAngle(myPointf A, myPointf B, myPointf C, myPointf D) {return myVectorf._angleBetween(new myVectorf(A,B),new myVectorf(C,D));}
+	public float spiralScale(myPointf A, myPointf B, myPointf C, myPointf D) {return myPointf._dist(C,D)/ myPointf._dist(A,B);}
+	
+	// spiral given 4 points, AB and CD are edges corresponding through rotation
+	public final myPointf spiralCenter(myPointf A, myPointf B, myPointf C, myPointf D) {         // new spiral center
+		myVectorf AB=new myVectorf(A,B), CD=new myVectorf(C,D), AC=new myVectorf(A,C);
+		float m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
+		myVectorf rotAxis = myVectorf._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find f
+		
+		myVectorf rAB = myVectorf._rotAroundAxis(AB, rotAxis, MyMathUtils.halfPi_f);
+		float c=AB._dot(CD)/n,	s=rAB._dot(CD)/n;
+		float AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2, x=(a-m*( a*c+b*s)), y=(b-m*(-a*s+b*c)), d=1+m*(m-2*c);  if((c!=1)&&(m!=1)) { x/=d; y/=d; };
+		return new myPointf(new myPointf(A,x,AB),y,rAB);
+	  }
+	
+	
+	
 	
 	
 	public final void cylinder(myPoint A, myPoint B, float r, int c1, int c2) {
@@ -1317,6 +1360,21 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 				gl_vertex(myPoint._add(P,r*cos(a),I,r*sin(a),J)); 
 				fill(c2); 
 				gl_vertex(myPoint._add(P,r*cos(a),I,r*sin(a),J,1,V));}
+		endShape();
+	}
+
+	public final void cylinder(myPointf A, myPointf B, float r, int c1, int c2) {
+		myVectorf V = new myVectorf(A,B);
+		myVectorf I = c.getDrawSNorm_f();//U(Normal(V));
+		myVectorf J = I._cross(V)._normalize(); 
+		float da = TWO_PI/36;
+		beginShape(QUAD_STRIP);
+			for(float a=0; a<=TWO_PI+da; a+=da) {
+				fill(c1); 
+				//gl_vertex(myPoint._add(P,r*cos(a),I,r*sin(a),J,0,V)); 
+				gl_vertex(myPointf._add(A,r*cos(a),I,r*sin(a),J)); 
+				fill(c2); 
+				gl_vertex(myPointf._add(A,r*cos(a),I,r*sin(a),J,1,V));}
 		endShape();
 	}
 
@@ -1631,7 +1689,9 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	///end show functions
 	
 	public final void curveVertex(myPoint P) {curveVertex((float)P.x,(float)P.y);};                                           // curveVertex for shading or drawing
+	public final void curveVertex(myPointf P) {curveVertex(P.x,P.y);};                                           // curveVertex for shading or drawing
 	public final void curve(myPoint[] ara) {if(ara.length == 0){return;}beginShape(); curveVertex(ara[0]);for(int i=0;i<ara.length;++i){curveVertex(ara[i]);} curveVertex(ara[ara.length-1]);endShape();};                      // volume of tet 	
+	public final void curve(myPointf[] ara) {if(ara.length == 0){return;}beginShape(); curveVertex(ara[0]);for(int i=0;i<ara.length;++i){curveVertex(ara[i]);} curveVertex(ara[ara.length-1]);endShape();};                      // volume of tet 	
 	
 	public boolean intersectPl(myPoint E, myVector T, myPoint A, myPoint B, myPoint C, myPoint X) { // if ray from E along T intersects triangle (A,B,C), return true and set proposal to the intersection point
 		myVector EA=new myVector(E,A), AB=new myVector(A,B), AC=new myVector(A,C); 		double t = (float)(myVector._mixProd(EA,AC,AB) / myVector._mixProd(T,AC,AB));		X.set(myPoint._add(E,t,T));		return true;

@@ -68,7 +68,7 @@ public class myVectorf extends myPointf{
 	
 	public void _scale(float _newMag){this._normalize()._mult(_newMag);}
 	
-	public myVectorf _normalize(){this._mag();if(magn==0){return this;}this.x = this.x/magn; this.y = this.y/magn; this.z = this.z/magn; _mag();return this;}
+	public myVectorf _normalize(){this._mag();if(magn==0){return this;}this.x /= magn; this.y /= magn; this.z /= magn; _mag();return this;}
 	//public static myVectorf _normalize(myVectorf v){float magn = v._mag(); if(magn==0){return v;} myVectorf newVec = new myVectorf( v.x /= magn, v.y /= magn, v.z /= magn); newVec._mag(); return newVec;}
 	public static myVectorf _normalize(myVectorf v){double magn = v._mag(); if(magn==0){return v;} myVectorf newVec = new myVectorf( v.x / magn, v.y / magn, v.z / magn);return newVec;}// newVec._mag(); return newVec;}
 	
@@ -76,7 +76,7 @@ public class myVectorf extends myPointf{
 	public static float _L2Norm(myVectorf v){return (float)Math.sqrt(v._SqMag());}
 	public static float _L2SqNorm(myVectorf v){return v._SqMag();}
 	
-	public myVectorf _normalized(){float magn = this._mag(); myVectorf newVec = (magn == 0) ? (new myVectorf(0,0,0)) : (new myVectorf( this.x /= magn, this.y /= magn, this.z /= magn)); newVec._mag(); return newVec;}
+	public myVectorf _normalized(){float magn = this._mag(); myVectorf newVec = (magn == 0) ? (new myVectorf(0,0,0)) : (new myVectorf( this.x /magn, this.y / magn, this.z / magn)); newVec._mag(); return newVec;}
 	
 	public myVectorf cloneMe(){myVectorf retVal = new myVectorf(this.x, this.y, this.z); return retVal;}  
 		

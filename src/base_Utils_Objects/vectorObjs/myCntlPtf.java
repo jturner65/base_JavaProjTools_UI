@@ -17,8 +17,8 @@ public class myCntlPtf extends myPointf {
 	public myCntlPtf(myPointf _p){this( _p, baseRad, baseRad);}
 	public myCntlPtf(){this(new myPointf(),1);}
 	public myCntlPtf(myCntlPtf _p){this(new myPointf(_p),_p.w); r = _p.r; w = _p.w;ID = _p.ID;}		
-	public static myCntlPt L(myCntlPt A, float s, myCntlPt B){	return new myCntlPt(new myPoint(A, s, B), capInterpR(A.r, s, B.r), (1-s)*A.w + (s)*B.w);}//(1-s)*A.r + (s)*B.r,
-	public static myCntlPt P(myCntlPt A, myCntlPt B){	float s = .5f;return L(A, s, B);}
+	public static myCntlPtf L(myCntlPtf A, float s, myCntlPtf B){	return new myCntlPtf(new myPointf(A, s, B), capInterpR(A.r, s, B.r), (1-s)*A.w + (s)*B.w);}//(1-s)*A.r + (s)*B.r,
+	public static myCntlPtf P(myCntlPtf A, myCntlPtf B){	float s = .5f;return L(A, s, B);}
 	public myPointf set(myPointf P){super.set(P); return (myPointf)this;}
 	private static float capInterpR(float a, float s, float b){ float res = (1-s)*a + (s)*b; res = (res < minR ? minR : res > maxR ? maxR : res); return res;}
 	public void drawMe(my_procApplet pa, int cIdx, boolean flat){	pa.setFill(clr[cIdx],clr[cIdx][3]);  pa.setStroke(clr[cIdx],clr[cIdx][3]);		((my_procApplet) pa).show(this,2,-1,-1, flat);}		

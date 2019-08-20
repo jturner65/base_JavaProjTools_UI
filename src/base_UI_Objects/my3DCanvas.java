@@ -102,8 +102,12 @@ public class my3DCanvas {
 	}//buildCanvas()
 	
 	public myVector getDrawSNorm() {return drawSNorm;}
+	public myVectorf getDrawSNorm_f() {return new myVectorf(drawSNorm);}
 	public int getViewDimW() {return viewDimW;}
 	public int getViewDimH() {return viewDimH;}
+	
+	public myVector getEyeToMse() {return eyeToMse;}
+	public myVectorf getEyeToMse_f() {return new myVectorf(eyeToMse.x,eyeToMse.y,eyeToMse.z);}
 	
 	//return a unit vector from the screen location of the mouse pointer in the world to the reticle location in the world - for ray casting onto objects the mouse is over
 	public myVector getMse2DtoMse3DinWorld(myPoint glbTrans){	
@@ -141,6 +145,7 @@ public class my3DCanvas {
 		return dctr;		
 	}//getPlInterSect	
 	public myPoint getMseLoc(){return new myPoint(dfCtr);	}
+	public myPointf getMseLoc_f(){return new myPointf(dfCtr.x,dfCtr.y,dfCtr.z);	}
 	public myPoint getEyeLoc(){return pick(viewDimW2, viewDimH2,-.00001f);	}
 	public myPoint getOldMseLoc(){return new myPoint(oldMseLoc);	}
 	
@@ -154,6 +159,12 @@ public class my3DCanvas {
 	public float getMseDist(myPointf glbTrans){return new myVectorf(dfCtr, glbTrans).magn;	}
 	//public myPoint getEyeLoc(myPoint glbTrans){return myPoint._sub(getEyeLoc(), glbTrans);	}
 	public myPoint getOldMseLoc(myPoint glbTrans){return myPoint._sub(oldMseLoc, glbTrans);	}
+	
+	//get normalized ray from eye loc to mouse loc
+	public myVectorf getEyeToMouseRay_f() {
+		myVectorf ray = new myVectorf(eyeInWorld, dfCtr);
+		return ray._normalize();
+	}
 	
 	public float getDepth(int mX, int mY){
 		PGL pgl = p.beginPGL();
@@ -203,7 +214,7 @@ public class my3DCanvas {
 			p.strokeWeight(1f);
 			p.setStroke(new int[] {255, 0,255}, 255);
 			p.stroke(255,0,255,255);
-			//c.camEdge.set(1000, c.eyeToMse, c.dfCtr);		//build edge through mouse point normal to camera eye	
+			//camEdge.set(1000, eyeToMse, dfCtr);		//build edge through mouse point normal to camera eye	
 			camEdge.set(eyeInWorld, dfCtr);		//build edge through mouse point and eye location in world	
 			camEdge.drawMe();
 			p.translate((float)dfCtr.x, (float)dfCtr.y, (float)dfCtr.z);
