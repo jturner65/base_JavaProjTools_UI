@@ -458,7 +458,7 @@ public class myTrajManager {
 		this.tmpDrawnTraj = null;
 	}	
 	public void endCntlKey(){}	
-
+	public void endValueKeyPress() {}
 	
 	
 	/////////////////////

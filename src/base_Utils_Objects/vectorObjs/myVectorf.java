@@ -180,17 +180,28 @@ public class myVectorf extends myPointf{
 
 	
 	/**
-	 * alternate formulation of above?
+	 * Find the angle between two vectors - Note this version is for 2D - relies on neither vector being coplanar with (0,0,1);
 	 * @param U
 	 * @param V
 	 * @return
 	 */	
 	public static float _angleBetween_Xprod(myVectorf U, myVectorf V){
+		return _angleBetween_Xprod(U,V, new myVectorf(0,0,1));
+	}
+
+	/**
+	 * Find the angle between two vectors, with axis about which to determine sign
+	 * @param U
+	 * @param V
+	 * @param axis unit length axis about which to determine sign
+	 * @return
+	 */	
+	public static float _angleBetween_Xprod(myVectorf U, myVectorf V, myVectorf axis){
 		myVectorf cross = U._cross(V);
 		double dot = U._dot(V);
 		
 		float angle = (float) Math.atan2(cross.magn,dot),
-				sign = _mixProd(U,V,new myVectorf(0,0,1));
+				sign = _mixProd(U,V,axis);
 		if(sign<0){    angle=-angle;}	
 		return angle;
 	}

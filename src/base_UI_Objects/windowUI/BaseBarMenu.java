@@ -16,7 +16,8 @@ public abstract class BaseBarMenu extends myDispWindow{
 	public final String[] truePFlagNames = {//needs to be in order of flags
 			"Debug Mode",
 			"Final init Done",
-			"Save Anim", 		
+			"Save Anim", 	
+			"Key Pressed",
 			"Shift-Key Pressed",
 			"Alt-Key Pressed",
 			"Cntl-Key Pressed",
@@ -33,7 +34,8 @@ public abstract class BaseBarMenu extends myDispWindow{
 	public final String[] falsePFlagNames = {//needs to be in order of flags
 			"Debug Mode",	
 			"Final init Done",
-			"Save Anim", 		
+			"Save Anim", 	
+			"Key Pressed",
 			"Shift-Key Pressed",
 			"Alt-Key Pressed",
 			"Cntl-Key Pressed",
@@ -108,13 +110,16 @@ public abstract class BaseBarMenu extends myDispWindow{
 		};	
 	//row and column of currently clicked-on button (for display highlight as pressing)
 	public int[] curBtnClick = new int[]{-1,-1};
+//	public BaseBarMenu(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, boolean _canDrawTraj) {
+//		super(_p, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt, _canDrawTraj);
 
-	public BaseBarMenu(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, boolean _canDrawTraj) {
-		super(_p, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt, _canDrawTraj);
+	public BaseBarMenu(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt) {
+		super(_p, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt);
 		//these have to be set before setupGUIObjsAras is called from initThisWin
 		numMainFlagsToShow = pa.getNumFlagsToShow();
 		mainFlagsToShow = pa.getMainFlagsToShow();
-		super.initThisWin(_canDrawTraj, false, true);
+		//super.initThisWin(_canDrawTraj, false, true);
+		super.initThisWin(true);
 	}
 	
 	//set up initial colors for papplet's flags for display

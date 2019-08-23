@@ -157,20 +157,21 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			debugMode 			= 0,			//whether we are in debug mode or not	
 			finalInitDone		= 1,			//used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
 			saveAnim 			= 2,			//whether we are saving or not
-	//interface flags	                   ,
-			shiftKeyPressed 	= 3,			//shift pressed
-			altKeyPressed  		= 4,			//alt pressed
-			cntlKeyPressed  	= 5,			//cntrl pressed
-			mouseClicked 		= 6,			//mouse left button is held down	
-			drawing				= 7, 			//currently drawing  showSOMMapUI
-			modView	 			= 8,			//shift+mouse click+mouse move being used to modify the view
+	//interface flags	                   
+			valueKeyPressed		= 3,
+			shiftKeyPressed 	= 4,			//shift pressed
+			altKeyPressed  		= 5,			//alt pressed
+			cntlKeyPressed  	= 6,			//cntrl pressed
+			mouseClicked 		= 7,			//mouse left button is held down	
+			drawing				= 8, 			//currently drawing  showSOMMapUI
+			modView	 			= 9,			//shift+mouse click+mouse move being used to modify the view
 	//simulation
-			runSim				= 9,			//run simulation
-			singleStep			= 10,			//run single sim step
-			showRtSideMenu		= 11,			//display the right side info menu for the current window, if it supports that display
-			flipDrawnTraj  		= 12,			//whether or not to flip the direction of the drawn trajectory
-			clearBKG 			= 13;			//whether or not background should be cleared for every draw.  defaults to true
-	public final int numBaseFlags = 14;
+			runSim				= 10,			//run simulation
+			singleStep			= 11,			//run single sim step
+			showRtSideMenu		= 12,			//display the right side info menu for the current window, if it supports that display
+			flipDrawnTraj  		= 13,			//whether or not to flip the direction of the drawn trajectory
+			clearBKG 			= 14;			//whether or not background should be cleared for every draw.  defaults to true
+	public final int numBaseFlags = 15;
 	
 	public final int numDebugVisFlags = 6;
 	//flags to actually display in menu as clickable text labels - order does matter
@@ -480,7 +481,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected void finalDispWinInit() {
 		for(int i =0; i < numDispWins; ++i){
 			int scIdx = dispWinFlags[i][dispWinIs3dIDX] ? 1 : 0;//whether or not is 3d
-			dispWinFrames[i].finalInit(dispWinFlags[i][dispWinIs3dIDX], dispWinFlags[i][dispCanMoveViewIDX], sceneCtrValsBase[scIdx], sceneFcsValsBase[scIdx]);
+			dispWinFrames[i].finalInit(dispWinFlags[i][dispCanDrawInWinIDX],dispWinFlags[i][dispWinIs3dIDX], dispWinFlags[i][dispCanMoveViewIDX], sceneCtrValsBase[scIdx], sceneFcsValsBase[scIdx]);
 			dispWinFrames[i].setTrajColors(winTrajFillClrs[i], winTrajStrkClrs[i]);
 			dispWinFrames[i].setRtSideUIBoxClrs(new int[]{0,0,0,200},new int[]{255,255,255,255});
 		}	
@@ -570,6 +571,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		//dispWinFrames[0].draw(sceneCtrVals[sceneIDX]);
 		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
 		//menu always idx 0
+		normal(0,0,1);
 		dispWinFrames[0].draw2D(modAmtMillis);
 		dispWinFrames[0].drawHeader(modAmtMillis);
 		drawOnScreenData();				//debug and on-screen data
@@ -786,6 +788,8 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void setShiftPressed(boolean val) {setBaseFlag(shiftKeyPressed,val);}
 	public final void setAltPressed(boolean val) {setBaseFlag(altKeyPressed,val);}
 	public final void setCntlPressed(boolean val) {setBaseFlag(cntlKeyPressed,val);}
+	public final void setValueKeyPressed(boolean val){setBaseFlag(valueKeyPressed,val);}
+	
 	public final void setMouseClicked(boolean val) {setBaseFlag(mouseClicked,val);}
 	public final void setModView(boolean val) {setBaseFlag(modView,val);}
 	public final void setIsDrawing(boolean val) {setBaseFlag(drawing,val);}
@@ -804,7 +808,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			if(!cntlIsPressed()){setCntlPressed(keyCode  == 17);}//17 == KeyEvent.VK_CONTROL			
 			if(!altIsPressed()){setAltPressed(keyCode  == 18);}//18 == KeyEvent.VK_ALT
 		} else {	
-			handleKeyPress(key,keyCode);	//handle all other (non-numeric) keys
+			sendKeyPressToWindows(key,keyCode);	//handle all other (non-numeric) keys			
 		}
 	}//keyPressed()
 
@@ -821,16 +825,24 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected void saveSS(String prjNmShrt) {save(getScreenShotSaveName(prjNmShrt));}
 	
 	public final void keyReleased(){
+		if(getBaseFlag(valueKeyPressed)) {endValueKeyPressed();}
 		if(key==CODED) {
 			if((getBaseFlag(shiftKeyPressed)) && (keyCode == 16)){endShiftKey();}
 			if((getBaseFlag(cntlKeyPressed)) && (keyCode == 17)){endCntlKey();}
 			if((getBaseFlag(altKeyPressed)) && (keyCode == 18)){endAltKey();}
 		}
 	}		
+	
+	private void sendKeyPressToWindows(char key, int keyCode) {
+		handleKeyPress(key,keyCode);	//handle all other (non-numeric) keys in instancing class
+		for(int i =0; i<numDispWins; ++i){dispWinFrames[i].setValueKeyPress(key, keyCode);}
+		setValueKeyPressed(true);
+	}
 	//modview tied to shift key
-	private void endShiftKey(){	clearBaseFlags(new int []{shiftKeyPressed, modView});	for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endShiftKey();}}
-	private void endAltKey(){	clearBaseFlags(new int []{altKeyPressed});				for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endAltKey();}}
-	private void endCntlKey(){	clearBaseFlags(new int []{cntlKeyPressed});				for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endCntlKey();}}
+	private void endShiftKey(){			clearBaseFlags(new int []{shiftKeyPressed, modView});	for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endShiftKey();}}
+	private void endAltKey(){			setAltPressed(false);				for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endAltKey();}}
+	private void endCntlKey(){			setCntlPressed(false);				for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endCntlKey();}}
+	private void endValueKeyPressed() {	setValueKeyPressed(false);			for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endValueKeyPress();}}
 	
 	public abstract double clickValModMult();
 	public abstract boolean isClickModUIVal();
@@ -838,15 +850,15 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void mouseMoved(){for(int i =0; i<numDispWins; ++i){if (dispWinFrames[i].handleMouseMove(mouseX, mouseY)){return;}}}
 	public final void mousePressed() {
 		setBaseFlag(mouseClicked, true);
-		if(mouseButton == LEFT){			myMouseClicked(0);} 
-		else if (mouseButton == RIGHT) {	myMouseClicked(1);}
+		if(mouseButton == LEFT){							myMouseClicked(0);} 
+		else if (mouseButton == RIGHT) {						myMouseClicked(1);}
 		//for(int i =0; i<numDispWins; ++i){	if (dispWinFrames[i].handleMouseClick(mouseX, mouseY,c.getMseLoc(sceneCtrVals[sceneIDX]))){	return;}}
 	}// mousepressed		
 	private void myMouseClicked(int mseBtn){ 	for(int i =0; i<numDispWins; ++i){if (dispWinFrames[i].handleMouseClick(mouseX, mouseY,mseBtn)){return;}}}
 	
 	public final void mouseDragged(){
-		if(mouseButton == LEFT){			myMouseDragged(0);}
-		else if (mouseButton == RIGHT) {	myMouseDragged(1);}
+		if(mouseButton == LEFT){							myMouseDragged(0);}
+		else if (mouseButton == RIGHT) {						myMouseDragged(1);}
 	}//mouseDragged()
 	private void myMouseDragged(int mseBtn){	for(int i =0; i<numDispWins; ++i){if (dispWinFrames[i].handleMouseDrag(mouseX, mouseY, pmouseX, pmouseY,c.getMseDragVec(),mseBtn)) {return;}}}
 	
@@ -854,7 +866,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void mouseWheel(MouseEvent event) {
 		if(dispWinFrames.length < 1) {return;}
 		if (dispWinFrames[curFocusWin].getFlags(myDispWindow.canChgView)) {// (canMoveView[curFocusWin]){	
-			float mult = (getBaseFlag(shiftKeyPressed)) ? 5.0f * mouseWhlSens : mouseWhlSens;
+			float mult = (getBaseFlag(shiftKeyPressed)) ? 50.0f * mouseWhlSens : 10.0f*mouseWhlSens;
 			dispWinFrames[curFocusWin].handleViewChange(true,(mult * event.getCount()),0);
 		}
 	}
@@ -1344,7 +1356,41 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	  }
 	
 	
+	public final void cylinder_NoFill(myPoint A, myPoint B, float r, int c1, int c2) {
+		myPoint P = A;
+		myVector V = new myVector(A,B);
+		myVector I = c.getDrawSNorm();//U(Normal(V));
+		myVector J = I._cross(V)._normalize(); 
+		float da = TWO_PI/36;
+		noFill();
+		beginShape(QUAD_STRIP);
+			for(float a=0; a<=TWO_PI+da; a+=da) {
+				stroke(c1); 
+				//gl_vertex(myPoint._add(P,r*cos(a),I,r*sin(a),J,0,V)); 
+				gl_vertex(myPoint._add(P,r*cos(a),I,r*sin(a),J)); 
+				stroke(c2); 
+				gl_vertex(myPoint._add(P,r*cos(a),I,r*sin(a),J,1,V));}
+		endShape();
+	}
+
 	
+	public final void cylinder_NoFill(myPointf A, myPointf B, float r, int c1, int c2) {
+		myPointf P = A;
+		myVectorf V = new myVectorf(A,B);
+		myVectorf I = c.getDrawSNorm_f();//U(Normal(V));
+		myVectorf J = I._cross(V)._normalize(); 
+		float da = TWO_PI/36;
+		noFill();
+		beginShape(QUAD_STRIP);
+			for(float a=0; a<=TWO_PI+da; a+=da) {
+				stroke(c1); 
+				//gl_vertex(myPoint._add(P,r*cos(a),I,r*sin(a),J,0,V)); 
+				gl_vertex(myPointf._add(P,r*cos(a),I,r*sin(a),J)); 
+				stroke(c2); 
+				gl_vertex(myPointf._add(P,r*cos(a),I,r*sin(a),J,1,V));}
+		endShape();
+	}
+
 	
 	
 	public final void cylinder(myPoint A, myPoint B, float r, int c1, int c2) {

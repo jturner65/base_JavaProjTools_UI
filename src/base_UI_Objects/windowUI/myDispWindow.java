@@ -73,13 +73,6 @@ public abstract class myDispWindow {
 	//array of priv buttons to be cleared next frame - should always be empty except when buttons need to be cleared
 	protected ArrayList<Integer> privBtnsToClear;
 	
-//	//edit circle quantities for visual cues when grab and smoothen trajectories
-//	public static final int[] editCrcFillClrs = new int[] {my_procApplet.gui_FaintMagenta, my_procApplet.gui_FaintGreen};			
-//	public static final float[] editCrcRads = new float[] {20.0f,40.0f};			
-//	public static final float[] editCrcMods = new float[] {1f,2f};			
-//	public final myPoint[] editCrcCtrs = new myPoint[] {new myPoint(0,0,0),new myPoint(0,0,0)};			
-//	public float[] editCrcCurRads = new float[] {0,0};	
-	
 	//UI objects in this window
 	//GUI Objects
 	public myGUIObj[] guiObjs;	
@@ -103,6 +96,10 @@ public abstract class myDispWindow {
 	private float[] UIRtSideRectBox;
 	//closed window box
 	private float[] closedUIRtSideRecBox;
+	
+	//key pressed
+	protected char keyPressed = ' ';
+	protected int keyCodePressed = 0;	
 	
 	///////////////////////////////////////
 	// traj stuff
@@ -141,7 +138,7 @@ public abstract class myDispWindow {
 	//this is set to true when curCustXXX vals are set to != -1; this is used as a 1-frame buffer to allow the UI to turn on the source buttons of these functions
 	private boolean custClickSetThisFrame = false, custFuncDoLaunch = false;
 	
-	public myDispWindow(my_procApplet _p, String _n, int _flagIdx, int[] fc,  int[] sc, float[] rd, float[] rdClosed, String _winTxt, boolean _canDrawTraj) {
+	public myDispWindow(my_procApplet _p, String _n, int _flagIdx, int[] fc,  int[] sc, float[] rd, float[] rdClosed, String _winTxt) {
 		pa=_p;
 		msgObj = MessageObject.buildMe(pa);
 		ID = winCnt++;
@@ -157,9 +154,14 @@ public abstract class myDispWindow {
 		msOvrObj = -1;
 	}//ctor
 	
-	public void initThisWin(boolean _canDrawTraj, boolean _trajIsFlat, boolean _isMenu){
-		if(_canDrawTraj) {trajMgr = new myTrajManager(pa, this, _canDrawTraj,_trajIsFlat);} else {trajMgr = null;}
+	public void initThisWin(boolean _isMenu){
 		initFlags();
+//		if(_canDrawTraj) {
+//			trajMgr = new myTrajManager(pa, this, _canDrawTraj,_trajIsFlat);
+//		} else {
+//			trajMgr = null;
+//		}
+		//initFlags();
 		if(!_isMenu){
 			initUIBox();				//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
 		}
@@ -194,13 +196,19 @@ public abstract class myDispWindow {
 	}//initThisWin	
 	
 	//final initialization stuff, after window made, but necessary to make sure window displays correctly
-	public void finalInit(boolean thisIs3D, boolean viewCanChange, myPoint _ctr, myVector _baseFcs) {
+	public void finalInit(boolean _canDrawTraj, boolean thisIs3D, boolean viewCanChange, myPoint _ctr, myVector _baseFcs) {
 		setFlags(is3DWin, thisIs3D);
 		setFlags(canChgView, viewCanChange);
 		sceneFcsVal = new myVector(_baseFcs);
 		sceneCtrVal = new myPoint(_ctr);
 		focusTar = new myVector(_baseFcs);		
-		if(null!=trajMgr) {trajMgr.finalTrajValsInit(_ctr, _baseFcs);}
+		//if(null!=trajMgr) {trajMgr.finalTrajValsInit(_ctr, _baseFcs);}
+		if(_canDrawTraj) {
+			trajMgr = new myTrajManager(pa, this, _canDrawTraj,!thisIs3D);
+		} else {
+			trajMgr = null;
+		}
+
 	}
 	
 	//set up initial trajectories - 2d array, 1 per UI Page, 1 per modifiable construct within page.
@@ -532,7 +540,7 @@ public abstract class myDispWindow {
 	
 	public String[] getSaveFileDirName() {
 		String[] vals = getSaveFileDirNamesPriv();
-		if(vals.length != 2) {return new String[0];}
+		if((null==vals) || (vals.length != 2)) {return new String[0];}
 		String[] res = new String[] {
 			ssPathBase + vals[0] + File.separatorChar, vals[1]	
 		};
@@ -899,13 +907,12 @@ public abstract class myDispWindow {
 	public void handleViewTargetChange(float delY, float delX) {
 		//find screen up unit vector, screen right unit vector in world space, dot focus tar with that, move in that direction
 		setCamOrient();
-		
-		if(Math.abs(delY) > 0) {
+		if(delY != 0.0f) {
 			myVectorf scrUp = pa.c.getUScrUpInWorldf();//, upVec = myVectorf._cross(scrRt, scrUp);
-			myVectorf up = new myVectorf(scrUp.x* -delY,scrUp.y* -delY,scrUp.z* -delY);
+			myVectorf up = new myVectorf(scrUp.x* delY,scrUp.y* delY,scrUp.z* delY);
 			focusTar._add(up);
 		}		
-		if(Math.abs(delX) > 0) {
+		if(delX!= 0.0f) {
 			myVectorf scrRt = pa.c.getUScrRightInWorldf();
 			myVectorf rt = new myVectorf(scrRt.x* delX,scrRt.y* delX,scrRt.z* delX);
 			focusTar._add(rt);
@@ -929,7 +936,13 @@ public abstract class myDispWindow {
 	
 	public boolean msePtInRect(int x, int y, float[] r){return ((x > r[0])&&(x <= r[0]+r[2])&&(y > r[1])&&(y <= r[1]+r[3]));}	
 	public boolean msePtInUIRect(int x, int y){return ((x > uiClkCoords[0])&&(x <= uiClkCoords[2])&&(y > uiClkCoords[1])&&(y <= uiClkCoords[3]));}	
-
+	/**
+	 * handle a mouse click
+	 * @param mouseX x location on screen
+	 * @param mouseY y location on screen
+	 * @param mseBtn which button is pressed : 0 is left, 1 is right
+	 * @return
+	 */
 	public boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
 		boolean mod = false;
 		if((getFlags(showIDX))&& (msePtInUIRect(mouseX, mouseY))){//in clickable region for UI interaction
@@ -977,9 +990,7 @@ public abstract class myDispWindow {
 			//modify object that was clicked in by mouse motion
 			if(msClkObj!=-1){	guiObjs[msClkObj].modVal((mouseX-pmouseX)+(mouseY-pmouseY)*-(pa.shiftIsPressed() ? 50.0f : 5.0f));setFlags(uiObjMod, true); return true;}		
 			
-			if(null!=trajMgr) {
-				mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn);
-			}
+			if(null!=trajMgr) {	mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn);		}
 		
 			if(!mod) {
 				if((!pa.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle
@@ -1040,6 +1051,15 @@ public abstract class myDispWindow {
 		if(null!=trajMgr) {trajMgr.endCntlKey();}
 		endCntlKeyI();
 	}	
+	
+	public void setValueKeyPress(char _key, int _keyCode) {	keyPressed = _key; keyCodePressed = _keyCode;}
+	
+	public void endValueKeyPress() {
+		if(!getFlags(showIDX)){return;}
+		if(null!=trajMgr) {trajMgr.endValueKeyPress();}
+		keyPressed = ' ';
+		keyCodePressed = 0;
+	}
 	
 	//finds closest point to p in sPts - put dist in d
 	public final int findClosestPt(myPoint p, double[] d, myPoint[] _pts){

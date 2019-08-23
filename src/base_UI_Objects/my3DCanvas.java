@@ -27,7 +27,6 @@ public class my3DCanvas {
 	private myPoint[] canvas3D;											//3d plane, normal to camera eye, to be used for drawing - need to be in "view space" not in "world space", so that if camera moves they don't change
 	private myVector eyeToMse,											//eye to 2d mouse location 
 					eyeToCtr,													//vector from eye to center of cube, to be used to determine which panels of bounding box to show or hide
-					//eyeTodfCtr,
 					drawSNorm;													//current normal of viewport/screen
 		
 	private int viewDimW2, viewDimH2;
@@ -115,9 +114,9 @@ public class my3DCanvas {
 		return res._normalize();
 	}
 	//gets a unit vector that is up in the world relative to eye position and view direction
-	public myVector getUScrUpInWorld(){			myVector res = new myVector(pick(viewDimW2, viewDimH2,-.00001f),pick(viewDimW2, 0,-.00001f));			return res._normalize();}	
+	public myVector getUScrUpInWorld(){			myVector res = new myVector(pick(viewDimW2, viewDimH2,-.00001f),pick(viewDimW2, viewDimH,-.00001f));			return res._normalize();}	
 	public myVector getUScrRightInWorld(){		myVector res = new myVector(pick(viewDimW2, viewDimH2,-.00001f),pick(viewDimW, viewDimH2,-.00001f));	return res._normalize();	}
-	public myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(pick(viewDimW2, viewDimH2,-.00001f),pick(viewDimW2, 0,-.00001f));			return res._normalize();}	
+	public myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(pick(viewDimW2, viewDimH2,-.00001f),pick(viewDimW2,viewDimH,-.00001f));			return res._normalize();}	
 	public myVectorf getUScrRightInWorldf(){	myVectorf res = new myVectorf(pick(viewDimW2, viewDimH2,-.00001f),pick(viewDimW, viewDimH2,-.00001f));	return res._normalize();}
 	
 	public void drawCanvas(){

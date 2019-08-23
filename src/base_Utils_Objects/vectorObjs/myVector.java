@@ -149,21 +149,21 @@ public class myVector extends myPoint{
 	}//_angleBetween
 
 	
-	/**
-	 * alternate formulation of above?
-	 * @param U
-	 * @param V
-	 * @return
-	 */	
-	public static double _angleBetween_Xprod(myVector U, myVector V){
-		myVector cross = U._cross(V);
-		double dot = U._dot(V);
-		
-		double angle = Math.atan2(cross.magn,dot),
-				sign = _mixProd(U,V,new myVector(0,0,1));
-		if(sign<0){    angle=-angle;}	
-		return angle;
-	}
+//	/**
+//	 * alternate formulation of above?
+//	 * @param U
+//	 * @param V
+//	 * @return
+//	 */	
+//	public static double _angleBetween_Xprod(myVector U, myVector V){
+//		myVector cross = U._cross(V);
+//		double dot = U._dot(V);
+//		
+//		double angle = Math.atan2(cross.magn,dot),
+//				sign = _mixProd(U,V,new myVector(0,0,1));
+//		if(sign<0){    angle=-angle;}	
+//		return angle;
+//	}
 
 	
 	public static myVector _rotAroundAxis(myVector v1, myVector u){return _rotAroundAxis(v1, u, Math.PI*.5);}
@@ -195,6 +195,33 @@ public class myVector extends myPoint{
 				(uxzC1-uyS) 	  * this.x + (uyzC1+uxS)		* this.y + (uz2*oneMC + cThet) * this.z);
 		
 		return res;		
+	}
+	
+	/**
+	 * Find the angle between two vectors - Note this version is for 2D - relies on neither vector being coplanar with (0,0,1);
+	 * @param U
+	 * @param V
+	 * @return
+	 */	
+	public static double _angleBetween_Xprod(myVector U, myVector V){
+		return _angleBetween_Xprod(U,V, new myVector(0,0,1));
+	}
+
+	/**
+	 * Find the angle between two vectors, with axis about which to determine sign
+	 * @param U
+	 * @param V
+	 * @param axis unit length axis about which to determine sign
+	 * @return
+	 */	
+	public static double _angleBetween_Xprod(myVector U, myVector V, myVector axis){
+		myVector cross = U._cross(V);
+		double dot = U._dot(V);
+		
+		double angle = (float) Math.atan2(cross.magn,dot),
+				sign = _mixProd(U,V,axis);
+		if(sign<0){    angle=-angle;}	
+		return angle;
 	}
 
 	/**
