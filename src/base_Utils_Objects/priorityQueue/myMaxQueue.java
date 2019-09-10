@@ -1,6 +1,6 @@
-package pkgCS6730Project1.priorityQueue;
+package base_Utils_Objects.priorityQueue;
 
-import pkgCS6730Project1.priorityQueue.base.myPriorityQueue;
+import base_Utils_Objects.priorityQueue.base.myPriorityQueue;
 
 public class myMaxQueue<T extends Comparable<T>> extends myPriorityQueue<T>{
 	public myMaxQueue() {super();}//empty max priority queue of default size

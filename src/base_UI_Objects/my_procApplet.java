@@ -307,7 +307,9 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		//1 time initialization of visualization things that won't change
 	public final void initVisOnce(){	
 		int numThreadsAvail = getNumThreadsAvailable();
-		
+		//init internal state flags structure
+		initBaseFlags();			
+
 		now = Calendar.getInstance();
 		//mouse scrolling scale
 		msSclX = (float) (Math.PI/width);
@@ -332,8 +334,6 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		finalDispWinInit();
 		initVisFlags();
 
-		//init initernal state flags structure
-		initBaseFlags();			
 		//this is to determine which main flags to display on window
 		setBaseFlag(clearBKG,true);
 		//camVals = new float[]{width/2.0f, height/2.0f, (height/2.0f) / tan(PI/6.0f), width/2.0f, height/2.0f, 0, 0, 1, 0};
@@ -889,12 +889,11 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	 * @param val whether window idx is turned on(true) or off(false)
 	 */
 	public final void setWinFlagsXOR(int idx, boolean val){
-		//outStr2Scr("SetWinFlagsXOR : idx " + idx + " val : " + val);
 		if(val){//turning one on
 			//turn off not shown, turn on shown				
 			for(int i =0;i<winDispIdxXOR.length;++i){//check windows that should be mutually exclusive during display
-				if(winDispIdxXOR[i]!= idx){dispWinFrames[winDispIdxXOR[i]].setShow(false);handleShowWin(i ,0,false); forceVisFlag(winFlagsXOR[i], false);}
-				else {
+				if(winDispIdxXOR[i]!= idx){dispWinFrames[winDispIdxXOR[i]].setShow(false);handleShowWin(i ,0,false); forceVisFlag(winFlagsXOR[i], false);}//not this window
+				else {//turning on this one
 					dispWinFrames[idx].setShow(true);
 					handleShowWin(i ,1,false); 
 					forceVisFlag(winFlagsXOR[i], true);
@@ -981,13 +980,13 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected void setMenuBtnState(int row, int col, int val) {
 		((BaseBarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
 		if (val == 1) {
-			outStr2Scr("Note!!! Turning on button at row : " + row + "  col " + col + " without processing button's command.");
+			//outStr2Scr("my_procApplet :: setMenuBtnState :: Note!!! Turning on button at row : " + row + "  col " + col + " without processing button's command.");
 			((BaseBarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
 	}//setMenuBtnState	
 	
 	public void loadFromFile(File file){
 		if (file == null) {
-		    outStr2Scr("Load was cancelled.");
+			outStr2Scr("my_procApplet :: setMenuBtnState ::Load was cancelled.");
 		    return;
 		} 		
 		//reset to match navigation in file IO window
@@ -998,7 +997,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	public void saveToFile(File file){
 		if (file == null) {
-		    outStr2Scr("Save was cancelled.");
+			outStr2Scr("my_procApplet :: setMenuBtnState ::Save was cancelled.");
 		    return;
 		} 
 		//reset to match navigation in file IO window
@@ -1585,6 +1584,17 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void show(myPoint[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};                     
 	public final void show(myPoint[] ara, myVector norm) {beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};   
 	public final void showVec( myPointf ctr, float len, myVectorf v){line(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
+	
+	/**
+	 * this will properly format and display a string of text, and will translate the width, so multiple strings can be displayed on the same line with different colors
+	 * @param tclr
+	 * @param txt
+	 */
+	public final void showOffsetText_RightSideMenu(int[] tclr, float mult,  String txt) {
+		setFill(tclr,tclr[3]);setStroke(tclr,tclr[3]);
+		text(txt,0.0f,0.0f,0.0f);
+		translate(txt.length()*mult, 0.0f,0.0f);		
+	}
 	
 	public final void showOffsetText(float d, int tclr, String txt){
 		setColorValFill(tclr, 255);setColorValStroke(tclr, 255);

@@ -294,6 +294,40 @@ public class myPoint {
 	public double[] asHAraVec(){return new double[]{this.x, this.y, this.z,0};}
 	
 	/**
+	 * this will calculate normalized barycentric coordinates (u, v, w) for pt w/respect to first 3 control points
+	 * @param cntlPts control points of poly
+	 * @return
+	 */
+	public final double[] calcNormBaryCoords(myPoint[] cntlPts) {		
+		//pt = u * cntlPts[0] + v * cntlPts[1] + w * cntlPts[2]
+		myVector AB = new myVector(cntlPts[0],cntlPts[1]),
+				AC = new myVector(cntlPts[0],cntlPts[2]),
+				AP = new myVector(cntlPts[0],this);
+		double d00 = AB.sqMagn, d01 = AB._dot(AC), 
+			d11 = AC.sqMagn, d20 = AP._dot(AB), d21 = AP._dot(AC);
+		double 
+	    	denom = d00 * d11 - d01 * d01,
+	    	v = (d11 * d20 - d01 * d21) / denom,
+	    	w =  (d00 * d21 - d01 * d20) / denom,
+	    	u = 1.0f - v- w;
+		
+		return new double[] {u,v,w};
+	}
+	
+	/**
+	 * given control points and passed normalized barycentric coordinates, calculate resultant point
+	 * @param cntlPts
+	 * @param pointNBC
+	 * @return
+	 */	
+	public static final myPoint calcPointFromNormBaryCoords(myPoint[] cntlPts, double[] pointNBC) {
+		myPoint res = new myPoint();
+		for(int i=0;i<pointNBC.length;++i) {	res._add(myPoint._mult(cntlPts[i], pointNBC[i]));}	
+		return res;
+	}
+
+	
+	/**
 	 * render this point as a black sphere in 3d
 	 * @param pa : render interface capable of drawing this point
 	 * @param r : radius of resultant sphere

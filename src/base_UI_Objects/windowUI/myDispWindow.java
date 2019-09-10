@@ -455,7 +455,7 @@ public abstract class myDispWindow {
 		uiVals = new double[numGUIObjs];// raw values
 		for (int i = 0; i < numGUIObjs; ++i) {
 			guiMinMaxModVals[i] = (double[]) tmpUIObjArray.get(i)[0];
-			guiStVals[i] = (Double) tmpUIObjArray.get(i)[1];
+			guiStVals[i] = (Double)(tmpUIObjArray.get(i)[1]);
 			guiObjNames[i] = (String) tmpUIObjArray.get(i)[2];
 			guiBoolVals[i] = (boolean[]) tmpUIObjArray.get(i)[3];
 			uiVals[i] = guiStVals[i];
