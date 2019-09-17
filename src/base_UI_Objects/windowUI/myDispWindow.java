@@ -739,7 +739,10 @@ public abstract class myDispWindow {
 		pa.hint(PConstants.ENABLE_DEPTH_TEST);
 		pa.popStyle();pa.popMatrix();		
 	}
-	
+	/**
+	 * called by drawUI in my_procApplet
+	 * @param modAmtMillis
+	 */
 	public void drawHeader(float modAmtMillis){
 		if(!getFlags(showIDX)){return;}
 		pa.pushMatrix();				pa.pushStyle();			
@@ -753,8 +756,10 @@ public abstract class myDispWindow {
 		if(getFlags(closeable)){drawMouseBox();}
 		//TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
 		if(getFlags(hasScrollBars) && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe();}
-		//draw rightSideMenu stuff, if this window supports it
-		if(getFlags(drawRightSideMenu)) {drawRtSideInfoBar(modAmtMillis);	}
+		
+		//if(getFlags(drawRightSideMenu)) {drawOnScreenStuff(modAmtMillis);	}
+		//draw stuff on screen, including rightSideMenu stuff, if this window supports it
+		drawOnScreenStuff(modAmtMillis);	
 		pa.lights();	
 		pa.hint(PConstants.ENABLE_DEPTH_TEST);
 		pa.popStyle();pa.popMatrix();	
@@ -764,8 +769,11 @@ public abstract class myDispWindow {
 //		if (privBtnsToClear.size() > 0){setFlags(clearPrivBtns, true);	}		
 	}//drawHeader
 	
-	//draw right side "menu" used to display simualtion/calculation variables and results
-	private void drawRtSideInfoBar(float modAmtMillis) {
+	/**
+	 * draw stuff on screen - start next to left-side menu
+	 * @param modAmtMillis
+	 */
+	private void drawOnScreenStuff(float modAmtMillis) {
 		pa.pushMatrix();pa.pushStyle();
 		//move to upper right corner of sidebar menu - cannot draw over leftside menu, use drawCustMenuObjs() instead to put UI objects there
 		//this side window is for information display
@@ -1137,8 +1145,6 @@ public abstract class myDispWindow {
 	//type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
 	protected abstract void launchMenuBtnHndlr(int funcRow, int btn) ;
 	
-
-	
 	//return relevant name information for files and directories to be used to build screenshots/saved files	
 	protected abstract String[] getSaveFileDirNamesPriv();
 	
@@ -1200,6 +1206,8 @@ public abstract class myDispWindow {
 	protected abstract void drawMe(float animTimeMod);	
 	protected abstract void drawRightSideInfoBarPriv(float modAmtMillis);
 	protected abstract void drawOnScreenStuffPriv(float modAmtMillis);
+	
+	public MessageObject getMsgObj() {return msgObj;}
 	
 	public String toString(){
 		String res = "Window : "+name+" ID: "+ID+" Fill :("+fillClr[0]+","+fillClr[1]+","+fillClr[2]+","+fillClr[3]+

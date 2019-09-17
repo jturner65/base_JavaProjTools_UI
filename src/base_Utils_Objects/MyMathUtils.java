@@ -8,6 +8,7 @@ import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
 import base_Utils_Objects.vectorObjs.myVectorf;
+import processing.core.PConstants;
 
 /**
  * mathematical functions and constants that might be of use in some applications
@@ -110,6 +111,58 @@ public class MyMathUtils {
 		myVectorf BP = new myVectorf(B,P), BA = new myVectorf(B,A);		
 		return BP._dot(BA)>0 ; 						//if not greater than 0 than won't project onto AB - past B away from segment
 	}
+	
+	//public static final int O_FWD = 0, O_RHT = 1,  O_UP = 2;
+	/**
+	 * build axis angle orientation from passed orientation matrix
+	 * @param orientation array of 3 vectors corresponding to orientation vectors
+	 * @param O_FWD idx of forward orientation
+	 * @param O_RHT idx of right orientation
+	 * @param O_UP idx of up orientation
+	 * @return axis-angle representation of orientation
+	 */
+	public static float[] toAxisAngle(myVectorf[] orientation, int O_FWD, int O_RHT, int O_UP) {
+		float rt2 = .5f*sqrt2_f;//p.fsqrt2; 
+		float angle,x=rt2,y=rt2,z=rt2,s;
+		float fyrx = -orientation[O_FWD].y+orientation[O_RHT].x,
+			uxfz = -orientation[O_UP].x+orientation[O_FWD].z,
+			rzuy = -orientation[O_RHT].z+orientation[O_UP].y;
+		float epsValCalcSq = eps_f*eps_f;
+		if (((fyrx*fyrx) < epsValCalcSq) && ((uxfz*uxfz) < epsValCalcSq) && ((rzuy*rzuy) < epsValCalcSq)) {			//checking for rotational singularity
+			// angle == 0
+			float fyrx2 = orientation[O_FWD].y+orientation[O_RHT].x,
+				fzux2 = orientation[O_FWD].z+orientation[O_UP].x,
+				rzuy2 = orientation[O_RHT].z+orientation[O_UP].y,
+				fxryuz3 = orientation[O_FWD].x+orientation[O_RHT].y+orientation[O_UP].z-3;
+			if (((fyrx2*fyrx2) < 1)	&& (fzux2*fzux2 < 1) && ((rzuy2*rzuy2) < 1) && ((fxryuz3*fxryuz3) < 1)) {	return new float[]{0,1,0,0}; }
+			// angle == pi
+			angle = PConstants.PI;
+			float fwd2x = (orientation[O_FWD].x+1)/2.0f,rht2y = (orientation[O_RHT].y+1)/2.0f,up2z = (orientation[O_UP].z+1)/2.0f,
+				fwd2y = fyrx2/4.0f, fwd2z = fzux2/4.0f, rht2z = rzuy2/4.0f;
+			if ((fwd2x > rht2y) && (fwd2x > up2z)) { // orientation[O_FWD].x is the largest diagonal term
+				if (fwd2x< eps_f) {	x = 0;} else {			x = (float) Math.sqrt(fwd2x);y = fwd2y/x;z = fwd2z/x;} 
+			} else if (rht2y > up2z) { 		// orientation[O_RHT].y is the largest diagonal term
+				if (rht2y< eps_f) {	y = 0;} else {			y = (float) Math.sqrt(rht2y);x = fwd2y/y;z = rht2z/y;}
+			} else { // orientation[O_UP].z is the largest diagonal term so base result on this
+				if (up2z< eps_f) {	z = 0;} else {			z = (float) Math.sqrt(up2z);	x = fwd2z/z;y = rht2z/z;}
+			}
+			return new float[]{angle,x,y,z}; // return 180 deg rotation
+		}
+		//no singularities - handle normally
+		myVectorf tmp = new myVectorf(rzuy, uxfz, fyrx);
+		s = tmp.magn;
+		if (s < eps_f){ s=1; }
+		tmp._scale(s);//changes mag to s
+			// prevent divide by zero, should not happen if matrix is orthogonal -- should be caught by singularity test above
+		angle = (float) -Math.acos(( orientation[O_FWD].x + orientation[O_RHT].y + orientation[O_UP].z - 1)/2.0);
+		
+		//consume this as follows : 
+		//p.rotate(O_axisAngle[0],O_axisAngle[1],O_axisAngle[2],O_axisAngle[3]);
+		
+	   return new float[]{angle,tmp.x,tmp.y,tmp.z};
+	}//toAxisAngle
+	
+	
 	
 	/**
 	 * Calculate normal to planed described by triangle ABC, non-normalized (proportional to area)
