@@ -48,6 +48,7 @@ public class myVector extends myPoint{
 	
 	public void _div(double q){super._div(q); this._mag();}  
 	public static myVector _div(myVector p, double n){ if(n==0) return p; return new myVector(p.x / n, p.y / n, p.z / n); }                          //1 pt, 1 double
+	public static myVector _div(myVector p, myVector q){ if((q.x==0)||(q.y==0)|| (q.z==0))return p; return new myVector(p.x / q.x, p.y / q.y, p.z / q.z); }                          //1 pt, 1 double
 	
 	public void _add(double _x, double _y, double _z){ super._add(_x, _y, _z); this._mag(); }                                            //_add 3 args
 	public void _add(myVector v){ this.x += v.x; this.y += v.y; this.z += v.z;  this._mag();  }                                                 //_add 1 arg  

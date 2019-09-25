@@ -218,8 +218,12 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void settings(){	
 		int[] desDims = getDesiredAppDims();
 		size(desDims[0], desDims[1],P3D);	
-		noSmooth();
+		//allow user to set smoothing
+		setSmoothing();
+		//noSmooth();
 	}	
+	
+	protected abstract void setSmoothing();
 	/**
 	 * modify 3D grid dimensions to be cube of passed value per side
 	 * @param _gVal

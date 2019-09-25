@@ -83,11 +83,41 @@ public class myPointf {
 	 */	
 	public myPointf _avgWithMe(myPointf q) {return new myPointf((this.x+q.x)/2.0f,(this.y+q.y)/2.0f,(this.z+q.z)/2.0f);} 
 	/**
+	 * build and return the average (midpoint) of this point and the passed points
+	 * @param q,r : the points to find the midpoint with
+	 * @return the midpoint between this and q and r
+	 */	
+	public myPointf _avgWithMe(myPointf q, myPointf r) {return new myPointf((this.x+q.x+r.x)/3.0f,(this.y+q.y+r.y)/3.0f,(this.z+q.z+r.z)/3.0f);} 
+	/**
+	 * build and return the average (midpoint) of this point and the passed points
+	 * @param q,r : the points to find the midpoint with
+	 * @return the midpoint between this and q and r
+	 */	
+	public myPointf _avgWithMe(myPointf q, myPointf r, myPointf s) {return new myPointf((this.x+q.x+r.x+s.x)/4.0f,(this.y+q.y+r.y+s.y)/4.0f,(this.z+q.z+r.z+s.z)/4.0f);} 
+	/**
 	 * Static method : build the midpoint between the two passed points
 	 * @param p,q : 2 points to find the midpoint between
 	 * @return midpoint between p and q
 	 */
 	public static myPointf _average(myPointf p, myPointf q) {return new myPointf((p.x+q.x)/2.0f,(p.y+q.y)/2.0f,(p.z+q.z)/2.0f);} 
+	/**
+	 * Static method : build the midpoint between the three passed points
+	 * @param p,q,r : 3 points to find the midpoint between
+	 * @return midpoint between  p,q,r
+	 */
+	public static myPointf _average(myPointf p, myPointf q, myPointf r) {return new myPointf((p.x+q.x+r.x)/3.0f,(p.y+q.y+r.y)/3.0f,(p.z+q.z+r.z)/3.0f);} 
+	/**
+	 * Static method : build the midpoint between the two passed points
+	 * @param p,q,r,s : 4 points to find the midpoint between
+	 * @return midpoint between p,q,r,s
+	 */
+	public static myPointf _average(myPointf p, myPointf q, myPointf r, myPointf s) {return new myPointf((p.x+q.x+r.x+s.x)/4.0f,(p.y+q.y+r.y+s.y)/4.0f,(p.z+q.z+r.z+s.z)/4.0f);} 
+	/**
+	 * Static method : build the center of verticies for the array of passed points (COV)
+	 * @param pts : array of points
+	 * @return COV for pts array
+	 */
+	public static myPointf _average(myPointf[] pts) {myPointf res = new myPointf();	for(myPointf p : pts) {	res._add(p);}return myPointf._div(res, 1.0f*pts.length);} 
 	/**
 	 * multiply this point by n, modifying this point to be result
 	 * @param n : value to scale this vector by

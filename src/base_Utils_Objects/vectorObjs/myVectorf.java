@@ -51,6 +51,7 @@ public class myVectorf extends myPointf{
 	
 	public void _div(float q){super._div(q); this._mag();}  
 	public static myVectorf _div(myVectorf p, float n){ if(n==0) return p; myVectorf result = new myVectorf(p.x / n, p.y / n, p.z / n); return result;}                          //1 pt, 1 float
+	public static myVectorf _div(myVectorf p, myVectorf q){ if((q.x==0)||(q.y==0)|| (q.z==0))return p; return new myVectorf(p.x / q.x, p.y / q.y, p.z / q.z); }                          //1 pt, 1 double
 	
 	public void _add(float _x, float _y, float _z){ super._add(_x, _y, _z); this._mag(); }                                            //_add 3 args
 	public void _add(myVectorf v){ this.x += v.x; this.y += v.y; this.z += v.z;  this._mag();  }                                                 //_add 1 arg  
