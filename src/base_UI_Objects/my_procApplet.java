@@ -298,11 +298,13 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	public final void setup() {
 		colorMode(RGB, 255, 255, 255, 255);
-		frameRate(frate);
+//		frameRate(frate);
 		setup_indiv();
 		initVisOnce();						//always first
 		//call this in first draw loop?
 		initOnce();		
+		//needs to be the last thing called in setup, to avoid timeout 5000ms issue
+		frameRate(frate);
 	}//setup()
 	
 	protected abstract void setup_indiv();

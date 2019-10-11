@@ -69,8 +69,7 @@ public abstract class myThreadRunner {
 	 */
 	public final void runMe() {
 		if(canMultiThread){
-			int numPartitions = Math.round(numWorkUnits/(1.0f*getNumPerPartition()) + .5f);
-			if(numPartitions < 1) {numPartitions = 1;}
+			int numPartitions = getNumPartitions();
 			int numPerPartition = calcNumPerThd(numWorkUnits,numPartitions);
 			
 			ExMappers = new ArrayList<Callable<Boolean>>();
@@ -91,6 +90,16 @@ public abstract class myThreadRunner {
 		}
 		runMe_Indiv_End();
 	}//runMe()
+	
+	/**
+	 * return the number of partitions to use, based on the current # of work units and the number per partition to shoot for
+	 * @return
+	 */
+	protected int getNumPartitions() {
+		int numPartitions = Math.round(numWorkUnits/(1.0f*getNumPerPartition()) + .5f);
+		if(numPartitions < 1) {numPartitions = 1;}
+		return numPartitions;
+	}
 	/**
 	 * return approx desired # of work units to perform per partition (thread)
 	 * @return

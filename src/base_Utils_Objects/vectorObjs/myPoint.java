@@ -255,43 +255,42 @@ public class myPoint {
 	 * @param q point to find distance from
 	 * @return squared L2 Distance from this point to q
 	 */
-	public double _SqrDist(myPoint q){ return (((this.x - q.x)*(this.x - q.x)) + ((this.y - q.y)*(this.y - q.y)) + ((this.z - q.z)*(this.z - q.z))); }
+	public double _SqrDist(myPoint q){ double dx=(this.x-q.x), dy=(this.y-q.y), dz=(this.z-q.z);return ((dx*dx) + (dy*dy) + (dz*dz)); }
 	/**
 	 * find squared L2 (Euclidean) distance from this point to q (point represented as float).  Squared L2 distance is
 	 * ((this.x - q.x)*(this.x - q.x)) + ((this.y - q.y)*(this.y - q.y)) + ((this.z - q.z)*(this.z - q.z)) 
 	 * @param q point to find distance from
 	 * @return squared L2 Distance from this point to q
 	 */
-	public double _SqrDist(myPointf q){ return (((this.x - q.x)*(this.x - q.x)) + ((this.y - q.y)*(this.y - q.y)) + ((this.z - q.z)*(this.z - q.z))); }
+	public double _SqrDist(myPointf q){ double dx=(this.x-q.x), dy=(this.y-q.y), dz=(this.z-q.z);return ((dx*dx) + (dy*dy) + (dz*dz)); }
 	/**
 	 * Static Method : find squared L2 (Euclidean) distance from point q to point r.  Squared L2 distance is
 	 * ((r.x - q.x)*(r.x - q.x)) + ((r.y - q.y)*(r.y - q.y)) + ((r.z - q.z)*(r.z - q.z)) 
 	 * @param q,r : points to find distance between
 	 * @return squared L2 Distance from q to r
 	 */
-	public static double _SqrDist(myPoint q, myPoint r){  return (((r.x - q.x) *(r.x - q.x)) + ((r.y - q.y) *(r.y - q.y)) + ((r.z - q.z) *(r.z - q.z)));}
-	
+	public static double _SqrDist(myPoint q, myPoint r){ double dx=(r.x-q.x), dy=(r.y-q.y), dz=(r.z-q.z);return ((dx*dx) + (dy*dy) + (dz*dz)); }	
 	/**
 	 * find L2 (Euclidean) distance from this point to q.  L2 (Euclidean) distance is
 	 * sqrt(((r.x - q.x)*(r.x - q.x)) + ((r.y - q.y)*(r.y - q.y)) + ((r.z - q.z)*(r.z - q.z))) 
 	 * @param q point to find distance to
 	 * @return L2 Distance from this point to q
 	 */
-	public double _dist(myPoint q){ return Math.sqrt( ((this.x - q.x)*(this.x - q.x)) + ((this.y - q.y)*(this.y - q.y)) + ((this.z - q.z)*(this.z - q.z)) ); }
+	public double _dist(myPoint q){ double dx=(this.x-q.x), dy=(this.y-q.y), dz=(this.z-q.z);return Math.sqrt(((dx*dx) + (dy*dy) + (dz*dz)));}
 	/**
 	 * Static Method : find L2 (Euclidean) distance from point q to point r.  Squared L2 distance is
 	 * sqrt(((r.x - q.x)*(r.x - q.x)) + ((r.y - q.y)*(r.y - q.y)) + ((r.z - q.z)*(r.z - q.z))) 
 	 * @param q,r : points to find distance between
 	 * @return L2 Distance from q to r
 	 */
-	public static double _dist(myPoint q, myPoint r){  return Math.sqrt(((r.x - q.x) *(r.x - q.x)) + ((r.y - q.y) *(r.y - q.y)) + ((r.z - q.z) *(r.z - q.z)));}
+	public static double _dist(myPoint q, myPoint r){double dx=(r.x-q.x), dy=(r.y-q.y), dz=(r.z-q.z);return Math.sqrt(((dx*dx) + (dy*dy) + (dz*dz)));}
 	/**
 	 * find L2 (Euclidean) distance from this point to passed coordinates.  Squared L2 distance is
 	 * sqrt(((this.x - qx)*(this.x - qx)) + ((this.y - qy)*(this.y - qy)) + ((this.z - qz)*(this.z - qz)))
 	 * @param qx,qy,qz : coordinates to find distance to
 	 * @return L2 Distance from this to [qx,qy,qz]
 	 */
-	public double _dist(double qx, double qy, double qz){ return Math.sqrt( ((this.x - qx)*(this.x - qx)) + ((this.y - qy)*(this.y - qy)) + ((this.z - qz)*(this.z - qz)) ); }
+	public double _dist(double qx, double qy, double qz){ double dx=(this.x-qx), dy=(this.y-qy), dz=(this.z-qz);return Math.sqrt(((dx*dx) + (dy*dy) + (dz*dz)));}
 	/**
 	 * Static Method : find L2 (Euclidean) distance from point q to passed coordinates.  Squared L2 distance is
 	 * sqrt(((r.x - qx)*(r.x - qx)) + ((r.y - qy)*(r.y - qy)) + ((r.z - qz)*(r.z - qz)))
@@ -299,8 +298,7 @@ public class myPoint {
 	 * @param qx,qy,qz : coordinates to find distance to
 	 * @return L2 Distance from r to [qx,qy,qz]
 	 */
-	public static double _dist(myPoint r, double qx, double qy, double qz){  return Math.sqrt(((r.x - qx) *(r.x - qx)) + ((r.y - qy) *(r.y - qy)) + ((r.z - qz) *(r.z - qz)));}	
-	
+	public static double _dist(myPoint r, double qx, double qy, double qz){ double dx=(r.x-qx), dy=(r.y-qy), dz=(r.z-qz);return Math.sqrt((dx*dx) + (dy*dy) + (dz*dz)); }  
 	/**
 	 * return the values of this point as an array of doubles
 	 * @return array of doubles {x,y,z}

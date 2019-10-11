@@ -274,36 +274,35 @@ public class myPointf {
 	 * @param q point to find distance from
 	 * @return squared L2 Distance from this point to q
 	 */
-	public float _SqrDist(myPointf q){ return (((this.x - q.x)*(this.x - q.x)) + ((this.y - q.y)*(this.y - q.y)) + ((this.z - q.z)*(this.z - q.z))); }
+	public float _SqrDist(myPointf q){ float dx=(this.x-q.x), dy=(this.y-q.y), dz=(this.z-q.z);return ((dx*dx) + (dy*dy) + (dz*dz)); }
 	/**
 	 * Static Method : find squared L2 (Euclidean) distance from point q to point r.  Squared L2 distance is
 	 * ((r.x - q.x)*(r.x - q.x)) + ((r.y - q.y)*(r.y - q.y)) + ((r.z - q.z)*(r.z - q.z)) 
 	 * @param q,r : points to find distance between
 	 * @return squared L2 Distance from q to r
 	 */
-	public static float _SqrDist(myPointf q, myPointf r){  return (((r.x - q.x) *(r.x - q.x)) + ((r.y - q.y) *(r.y - q.y)) + ((r.z - q.z) *(r.z - q.z)));}
-	
+	public static float _SqrDist(myPointf q, myPointf r){ float dx=(r.x-q.x), dy=(r.y-q.y), dz=(r.z-q.z);return ((dx*dx) + (dy*dy) + (dz*dz)); }
 	/**
 	 * find L2 (Euclidean) distance from this point to q.  L2 (Euclidean) distance is
 	 * sqrt(((r.x - q.x)*(r.x - q.x)) + ((r.y - q.y)*(r.y - q.y)) + ((r.z - q.z)*(r.z - q.z))) 
 	 * @param q point to find distance to
 	 * @return L2 Distance from this point to q
 	 */
-	public float _dist(myPointf q){ return (float)Math.sqrt( ((this.x - q.x)*(this.x - q.x)) + ((this.y - q.y)*(this.y - q.y)) + ((this.z - q.z)*(this.z - q.z)) ); }
+	public float _dist(myPointf q){ float dx=(this.x-q.x), dy=(this.y-q.y), dz=(this.z-q.z);return (float) Math.sqrt(((dx*dx) + (dy*dy) + (dz*dz)));}
 	/**
 	 * Static Method : find L2 (Euclidean) distance from point q to point r.  Squared L2 distance is
 	 * sqrt(((r.x - q.x)*(r.x - q.x)) + ((r.y - q.y)*(r.y - q.y)) + ((r.z - q.z)*(r.z - q.z))) 
 	 * @param q,r : points to find distance between
 	 * @return L2 Distance from q to r
 	 */
-	public static float _dist(myPointf q, myPointf r){  return (float)Math.sqrt(((r.x - q.x) *(r.x - q.x)) + ((r.y - q.y) *(r.y - q.y)) + ((r.z - q.z) *(r.z - q.z)));}
+	public static float _dist(myPointf q, myPointf r){double dx=(r.x-q.x), dy=(r.y-q.y), dz=(r.z-q.z);return (float) Math.sqrt(((dx*dx) + (dy*dy) + (dz*dz)));}
 	/**
 	 * find L2 (Euclidean) distance from this point to passed coordinates.  Squared L2 distance is
 	 * sqrt(((this.x - qx)*(this.x - qx)) + ((this.y - qy)*(this.y - qy)) + ((this.z - qz)*(this.z - qz)))
 	 * @param qx,qy,qz : coordinates to find distance to
 	 * @return L2 Distance from this to [qx,qy,qz]
 	 */
-	public float _dist(float qx, float qy, float qz){ return (float)Math.sqrt( ((this.x - qx)*(this.x - qx)) + ((this.y - qy)*(this.y - qy)) + ((this.z - qz)*(this.z - qz)) ); }
+	public float _dist(float qx, float qy, float qz){ float dx=(this.x-qx), dy=(this.y-qy), dz=(this.z-qz);return (float) Math.sqrt(((dx*dx) + (dy*dy) + (dz*dz)));}
 	/**
 	 * Static Method : find L2 (Euclidean) distance from point q to passed coordinates.  Squared L2 distance is
 	 * sqrt(((r.x - qx)*(r.x - qx)) + ((r.y - qy)*(r.y - qy)) + ((r.z - qz)*(r.z - qz)))
@@ -311,8 +310,7 @@ public class myPointf {
 	 * @param qx,qy,qz : coordinates to find distance to
 	 * @return L2 Distance from r to [qx,qy,qz]
 	 */
-	public static float _dist(myPointf r, float qx, float qy, float qz){  return(float) Math.sqrt(((r.x - qx) *(r.x - qx)) + ((r.y - qy) *(r.y - qy)) + ((r.z - qz) *(r.z - qz)));}	
-	
+	public static float _dist(myPointf r, float qx, float qy, float qz){ float dx=(r.x-qx), dy=(r.y-qy), dz=(r.z-qz);return (float) Math.sqrt((dx*dx) + (dy*dy) + (dz*dz)); }  	
 	/**
 	 * return the values of this point as an array of floats
 	 * @return array of floats {x,y,z}
