@@ -5,6 +5,7 @@ import java.util.TreeMap;
 
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
+import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Utils_Objects.io.MessageObject;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
@@ -77,7 +78,7 @@ public class myTrajManager {
 
 
 	public myTrajManager(my_procApplet _pa, myDispWindow _ownr, boolean _canDrawTraj, boolean _trajIsFlat) {
-		pa=_pa; ownr=_ownr; msgObj = ownr.msgObj;
+		pa=_pa; ownr=_ownr; msgObj = ownr.getMsgObj();
 		initFlags();
 		setFlags(canDrawTraj, _canDrawTraj);
 		setFlags(trajPointsAreFlat, _trajIsFlat);
@@ -187,12 +188,12 @@ public class myTrajManager {
 		editCrcCurRads[idx] = editCrcRads[idx];
 	}
 	
-	public void handleMouseRelease_Traj() {
+	public void handleMouseRelease_Traj(myPoint msePt) {
 		if (getFlags(editingTraj)){    this.tmpDrawnTraj.endEditObj();}    //this process assigns tmpDrawnTraj to owning window's traj array
-		if (getFlags(drawingTraj)){	this.tmpDrawnTraj.endDrawObj(ownr.getMsePoint(pa.Mouse()));}	//drawing curve	
+		if (getFlags(drawingTraj)){	this.tmpDrawnTraj.endDrawObj(msePt);}	//drawing curve	
 	}
 	
-	protected boolean handleMouseClick_Traj(boolean keysToDrawClicked, myPoint mse){
+	public boolean handleMouseClick_Traj(boolean keysToDrawClicked, myPoint mse){
 		if((!getFlags(canDrawTraj)) || (null==mse)){return false;}
 		boolean mod = false;
 		if(keysToDrawClicked){					//drawing curve with click+alt - drawing on canvas
@@ -212,7 +213,7 @@ public class myTrajManager {
 		return mod;
 	}//
 	
-	protected boolean handleMouseDrag_Traj(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn) {
+	public boolean handleMouseDrag_Traj(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn) {
 		boolean mod = false;
 		if(getFlags(drawingTraj)){ 		//if drawing trajectory has started, then process it
 			//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","drawing traj");
@@ -247,7 +248,7 @@ public class myTrajManager {
 	 * @param trajAraKey
 	 * @param del
 	 */
-	protected void modTrajStructs(int scrKey, String trajAraKey, boolean del){
+	public void modTrajStructs(int scrKey, String trajAraKey, boolean del){
 		int modMthd = -1;
 		if(del){//delete a screen's worth of traj arrays, or a single traj array from a screen 
 			if((trajAraKey == null) || (trajAraKey == "") ){		//delete screen map				
@@ -379,15 +380,15 @@ public class myTrajManager {
 	 * Draw text for notifications regarding process of drawing or editing trajectory
 	 * 
 	 */
-	protected void drawNotifications(){		
+	public void drawNotifications(){		
 		if(!getFlags(canDrawTraj)) {return;}
 		//debug stuff
 		pa.pushMatrix();				pa.pushStyle();
 		pa.translate(ownr.rectDim[0]+20,ownr.rectDim[1]+ownr.rectDim[3]-70);
-		ownr.dispMenuTxtLat("Drawing trajectory curve", pa.getClr((getFlags(drawingTraj) ? my_procApplet.gui_Green : my_procApplet.gui_Red),255), true);
+		pa.dispMenuTxtLat("Drawing trajectory curve", pa.getClr((getFlags(drawingTraj) ? my_procApplet.gui_Green : my_procApplet.gui_Red),255), true, myDispWindow.xOffHalf,myDispWindow.yOffHalf);
 		//pa.show(new myPoint(0,0,0),4, "Drawing curve",new myVector(10,15,0),(getFlags(this.drawingTraj) ? pa.gui_Green : pa.gui_Red));
 		//pa.translate(0,-30);
-		ownr.dispMenuTxtLat("Editing trajectory curve", pa.getClr((getFlags(editingTraj) ? my_procApplet.gui_Green : my_procApplet.gui_Red),255), true);
+		pa.dispMenuTxtLat("Editing trajectory curve", pa.getClr((getFlags(editingTraj) ? my_procApplet.gui_Green : my_procApplet.gui_Red),255), true, myDispWindow.xOffHalf,myDispWindow.yOffHalf);
 		//pa.show(new myPoint(0,0,0),4, "Editing curve",new myVector(10,15,0),(getFlags(this.editingTraj) ? pa.gui_Green : pa.gui_Red));
 		pa.popStyle();pa.popMatrix();		
 	}//drawNotifications
@@ -452,12 +453,12 @@ public class myTrajManager {
 	public void showKeyPt(myPoint a, String s, float rad){	pa.show(a,rad, s, new myVector(10,-5,0), my_procApplet.gui_Cyan, getFlags(trajPointsAreFlat));	}	
 
 	//release shift/control/alt keys
-	public void endShiftKey(){	}
-	public void endAltKey(){
-		if(getFlags(drawingTraj)){this.tmpDrawnTraj.endDrawObj(ownr.getMsePoint(pa.Mouse()));}	
+	public void endShiftKey(myPoint msePt){	}
+	public void endAltKey(myPoint msePt){
+		if(getFlags(drawingTraj)){this.tmpDrawnTraj.endDrawObj(msePt);}	
 		this.tmpDrawnTraj = null;
 	}	
-	public void endCntlKey(){}	
+	public void endCntlKey(myPoint msePt){}	
 	public void endValueKeyPress() {}
 	
 	
@@ -475,13 +476,13 @@ public class myTrajManager {
 	 * @param i
 	 * @return
 	 */
-	protected String getTrajAraKeyStr(int i){return trajNameAra[i];}
+	public String getTrajAraKeyStr(int i){return trajNameAra[i];}
 	/**
 	 * get index of traj name
 	 * @param str
 	 * @return
 	 */
-	protected int getTrajAraIDXVal(String str){for(int i=0; i<trajNameAra.length;++i){if(trajNameAra[i].equals(str)){return i;}}return -1; }
+	public int getTrajAraIDXVal(String str){for(int i=0; i<trajNameAra.length;++i){if(trajNameAra[i].equals(str)){return i;}}return -1; }
 
 	/////////////////////
 	// state flag handling

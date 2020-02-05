@@ -8,7 +8,6 @@ import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
 import base_Utils_Objects.vectorObjs.myVectorf;
-import processing.core.PConstants;
 
 /**
  * mathematical functions and constants that might be of use in some applications
@@ -136,7 +135,7 @@ public class MyMathUtils {
 				fxryuz3 = orientation[O_FWD].x+orientation[O_RHT].y+orientation[O_UP].z-3;
 			if (((fyrx2*fyrx2) < 1)	&& (fzux2*fzux2 < 1) && ((rzuy2*rzuy2) < 1) && ((fxryuz3*fxryuz3) < 1)) {	return new float[]{0,1,0,0}; }
 			// angle == pi
-			angle = PConstants.PI;
+			angle = Pi_f;
 			float fwd2x = (orientation[O_FWD].x+1)/2.0f,rht2y = (orientation[O_RHT].y+1)/2.0f,up2z = (orientation[O_UP].z+1)/2.0f,
 				fwd2y = fyrx2/4.0f, fwd2z = fzux2/4.0f, rht2z = rzuy2/4.0f;
 			if ((fwd2x > rht2y) && (fwd2x > up2z)) { // orientation[O_FWD].x is the largest diagonal term
@@ -383,6 +382,62 @@ public class MyMathUtils {
         else {          				    return expBig(x);}
     }
     
+	/**
+	 * calculate the normal, tangent, binormal components of passed vector compared to the passed normal (needs to be normalized)
+	 * @param vec
+	 * @param norm
+	 * @return
+	 */
+	public static myVectorf[] getVecFrameNonNorm(myVectorf vec, myVectorf norm) {
+		myVectorf[] result = new myVectorf[3];//(2, myVector(0, 0, 0));
+		result[0] = myVectorf._mult(norm,(norm._dot(vec)));//norm dir
+		result[1] = myVectorf._sub(vec, result[0]);		//tan dir
+		result[2] = myVectorf._cross(result[0], result[1]);
+		return result;
+	}
+    
+	/**
+	 * calculate the normal, tangent, binormal components of passed vector compared to the passed normal
+	 * @param vec
+	 * @param norm
+	 * @return
+	 */
+	public static myVectorf[] getVecFrameNormalized(myVectorf vec, myVectorf norm) {
+		myVectorf[] nn_result = getVecFrameNonNorm(vec, norm), result = new myVectorf[nn_result.length];
+		for(int i=0;i<result.length;++i) {
+			result[i]=nn_result[i]._normalized();
+		}
+		return result;
+	}
+    
+	/**
+	 * calculate the normal, tangent, binormal components of passed vector compared to the passed normal (needs to be normalized)
+	 * @param vec
+	 * @param norm
+	 * @return
+	 */
+	public static myVector[] getVecFrameNonNorm(myVector vec, myVector norm) {
+		myVector[] result = new myVector[3];//(2, myVector(0, 0, 0));
+		result[0] = myVector._mult(norm,(norm._dot(vec)));//norm dir
+		result[1] = myVector._sub(vec, result[0]);		//tan dir
+		result[2] = myVector._cross(result[0], result[1]);
+		return result;
+	}
+    
+	/**
+	 * calculate the normal, tangent, binormal components of passed vector compared to the passed normal
+	 * @param vec
+	 * @param norm
+	 * @return
+	 */
+	public static myVector[] getVecFrameNormalized(myVector vec, myVector norm) {
+		myVector[] nn_result = getVecFrameNonNorm(vec, norm), result = new myVector[nn_result.length];
+		for(int i=0;i<result.length;++i) {
+			result[i]=nn_result[i]._normalized();
+		}
+		return result;
+	}
+	
     /**
      * return max value of any comparable type
      */
@@ -392,7 +447,15 @@ public class MyMathUtils {
      */
     public static <T extends Comparable<T>> T min(T x, T y) {      return (x.compareTo(y) < 0) ? x : y;    }
    
-    
-    
+    /**
+     * return max value of any comparable type of 3 values
+     */
+    public static <T extends Comparable<T>> T max(T x, T y, T z) {    	return max(max(x,y),z);    }
+    /**
+     * return min value of any comparable type
+     */
+    public static <T extends Comparable<T>> T min(T x, T y, T z) {    	return min(min(x,y),z);     }
+   
+     
 }//math utils
 

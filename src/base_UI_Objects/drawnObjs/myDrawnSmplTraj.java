@@ -1,8 +1,8 @@
 package base_UI_Objects.drawnObjs;
 
 import base_UI_Objects.my_procApplet;
-import base_UI_Objects.windowUI.myDispWindow;
 import base_UI_Objects.windowUI.myTrajManager;
+import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myVector;
 

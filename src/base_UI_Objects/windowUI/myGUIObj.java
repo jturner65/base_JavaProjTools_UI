@@ -5,6 +5,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
+import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Utils_Objects.vectorObjs.myVector;
 import processing.core.PApplet;
 
@@ -30,8 +31,9 @@ public class myGUIObj {
 			//config flags
 			treatAsIntIDX	= 2,
 			hasListValsIDX	= 3,
-			usedByWinsIDX	= 4;
-	public static final int numFlags = 5;			
+			usedByWinsIDX	= 4, 
+			updateWhileModIDX = 5;
+	public static final int numFlags = 6;			
 	
 	public int[] _cVal;
 	public double modMult,						//multiplier for mod value
@@ -57,7 +59,8 @@ public class myGUIObj {
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
 		initFlags();
-		for(int i =0; i<_flags.length;++i){ 	setFlags(i+2,_flags[i]);	}
+		int numToInit = (_flags.length < numFlags-2 ? _flags.length : numFlags-2);
+		for(int i =0; i<numToInit;++i){ 	setFlags(i+2,_flags[i]);	}
 		_cVal = new int[] {0,0,0};
 		bxclr = new int[]{ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),255};
 		
@@ -71,11 +74,13 @@ public class myGUIObj {
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		uiFlags[flIDX] = (val ?  uiFlags[flIDX] | mask : uiFlags[flIDX] & ~mask);
 		switch (idx) {//special actions for each flag
-		case debugIDX 		:{break;}
-		case showIDX		:{break;}	//show this component
-		case treatAsIntIDX	:{break;}
-		case hasListValsIDX	:{break;}
-		case usedByWinsIDX	:{break;}
+		case debugIDX 			:{break;}
+		case showIDX			:{break;}	//show this component
+		case treatAsIntIDX		:{break;}
+		case hasListValsIDX		:{break;}
+		case usedByWinsIDX		:{break;}
+		case updateWhileModIDX	:{break;}
+		
 		}
 	}//setFlag	
 	
@@ -96,6 +101,11 @@ public class myGUIObj {
 		else if(val>maxVal){val = maxVal;}
 		return val;		
 	}
+
+	public final boolean shouldUpdateWin(boolean isRelease) {
+		return (getFlags(usedByWinsIDX) && ((isRelease) || (!isRelease && getFlags(updateWhileModIDX))));
+	}
+	
 	public final int valAsInt(){return (int)(val) ;}
 	public final float valAsFloat(){return (float)( val);}
 	

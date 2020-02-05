@@ -33,6 +33,7 @@ public interface IRenderInterface {
 		sqrt3_f = (float) sqrt3,
 		invSqrt3_f = (float) invSqrt3;	
 
+	//added to support old color constant defs from old projects - should be an enum
 	public int gui_rnd = -1;
 	public int gui_Black 	= 0;
 	public int gui_White 	= 1;	
@@ -84,6 +85,10 @@ public interface IRenderInterface {
 	 * index of color definition next after static IRenderInterface defs
 	 */
 	public int gui_nextColorIDX = 41;
+	
+	//max ratio of width to height to use for windows
+	public float maxWinRatio =  1.77777778f;
+
 	
 	///////////////////////
 	// required methods

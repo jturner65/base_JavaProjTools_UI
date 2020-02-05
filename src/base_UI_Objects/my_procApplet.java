@@ -1,19 +1,18 @@
 package base_UI_Objects;
 
+
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-import base_UI_Objects.windowUI.BaseBarMenu;
-import base_UI_Objects.windowUI.myDispWindow;
+import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
+import base_UI_Objects.windowUI.sidebar.mySidebarMenuBtnConfig;
 import base_Utils_Objects.*;
-import base_Utils_Objects.vectorObjs.myCntlPt;
-import base_Utils_Objects.vectorObjs.myCntlPtf;
-import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVector;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Utils_Objects.vectorObjs.*;
 
 import processing.event.MouseEvent;
 
@@ -29,7 +28,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected myDispWindow[] dispWinFrames = new myDispWindow[0] ;
 	//set in instancing class - must be > 1
 	protected int numDispWins;
-	//always idx 0 - first window is always menu
+	//always idx 0 - first window is always right side menu
 	public static final int dispMenuIDX = 0;	
 	//which myDispWindow currently has focus
 	public int curFocusWin;		
@@ -46,21 +45,17 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		dispWinIs3dIDX 			= 3;
 	private static int numDispWinBoolFlags = 4;
 	
-	public int[][] winFillClrs;
-	public int[][] winStrkClrs;
+	public int[][] winFillClrs, winStrkClrs;
 	
 	public int[][] winTrajFillClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window
 	public int[][] winTrajStrkClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window
 	
 
 	//specify windows that cannot be shown simultaneously here and their flags
-	public int[] winFlagsXOR;	
-	public int[] winDispIdxXOR;
+	public int[] winFlagsXOR, winDispIdxXOR;
 	
-	//unblocked window dimensions - location and dim of window if window is one\
-	public float[][] winRectDimOpen;// = new float[][]{new float[]{0,0,0,0},new float[]{0,0,0,0},new float[]{0,0,0,0},new float[]{0,0,0,0}};
-	//window dimensions if closed -location and dim of all windows if this window is closed
-	public float[][] winRectDimClose;// = new float[][]{new float[]{0,0,0,0},new float[]{0,0,0,0},new float[]{0,0,0,0},new float[]{0,0,0,0}};
+	//unblocked window dimensions - location and dim of window if window is open\closed
+	public float[][] winRectDimOpen, winRectDimClose;
 
 	//used to manage current time
 	public Calendar now;
@@ -86,8 +81,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	//boundary regions for enclosing cube - given as min and difference of min and max
 	public float[][] cubeBnds = new float[][]{//idx 0 is min, 1 is diffs
 		new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},//mins
-		new float[]{gridDimX,gridDimY,gridDimZ}};			//diffs
-		
+		new float[]{gridDimX,gridDimY,gridDimZ}};			//diffs		
 	
 	//2D, 3D
 	private myVector[] sceneFcsValsBase = new myVector[]{						//set these values to be different targets of focus
@@ -112,8 +106,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
 			new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }
 	};
-		
-	
+			
 	public final float
 	//PopUpWinOpenFraction = .40f,				//fraction of screen not covered by popwindow
 		wScale = frameRate/5.0f,					//velocity drag scaling	
@@ -145,18 +138,23 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			camInitRx = rx;
 	public float[] camVals;		
 	
-	public double eps = .000000001, msClkEps = 40;				//calc epsilon, distance within which to check if clicked from a point
+	public double eps = .000000001;				//calc epsilon
 	public float feps = .000001f;
-	public float SQRT2 = sqrt(2.0f);
+	
+	public double msClkEps = 40;				// distance within which to check if clicked from a point
+	
 	
 	//visualization variables
+	//flags explicitly pertaining to window visibility
+	private int[] _visFlags;
+	
 	// boolean flags used to control various elements of the program 
 	private int[] baseFlags;
 	//dev/debug flags
 	private final int 
 			debugMode 			= 0,			//whether we are in debug mode or not	
 			finalInitDone		= 1,			//used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
-			saveAnim 			= 2,			//whether we are saving or not
+			saveAnim 			= 2,			//whether we are saving or not an anim screenie
 	//interface flags	                   
 			valueKeyPressed		= 3,
 			shiftKeyPressed 	= 4,			//shift pressed
@@ -173,7 +171,46 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			clearBKG 			= 14;			//whether or not background should be cleared for every draw.  defaults to true
 	public final int numBaseFlags = 15;
 	
-	public final int numDebugVisFlags = 6;
+	//booleans in main program - need to have labels in idx order, even if not displayed
+	private final String[] truePFlagNames = {//needs to be in order of flags
+			"Debug Mode",
+			"Final init Done",
+			"Save Anim", 	
+			"Key Pressed",
+			"Shift-Key Pressed",
+			"Alt-Key Pressed",
+			"Cntl-Key Pressed",
+			"Click interact", 	
+			"Drawing Curve",
+			"Changing View",	
+			"Stop Simulation",
+			"Single Step",
+			"Displaying Side Menu",
+			"Displaying UI Menu",
+			"Reverse Drawn Trajectory"
+			};
+	
+	private final String[] falsePFlagNames = {//needs to be in order of flags
+			"Debug Mode",	
+			"Final init Done",
+			"Save Anim", 	
+			"Key Pressed",
+			"Shift-Key Pressed",
+			"Alt-Key Pressed",
+			"Cntl-Key Pressed",
+			"Click interact", 	
+			"Drawing Curve",
+			"Changing View",	 	
+			"Run Simulation",
+			"Single Step",
+			"Displaying Side Menu",
+			"Displaying UI Menu",
+			"Reverse Drawn Trajectory"
+			};
+	private int[][] pFlagColors;
+	
+	
+	//public final int numDebugVisFlags = 6;
 	//flags to actually display in menu as clickable text labels - order does matter
 	private List<Integer> flagsToShow = Arrays.asList( 
 		debugMode, 			
@@ -185,7 +222,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	private int numFlagsToShow = flagsToShow.size();
 	
-	public final List<Integer> stateFlagsToShow = Arrays.asList( 
+	private final List<Integer> stateFlagsToShow = Arrays.asList( 
 		shiftKeyPressed,			//shift pressed
 		altKeyPressed,				//alt pressed
 		cntlKeyPressed,				//cntrl pressed
@@ -194,6 +231,11 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		modView	 					//shift+mouse click+mouse move being used to modify the view					
 			);
 	public final int numStFlagsToShow = stateFlagsToShow.size();	
+	private final String[] StateBoolNames = {"Shift","Alt","Cntl","Click", "Draw","View"};
+	//multiplier for displacement to display text label for stateboolnames
+	private final float[] StrWdMult = new float[]{-3.0f,-3.0f,-3.0f,-3.2f,-3.5f,-2.5f};
+	private int[][] stBoolFlagColors;
+	
 	
 	//whether or not to show start up instructions for code		
 	public boolean showInfo=false;			
@@ -201,7 +243,8 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected String exeDir = Paths.get(".").toAbsolutePath().toString();
 	//file location of current executable
 	protected File currFileIOLoc = Paths.get(".").toAbsolutePath().toFile();
-	
+	//replace old displayWidth, displayHeight variables being deprecated in processing
+	protected static int _displayWidth, _displayHeight;
 	////////////////////////
 	// code
 	
@@ -210,20 +253,77 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	///////////////////////////////////
 
 	//needs main to run project - do not modify this code in any way 
-	//needs to be called in instancing class
-	public static void main(String[] appletArgs, String[] passedArgs) {	
+	//needs to be called by instancing class
+	protected final static void _invokedMain(String[] appletArgs, String[] passedArgs) {	
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		_displayWidth = gd.getDisplayMode().getWidth();
+		_displayHeight = gd.getDisplayMode().getHeight();
 	    if (passedArgs != null) {processing.core.PApplet.main(processing.core.PApplet.concat(appletArgs, passedArgs)); } else {processing.core.PApplet.main(appletArgs);		    }
 	}//main	
-	
+
+	//processing being run in eclipse uses settings for variable size dimensions
 	public final void settings(){	
-		int[] desDims = getDesiredAppDims();
+		int[] desDims = getIdealAppWindowDims();
 		size(desDims[0], desDims[1],P3D);	
 		//allow user to set smoothing
 		setSmoothing();
 		//noSmooth();
 	}	
 	
+	/**
+	 * this will manage very large displays, while scaling window to smaller displays
+	 * the goal is to preserve a reasonably close to 16:10 ratio window with big/widescreen displays
+	 * @return int[] { desired application window width, desired application window height}
+	 */
+	protected final int[] getIdealAppWindowDims() {		
+		int winSizeCntrl = setAppWindowDimRestrictions();		
+		switch(winSizeCntrl) {
+			case 0 : {//don't care about window dimensions
+				return new int[] {(int)(_displayWidth*.95f), (int)(_displayHeight*.92f)};
+			}
+			case 1 : {//make screen manageable for wide screen monitors
+				float displayRatio = _displayWidth/(1.0f*_displayHeight);
+				float newWidth = (displayRatio > maxWinRatio) ?  _displayWidth * maxWinRatio/displayRatio : _displayWidth;
+				return new int[] {(int)(newWidth*.95f), (int)(_displayHeight*.92f)};
+			}
+			default :{//unsupported winSizeCntrl setting >= 2
+				System.out.println("Unsupported value from setAppWindowDimRestrictions(). Defaulting to 0.");
+				return new int[] {(int)(_displayWidth*.95f), (int)(_displayHeight*.92f)};
+			}			
+		}
+	}//getIdealAppWindowDims
+	
 	protected abstract void setSmoothing();
+
+	/**
+	 * whether or not we want to restrict window size on widescreen monitors
+	 * 
+	 * @return 0 - use monitor size regardless
+	 * 			1 - use smaller dim to be determine window 
+	 * 			2+ - TBD
+	 */
+	protected abstract int setAppWindowDimRestrictions();
+	
+	/**
+	 * returns the width of the visible display in pxls
+	 * @return
+	 */
+	protected final int getDisplayWidth() {return _displayWidth;}
+	/**
+	 * returns the height of the visible display in pxls
+	 * @return
+	 */
+	protected final int getDisplayHeight() {return _displayHeight;}
+	/**
+	 * returns application window width in pxls
+	 * @return
+	 */
+	protected final int getWidth() {return width;}
+	/**
+	 * returns application window height in pxls
+	 * @return
+	 */
+	protected final int getHeight() {return height;}
 	/**
 	 * modify 3D grid dimensions to be cube of passed value per side
 	 * @param _gVal
@@ -269,31 +369,6 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
 	}
 	
-	/**
-	 * This will return the desired dimensions of the application, to be called in setup
-	 * @return int[] { desired application window width, desired application window height}
-	 */
-	protected abstract int[] getDesiredAppDims();
-	/**
-	 * returns the width of the visible display in pxls
-	 * @return
-	 */
-	protected final int getDisplayWidth() {return displayWidth;}
-	/**
-	 * returns the height of the visible display in pxls
-	 * @return
-	 */
-	protected final int getDisplayHeight() {return displayHeight;}
-	/**
-	 * returns application window width in pxls
-	 * @return
-	 */
-	protected final int getWidth() {return width;}
-	/**
-	 * returns application window height in pxls
-	 * @return
-	 */
-	protected final int getHeight() {return height;}
 	
 	
 	public final void setup() {
@@ -335,6 +410,8 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		
 		//instancing class version
 		initVisOnce_Priv();
+		//initialize all visible flag colors and state flag colors
+		initPFlagColors();
 		
 		//after all display windows are drawn
 		finalDispWinInit();
@@ -358,6 +435,9 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		initCamView();
 		simCycles = 0;
 	}//	initVisOnce
+	
+	public int timeSinceStart() {return millis() - glblStartProgTime;}
+	
 	/**
 	 * this is called to determine which main flags to display in the window
 	 */
@@ -365,7 +445,8 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	
 	protected abstract void initVisOnce_Priv();
-		//1 time initialization of programmatic things that won't change
+
+	//1 time initialization of programmatic things that won't change
 	public final void initOnce() {
 		//1-time init for program and windows
 		initOnce_Priv();
@@ -406,15 +487,95 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	protected void setMainFlagToShow_singleStep(boolean val) {_setMainFlagToShow(singleStep, val);}
 	protected void setMainFlagToShow_showRtSideMenu(boolean val) {_setMainFlagToShow(showRtSideMenu, val);}
 	
-	public int getNumFlagsToShow() {return numFlagsToShow;}
-	public List<Integer> getMainFlagsToShow() {return flagsToShow;}
 	
 	public final void initCamView(){	dz=camInitialDist;	ry=camInitRy;	rx=camInitRx - ry;	}
 	public final void reInitInfoStr(){		DebugInfoAra = new ArrayList<String>();		DebugInfoAra.add("");	}	
 	
 	public float getMenuWidth() {return menuWidth;}
 	
-	public myDispWindow getCurFocusDispWindow() {return dispWinFrames[curFocusWin];}
+	public myDispWindow getCurFocusDispWindow() {return dispWinFrames[curFocusWin];}	
+	
+	//////////////////////////////////
+	// side bar menu stuff
+	
+	/**
+	 * build the appropriate side bar menu configuration for this application
+	 * @param wIdx
+	 * @param fIdx
+	 * @param _funcRowNames array of names for each row of functional buttons 
+	 * @param _numBtnsPerFuncRow array of # of buttons per row of functional buttons - size must match # of entries in _funcRowNames array
+	 * @param _numDbgBtns # of debug buttons
+	 * @param _inclWinNames include the names of all the instanced windows
+	 * @param _inclMseOvValues include a row for possible mouse over values
+	 * @return
+	 */
+	protected final mySideBarMenu buildSideBarMenu(int wIdx, int fIdx, String[] _funcRowNames, int[] _numBtnsPerFuncRow, int _numDbgBtns, boolean _inclWinNames, boolean _inclMseOvValues){
+		mySidebarMenuBtnConfig sideBarConfig = new mySidebarMenuBtnConfig(_funcRowNames, _numBtnsPerFuncRow, _numDbgBtns, _inclWinNames, _inclMseOvValues);
+		return new mySideBarMenu(this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx], sideBarConfig);		
+	}
+	
+	//set up initial colors for primary flags for display
+	private void initPFlagColors(){
+		pFlagColors = new int[numBaseFlags][3];
+		for (int i = 0; i < numBaseFlags; ++i) { pFlagColors[i] = new int[]{(int) random(150),(int) random(100),(int) random(150)}; }		
+		stBoolFlagColors = new int[numStFlagsToShow][3];
+		stBoolFlagColors[0] = new int[]{255,0,0};
+		stBoolFlagColors[1] = new int[]{0,255,0};
+		stBoolFlagColors[2] = new int[]{0,0,255};		
+		for (int i = 3; i < numStFlagsToShow; ++i) { stBoolFlagColors[i] = new int[]{100+((int) random(150)),150+((int) random(100)),150+((int) random(150))};		}
+	}
+		
+	/**
+	 * get number of main flags to display in right side menu
+	 * @return
+	 */
+	public int getNumFlagsToShow() {return numFlagsToShow;}
+	
+	/**
+	 * display menu text based on menu state - moved from menu class
+	 * @param xOffHalf
+	 * @param yOffHalf
+	 */
+	public void dispMenuText(float xOffHalf, float yOffHalf) {
+		for(int idx =0; idx<numFlagsToShow; ++idx){
+		int i = flagsToShow.get(idx);
+			if(getBaseFlag(i) ){											dispMenuTxtLat(truePFlagNames[i],pFlagColors[i], true, xOffHalf,yOffHalf);			}
+			else {	if(truePFlagNames[i].equals(falsePFlagNames[i])) {		dispMenuTxtLat(truePFlagNames[i],new int[]{180,180,180}, false, xOffHalf,yOffHalf);}	
+					else {													dispMenuTxtLat(falsePFlagNames[i],new int[]{0,255-pFlagColors[i][1],255-pFlagColors[i][2]}, true, xOffHalf,yOffHalf);}		
+			}
+		}
+	}//dispMenuText
+	
+	/**
+	 * draw a series of strings in a column for menu text
+	 * @param txt string to draw
+	 * @param clrAra color to set text to
+	 * @param showSphere put a marking sphere next to text
+	 * @param xOff x-dim offset
+	 * @param yOff y-dim offset
+	 */
+	public void dispMenuTxtLat(String txt, int[] clrAra, boolean showSphere, float xOff, float yOff){
+		setFill(clrAra, 255); 
+		translate(xOff,yOff);
+		if(showSphere){setStroke(clrAra, 255);		sphere(5);	} 
+		else {	noStroke();		}
+		translate(-xOff,yOff);
+		text(""+txt,2.0f*xOff,-yOff*.5f);	
+	}
+	/**
+	 * draw state booleans at top of screen and their state
+	 */
+	public void drawSideBarStateBools(float yOff){ //numStFlagsToShow
+		translate(110,10);
+		float xTrans = (int)((getMenuWidth()-100) / (1.0f*numStFlagsToShow));
+		for(int idx =0; idx<numStFlagsToShow; ++idx){
+			dispBoolStFlag(StateBoolNames[idx],stBoolFlagColors[idx], getStateFlagState(idx),StrWdMult[idx], yOff);			
+			translate(xTrans,0);
+		}
+	}	
+	
+	////////////////////////////
+	// end side bar menu-specific stuff
 	
 	//set up window structures
 	protected void initWins(int _numWins, String[] _winTtls, String[] _winDescs) {
@@ -492,8 +653,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			dispWinFrames[i].setRtSideUIBoxClrs(new int[]{0,0,0,200},new int[]{255,255,255,255});
 		}	
 
-	}//finalDispWinInit
-	
+	}//finalDispWinInit	
 	
 	public myDispWindow getCurrentWindow() {return dispWinFrames[curFocusWin];}
 
@@ -694,7 +854,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			pushMatrix();pushStyle();			
 			reInitInfoStr();
 			addInfoStr(0,"mse loc on screen : " + new myPoint(mouseX, mouseY,0) + " mse loc in world :"+c.mseLoc +"  Eye loc in world :"+ c.eyeInWorld+ dispWinFrames[curFocusWin].getCamDisp());//" camera rx :  " + rx + " ry : " + ry + " dz : " + dz);
-			String[] res = ((BaseBarMenu)dispWinFrames[dispMenuIDX]).getDebugData();		//get debug data for each UI object
+			String[] res = ((mySideBarMenu)dispWinFrames[dispMenuIDX]).getDebugData();		//get debug data for each UI object
 			int numToPrint = min(res.length,80);
 			for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
 			drawInfoStr(1.0f, dispWinFrames[curFocusWin].strkClr); 	
@@ -719,17 +879,50 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	//////////////////////////////////
 	// end draw routines
 
-		
-	public abstract void initVisFlags();
-	public abstract void setVisFlag(int idx, boolean val);
-	//this will not execute the code in setVisFlag, which might cause a loop
-	public abstract void forceVisFlag(int idx, boolean val);
-	public abstract boolean getVisFlag(int idx);
+	//////////////////////////////
+	// state and control flag handling
+	//init boolean state machine flags for visible flags
+	private final void initVisFlags(){
+		int numVisFlags = getNumVisFlags();
+		_visFlags = new int[1 + numVisFlags/32];for(int i =0; i<numVisFlags;++i){forceVisFlag(i,false);}	
+	}		
 	
+	/**
+	 * return the number of visible window flags for this application
+	 * @return
+	 */
+	public abstract int getNumVisFlags();
+	/**
+	 * set visibility flag value
+	 * @param idx
+	 * @param val
+	 */
+	public final void setVisFlag(int idx, boolean val ){
+		int flIDX = idx/32, mask = 1<<(idx%32);
+		_visFlags[flIDX] = (val ?  _visFlags[flIDX] | mask : _visFlags[flIDX] & ~mask);
+		setVisFlag_Indiv(idx, val);
+	}
+
+	/**
+	 * only process visibility-related state changes here (should only be the switch statement
+	 * @param idx
+	 * @param val
+	 */
+	protected abstract void setVisFlag_Indiv(int idx, boolean val);	
+
+	//get vis flag
+	public final boolean getVisFlag(int idx){int bitLoc = 1<<(idx%32);return (_visFlags[idx/32] & bitLoc) == bitLoc;}	
+	//this will not execute the code in setVisFlag, which might cause a loop
+	public final void forceVisFlag(int idx, boolean val) {
+		int flIDX = idx/32, mask = 1<<(idx%32);
+		_visFlags[flIDX] = (val ?  _visFlags[flIDX] | mask : _visFlags[flIDX] & ~mask);
+		//doesn't perform any other ops - to prevent looping
+	}
+
 	//base class flags init
 	private void initBaseFlags(){baseFlags = new int[1 + numBaseFlags/32];for(int i =0; i<numBaseFlags;++i){forceBaseFlag(i,false);}}		
 	//set baseclass flags  //setBaseFlag(showIDX, 
-	public final void setBaseFlag(int idx, boolean val){
+	protected final void setBaseFlag(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		baseFlags[flIDX] = (val ?  baseFlags[flIDX] | mask : baseFlags[flIDX] & ~mask);
 		switch(idx){
@@ -755,9 +948,47 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		baseFlags[flIDX] = (val ?  baseFlags[flIDX] | mask : baseFlags[flIDX] & ~mask);
 	}
 	//get baseclass flag
-	public final boolean getBaseFlag(int idx){int bitLoc = 1<<(idx%32);return (baseFlags[idx/32] & bitLoc) == bitLoc;}	
-	public final void clearBaseFlags(int[] idxs){		for(int idx : idxs){setBaseFlag(idx,false);}	}			
-
+	protected final boolean getBaseFlag(int idx){int bitLoc = 1<<(idx%32);return (baseFlags[idx/32] & bitLoc) == bitLoc;}	
+	protected final void clearBaseFlags(int[] idxs){		for(int idx : idxs){setBaseFlag(idx,false);}	}	
+	
+	/**
+	 * used to toggle the value of a flag
+	 * @param idx
+	 */
+	public void flipMainFlag(int i) {
+		int flagIDX = flagsToShow.get(i);
+		setBaseFlag(flagIDX,!getBaseFlag(flagIDX));
+	}	
+	/**
+	 * get the current state (T/F) of state flags (Such as if shift is pressed or not) specified by idx in stateFlagsToShow List
+	 * @param idx
+	 * @return
+	 */
+	public final boolean getStateFlagState(int idx) {return getBaseFlag(stateFlagsToShow.get(idx));}
+	
+	/**
+	 * display state flag indicator at top of window
+	 * @param txt
+	 * @param clrAra
+	 * @param state
+	 * @param stMult
+	 * @param yOff
+	 */
+	protected void dispBoolStFlag(String txt, int[] clrAra, boolean state, float stMult, float yOff){
+		if(state){
+			setFill(clrAra, 255); 
+			setStroke(clrAra, 255);
+		} else {
+			setColorValFill(IRenderInterface.gui_DarkGray,255); 
+			noStroke();	
+		}
+		sphere(5);
+		//text(""+txt,-xOff,yOff*.8f);	
+		text(""+txt,stMult*txt.length(),yOff*.8f);	
+	}
+	
+	
+	
 	public final boolean isDebugMode() {return getBaseFlag(debugMode);}
 	
 	public final boolean isFinalInitDone() {return getBaseFlag(finalInitDone);}
@@ -803,9 +1034,9 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void setSaveAnim(boolean val) {setBaseFlag(saveAnim, val);}
 	public final void toggleSaveAnim() {setBaseFlag(saveAnim, !getBaseFlag(saveAnim));}
 	
-	//////////////////////////////////////////////////////
-	/// user interaction
-	//////////////////////////////////////////////////////	
+//////////////////////////////////////////////////////
+/// user interaction
+//////////////////////////////////////////////////////	
 	//key is key pressed
 	//keycode is actual physical key pressed == key if shift/alt/cntl not pressed.,so shift-1 gives key 33 ('!') but keycode 49 ('1')
 	public final void keyPressed(){
@@ -926,7 +1157,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	//isSlowProc means original calling process lasted longer than mouse click release and so button state should be forced to be off
 	public final void clearBtnState(int _type, int col, boolean isSlowProc) {
 		int row = _type;
-		BaseBarMenu win = (BaseBarMenu)dispWinFrames[dispMenuIDX];
+		mySideBarMenu win = (mySideBarMenu)dispWinFrames[dispMenuIDX];
 		win.getGuiBtnWaitForProc()[row][col] = false;
 		if(isSlowProc) {win.getGuiBtnSt()[row][col] = 0;}		
 	}//clearBtnState 
@@ -936,7 +1167,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	 * @param btnNames
 	 */
 	public final void setAllMenuBtnNames(String[][] btnNames) {
-		for(int _type = 0;_type<btnNames.length;++_type) {((BaseBarMenu)dispWinFrames[dispMenuIDX]).setAllFuncBtnNames(_type,btnNames[_type]);}
+		for(int _type = 0;_type<btnNames.length;++_type) {((mySideBarMenu)dispWinFrames[dispMenuIDX]).setAllFuncBtnNames(_type,btnNames[_type]);}
 	}
 	
 	//these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
@@ -951,7 +1182,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 				case 0 : {selectInput("Select a file to load from : ", "loadFromFile", currFileIOLoc);break;}
 				case 1 : {selectOutput("Select a file to save to : ", "saveToFile", currFileIOLoc);break;}
 			}
-			((BaseBarMenu)dispWinFrames[dispMenuIDX]).hndlMouseRelIndiv();
+			((mySideBarMenu)dispWinFrames[dispMenuIDX]).hndlMouseRelIndiv();
 		}
 	}//handleFileCmd
 	//turn off specific function button that might have been kept on during processing - btn must be in range of size of guiBtnSt[mySideBarMenu.btnAuxFuncIdx]
@@ -984,10 +1215,10 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	
 	protected void setMenuBtnState(int row, int col, int val) {
-		((BaseBarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
+		((mySideBarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
 		if (val == 1) {
 			//outStr2Scr("my_procApplet :: setMenuBtnState :: Note!!! Turning on button at row : " + row + "  col " + col + " without processing button's command.");
-			((BaseBarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
+			((mySideBarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
 	}//setMenuBtnState	
 	
 	public void loadFromFile(File file){
@@ -1133,9 +1364,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		} catch (Exception e){System.out.println("!!"+dispNoStr);return null;}
 		return strs;		
 	}//loadFileIntoStrings
-	
-	//public final void scribeHeaderRight(String s) {scribeHeaderRight(s, 20);} // writes black on screen top, right-aligned
-	//public final void scribeHeaderRight(String s, float y) {fill(0); text(s,width-6*s.length(),y); noFill();} // writes black on screen top, right-aligned
+
 	public final void displayHeader() { // Displays title and authors face on screen
 	    float stVal = 17;
 	    int idx = 1;	
@@ -1502,10 +1731,10 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	}
 	
 	
-	void bezier(myPoint A, myPoint B, myPoint C, myPoint D) {bezier((float)A.x,(float)A.y,(float)A.z,(float)B.x,(float)B.y,(float)B.z,(float)C.x,(float)C.y,(float)C.z,(float)D.x,(float)D.y,(float)D.z);} // draws a cubic Bezier curve with control points A, B, C, D
-	void bezier(myPoint [] C) {bezier(C[0],C[1],C[2],C[3]);} // draws a cubic Bezier curve with control points A, B, C, D
-	myPoint bezierPoint(myPoint[] C, float t) {return new myPoint(bezierPoint((float)C[0].x,(float)C[1].x,(float)C[2].x,(float)C[3].x,(float)t),bezierPoint((float)C[0].y,(float)C[1].y,(float)C[2].y,(float)C[3].y,(float)t),bezierPoint((float)C[0].z,(float)C[1].z,(float)C[2].z,(float)C[3].z,(float)t)); }
-	myVector bezierTangent(myPoint[] C, float t) {return new myVector(bezierTangent((float)C[0].x,(float)C[1].x,(float)C[2].x,(float)C[3].x,(float)t),bezierTangent((float)C[0].y,(float)C[1].y,(float)C[2].y,(float)C[3].y,(float)t),bezierTangent((float)C[0].z,(float)C[1].z,(float)C[2].z,(float)C[3].z,(float)t)); }
+	public void bezier(myPoint A, myPoint B, myPoint C, myPoint D) {bezier((float)A.x,(float)A.y,(float)A.z,(float)B.x,(float)B.y,(float)B.z,(float)C.x,(float)C.y,(float)C.z,(float)D.x,(float)D.y,(float)D.z);} // draws a cubic Bezier curve with control points A, B, C, D
+	public void bezier(myPoint [] C) {bezier(C[0],C[1],C[2],C[3]);} // draws a cubic Bezier curve with control points A, B, C, D
+	public myPoint bezierPoint(myPoint[] C, float t) {return new myPoint(bezierPoint((float)C[0].x,(float)C[1].x,(float)C[2].x,(float)C[3].x,(float)t),bezierPoint((float)C[0].y,(float)C[1].y,(float)C[2].y,(float)C[3].y,(float)t),bezierPoint((float)C[0].z,(float)C[1].z,(float)C[2].z,(float)C[3].z,(float)t)); }
+	public myVector bezierTangent(myPoint[] C, float t) {return new myVector(bezierTangent((float)C[0].x,(float)C[1].x,(float)C[2].x,(float)C[3].x,(float)t),bezierTangent((float)C[0].y,(float)C[1].y,(float)C[2].y,(float)C[3].y,(float)t),bezierTangent((float)C[0].z,(float)C[1].z,(float)C[2].z,(float)C[3].z,(float)t)); }
 	
 	
 	public final myPoint Mouse() {return new myPoint(mouseX, mouseY,0);}                                          			// current mouse location
@@ -1513,6 +1742,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	//public final int color(myPoint p){return color((int)p.x,(int)p.z,(int)p.y);}	//needs to be x,z,y for some reason - to match orientation of color frames in z-up 3d geometry
 	public final int color(myPoint p){return color((int)p.x,(int)p.y,(int)p.z);}	
+	public final int color(myPointf p){return color((int)p.x,(int)p.y,(int)p.z);}	
 	/**
 	 * vertex with texture coordinates
 	 * @param P vertex location
@@ -1627,9 +1857,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		pushMatrix(); pushStyle(); 
 		if((fclr!= -1) && (sclr!= -1)){setColorValFill(fclr,255); setColorValStroke(sclr,255);}
 		if(!flat){
-			translate(P.x,P.y,P.z); 
-			sphereDetail(5);
-			sphere(r);
+			drawSphere(P, r, 5);
 		} else {
 			translate(P.x,P.y,0); 
 			circle(0,0,r,r);				
@@ -1644,17 +1872,15 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		rect(0,6.0f,txt.length()*7.8f,-15);
 		tclr = gui_Black;		
 		setFill(fclr,255); setStroke(strkclr,255);			
-		sphereDetail(det);
-		sphere(rad); 
+		drawSphere(myPointf.ZEROPT, rad, det);
 		showOffsetText(1.2f * rad,tclr, txt);
 		popStyle(); popMatrix();} // render sphere of radius r and center P)
 	//translate to point, draw point and text
 	public final void showNoBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, String txt) {
 		pushMatrix(); pushStyle(); 
+		setFill(fclr,255); setStroke(strkclr,255);		
 		translate(P.x,P.y,P.z); 
-		setFill(fclr,255); setStroke(strkclr,255);			
-		sphereDetail(det);
-		sphere(rad); 
+		drawSphere(myPointf.ZEROPT, rad, det);
 		showOffsetText(1.2f * rad,tclr, txt);
 		popStyle(); popMatrix();} // render sphere of radius r and center P)
 	//textP is location of text relative to point
@@ -1662,8 +1888,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		pushMatrix(); pushStyle(); 
 		translate(P.x,P.y,P.z); 
 		setFill(fclr,255); setStroke(strkclr,255);			
-		sphereDetail(det);
-		sphere(rad); 
+		drawSphere(myPointf.ZEROPT, rad, det);
 		showOffsetText(txtP,tclr, txt);
 		popStyle(); popMatrix();} // render sphere of radius r and center P)
 	
@@ -1682,20 +1907,18 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void show_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr) {
 		pushMatrix(); pushStyle(); 
 		if((fclr!= null) && (strkclr!= null)){setFill(fclr,255); setStroke(strkclr,255);}
-		sphereDetail(det);
-		translate(P.x,P.y,P.z); 
-		sphere(rad); 
+		drawSphere(P, rad, det);
 		popStyle(); popMatrix();} // render sphere of radius r and center P)
 	
 	/////////////
 	// show functions using color idxs 
 	public final void showBox(myPointf P, float rad, int det, int[] clrs, String[] txtAra, float[] rectDims) {
-		pushMatrix(); pushStyle(); 
-			translate(P.x,P.y,P.z);
+		pushMatrix(); pushStyle(); 			
 			setColorValFill(clrs[0],255); 
 			setColorValStroke(clrs[1],255);
-			sphereDetail(det);
-			sphere(rad); 
+			translate(P.x,P.y,P.z);
+			drawSphere(myPointf.ZEROPT, rad, det);			
+			
 			pushMatrix(); pushStyle();
 			//make sure box doesn't extend off screen
 				transToStayOnScreen(P,rectDims);
@@ -1712,30 +1935,48 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		pushMatrix(); pushStyle(); 
 		setColorValFill(clrs[0],255); 
 		setColorValStroke(clrs[1],255);
-		sphereDetail(det);
-		translate(P.x,P.y,P.z); 
-		sphere(rad); 
+		drawSphere(P, rad, det);
 		popStyle(); popMatrix();} // render sphere of radius r and center P)
 	
 	public final void show(myPointf P, float rad, int det, int[] clrs, String[] txtAra) {//only call with set fclr and sclr - idx0 == fill, idx 1 == strk, idx2 == txtClr
 		pushMatrix(); pushStyle(); 
 		setColorValFill(clrs[0],255); 
 		setColorValStroke(clrs[1],255);
-		sphereDetail(det);
+		drawSphere(P, rad, det);
 		translate(P.x,P.y,P.z); 
-		sphere(rad); 
 		showOffsetTextAra(1.2f * rad, clrs[2], txtAra);
 		popStyle(); popMatrix();} // render sphere of radius r and center P)
 	
 	/////////////
-	//base show function
+	//base show functions
 	public final void show(myPointf P, float rad, int det){			
 		pushMatrix(); pushStyle(); 
 		fill(0,0,0,255); 
 		stroke(0,0,0,255);
+		drawSphere(P, rad, det);
+		popStyle(); popMatrix();
+	}
+	
+	public final void show(myPoint P, double rad, int det){			
+		pushMatrix(); pushStyle(); 
+		fill(0,0,0,255); 
+		stroke(0,0,0,255);
+		drawSphere(P, rad, det);
+		popStyle(); popMatrix();
+	}
+	
+	public final void drawSphere(myPointf P, float rad, int det) {
+		pushMatrix(); pushStyle(); 
 		sphereDetail(det);
 		translate(P.x,P.y,P.z); 
 		sphere(rad); 
+		popStyle(); popMatrix();
+	}
+	public final void drawSphere(myPoint P, double rad, int det) {
+		pushMatrix(); pushStyle(); 
+		sphereDetail(det);
+		translate(P.x,P.y,P.z); 
+		sphere((float) rad); 
 		popStyle(); popMatrix();
 	}
 	

@@ -31,4 +31,4 @@ public class myMatStack {
 		for (int si = 0; si < top+1; si++){	result += "Stack[" + si + "] =\n[" + s[si].toString() + "]\n";}//for si
 		return result;
 	}//to String method
-}//gtStack
+}//myMatStack

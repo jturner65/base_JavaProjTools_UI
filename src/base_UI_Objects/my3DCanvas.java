@@ -3,7 +3,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import base_UI_Objects.windowUI.myDispWindow;
+import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Utils_Objects.*;
 import base_Utils_Objects.vectorObjs.myEdge;
 import base_Utils_Objects.vectorObjs.myPoint;
