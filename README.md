@@ -6,7 +6,9 @@ These packages contain code I wrote that I use in nearly all of my java projects
 Originally this project included other functionality that has since been moved to separate libraries : 
 
 https://github.com/jturner65/base_JavaProjTools_Utils
+
 https://github.com/jturner65/base_JavaProjTools_Sim
+
 https://github.com/jturner65/base_JavaProjTools_Math
 
 The immediate plans for the functionality this project covers are : 
