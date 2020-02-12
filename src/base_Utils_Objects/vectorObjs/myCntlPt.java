@@ -21,7 +21,7 @@ public class myCntlPt extends myPoint {
 	public static myCntlPt P(myCntlPt A, myCntlPt B){	float s = .5f;return L(A, s, B);}
 	public myPoint set(myPoint P){super.set(P); return (myPoint)this;}
 	private static float capInterpR(float a, float s, float b){ float res = (1-s)*a + (s)*b; res = (res < minR ? minR : res > maxR ? maxR : res); return res;}
-	public void drawMe(my_procApplet pa, int cIdx, boolean flat){	pa.setFill(clr[cIdx],clr[cIdx][3]);  pa.setStroke(clr[cIdx],clr[cIdx][3]);		((my_procApplet) pa).show(this,2,-1,-1, flat);}		
+	public void drawMe(my_procApplet pa, int cIdx, boolean flat){	pa.setFill(clr[cIdx],clr[cIdx][3]);  pa.setStroke(clr[cIdx],clr[cIdx][3]);		pa.show(this,2,-1,-1, flat);}		
 	public void drawRad(my_procApplet pa, int cIdx,myVector I, myVector J){
         pa.setFill(clr[cIdx],clr[cIdx][3]);  
         pa.setStroke(clr[cIdx],clr[cIdx][3]); 
