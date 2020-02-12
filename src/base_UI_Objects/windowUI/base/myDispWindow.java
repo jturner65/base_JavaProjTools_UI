@@ -3,17 +3,19 @@ package base_UI_Objects.windowUI.base;
 import java.io.File;
 import java.util.*;
 
+import base_Math_Objects.MyMathUtils;
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.myGUIObj;
 import base_UI_Objects.windowUI.myScrollBars;
 import base_UI_Objects.windowUI.myTrajManager;
-import base_Utils_Objects.*;
+
 import base_Utils_Objects.io.MessageObject;
-import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myVector;
-import base_Utils_Objects.vectorObjs.myVectorf;
+
 import processing.core.*;
 
 /**

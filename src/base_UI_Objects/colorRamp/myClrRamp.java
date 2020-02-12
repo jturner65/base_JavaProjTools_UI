@@ -2,10 +2,13 @@ package base_UI_Objects.colorRamp;
 
 import java.util.ArrayList;
 
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.MyMathUtils;
+
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
-import base_Utils_Objects.MyMathUtils;
-import base_Utils_Objects.vectorObjs.*;
 
 
 public class myClrRamp {

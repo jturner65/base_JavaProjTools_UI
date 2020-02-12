@@ -8,11 +8,19 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import base_Math_Objects.vectorObjs.floats.myCntlPtf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
+import base_Math_Objects.MyMathUtils;
+import base_Math_Objects.vectorObjs.doubles.myCntlPt;
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.doubles.myVector;
+
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
 import base_UI_Objects.windowUI.sidebar.mySidebarMenuBtnConfig;
-import base_Utils_Objects.*;
-import base_Utils_Objects.vectorObjs.*;
+
+
 
 import processing.event.MouseEvent;
 
@@ -1261,11 +1269,14 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		save(saveDirAndSubDir + String.format("%06d", animCounter) + ".jpg");		
 		animCounter++;		
 	}
-	
-	public void line(double x1, double y1, double z1, double x2, double y2, double z2){line((float)x1,(float)y1,(float)z1,(float)x2,(float)y2,(float)z2 );}
-	public void line(myPoint p1, myPoint p2){line((float)p1.x,(float)p1.y,(float)p1.z,(float)p2.x,(float)p2.y,(float)p2.z);}
-	public void line(myPointf p1, myPointf p2){line(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z);}
-	public void line(myPointf a, myPointf b, int stClr, int endClr){
+	@Override
+	public final void line(double x1, double y1, double z1, double x2, double y2, double z2){line((float)x1,(float)y1,(float)z1,(float)x2,(float)y2,(float)z2 );}
+	@Override
+	public final void line(myPoint p1, myPoint p2){line((float)p1.x,(float)p1.y,(float)p1.z,(float)p2.x,(float)p2.y,(float)p2.z);}
+	@Override
+	public final void line(myPointf p1, myPointf p2){line(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z);}
+	@Override
+	public final void line(myPointf a, myPointf b, int stClr, int endClr){
 		beginShape();
 		this.strokeWeight(1.0f);
 		this.setColorValStroke(stClr, 255);
@@ -1274,8 +1285,22 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		this.vertex((float)b.x,(float)b.y,(float)b.z);
 		endShape();
 	}
+	@Override
+	public final void line(myPointf a, myPointf b, int[] stClr, int[] endClr){
+		beginShape();
+		this.strokeWeight(1.0f);
+		this.setStroke(stClr, 255);
+		this.vertex((float)a.x,(float)a.y,(float)a.z);
+		this.setStroke(endClr,255);
+		this.vertex((float)b.x,(float)b.y,(float)b.z);
+		endShape();
+	}
+	
+	public final myPoint WrldToScreen(myPoint wPt){return new myPoint(screenX((float)wPt.x,(float)wPt.y,(float)wPt.z),screenY((float)wPt.x,(float)wPt.y,(float)wPt.z),screenZ((float)wPt.x,(float)wPt.y,(float)wPt.z));}
+
 	
 	//print out multiple-line text to screen
+	@Override
 	public final void ml_text(String str, float x, float y){
 		String[] res = str.split("\\r?\\n");
 		float disp = 0;
@@ -1285,6 +1310,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		}
 	}
 	//print out a string ara with perLine # of strings per line
+	@Override
 	public final void outStr2ScrAra(String[] sAra, int perLine){
 		for(int i=0;i<sAra.length; i+=perLine){
 			String s = "";
@@ -1292,8 +1318,10 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			outStr2Scr(s,true);}
 	}
 	//print out string in display window
+	@Override
 	public final void outStr2Scr(String str){outStr2Scr(str,true);}
 	//print informational string data to console, and to screen
+	@Override
 	public final void outStr2Scr(String str, boolean showDraw){
 		if(trim(str) != ""){	System.out.println(str);}
 		String[] res = str.split("\\r?\\n");
@@ -1304,7 +1332,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		}
 	}
 	
-	public String getScreenShotSaveName(String prjNmShrt) {
+	protected String getScreenShotSaveName(String prjNmShrt) {
 		return sketchPath() +File.separatorChar+prjNmShrt+"_"+getDateString()+File.separatorChar+prjNmShrt+"_img"+getTimeString() + ".jpg";
 	}
 	
@@ -1696,7 +1724,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		myPoint[] pts = buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatrix(); pushStyle();noFill(); show(pts);popStyle();popMatrix();
 	}; 
-	
+	@Override
 	public final void drawCircle(myPointf P, float r, myVectorf I, myVectorf J, int n) {
 		myPointf[] pts = buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatrix(); pushStyle();noFill(); show(pts);popStyle();popMatrix();
@@ -1705,7 +1733,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void circle(myPoint p, float r){ellipse((float)p.x, (float)p.y, r, r);}
 	
 	public final void circle(myPointf p, float r){ellipse(p.x, p.y, r, r);}
-	public void circle(float x, float y, float r1, float r2){ellipse(x,y, r1, r2);}
+	public final void circle(float x, float y, float r1, float r2){ellipse(x,y, r1, r2);}
 	/**
 	 * draw a 6 pointed star centered at p inscribed in circle radius r
 	 */
@@ -1717,6 +1745,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void triangle(myPointf a, myPointf b, myPointf c) {triangle(a.x,a.y, b.x, b.y, c.x, c.y);}
 	
 	public void noteArc(float[] dims, int[] noteClr){
+		System.out.println("noteArc(0) : This should not be in my_ProcApplet!!!");
 		noFill();
 		setStroke(noteClr, noteClr[3]);
 		strokeWeight(1.5f*dims[3]);
@@ -1724,6 +1753,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	}
 	//draw a ring segment from alphaSt in radians to alphaEnd in radians
 	public void noteArc(myPoint ctr, float alphaSt, float alphaEnd, float rad, float thickness, int[] noteClr){
+		System.out.println("noteArc(1) : This should not be in my_ProcApplet!!!");
 		noFill();
 		setStroke(noteClr,noteClr[3]);
 		strokeWeight(thickness);
@@ -1774,14 +1804,15 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	
 	/////////////
 	// show functions 
-	public final void show(myPointf P, float rad, int det, int[] fclr, int[] sclr) {
-		pushMatrix(); pushStyle(); 
-		if((fclr!= null) && (sclr!= null)){setFill(fclr,255); setStroke(sclr,255);}
-		sphereDetail(det);
-		translate(P.x,P.y,P.z); 
-		sphere(rad); 
-		popStyle(); popMatrix();
-	}// render sphere of radius r and center P)
+	/**
+	 * show a point, either as flat circle or as a sphere
+	 * @param P
+	 * @param r
+	 * @param fclr
+	 * @param sclr
+	 * @param flat
+	 */
+	@Override
 	public final void show(myPoint P, double r,int fclr, int sclr, boolean flat) {//TODO make flat circles for points if flat
 		pushMatrix(); pushStyle(); 
 		if((fclr!= -1) && (sclr!= -1)){setColorValFill(fclr,255); setColorValStroke(sclr,255);}
@@ -1793,7 +1824,122 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 			translate((float)P.x,(float)P.y,0); 
 			this.circle(0,0,(float)r,(float)r);				
 		}
-		popStyle(); popMatrix();} // render sphere of radius r and center P)
+		popStyle(); popMatrix();
+	} // render sphere of radius r and center P)
+	/**
+	 * show a point, either as flat circle or as a sphere
+	 * @param P
+	 * @param r
+	 * @param fclr
+	 * @param sclr
+	 * @param flat
+	 */
+	@Override
+	public final void show(myPointf P, double r,int fclr, int sclr, boolean flat) {//TODO make flat circles for points if flat
+		pushMatrix(); pushStyle(); 
+		if((fclr!= -1) && (sclr!= -1)){setColorValFill(fclr,255); setColorValStroke(sclr,255);}
+		if(!flat){
+			translate((float)P.x,(float)P.y,(float)P.z); 
+			sphereDetail(5);
+			sphere((float)r);
+		} else {
+			translate((float)P.x,(float)P.y,0); 
+			this.circle(0,0,(float)r,(float)r);				
+		}
+		popStyle(); popMatrix();
+	} // render sphere of radius r and center P)
+	
+	/**
+	 * show a point, either as flat circle or as a sphere
+	 * @param P
+	 * @param r
+	 * @param fclr
+	 * @param sclr
+	 * @param flat
+	 */
+	@Override
+	public final void show(myPoint P, double r,int[] fclr, int[] sclr, boolean flat) {//TODO make flat circles for points if flat
+		pushMatrix(); pushStyle(); 
+		setFill(fclr,255); 
+		setStroke(sclr,255);
+		if(!flat){
+			translate((float)P.x,(float)P.y,(float)P.z); 
+			sphereDetail(5);
+			sphere((float)r);
+		} else {
+			translate((float)P.x,(float)P.y,0); 
+			this.circle(0,0,(float)r,(float)r);				
+		}
+		popStyle(); popMatrix();
+	} // render sphere of radius r and center P)
+	/**
+	 * show a point, either as flat circle or as a sphere
+	 * @param P
+	 * @param r
+	 * @param fclr
+	 * @param sclr
+	 * @param flat
+	 */
+	@Override
+	public final void show(myPointf P, double r,int[] fclr, int[] sclr, boolean flat) {//TODO make flat circles for points if flat
+		pushMatrix(); pushStyle(); 
+		setFill(fclr,255); 
+		setStroke(sclr,255);
+		if(!flat){
+			translate((float)P.x,(float)P.y,(float)P.z); 
+			sphereDetail(5);
+			sphere((float)r);
+		} else {
+			translate((float)P.x,(float)P.y,0); 
+			this.circle(0,0,(float)r,(float)r);				
+		}
+		popStyle(); popMatrix();
+	} // render sphere of radius r and center P)
+	
+
+	/**
+	 * render this point as a black sphere in 3d
+	 * @param pa : render interface capable of drawing this point
+	 * @param r : radius of resultant sphere
+	 */
+	@Override
+	public final void showPtAsSphere(myPoint p, float r) {
+		pushMatrix();pushStyle();
+		setFill(new int[] {0,0,0},255);
+		setStroke(new int[] {0,0,0},255);
+		translate(p.x,p.y,p.z); 
+		setSphereDetail(5);
+		drawSphere(r);
+		popStyle();	popMatrix();	
+	} 
+
+	/**
+	 * render this point as a black sphere in 3d
+	 * @param pa : render interface capable of drawing this point
+	 * @param r : radius of resultant sphere
+	 */
+	@Override
+	public final void showPtAsSphere(myPointf p, float r) {
+		pushMatrix();pushStyle();
+		setFill(new int[] {0,0,0},255);
+		setStroke(new int[] {0,0,0},255);
+		translate(p.x,p.y,p.z); 
+		setSphereDetail(5);
+		drawSphere(r);
+		popStyle();	popMatrix();	
+	} 
+
+
+	
+	
+	public final void show(myPointf P, float rad, int det, int[] fclr, int[] sclr) {
+		pushMatrix(); pushStyle(); 
+		if((fclr!= null) && (sclr!= null)){setFill(fclr,255); setStroke(sclr,255);}
+		sphereDetail(det);
+		translate(P.x,P.y,P.z); 
+		sphere(rad); 
+		popStyle(); popMatrix();
+	}// render sphere of radius r and center P)
 	
 	public final void show(myPoint P, double rad, int fclr, int sclr, int tclr, String txt) {
 		pushMatrix(); pushStyle(); 
@@ -1819,6 +1965,18 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 	public final void show(myPoint P, double r, String s, myVector D, int clr, boolean flat){show(P,r, clr, clr, flat);pushStyle();setColorValFill(clr,255);show(P,s,D);popStyle();}
 	public final void show(myPoint[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};                     
 	public final void show(myPoint[] ara, myVector norm) {beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};   
+	public final void show(myPointf P, float r,int fclr, int sclr, boolean flat) {//TODO make flat circles for points if flat
+		pushMatrix(); pushStyle(); 
+		if((fclr!= -1) && (sclr!= -1)){setColorValFill(fclr,255); setColorValStroke(sclr,255);}
+		if(!flat){
+			drawSphere(P, r, 5);
+		} else {
+			translate(P.x,P.y,0); 
+			circle(0,0,r,r);				
+		}
+		popStyle(); popMatrix();
+	} // render sphere of radius r and center P)	
+
 	public final void showVec( myPointf ctr, float len, myVectorf v){line(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
 	
 	/**
@@ -1853,17 +2011,6 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		}
 	}
 		
-	public final void show(myPointf P, float r,int fclr, int sclr, boolean flat) {//TODO make flat circles for points if flat
-		pushMatrix(); pushStyle(); 
-		if((fclr!= -1) && (sclr!= -1)){setColorValFill(fclr,255); setColorValStroke(sclr,255);}
-		if(!flat){
-			drawSphere(P, r, 5);
-		} else {
-			translate(P.x,P.y,0); 
-			circle(0,0,r,r);				
-		}
-		popStyle(); popMatrix();
-	} // render sphere of radius r and center P)	
 	public final void showBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, String txt) {
 		pushMatrix(); pushStyle(); 
 		translate(P.x,P.y,P.z);
@@ -2064,7 +2211,6 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		rect(x,y,w,h);
 		//show(p,r,-1);
 	}	
-	public final myPoint WrldToScreen(myPoint wPt){return new myPoint(screenX((float)wPt.x,(float)wPt.y,(float)wPt.z),screenY((float)wPt.x,(float)wPt.y,(float)wPt.z),screenZ((float)wPt.x,(float)wPt.y,(float)wPt.z));}
 	public final int[][] triColors = new int[][] {{gui_DarkMagenta,gui_DarkBlue,gui_DarkGreen,gui_DarkCyan}, {gui_LightMagenta,gui_LightBlue,gui_LightGreen,gui_TransCyan}};
 	
 

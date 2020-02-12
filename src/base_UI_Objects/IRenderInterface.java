@@ -3,13 +3,16 @@
  */
 package base_UI_Objects;
 
-import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVector;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * These are the functions that are expected to be found in a rendering class for proper rendering 
+ * This interface is very much a work in progress - ultimately, everything that can be expected from
+ * whatever rendering mechanism is being used should be referrenced here so all consuming code can be
+ * implementation agnostic
  * @author john
  *
  */
@@ -211,6 +214,16 @@ public interface IRenderInterface {
 	public void drawCircle(myPoint P, float r, myVector I, myVector J, int n);
 	
 	/**
+	 * draw a circle centered at P with specified radius r in plane proscribed by passed axes using n number of points
+	 * @param P center
+	 * @param r radius
+	 * @param I x axis
+	 * @param J y axis
+	 * @param n # of points to use
+	 */
+	public void drawCircle(myPointf P, float r, myVectorf I, myVectorf J, int n);
+	
+	/**
 	 * draw a rectangle in 2D using the passed values as x,y,w,h
 	 * @param a 4 element array : x,y,w,h
 	 */
@@ -263,6 +276,141 @@ public interface IRenderInterface {
 	 * @param alpha
 	 */
 	public void drawAxes(double len, double stW, myPoint ctr, myVectorf[] _axis, int alpha);
+	
+	/////////////////////////
+	// display objects
+	
+	////////////////////////
+	// lines
+	/**
+	 * draw line with given end points in 3d, represented as float coords
+	 * @param x1
+	 * @param y1
+	 * @param z1
+	 * @param x2
+	 * @param y2
+	 * @param z2
+	 */
+	public void line(float x1, float y1, float z1, float x2, float y2, float z2);
+	/**
+	 * draw line with given end points in 3d, represented as float coords
+	 * @param x1
+	 * @param y1
+	 * @param z1
+	 * @param x2
+	 * @param y2
+	 * @param z2
+	 */
+	public void line(double x1, double y1, double z1, double x2, double y2, double z2);
+	/**
+	 * draw line with given end points in 3d, represented as 2 points
+	 * @param p1
+	 * @param p2
+	 */
+	public void line(myPoint p1, myPoint p2);
+	/**
+	 * draw line with given end points in 3d, represented as 2 points with floating point coords
+	 * @param p1
+	 * @param p2
+	 */
+	public void line(myPointf p1, myPointf p2);
+	/**
+	 * draw line with given end points in 3d, represented as 2 points with floating point coords, with start and end color represented as integer keys to color array
+	 * @param a
+	 * @param b
+	 * @param stClr
+	 * @param endClr
+	 */
+	public void line(myPointf a, myPointf b, int stClr, int endClr);
+	/**
+	 * draw line with given end points in 3d, represented as 2 points with floating point coords, with start and end color represented as integer arrays
+	 * @param a
+	 * @param b
+	 * @param stClr
+	 * @param endClr
+	 */
+	public void line(myPointf a, myPointf b, int[] stClr, int[] endClr);
+
+	
+	////////////////////
+	// points - show functions need to be rethought TODO
+	/**
+	 * show a point, either as flat circle or as a sphere
+	 * @param P
+	 * @param r
+	 * @param fclr
+	 * @param sclr
+	 * @param flat
+	 */
+	public void show(myPoint P, double r,int fclr, int sclr, boolean flat);
+	/**
+	 * show a point, either as flat circle or as a sphere
+	 * @param P
+	 * @param r
+	 * @param fclr
+	 * @param sclr
+	 * @param flat
+	 */
+	public void show(myPointf P, double r,int fclr, int sclr, boolean flat);
+	/**
+	 * show a point, either as flat circle or as a sphere
+	 * @param P
+	 * @param r
+	 * @param fclr
+	 * @param sclr
+	 * @param flat
+	 */
+	public void show(myPoint P, double r,int[] fclr, int[] sclr, boolean flat);
+	/**
+	 * show a point, either as flat circle or as a sphere
+	 * @param P
+	 * @param r
+	 * @param fclr
+	 * @param sclr
+	 * @param flat
+	 */
+	public void show(myPointf P, double r,int[] fclr, int[] sclr, boolean flat);
+	/**
+	 * render this point as a black sphere in 3d
+	 * @param pa : render interface capable of drawing this point
+	 * @param r : radius of resultant sphere
+	 */
+	public void showPtAsSphere(myPoint p, float r) ;
+	/**
+	 * render this point as a black sphere in 3d
+	 * @param pa : render interface capable of drawing this point
+	 * @param r : radius of resultant sphere
+	 */
+	public void showPtAsSphere(myPointf p, float r) ;
+
+	
+	//////////////////////
+	// display text
+	/**
+	 * print out multiple-line text to screen
+	 * @param str text to show
+	 * @param x x displacement of text
+	 * @param y y displacement of text
+	 */
+	public void ml_text(String str, float x, float y);	
+	
+	/**
+	 * print out a string ara to screen with perLine # of strings per line
+	 * @param sAra array of strings
+	 * @param perLine # of strings per line to display to screen
+	 */
+	public void outStr2ScrAra(String[] sAra, int perLine);
+	/**
+	 * print out a string to screen
+	 * @param str string to display
+	 */	
+	public void outStr2Scr(String str);
+	/**
+	 * print informational string data to console, and to screen
+	 * @param str
+	 * @param showDraw whether to show in graphical window as well as console
+	 */
+	public void outStr2Scr(String str, boolean showDraw);
 	
 	//TODO put all functions commonly used from myDispWindow and its inheritors in here to support different rendering engines
 

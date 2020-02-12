@@ -3,13 +3,15 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import base_Math_Objects.MyMathUtils;
+import base_Math_Objects.vectorObjs.myEdge;
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
+
 import base_UI_Objects.windowUI.base.myDispWindow;
-import base_Utils_Objects.*;
-import base_Utils_Objects.vectorObjs.myEdge;
-import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVector;
-import base_Utils_Objects.vectorObjs.myVectorf;
+
 import processing.core.*;
 import processing.opengl.PGL;
 import processing.opengl.PGraphics3D;
@@ -221,7 +223,7 @@ public class my3DCanvas {
 			if(((p.curFocusWin == -1) || (p.curDispWinIs3D()))){p.drawProjOnBox(dfCtr);}
 			p.drawAxes(10000,1f, myPoint.ZEROPT, 100, true);//
 			//draw intercept with box
-			myPointf.ZEROPT.showMeSphere(p,3.0f);
+			p.showPtAsSphere(myPointf.ZEROPT,3.0f);
 			drawText(win, ""+dfCtr+ "|fr:"+p.frameRate,4.0f, 15.0f, 4.0f);
 			p.scale(1.5f,1.5f,1.5f);
 			//drawText(""+text_value_at_Cursor,4, -8, 4,0);getMseLoc(sceneCtrVals[sceneIDX])

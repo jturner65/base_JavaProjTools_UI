@@ -3,11 +3,12 @@ package base_UI_Objects.drawnObjs;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import base_Math_Objects.vectorObjs.doubles.myCntlPt;
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.MyMathUtils;
+
 import base_UI_Objects.my_procApplet;
-import base_Utils_Objects.MyMathUtils;
-import base_Utils_Objects.vectorObjs.myCntlPt;
-import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myVector;
 
 public abstract class myDrawnObject {
 	public static my_procApplet pa;
@@ -354,7 +355,7 @@ public abstract class myDrawnObject {
 	public void drawSelPoint(int i ){
 		pa.pushMatrix();		pa.pushStyle();
 		pa.setStroke(new int[] {255,255,0},255);
-		if(flags[usesCntlPts]){cntlPts[i].showMeSphere(pa, 3.0f);} else {pts[i].showMeSphere(pa, 3.0f);}
+		if(flags[usesCntlPts]){pa.showPtAsSphere(cntlPts[i], 3.0f);} else {pa.showPtAsSphere(pts[i], 3.0f);}
 		pa.popStyle();		pa.popMatrix();
 	}
 	
@@ -491,7 +492,7 @@ public abstract class myDrawnObject {
 	public final float length(myPoint[] pts, boolean closed){float res = 0;for(int i =0; i<pts.length-1; ++i){res += (float)myPoint._dist(pts[i],pts[i+1]);}if(closed){res+=(float)myPoint._dist(pts[pts.length-1],pts[0]);}return res;}
 
 
-	public void drawCOV(){		if(COV == null) {return;}		pa.pushMatrix();		pa.pushStyle();	pa.setStroke(new int[] {255,0,255},255);		COV.showMeSphere(pa, 3.0f);		pa.popStyle();		pa.popMatrix();	}
+	public void drawCOV(){		if(COV == null) {return;}		pa.pushMatrix();		pa.pushStyle();	pa.setStroke(new int[] {255,0,255},255);		pa.showPtAsSphere(COV, 3.0f);		pa.popStyle();		pa.popMatrix();	}
 	//drawCntlRad
 	public myPoint getPt(int i){return pts[i];}
 	
@@ -566,7 +567,7 @@ class myVariStroke extends myDrawnObject {
 	public void buildPointsUsingOffset(boolean procPts, int repCnt){
 		if(procPts){
 		    finalizeCntlW();
-		    for(int i=0;i<cntlPts.length;++i){cntlPts[i].calcRadFromWeight(pa, cntl_len/cntlPts.length, flags[cntlWInvRad]);}           //sets all radii based on weights
+		    for(int i=0;i<cntlPts.length;++i){cntlPts[i].calcRadFromWeight(cntl_len/cntlPts.length, flags[cntlWInvRad], pa.wScale);}           //sets all radii based on weights
 		    processCntlPts(flags[interpStroke] ? numIntCntlPts : numCntlPts, repCnt);
 	    }
 		buildCntlFrameVecAras();
@@ -811,8 +812,8 @@ class myVariStroke extends myDrawnObject {
     			}
         	} else {			
 				for(int i = 0; i < cntlPts.length; ++i){
-					//pa.show(cntlPts[i],trajPtRad,fillClr,strkClr, flat);
-					cntlPts[i].showMe(pa,trajPtRad,fillClr,strkClr, flat);
+					pa.show(cntlPts[i],1.0*trajPtRad,fillClr,strkClr, flat);
+					//cntlPts[i].showMe(pa,trajPtRad,fillClr,strkClr, flat);
 				}
 				if(flags[drawCntlRad]){this._offset.drawCntlPts(this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
         	}
