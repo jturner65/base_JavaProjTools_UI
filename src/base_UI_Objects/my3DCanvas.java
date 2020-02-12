@@ -11,6 +11,7 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 import base_UI_Objects.windowUI.base.myDispWindow;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 
 import processing.core.*;
 import processing.opengl.PGL;
@@ -32,20 +33,22 @@ public class my3DCanvas {
 					drawSNorm;													//current normal of viewport/screen
 		
 	private int viewDimW2, viewDimH2;
-	private final int viewDimW, viewDimH;
+	private int viewDimW, viewDimH;
 	//private float curDepth;
 	
 	private int[] mseFillClr;
 	
 
 	
-	public my3DCanvas(my_procApplet _p) {
-		p = _p;
-		viewDimW = p.width; viewDimH = p.height;
+	public my3DCanvas(IRenderInterface _p, int w, int h) {
+		p = (my_procApplet)_p;
+		viewDimW = w; viewDimH = h;
 		//curDepth = -1;		
 		mseFillClr = new int[] {0,0,0,255};
 		initCanvas();
 	}
+	
+	public void setDims(int w, int h) {		viewDimW = w; viewDimH = h;	}
 	
 	private void initCanvas(){
 		canvas3D = new myPoint[4];		//3 points to define canvas

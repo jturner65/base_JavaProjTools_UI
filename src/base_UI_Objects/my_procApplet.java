@@ -8,6 +8,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myCntlPtf;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -411,7 +412,7 @@ public abstract class my_procApplet extends processing.core.PApplet implements I
 		menuWidth = width * menuWidthMult;						//grid2D_X of menu region	
 		hideWinWidth = width * hideWinWidthMult;				//dims for hidden windows
 		hidWinHeight = height * hideWinHeightMult;
-		c = new my3DCanvas(this);			
+		c = new my3DCanvas(this,width, height);			
 		strokeCap(SQUARE);//makes the ends of stroke lines squared off		
 
 		initMainFlags_Priv();

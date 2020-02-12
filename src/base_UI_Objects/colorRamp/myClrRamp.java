@@ -2,12 +2,12 @@ package base_UI_Objects.colorRamp;
 
 import java.util.ArrayList;
 
+//import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.MyMathUtils;
 
-import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 
 
@@ -474,7 +474,7 @@ class myClrPoint extends myPoint{
 		pa.sphereDetail(5);
 		pa.translate((float)P.x,(float)P.y,(float)P.z); 
 		pa.sphere((float)r); 
-		pa.setColorValFill(IRenderInterface.gui_Black, 255);pa.setColorValStroke(IRenderInterface.gui_Black,255);
+		pa.setColorValFill(my_procApplet.gui_Black, 255);pa.setColorValStroke(my_procApplet.gui_Black,255);
 		double d = 1.1 * r;
 		pa.show(myPoint.ZEROPT, txt, new myVector(d,d,d));
 		pa.popStyle(); pa.popMatrix();} // render sphere of radius r and center P)
