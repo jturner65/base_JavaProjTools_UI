@@ -3,13 +3,15 @@ package base_UI_Objects.windowUI.sidebar;
 import java.io.*;
 import java.util.*;
 
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_UI_Objects.my_procApplet;
-import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
+import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.myGUIObj;
 import base_UI_Objects.windowUI.base.base_UpdateFromUIData;
 import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 
 //displays sidebar menu of interaction and functionality
 
@@ -58,14 +60,14 @@ public class mySideBarMenu extends myDispWindow{
 	private int[][] guiBtnSt;
 	
 	public final int[] guiBtnStFillClr = new int[]{		//button colors based on state
-			my_procApplet.gui_White,								//disabled color for buttons
-			my_procApplet.gui_LightGray,								//not clicked button color
-			my_procApplet.gui_LightBlue,									//clicked button color
+			IRenderInterface.gui_White,								//disabled color for buttons
+			IRenderInterface.gui_LightGray,								//not clicked button color
+			IRenderInterface.gui_LightBlue,									//clicked button color
 		};
 	public final int[] guiBtnStTxtClr = new int[]{			//text color for buttons
-			my_procApplet.gui_LightGray,									//disabled color for buttons
-			my_procApplet.gui_Black,									//not clicked button color
-			my_procApplet.gui_Black,									//clicked button color
+			IRenderInterface.gui_LightGray,									//disabled color for buttons
+			IRenderInterface.gui_Black,									//not clicked button color
+			IRenderInterface.gui_Black,									//clicked button color
 		};	
 	//row and column of currently clicked-on button (for display highlight as pressing)
 	public int[] curBtnClick = new int[]{-1,-1};
@@ -77,11 +79,11 @@ public class mySideBarMenu extends myDispWindow{
 //	public BaseBarMenu(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, boolean _canDrawTraj) {
 //		super(_p, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt, _canDrawTraj);
 
-	public mySideBarMenu(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, mySidebarMenuBtnConfig _c) {
-		super(_p, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt);
+	public mySideBarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, mySidebarMenuBtnConfig _c) {
+		super(_p, _AppMgr, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt);
 		btnConfig=_c;
 		//these have to be set before setupGUIObjsAras is called from initThisWin
-		numMainFlagsToShow = pa.getNumFlagsToShow();
+		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
 		super.initThisWin(true);
 	}
 	
@@ -121,9 +123,9 @@ public class mySideBarMenu extends myDispWindow{
 		btnDBGSelCmpIdx = -1;
 		btnMseFuncIdx = -1;
 		funcBtnIDXOffset = 0;
-		String[] titleArray = new String[pa.winTitles.length-1];		
+		String[] titleArray = new String[AppMgr.winTitles.length-1];		
 		if((btnConfig.inclWinNames)&&(titleArray.length != 0)) {
-			for(int i=0;i<titleArray.length;++i) {titleArray[i] = pa.winTitles[i+1];}
+			for(int i=0;i<titleArray.length;++i) {titleArray[i] = AppMgr.winTitles[i+1];}
 			tmpBtnNames.add(titleArray);
 			tmpDfltBtnNames.add(titleArray);
 
@@ -136,7 +138,7 @@ public class mySideBarMenu extends myDispWindow{
 			++funcBtnIDXOffset;
 		} else {			_initBtnShowWin= false;		}
 		
-		String[] mseOvrBtnNames = pa.getMouseOverSelBtnNames();	
+		String[] mseOvrBtnNames = AppMgr.getMouseOverSelBtnNames();	
 		if((btnConfig.inclMseOvValues) && (mseOvrBtnNames!=null) && (mseOvrBtnNames.length > 0)) {
 			tmpBtnNames.add(mseOvrBtnNames);
 			tmpDfltBtnNames.add(mseOvrBtnNames);
@@ -280,7 +282,7 @@ public class mySideBarMenu extends myDispWindow{
 			widthX = rectDim[2]/(1.0f * guiBtnNames[row].length);
 			stX =0;	endX = widthX;
 			for(int col =0; col<guiBtnNames[row].length;++col){	
-				if((pa.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (guiBtnSt[row][col] != -1)){
+				if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (guiBtnSt[row][col] != -1)){
 					handleButtonClick(row,col);
 					return true;
 				}					
@@ -324,14 +326,14 @@ public class mySideBarMenu extends myDispWindow{
 		//int newVal = guiBtnSt[row][col];//curr state, after being changed
 		//if not momentary buttons, set wait for proc to true
 		setWaitForProc(row,col);
-		if((row == btnShowWinIdx) && this.getPrivFlags(usesWinBtnDispIDX)) {pa.handleShowWin(col, val);}
+		if((row == btnShowWinIdx) && this.getPrivFlags(usesWinBtnDispIDX)) {AppMgr.handleShowWin(col, val);}
 		else if((row == btnMseFuncIdx) && this.getPrivFlags(usesMseOvrBtnDispIDX)) {
 			if(val==0) {clearRowExceptPassedBtn(row,col);}
-			pa.handleMenuBtnMseOvDispSel(col, val==0);
+			AppMgr.handleMenuBtnMseOvDispSel(col, val==0);
 			
 		}
-		else if((row == btnDBGSelCmpIdx) && this.getPrivFlags(usesDbgBtnDispIDX)) {pa.handleMenuBtnDebugSel(col, val);}
-		else {pa.handleMenuBtnSelCmp(row, funcBtnIDXOffset, col, val);}
+		else if((row == btnDBGSelCmpIdx) && this.getPrivFlags(usesDbgBtnDispIDX)) {AppMgr.handleMenuBtnDebugSel(col, val);}
+		else {AppMgr.handleMenuBtnSelCmp(row, funcBtnIDXOffset, col, val);}
 //		switch(row){
 //			case btnShowWinIdx 			: {pa.handleShowWin(col, val);break;}
 //			case btnAuxFunc1Idx 		: //{pa.handleMenuBtnSelCmp(btnAuxFunc1Idx,col, val);break;}
@@ -381,11 +383,11 @@ public class mySideBarMenu extends myDispWindow{
 	protected boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld){		return false;	}
 	@Override
 	protected boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
-		if((!pa.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}//not in this window's bounds, quit asap for speedz
+		if((!MyMathUtils.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}//not in this window's bounds, quit asap for speedz
 		int i = (int)((mouseY-(btnLblYOff + clkFlgsStY))/(yOff));					//TODO Awful - needs to be recalced, dependent on menu being on left
 		if((i>=0) && (i<numMainFlagsToShow)){
-			pa.flipMainFlag(i);return true;	
-		} else if(pa.ptInRange(mouseX, mouseY, 0, minBtnClkY, uiClkCoords[2], uiClkCoords[1])){
+			AppMgr.flipMainFlag(i);return true;	
+		} else if(MyMathUtils.ptInRange(mouseX, mouseY, 0, minBtnClkY, uiClkCoords[2], uiClkCoords[1])){
 			boolean clkInBtnRegion = checkButtons(mouseX, mouseY);
 			if(clkInBtnRegion) { this.setPrivFlags(mseClickedInBtnsIDX, true);}
 			return clkInBtnRegion;
@@ -395,7 +397,7 @@ public class mySideBarMenu extends myDispWindow{
 	@Override
 	public boolean hndlMouseDragIndiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {//regular UI obj handling handled elsewhere - custom UI handling necessary to call main window		
 		//boolean res = pa.getCurFocusDispWindow().hndlMouseDragIndiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
-		boolean res = pa.getCurFocusDispWindow().sideBarMenu_CallWinMseDragIndiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);	
+		boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDragIndiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);	
 		return res;	}
 	@Override
 	public void hndlMouseRelIndiv() {	clearAllBtnStates();}
@@ -403,10 +405,10 @@ public class mySideBarMenu extends myDispWindow{
 	private void drawSideBarBooleans(){
 		//draw main booleans and their state
 		pa.translate(10,btnLblYOff);
-		pa.setColorValFill(my_procApplet.gui_Black,255);
-		pa.text("Boolean Flags",0,yOff*.20f);
+		pa.setColorValFill(IRenderInterface.gui_Black,255);
+		pa.showText("Boolean Flags",0,yOff*.20f);
 		pa.translate(0,clkFlgsStY);
-		pa.dispMenuText(xOffHalf,yOffHalf);
+		AppMgr.dispMenuText(xOffHalf,yOffHalf);
 	}//drawSideBarBooleans
 
 	
@@ -415,23 +417,23 @@ public class mySideBarMenu extends myDispWindow{
 		pa.translate(xOffHalf,(float)minBtnClkY);
 		pa.setFill(new int[]{0,0,0}, 255);
 		for(int row=0; row<guiBtnRowNames.length;++row){
-			pa.text(guiBtnRowNames[row],0,-yOff*.15f);
+			pa.showText(guiBtnRowNames[row],0,-yOff*.15f);
 			pa.translate(0,rowStYOff);
 			float xWidthOffset = rectDim[2]/(1.0f * guiBtnNames[row].length), halfWay;
-			pa.pushMatrix();pa.pushStyle();
-			pa.strokeWeight(1.0f);
-			pa.stroke(0,0,0,255);
+			pa.pushMatState();
+			pa.setStrokeWt(1.0f);
+			pa.setColorValStroke(IRenderInterface.gui_Black,255);
 			pa.noFill();
 			pa.translate(-xOff*.5f, 0);
 			for(int col =0; col<guiBtnNames[row].length;++col){
 				halfWay = (xWidthOffset - pa.textWidth(guiBtnNames[row][col]))/2.0f;
 				pa.setColorValFill(guiBtnStFillClr[guiBtnSt[row][col]+1],255);
-				pa.rect(0,0,xWidthOffset, yOff);	
+				pa.drawRect(new float[] {0,0,xWidthOffset, yOff});	
 				pa.setColorValFill(guiBtnStTxtClr[guiBtnSt[row][col]+1],255);
-				pa.text(guiBtnNames[row][col], halfWay, yOff*.75f);
+				pa.showText(guiBtnNames[row][col], halfWay, yOff*.75f);
 				pa.translate(xWidthOffset, 0);
 			}
-			pa.popStyle();	pa.popMatrix();						
+			pa.popMatState();						
 			pa.translate(0,btnLblYOff);
 		}
 	}//drawSideBarButtons	
@@ -441,21 +443,21 @@ public class mySideBarMenu extends myDispWindow{
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {}
 	@Override
 	protected final void drawMe(float animTimeMod) {
-		pa.pushMatrix();pa.pushStyle();
+		pa.pushMatState();
 			drawSideBarBooleans();				//toggleable booleans 
-		pa.popStyle();	pa.popMatrix();	
-		pa.pushMatrix();pa.pushStyle();
-			pa.drawSideBarStateBools(yOff);				//lights that reflect various states
-		pa.popStyle();	pa.popMatrix();	
-		pa.pushMatrix();pa.pushStyle();			
+		pa.popMatState();	
+		pa.pushMatState();
+			AppMgr.drawSideBarStateBools(yOff);				//lights that reflect various states
+		pa.popMatState();	
+		pa.pushMatState();			
 			drawSideBarButtons();						//draw buttons
-		pa.popStyle();	pa.popMatrix();	
-		pa.pushMatrix();pa.pushStyle();
+		pa.popMatState();	
+		pa.pushMatState();
 			drawGUIObjs();					//draw what global user-modifiable fields are currently available 
-		pa.popStyle();	pa.popMatrix();			
-		pa.pushMatrix();pa.pushStyle();
-			pa.drawWindowGuiObjs();			//draw objects for window with primary focus
-		pa.popStyle();	pa.popMatrix();	
+		pa.popMatState();			
+		pa.pushMatState();
+			AppMgr.drawWindowGuiObjs();			//draw objects for window with primary focus
+		pa.popMatState();	
 	}
 	
 	@Override

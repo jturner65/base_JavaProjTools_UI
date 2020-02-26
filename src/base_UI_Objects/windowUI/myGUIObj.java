@@ -5,7 +5,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
 
 import processing.core.PApplet;
@@ -68,7 +67,7 @@ public class myGUIObj {
 		initDrawTrans= new float[]{(float)(start.x + xOff), (float)(start.y + yOff)};
 		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};		
 	}	
-	public myGUIObj(my_procApplet _p, myDispWindow _win, int _winID, String _name,double _xst, double _yst, double _xend, double _yend, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _Off) {this(_p,_win, _winID,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _minMaxMod, _initVal, _flags, _Off);	}
+	public myGUIObj(IRenderInterface _p, myDispWindow _win, int _winID, String _name,double _xst, double _yst, double _xend, double _yend, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _Off) {this(_p,_win, _winID,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _minMaxMod, _initVal, _flags, _Off);	}
 	public void initFlags(){			uiFlags = new int[1 + numFlags/32]; for(int i = 0; i<numFlags; ++i){setFlags(i,false);}	}
 	public boolean getFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiFlags[idx/32] & bitLoc) == bitLoc;}	
 	public void setFlags(int idx, boolean val){
@@ -112,22 +111,22 @@ public class myGUIObj {
 	
 	public final boolean checkIn(float _clkx, float _clky){return (_clkx > start.x)&&(_clkx < end.x)&&(_clky > start.y)&&(_clky < end.y);}
 	public final void draw(){
-		p.pushMatrix();p.pushStyle();
+		p.pushMatState();
 			p.translate(initDrawTrans[0],initDrawTrans[1],0);
 			p.setFill(_cVal,255);
 			p.setStroke(_cVal,255);
-			p.pushMatrix();p.pushStyle();
+			p.pushMatState();
 				p.noStroke();
 				p.setFill(bxclr,bxclr[3]);
 				p.translate(boxDrawTrans[0],boxDrawTrans[1],0);
 				p.drawRect(boxDim);
-			p.popStyle();p.popMatrix();
+			p.popMatState();
 			if(!getFlags(treatAsIntIDX)){		((PApplet) p).text(dispText + String.format("%.5f",val), 0,0);}
 			else{
 				//String resStr = getFlags(hasListValsIDX) ?  win.getUIListValStr(winID, (int)val) : String.format("%.0f",val);
 				((PApplet) p).text(dispText + getListValStr((int)val), 0,0);
 			}
-		p.popStyle();p.popMatrix();
+		p.popMatState();
 	}
 	/**
 	 * return the string representation corresponding to the passed index in the list of this object's values, if any exist

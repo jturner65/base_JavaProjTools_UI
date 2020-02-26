@@ -2,18 +2,18 @@ package base_UI_Objects.colorRamp;
 
 import java.util.ArrayList;
 
-//import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.MyMathUtils;
-
+import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.my_procApplet;
 
 
 public class myClrRamp {
 	public my_procApplet pa;	
-	
+	public GUI_AppManager AppMgr;
 	public int R0=250, G0=245, B0=20, R1=17, G1=60, B1=242, k=30;
 	
 	public float sIncr = .005f;
@@ -49,13 +49,13 @@ public class myClrRamp {
 	                         {0.2126f, 0.7152f,  0.0722f},
 	                         {0.0193f, 0.1192f,  0.9505f}};
 	
-	public myClrRamp(my_procApplet _p){
-		pa = _p; 	 
+	public myClrRamp(my_procApplet _p, GUI_AppManager _AppMgr){
+		pa = _p; 	 AppMgr = _AppMgr;
 		layer = new Layer(50, 10);
-		scaleVals = new float[]{pa.gridDimX/255.0f,pa.gridDimY/255.0f,pa.gridDimZ/255.0f};
+		scaleVals = new float[]{AppMgr.gridDimX/255.0f,AppMgr.gridDimY/255.0f,AppMgr.gridDimZ/255.0f};
 		
 		float y = pa.height *.15f;
-		grads = new myClrGrad(pa, this, pa.width *.85f, y, "Modified LCH");//(CAProject3 _pa, float _x, float _y){			
+		grads = new myClrGrad(AppMgr, pa, this, pa.width *.85f, y, "Modified LCH");//(CAProject3 _pa, float _x, float _y){			
 
 		usrPts = new ArrayList<myClrPoint>();		
 		myPoint ptA =new myPoint(R0,G0,B0),
@@ -75,7 +75,7 @@ public class myClrRamp {
 		myPoint rmpSpcClkLoc = transToRamp(clickLoc);	
 //		pa.msClkStr += "Click vals : mseX = " + String.format("%.5f", mseX) + " mseY = "+ String.format("%.5f", mseY);
 		for(int i = 0; i<2; ++i){			
-			if(myPoint._dist(rmpSpcClkLoc, usrPts.get(i)) < pa.msClkEps )			{		return i;	}
+			if(myPoint._dist(rmpSpcClkLoc, usrPts.get(i)) < AppMgr.msClkEps )			{		return i;	}
 		}		
 		return -1;
 	}
@@ -360,7 +360,7 @@ public class myClrRamp {
 	}
 	
 	public void drawRamp(int[] colors, myPoint[] points) {
-		for (int i=0; i<colors.length; ++i) {pa.fill(colors[i]); pa.show(points[i],5,5);}
+		for (int i=0; i<colors.length; ++i) {pa.fill(colors[i]); pa.showPtAsSphere(points[i],5,5, -1, -1);}
 	}
 	  
 	
@@ -392,10 +392,10 @@ public class myClrRamp {
 		}
 	}//class Layer
 	public void show(Layer l) {
-		for(int i=0; i<l.sample; ++i) {for(int j=0; j<l.sample; ++j) {pa.fill(l.C[i][j]); pa.show(l.P[i][j], 5, 5);}}
-		pa.strokeWeight(1); pa.stroke(0xff000000);
-		for(int i=0; i<l.sample; ++i) {for(int j=0; j<l.sample-1; ++j) {pa.line(l.P[i][j].x, l.P[i][j].y, l.P[i][j].z, l.P[i][j+1].x, l.P[i][j+1].y, l.P[i][j+1].z);}}
-		for(int i=0; i<l.sample-1; ++i) {for(int j=0; j<l.sample; ++j) {pa.line(l.P[i][j].x, l.P[i][j].y, l.P[i][j].z, l.P[i+1][j].x, l.P[i+1][j].y, l.P[i+1][j].z);}}
+		for(int i=0; i<l.sample; ++i) {for(int j=0; j<l.sample; ++j) {pa.fill(l.C[i][j]); pa.showPtAsSphere(l.P[i][j], 5, 5, -1, -1);}}
+		pa.setStrokeWt(1); pa.stroke(0xff000000);
+		for(int i=0; i<l.sample; ++i) {for(int j=0; j<l.sample-1; ++j) {pa.drawLine(l.P[i][j].x, l.P[i][j].y, l.P[i][j].z, l.P[i][j+1].x, l.P[i][j+1].y, l.P[i][j+1].z);}}
+		for(int i=0; i<l.sample-1; ++i) {for(int j=0; j<l.sample; ++j) {pa.drawLine(l.P[i][j].x, l.P[i][j].y, l.P[i][j].z, l.P[i+1][j].x, l.P[i+1][j].y, l.P[i+1][j].z);}}
 	}
 
 }//class myClrRamp
@@ -403,13 +403,14 @@ public class myClrRamp {
 
 class myClrGrad{
 	public my_procApplet pa;
+	public GUI_AppManager AppMgr;
 	public myClrRamp rmp;
 	public String name;
 	public float x,y, w,h;
 	public myClrPoint[] clrs;				//all colors in this gradient - r = x, g = z, b = y
 
-	public myClrGrad(my_procApplet _pa, myClrRamp _rmp, float _x, float _y, String _name){
-		pa = _pa;
+	public myClrGrad(GUI_AppManager _AppMgr, my_procApplet _pa, myClrRamp _rmp, float _x, float _y, String _name){
+		pa = _pa;AppMgr=_AppMgr;
 		rmp = _rmp;
 		name = _name;
 		w = pa.width * .13f; 
@@ -435,12 +436,12 @@ class myClrGrad{
 		float offset = w/(1.0f * clrs.length);			//how much to move laterally in ramp for each color
 		float st = x;
 		for(int i = 0; i< clrs.length;++i){
-			pa.fillAndShowLineByRBGPt(clrs[i],st, y, offset, h);//(myPoint p, float x,  float y, float w, float h)
+			AppMgr.fillAndShowLineByRBGPt(clrs[i],st, y, offset, h);//(myPoint p, float x,  float y, float w, float h)
 			st += offset;
 		}
 		pa.fill(0,0,0,255);
 		pa.text("3rd Color",x-100, y-10);
-		pa.fillAndShowLineByRBGPt(clrs[clrs.length/2],x-100, y, h, h);
+		AppMgr.fillAndShowLineByRBGPt(clrs[clrs.length/2],x-100, y, h, h);
 		pa.rect(x-100, y, h, h);
 		pa.popStyle();pa.popMatrix();
 	}//drawGradientRectangle	
@@ -471,12 +472,12 @@ class myClrPoint extends myPoint{
 	}	
 	public void show(myPoint P, double r, String txt) {
 		pa.pushMatrix(); pa.pushStyle(); 
-		pa.sphereDetail(5);
+		pa.setSphereDetail(5);
 		pa.translate((float)P.x,(float)P.y,(float)P.z); 
-		pa.sphere((float)r); 
-		pa.setColorValFill(my_procApplet.gui_Black, 255);pa.setColorValStroke(my_procApplet.gui_Black,255);
+		pa.drawSphere((float)r); 
+		pa.setColorValFill(IRenderInterface.gui_Black, 255);pa.setColorValStroke(IRenderInterface.gui_Black,255);
 		double d = 1.1 * r;
-		pa.show(myPoint.ZEROPT, txt, new myVector(d,d,d));
+		pa.showTextAtPt(myPoint.ZEROPT, txt, new myVector(d,d,d));
 		pa.popStyle(); pa.popMatrix();} // render sphere of radius r and center P)
 
 	public void showColor(){

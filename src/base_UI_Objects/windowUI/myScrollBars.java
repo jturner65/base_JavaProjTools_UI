@@ -3,12 +3,11 @@ package base_UI_Objects.windowUI;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
 
 
 public class myScrollBars{
-	public my_procApplet pa;
+	public IRenderInterface pa;
 	public myDispWindow win;
 	public static int scrBarCnt = 0;
 	public int ID;
@@ -36,7 +35,7 @@ public class myScrollBars{
 	
 	public int[][] clrs;			//colors for thumb and up/down/left/right arrows
 	
-	public myScrollBars(my_procApplet _pa,myDispWindow _win){
+	public myScrollBars(IRenderInterface _pa,myDispWindow _win){
 		pa = _pa;
 		win = _win;
 		ID = scrBarCnt++;
@@ -65,24 +64,24 @@ public class myScrollBars{
 
 	}
 	public void drawMe(){
-		pa.pushMatrix(); pa.pushStyle();
+		pa.pushMatState();
 		pa.setColorValFill(IRenderInterface.gui_LightGray,255);
 		pa.setColorValStroke(IRenderInterface.gui_Black,255);
-		pa.strokeWeight(1.0f);
+		pa.setStrokeWt(1.0f);
 		pa.drawRect(vScrlDims);
 		pa.drawRect(hScrlDims);
 		for(int i =0; i<arrowDims.length;++i){
 			pa.setFill(clrs[i],clrs[i][3]);
 			pa.drawRect(arrowDims[i]);
 		}
-		pa.popStyle();pa.popMatrix();
-		pa.pushMatrix(); pa.pushStyle();
+		pa.popMatState();
+		pa.pushMatState();
 		for(int i =0; i<thmbs.length;++i){
 			pa.setFill(clrs[i + 4],clrs[i + 4][3]);
 			pa.drawRect(thmbs[i]);
 		}
 		
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}//drawMe
 	
 	
