@@ -38,140 +38,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	protected final int cnslStrDecay = 10;			
 	
 	public final float frate = 120;			//frame rate - # of playback updates per second
-
-	//public int runCounter;	
-//	
-//	protected int drawCount,simCycles;												// counter for draw cycles		
-	
-//	protected float menuWidth;			
-//	//side menu is 15% of screen grid2D_X, 
-//	protected float menuWidthMult = .15f;
-//	protected float hideWinWidth;
-//	protected float hideWinWidthMult = .03f;
-//	protected float hidWinHeight;
-//	protected float hideWinHeightMult = .05f;
-//	
-//	private ArrayList<String> DebugInfoAra;										//enable drawing dbug info onto screen	
 	
 	//animation control variables	
 	public final float maxAnimCntr = PI*1000.0f, baseAnimSpd = 1.0f;
-//	public float msSclX, msSclY;											//scaling factors for mouse movement		
-//	protected my3DCanvas c;												//3d interaction stuff and mouse tracking
-	
-//	protected float dz=0, rx=-0.06f*TWO_PI, ry=-0.04f*TWO_PI;		// distance to camera. Manipulated with wheel or when,view angles manipulated when space pressed but not mouse	
-//	public final float camInitialDist = -200,		//initial distance camera is from scene - needs to be negative
-//			camInitRy = ry,
-//			camInitRx = rx;
-	
 	//9 element array holding camera loc, target, and orientation
 	public float[] camVals;		
-
-//	public double msClkEps = 40;				// distance within which to check if clicked from a point
-	
-//	//visualization variables
-//	//flags explicitly pertaining to window visibility
-//	private int[] _visFlags;
-	
-//	//visualization variables
-//	//flags explicitly pertaining to window visibility
-//	private int[] _visFlags;
-//	
-//	// boolean flags used to control various elements of the program 
-//	private int[] baseFlags;
-//	//dev/debug flags
-//	private final int 
-//			debugMode 			= 0,			//whether we are in debug mode or not	
-//			finalInitDone		= 1,			//used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
-//			saveAnim 			= 2,			//whether we are saving or not an anim screenie
-//	//interface flags	                   
-//			valueKeyPressed		= 3,
-//			shiftKeyPressed 	= 4,			//shift pressed
-//			altKeyPressed  		= 5,			//alt pressed
-//			cntlKeyPressed  	= 6,			//cntrl pressed
-//			mouseClicked 		= 7,			//mouse left button is held down	
-//			drawing				= 8, 			//currently drawing  showSOMMapUI
-//			modView	 			= 9,			//shift+mouse click+mouse move being used to modify the view
-//	//simulation
-//			runSim				= 10,			//run simulation
-//			singleStep			= 11,			//run single sim step
-//			showRtSideMenu		= 12,			//display the right side info menu for the current window, if it supports that display
-//			flipDrawnTraj  		= 13,			//whether or not to flip the direction of the drawn trajectory
-//			clearBKG 			= 14;			//whether or not background should be cleared for every draw.  defaults to true
-//	public final int numBaseFlags = 15;
-//	
-//	//booleans in main program - need to have labels in idx order, even if not displayed
-//	private final String[] truePFlagNames = {//needs to be in order of flags
-//			"Debug Mode",
-//			"Final init Done",
-//			"Save Anim", 	
-//			"Key Pressed",
-//			"Shift-Key Pressed",
-//			"Alt-Key Pressed",
-//			"Cntl-Key Pressed",
-//			"Click interact", 	
-//			"Drawing Curve",
-//			"Changing View",	
-//			"Stop Simulation",
-//			"Single Step",
-//			"Displaying Side Menu",
-//			"Displaying UI Menu",
-//			"Reverse Drawn Trajectory"
-//			};
-//	
-//	private final String[] falsePFlagNames = {//needs to be in order of flags
-//			"Debug Mode",	
-//			"Final init Done",
-//			"Save Anim", 	
-//			"Key Pressed",
-//			"Shift-Key Pressed",
-//			"Alt-Key Pressed",
-//			"Cntl-Key Pressed",
-//			"Click interact", 	
-//			"Drawing Curve",
-//			"Changing View",	 	
-//			"Run Simulation",
-//			"Single Step",
-//			"Displaying Side Menu",
-//			"Displaying UI Menu",
-//			"Reverse Drawn Trajectory"
-//			};
-//	private int[][] pFlagColors;
-//	
-//	
-//	//public final int numDebugVisFlags = 6;
-//	//flags to actually display in menu as clickable text labels - order does matter
-//	private List<Integer> flagsToShow = Arrays.asList( 
-//		debugMode, 			
-//		saveAnim,
-//		runSim,
-//		singleStep,
-//		showRtSideMenu
-//		);
-//	
-//	private int numFlagsToShow = flagsToShow.size();
-//	
-//	private final List<Integer> stateFlagsToShow = Arrays.asList( 
-//		shiftKeyPressed,			//shift pressed
-//		altKeyPressed,				//alt pressed
-//		cntlKeyPressed,				//cntrl pressed
-//		mouseClicked,				//mouse left button is held down	
-//		drawing, 					//currently drawing
-//		modView	 					//shift+mouse click+mouse move being used to modify the view					
-//			);
-//	public final int numStFlagsToShow = stateFlagsToShow.size();	
-//	private final String[] StateBoolNames = {"Shift","Alt","Cntl","Click", "Draw","View"};
-//	//multiplier for displacement to display text label for stateboolnames
-//	private final float[] StrWdMult = new float[]{-3.0f,-3.0f,-3.0f,-3.2f,-3.5f,-2.5f};
-//	private int[][] stBoolFlagColors;	
-	
-//
-//	protected String exeDir = Paths.get(".").toAbsolutePath().toString();
-//	//file location of current executable
-//	protected File currFileIOLoc = Paths.get(".").toAbsolutePath().toFile();
-	
-//	//whether or not to show start up instructions for code		
-//	public boolean showInfo=false;			
-	
 	
 	//replace old displayWidth, displayHeight variables being deprecated in processing
 	protected static int _displayWidth, _displayHeight;
@@ -226,63 +97,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 			}			
 		}
 	}//getIdealAppWindowDims
-//	
-//	protected abstract void setSmoothing();
-//
-//	/**
-//	 * whether or not we want to restrict window size on widescreen monitors
-//	 * 
-//	 * @return 0 - use monitor size regardless
-//	 * 			1 - use smaller dim to be determine window 
-//	 * 			2+ - TBD
-//	 */
-//	protected abstract int setAppWindowDimRestrictions();
-	
-
-//	/**
-//	 * modify 3D grid dimensions to be cube of passed value per side
-//	 * @param _gVal
-//	 */
-//	protected void setDesired3DGridDims(int _gVal) {setDesired3DGridDims(_gVal,_gVal,_gVal);}
-//	/**
-//	 * modify 3D grid dimensions to be cube of passed value dims
-//	 * @param _gx desired x dim
-//	 * @param _gy desired y dim
-//	 * @param _gz desired z dim
-//	 */
-//	protected void setDesired3DGridDims(int _gx, int _gy, int _gz) {
-//		gridDimX = _gx;gridDimY = _gy;gridDimZ = _gz;				//dimensions of 3d region
-//		gridHalfDim.set(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
-//		
-//		cubeBnds = new float[][]{//idx 0 is min, 1 is diffs
-//			new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},//mins
-//			new float[]{gridDimX,gridDimY,gridDimZ}};			//diffs
-//		
-//		//2D, 3D
-//		sceneFcsValsBase = new myVector[]{						//set these values to be different targets of focus
-//				new myVector(-grid2D_X/2,-grid2D_Y/1.75f,0),
-//				new myVector(0,0,0)
-//		};
-//		//2D, 3D
-//		sceneCtrValsBase = new myPoint[]{				//set these values to be different display center translations -
-//			new myPoint(0,0,0),										// to be used to calculate mouse offset in world for pick
-//			new myPoint(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
-//		};
-//		
-//		hGDimX = gridDimX/2.0f;
-//		hGDimY = gridDimY/2.0f;
-//		hGDimZ = gridDimZ/2.0f;
-//		tGDimX = gridDimX*10;
-//		tGDimY = gridDimY*10;
-//		tGDimZ = gridDimZ*20;
-//		boxWallPts = new myPoint[][] {//pts to check if intersection with 3D bounding box happens
-//				new myPoint[] {new myPoint(hGDimX,tGDimY,tGDimZ), new myPoint(hGDimX,-tGDimY,tGDimZ), new myPoint(hGDimX,tGDimY,-tGDimZ)  },
-//				new myPoint[] {new myPoint(-hGDimX,tGDimY,tGDimZ), new myPoint(-hGDimX,-tGDimY,tGDimZ), new myPoint(-hGDimX,tGDimY,-tGDimZ) },
-//				new myPoint[] {new myPoint(tGDimX,hGDimY,tGDimZ), new myPoint(-tGDimX,hGDimY,tGDimZ), new myPoint(tGDimX,hGDimY,-tGDimZ) },
-//				new myPoint[] {new myPoint(tGDimX,-hGDimY,tGDimZ),new myPoint(-tGDimX,-hGDimY,tGDimZ),new myPoint(tGDimX,-hGDimY,-tGDimZ) },
-//				new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
-//				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
-//	}
 	
 	
 	@Override
@@ -297,61 +111,31 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		frameRate(frate);
 	}//setup()
 	
-//	protected abstract void setup_indiv();
-	
 	//public int getNumThreadsAvailable() {return Runtime.getRuntime().availableProcessors();}
 		//1 time initialization of visualization things that won't change
 	public void initVisOnce(){
+		//setup default stroke ends.  ROUND is very slow, SQUARE  makes points invisible	
+		strokeCap(PROJECT);
+		textSize(txtSz);
+		textureMode(NORMAL);			
+		rectMode(CORNER);	
+		sphereDetail(4);
 		//data being printed to console	
 		consoleStrings = new ArrayDeque<String>();
 		drawCount = 0;
 		//mouse scrolling scale
 		AppMgr.firstInit(width, height);
-//
-//		int numThreadsAvail = getNumThreadsAvailable();
-//		//init internal state flags structure
-//		initBaseFlags();			
-//
-//		now = Calendar.getInstance();
-//
-//		consoleStrings = new ArrayDeque<String>();				//data being printed to console		
-//		outStr2Scr("# threads : "+ numThreadsAvail);
-//		outStr2Scr("Current sketchPath " + sketchPath());
-//		
-//		menuWidth = width * menuWidthMult;						//grid2D_X of menu region	
-//		hideWinWidth = width * hideWinWidthMult;				//dims for hidden windows
-//		hidWinHeight = height * hideWinHeightMult;
 		
 		outStr2Scr("Current sketchPath " + sketchPath());
-//		c = new my3DCanvas(AppMgr, this, width, height);				
-//
-//		initMainFlags_Priv();
-//		
-//		//instancing class version
-//		initVisOnce_Priv();
-		//initialize all visible flag colors and state flag colors
 		//finalize windows
 		AppMgr.endInit();
-//		//visibility flags corresponding to windows
-//		initVisFlags();
-
 		//camVals = new float[]{width/2.0f, height/2.0f, (height/2.0f) / tan(PI/6.0f), width/2.0f, height/2.0f, 0, 0, 1, 0};
 		camVals = new float[]{0, 0, (height/2.0f) / tan(PI/6.0f), 0, 0, 0, 0,1,0};
-
-		strokeCap(ROUND);//makes the ends of stroke lines squared off, makes points invisible, apparently	
 		
-		textSize(txtSz);
-		textureMode(NORMAL);			
-		rectMode(CORNER);	
-		sphereDetail(4);
 		
 		glblStartProgTime = millis();
 		glblStartSimFrameTime = glblStartProgTime;
 		glblLastSimFrameTime =  glblStartProgTime;	
-		//init glbl cam orientation/view
-//		dz=camInitialDist;	
-//		ry=camInitRy;	
-//		rx=camInitRx - ry;
 		
 	}//	initVisOnce
 	
@@ -669,6 +453,30 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		this.vertex((float)b.x,(float)b.y,(float)b.z);
 		endShape();
 	}
+	
+	/**
+	 * draw a cloud of points with passed color values as an integrated shape
+	 * @param numPts number of points to draw
+	 * @param ptIncr incrementer between points, to draw only every 2nd, 3rd or more'th point
+	 * @param h_part_clr_int 2d array of per point 3-color stroke values
+	 * @param h_part_pos_x per point x value
+	 * @param h_part_pos_y per point y value
+	 * @param h_part_pos_z per point z value
+	 */
+	@Override
+	public void drawPointCloudWithColors(int numPts, int ptIncr, int[][] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
+		beginShape(PConstants.POINTS);
+		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {				
+			//pa.stroke(h_part_clr[i][0], h_part_clr[i][1], h_part_clr[i][2]);
+			stroke(h_part_clr_int[i][0], h_part_clr_int[i][1], h_part_clr_int[i][2]);
+			//pa.point(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
+			vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
+		}
+		endShape();
+	}//drawPointCloudWithColors
+
+	
+	
 	
 	/**
 	 * draw a box centered at origin with passed dimensions, in 3D
