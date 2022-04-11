@@ -19,7 +19,6 @@ import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
 import base_UI_Objects.windowUI.sidebar.mySidebarMenuBtnConfig;
 import base_Utils_Objects.io.MessageObject;
-import processing.event.MouseEvent;
 
 /**
  * this class manages all common functionality for a gui application, independent of renderer
@@ -541,17 +540,75 @@ public abstract class GUI_AppManager {
 		}
 	}//handleFileCmd
 	
-	//turn off specific function button that might have been kept on during processing - btn must be in range of size of guiBtnSt[mySideBarMenu.btnAuxFuncIdx]
-	//isSlowProc means function this was waiting on is a slow process and escaped the click release in the window (i.e. if isSlowProc then we must force button to be off)
-	//public final void clearFuncBtnSt(int btn, boolean isSlowProc) {clearBtnState(mySideBarMenu.btnAuxFuncIdx,btn, isSlowProc);}
-
 	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val){handleMenuBtnSelCmp(row, funcOffset, col, val, true);}					//display specific windows - multi-select/ always on if sel
 	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val, boolean callFlags){
-		if(!callFlags){			setMenuBtnState(row,col, val);		} 
+		if(!callFlags){			setMenuBtnState(row,col, val);		} //if called programmatically, not via ui action
 		else {					dispWinFrames[curFocusWin].clickSideMenuBtn(row, funcOffset, col);		}
 	}//handleAddDelSelCmp		
+		
+	/**
+	 * pass on to current display window the choice for mouse over display data
+	 * @param btn
+	 * @param val
+	 */
+	public final void handleMenuBtnMseOvDispSel(int btn,boolean val) {
+		dispWinFrames[curFocusWin].handleSideMenuMseOvrDispSel(btn, val);
+	}
 	
-	public boolean getShouldClearBKG() {return getBaseFlag(clearBKG);}
+	/**
+	 * pass on to current display window the choice for debug selection - application should manage debug button state
+	 * @param btn
+	 * @param val
+	 */
+	public final void handleMenuBtnDebugSel(int btn,int val) {
+		//set current window's debug state
+		dispWinFrames[curFocusWin].setThisWinDebugState(btn, val);	
+	}	
+	
+	protected void setMenuBtnState(int row, int col, int val) {
+		((mySideBarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
+		if (val == 1) {
+			//outStr2Scr("my_procApplet :: setMenuBtnState :: Note!!! Turning on button at row : " + row + "  col " + col + " without button's command.");
+			((mySideBarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
+	}//setMenuBtnState	
+	
+	public void loadFromFile(File file){
+		if (file == null) {
+			pa.outStr2Scr("AppMgr :: loadFromFile ::Load was cancelled.");
+		    return;
+		} 		
+		//reset to match navigation in file IO window
+		currFileIOLoc = file;
+		dispWinFrames[curFocusWin].loadFromFile(file);
+	
+	}//loadFromFile
+	
+	public void saveToFile(File file){
+		if (file == null) {
+			pa.outStr2Scr("AppMgr :: saveToFile ::Save was cancelled.");
+		    return;
+		} 
+		//reset to match navigation in file IO window
+		currFileIOLoc = file;
+		dispWinFrames[curFocusWin].saveToFile(file);
+	}//saveToFile	
+	
+
+	public final String getAnimPicName() {
+		//if(!flags[this.runSim]) {return;}//don't save until actually running simulation
+		//idx 0 is directory, idx 1 is file name prefix
+		String[] ssName = dispWinFrames[curFocusWin].getSaveFileDirName();
+		if(ssName.length != 2) {setBaseFlag(saveAnim, false);return null;}
+		//save(screenShotPath + prjNmShrt + ((animCounter < 10) ? "0000" : ((animCounter < 100) ? "000" : ((animCounter < 1000) ? "00" : ((animCounter < 10000) ? "0" : "")))) + animCounter + ".jpg");		
+		String saveDirAndSubDir = ssName[0] + //"run_"+String.format("%02d", runCounter)  + 
+				ssName[1] + File.separatorChar;	
+		return saveDirAndSubDir + String.format("%06d", animCounter++) + ".jpg";		
+	}
+	
+	
+	
+	
+	
 	
 //	protected void updateConsoleStrs(){
 //		++drawCount;
@@ -563,7 +620,8 @@ public abstract class GUI_AppManager {
 	// draw/display functions
 	
 	protected abstract void setBkgrnd();//{	background(_bground[0],_bground[1],_bground[2],_bground[3]);}//setBkgrnd
-
+	public boolean getShouldClearBKG() {return getBaseFlag(clearBKG);}
+	
 	/**
 	 * return CWD of this application
 	 * @return
@@ -1161,13 +1219,15 @@ public abstract class GUI_AppManager {
 		else if (isRight) {						myMouseDragged(mouseX, mouseY, pmouseX, pmouseY,drag,1);}
 	}//mouseDragged()
 	private void myMouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector drag, int mseBtn){	for(int i =0; i<numDispWins; ++i){if (dispWinFrames[i].handleMouseDrag(mouseX, mouseY, pmouseX, pmouseY,drag,mseBtn)) {return;}}}
-	
-	//only for zooming
-	public final void mouseWheel(MouseEvent event) {
+	/**
+	 * currently only for zooming
+	 * @param ticks amount of wheel moves
+	 */
+	public final void mouseWheel(int ticks) {
 		if(dispWinFrames.length < 1) {return;}
 		if (dispWinFrames[curFocusWin].getFlags(myDispWindow.canChgView)) {// (canMoveView[curFocusWin]){	
 			float mult = (getBaseFlag(shiftKeyPressed)) ? 50.0f * mouseWhlSens : 10.0f*mouseWhlSens;
-			dispWinFrames[curFocusWin].handleViewChange(true,(mult * event.getCount()),0);
+			dispWinFrames[curFocusWin].handleViewChange(true,(mult * ticks),0);
 		}
 	}
 
@@ -1177,64 +1237,7 @@ public abstract class GUI_AppManager {
 		setBaseFlag(drawing, false);
 		//c.clearMsDepth();
 	}//mouseReleased
-	
-	/**
-	 * pass on to current display window the choice for mouse over display data
-	 * @param btn
-	 * @param val
-	 */
-	public final void handleMenuBtnMseOvDispSel(int btn,boolean val) {
-		dispWinFrames[curFocusWin].handleSideMenuMseOvrDispSel(btn, val);
-	}
-	
-	/**
-	 * pass on to current display window the choice for debug selection 
-	 * @param btn
-	 * @param val
-	 */
-	public final void handleMenuBtnDebugSel(int btn,int val) {
-		dispWinFrames[curFocusWin].handleSideMenuDebugSel(btn, val);
-	}	
-	
-	protected void setMenuBtnState(int row, int col, int val) {
-		((mySideBarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
-		if (val == 1) {
-			//outStr2Scr("my_procApplet :: setMenuBtnState :: Note!!! Turning on button at row : " + row + "  col " + col + " without processing button's command.");
-			((mySideBarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
-	}//setMenuBtnState	
-	
-	public void loadFromFile(File file){
-		if (file == null) {
-			pa.outStr2Scr("AppMgr :: loadFromFile ::Load was cancelled.");
-		    return;
-		} 		
-		//reset to match navigation in file IO window
-		currFileIOLoc = file;
-		dispWinFrames[curFocusWin].loadFromFile(file);
-	
-	}//loadFromFile
-	
-	public void saveToFile(File file){
-		if (file == null) {
-			pa.outStr2Scr("AppMgr :: saveToFile ::Save was cancelled.");
-		    return;
-		} 
-		//reset to match navigation in file IO window
-		currFileIOLoc = file;
-		dispWinFrames[curFocusWin].saveToFile(file);
-	}//saveToFile	
-	
 
-	public final String getAnimPicName() {
-		//if(!flags[this.runSim]) {return;}//don't save until actually running simulation
-		//idx 0 is directory, idx 1 is file name prefix
-		String[] ssName = dispWinFrames[curFocusWin].getSaveFileDirName();
-		if(ssName.length != 2) {setBaseFlag(saveAnim, false);return null;}
-		//save(screenShotPath + prjNmShrt + ((animCounter < 10) ? "0000" : ((animCounter < 100) ? "000" : ((animCounter < 1000) ? "00" : ((animCounter < 10000) ? "0" : "")))) + animCounter + ".jpg");		
-		String saveDirAndSubDir = ssName[0] + //"run_"+String.format("%02d", runCounter)  + 
-				ssName[1] + File.separatorChar;	
-		return saveDirAndSubDir + String.format("%06d", animCounter++) + ".jpg";		
-	}
 		
 	private void _setMainFlagToShow(int idx, boolean val) {
 		TreeMap<Integer, Integer> tmpMapOfFlags = new TreeMap<Integer, Integer>();

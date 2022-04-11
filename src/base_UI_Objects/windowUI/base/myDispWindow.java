@@ -37,6 +37,10 @@ public abstract class myDispWindow {
 	 * file IO object to manage IO
 	 */
 	protected FileIOManager fileIO;
+	/**
+	 * class name of instancing class
+	 */
+	public final String className;
 	
 	public static int winCnt = 0;
 	public int ID;	
@@ -163,6 +167,7 @@ public abstract class myDispWindow {
 		pa=_p;
 		AppMgr = _AppMgr;
 		ID = winCnt++;
+		className = this.getClass().getSimpleName();
 		name = _n;
 		pFlagIdx = _flagIdx;
 		msgObj = MessageObject.buildMe(pa);
@@ -1200,15 +1205,28 @@ public abstract class myDispWindow {
 	//UI controlled auxiliary/debug functionality	
 	public final void clickSideMenuBtn(int _row, int _funcOffset, int btnNum) {	curCstBtnRow = _row; curCstFuncBtnOffset = _funcOffset; curCustBtn[_row] = btnNum; custClickSetThisFrame = true;}
 	
+	
+	public final void setThisWinDebugState(int btn,int val) {
+		if(val==0) {//turning on
+			handleSideMenuDebugSelEnable(btn);
+		} else {
+			handleSideMenuDebugSelDisable(btn);			
+		}
+	}
+	
+	
 	//check if either custom function or debugging has been launched and process if so, skip otherwise.latched by a frame so that button can be turned on
 	public final void checkCustMenuUIObjs() {
-		if (custClickSetThisFrame) { custClickSetThisFrame = false;custFuncDoLaunch=true;return;}	//was set last frame and processed, so clear all flags
-		if (!custFuncDoLaunch) {return;}//has been launched don't relaunch
-		
+		//was set last frame and processed, so latch to launch request.  
+		//this will enable buttons to be displayed even if their processing only takes a single cycle
+		if (custClickSetThisFrame) { custClickSetThisFrame = false;custFuncDoLaunch=true;return;}	 
+		//no function has been requested to launch
+		if (!custFuncDoLaunch) {return;}
+		//launch special menu button handling
 		launchMenuBtnHndlr(curCstBtnRow-curCstFuncBtnOffset,curCustBtn[curCstBtnRow]);
 		custFuncDoLaunch=false;
 	}//checkCustMenuUIObjs
-	
+
 	//call from custFunc/custDbg functions being launched in threads
 	//these are launched in threads to allow UI to respond to user input
 	public void resetButtonState() {resetButtonState(true);}
@@ -1225,11 +1243,18 @@ public abstract class myDispWindow {
 	 */
 	public abstract void handleSideMenuMseOvrDispSel(int btn,boolean val);	
 	/**
-	 * handle desired debug functionality based on buttons selected from side bar menu
+	 * handle desired debug functionality enable based on buttons selected from side bar menu
 	 * @param btn
 	 * @param val
 	 */
-	public abstract void handleSideMenuDebugSel(int btn,int val);	
+	public abstract void handleSideMenuDebugSelEnable(int btn);	
+
+	/**
+	 * handle desired debug functionality disable based on buttons selected from side bar menu
+	 * @param btn
+	 * @param val
+	 */
+	public abstract void handleSideMenuDebugSelDisable(int btn);	
 
 	//type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
 	protected abstract void launchMenuBtnHndlr(int funcRow, int btn) ;

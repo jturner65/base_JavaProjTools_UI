@@ -353,7 +353,9 @@ public class mySideBarMenu extends myDispWindow{
 	public final void handleSideMenuMseOvrDispSel(int btn, boolean val) {	}
 
 	@Override
-	public final void handleSideMenuDebugSel(int btn, int val) {	}
+	public final void handleSideMenuDebugSelEnable(int btn) {	}
+	@Override
+	public final void handleSideMenuDebugSelDisable(int btn) {	}
 
 	//uses passed time
 	@Override //only send new values if actually new values

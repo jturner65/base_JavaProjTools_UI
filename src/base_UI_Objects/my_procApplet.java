@@ -675,7 +675,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * called by papplet super
 	 */
 	@Override
-	public void mouseWheel(MouseEvent event) {		AppMgr.mouseWheel(event);	}
+	public void mouseWheel(MouseEvent event) {
+		//ticks is how much the wheel has moved one way or the other
+		int ticks = event.getCount();		
+		AppMgr.mouseWheel(ticks);	
+	}
 	/**
 	 * called by papplet super
 	 */
