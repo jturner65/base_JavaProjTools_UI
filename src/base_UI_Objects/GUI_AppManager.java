@@ -1617,6 +1617,18 @@ public abstract class GUI_AppManager {
 	public abstract int[] getClr_Custom(int colorVal, int alpha);
 
 	
+	/**
+	 * display the current memory setup
+	 */
+	public void checkMemorySetup() {
+		Runtime runtime = Runtime.getRuntime();  
+		long maxMem = runtime.maxMemory(), allocMem = runtime.totalMemory(), freeMem = runtime.freeMemory();  
+		pa.outStr2Scr("Free memory: " + freeMem / 1024);  
+		pa.outStr2Scr("Allocated memory: " + allocMem / 1024);  
+		pa.outStr2Scr("Max memory: " + maxMem /1024);  
+		pa.outStr2Scr("Total free memory: " +  (freeMem + (maxMem - allocMem)) / 1024);   
+	
+	}//checkMemorySetup
 	
 	
 	//		public final int  
