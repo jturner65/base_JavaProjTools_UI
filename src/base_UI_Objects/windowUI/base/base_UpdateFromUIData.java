@@ -28,11 +28,6 @@ public abstract class base_UpdateFromUIData {
 	 */
 	protected TreeMap<Integer, Boolean> boolValues;
 
-	/**
-	 * 
-	 * @param ints : idx 0 : numCellsPerSide; idx 1 : branchSharingStrategy
-	 * @param bools : idx 0 : forceUpdate;
-	 */
 	public base_UpdateFromUIData(myDispWindow _win) { win=_win;	initMaps();}
 	public base_UpdateFromUIData(myDispWindow _win, TreeMap<Integer, Integer> _iVals, TreeMap<Integer, Float> _fVals,TreeMap<Integer, Boolean> _bVals) {
 		win=_win;
@@ -53,12 +48,7 @@ public abstract class base_UpdateFromUIData {
 	}
 	
 	public final void setAllVals(base_UpdateFromUIData _otr) {
-//		_otr.checkValsForChanged();
-//		setAllVals(_otr.oldIntVals,_otr.oldFloatVals,_otr.oldBoolVals);
-		setAllVals(_otr.intValues,_otr.floatValues,_otr.boolValues);
-//		changedVals.clear();
-//		for(Integer key : changedVals.keySet()) {changedVals.put(key, _otr.changedVals.get(key));}
-		
+		setAllVals(_otr.intValues,_otr.floatValues,_otr.boolValues);		
 	}
 	
 	public final void setAllVals(TreeMap<Integer, Integer> _intValues, TreeMap<Integer, Float> _floatValues,TreeMap<Integer, Boolean> _boolValues) {
@@ -76,9 +66,35 @@ public abstract class base_UpdateFromUIData {
 	public final void setBoolValue(Integer idx, Boolean value){	boolValues.put(idx,value);}
 	
 	/**
-	 * 
-	 * access bools
+	 * this will check if bool value is different than previous value, and if so will change it
+	 * @param idx
+	 * @param val
+	 * @return whether new value was set
+	 */	
+	public final boolean checkAndSetBoolValue(int idx, boolean value) {if(!compareBoolValue(idx, value)) {boolValues.put(idx,value); return true;}return false;}
+	/**
+	 * this will check if int value is different than previous value, and if so will change it
+	 * @param idx
+	 * @param val
+	 * @return whether new value was set
+	 */	
+	public final boolean checkAndSetIntVal(int idx, int value) {if(!compareIntValue(idx, value)) {intValues.put(idx,value); return true;}return false;}
+	/**
+	 * this will check if float value is different than previous value, and if so will change it
+	 * @param idx
+	 * @param val
+	 * @return whether new value was set
+	 */	
+	public final boolean checkAndSetFloatVal(int idx, float value) {if(!compareFloatValue(idx, value)) {floatValues.put(idx,value);return true;}return false;}
+	
+	
+	
+	/**
+	 * accessors
 	 */
 	public final boolean getFlags(int idx) {return boolValues.get(idx);}
+	public final int getIntValue(Integer idx, Integer value){	return intValues.get(idx);  }
+	public final float getFloatValue(Integer idx, Float value){	return floatValues.get(idx);  }
+	
 
 }//class base_UpdateFromUIData

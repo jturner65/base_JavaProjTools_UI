@@ -242,20 +242,28 @@ public abstract class myDispWindow {
 		buildUIUpdateStruct_Indiv(intValues, floatValues, boolValues); 
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}
+	/**
+	 * Add the UI int, float and boolean values that are implementation-specific in inheriting window.
+	 * @param intValues
+	 * @param floatValues
+	 * @param boolValues
+	 */
 	protected abstract void buildUIUpdateStruct_Indiv(TreeMap<Integer, Integer> intValues, TreeMap<Integer, Float> floatValues, TreeMap<Integer, Boolean> boolValues);
+	
 	/**
 	 * this will check if value is different than previous value, and if so will change it
 	 * @param idx
 	 * @param val
+	 * @return whether new value was set
 	 */
-	protected final boolean checkAndSetBoolValue(int idx, boolean value) {if(!uiUpdateData.compareBoolValue(idx, value)) {uiUpdateData.setBoolValue(idx, value); return true;}return false;}
-	protected final boolean checkAndSetIntVal(int idx, int value) {if(!uiUpdateData.compareIntValue(idx, value)) {uiUpdateData.setIntValue(idx, value);return true;}return false;}
-	protected final boolean checkAndSetFloatVal(int idx, float value) {if(!uiUpdateData.compareFloatValue(idx, value)) {uiUpdateData.setFloatValue(idx, value);return true;}return false;}
+	protected final boolean checkAndSetBoolValue(int idx, boolean value) {return uiUpdateData.checkAndSetBoolValue(idx, value);}
+	protected final boolean checkAndSetIntVal(int idx, int value) {return uiUpdateData.checkAndSetIntVal(idx, value);}
+	protected final boolean checkAndSetFloatVal(int idx, float value) {return uiUpdateData.checkAndSetFloatVal(idx, value);}
 	
 	/**
-	 * these are called externally from execution code object  to synchronize ui values that might change during execution
-	 * @param idx
-	 * @param value
+	 * these are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
 	 */
 	public final void updateBoolValFromExecCode(int idx, boolean value) {setPrivFlags(idx, value);uiUpdateData.setBoolValue(idx, value);}
 	public final void updateIntValFromExecCode(int idx, int value) {guiObjs[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
