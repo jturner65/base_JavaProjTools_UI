@@ -924,6 +924,7 @@ public abstract class myDispWindow {
 		pa.pushMatState();
 		//msgObj.dispInfoMessage("myDispWindow","draw2D","Hitting hint code draw2D");
 		pa.setBeginNoDepthTest();
+		pa.disableLights();
 		pa.setStroke(strkClr,strkClr[3]);
 		pa.setFill(fillClr,fillClr[3]);
 		//main window drawing
@@ -932,6 +933,7 @@ public abstract class myDispWindow {
 		if(null!=trajMgr){		trajMgr.drawTraj_2d(pa, animTimeMod);}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		//draw instancing win-specific stuff
 		drawMe(animTimeMod);			//call instance class's draw
+		pa.enableLights();
 		pa.setEndNoDepthTest();
 		pa.popMatState();
 	}

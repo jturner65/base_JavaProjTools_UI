@@ -66,6 +66,9 @@ public abstract class GUI_AppManager {
 	//unblocked window dimensions - location and dim of window if window is open\closed
 	public float[][] winRectDimOpen, winRectDimClose;
 
+	//9 element array holding camera loc, target, and orientation
+	public float[] camVals;		
+		
 	//used to manage current time
 	public Calendar now;
 	//data being printed to console - show on screen
@@ -293,6 +296,9 @@ public abstract class GUI_AppManager {
 		simCycles = 0;
 		//visibility flags corresponding to windows
 		initVisFlags();
+		
+		// set cam vals
+		camVals = new float[]{0, 0, (float) ((pa.getHeight()/2.0) / Math.tan(MyMathUtils.Pi/6.0)), 0, 0, 0, 0,1,0};		
 	}
 	/**
 	 * called in pre-draw initial setup, before first init
@@ -606,10 +612,6 @@ public abstract class GUI_AppManager {
 	}
 	
 	
-	
-	
-	
-	
 //	protected void updateConsoleStrs(){
 //		++drawCount;
 //		if(drawCount % cnslStrDecay == 0){drawCount = 0;	consoleStrings.poll();}			
@@ -664,13 +666,21 @@ public abstract class GUI_AppManager {
 //			simCycles++;
 //		}		//play in current window
 	}//execSimDuringDrawLoop
-	
+	/**
+	 * setup 
+	 */
+	private void drawSetup(){
+		pa.setPerspective(MyMathUtils.Pi_f/3.0f, (1.0f*pa.getWidth())/(1.0f*pa.getHeight()), .5f, camVals[2]*100.0f);
+		pa.enableLights(); 	
+		dispWinFrames[curFocusWin].drawSetupWin(camVals);
+	}//drawSetup
 	
 	/**
 	 * main draw loop - override if handling draw differently
 	 */
 	public void drawMe(float modAmtMillis){
-		//NOTE!!! push is done in calling proc - very bad TODO fix this somehow
+		pa.pushMatState();
+		drawSetup();
 		if((curFocusWin == -1) || (curDispWinIs3D())){	//allow for single window to have focus, but display multiple windows	
 			//if refreshing screen, this clears screen, sets background
 			if(getShouldClearBKG()) {

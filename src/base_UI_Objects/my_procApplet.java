@@ -41,9 +41,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	//animation control variables	
 	public final float maxAnimCntr = PI*1000.0f, baseAnimSpd = 1.0f;
-	//9 element array holding camera loc, target, and orientation
-	public float[] camVals;		
-	
+
 	//replace old displayWidth, displayHeight variables being deprecated in processing
 	protected static int _displayWidth, _displayHeight;
 	////////////////////////
@@ -129,9 +127,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		outStr2Scr("Current sketchPath " + sketchPath());
 		//finalize windows
 		AppMgr.endInit();
-		//camVals = new float[]{width/2.0f, height/2.0f, (height/2.0f) / tan(PI/6.0f), width/2.0f, height/2.0f, 0, 0, 1, 0};
-		camVals = new float[]{0, 0, (height/2.0f) / tan(PI/6.0f), 0, 0, 0, 0,1,0};
-		
 		
 		glblStartProgTime = millis();
 		glblStartSimFrameTime = glblStartProgTime;
@@ -173,15 +168,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		glblLastSimFrameTime = millis();
 		return modAmtMillis;
 	}	
-	/**
-	 * setup 
-	 */
-	public void drawSetup(){
-		perspective(PI/3.0f, (1.0f*width)/(1.0f*height), .5f, camVals[2]*100.0f);
-		enableLights(); 	
-	    //dispWinFrames[curFocusWin].drawSetupWin(camVals);
-	    AppMgr.getCurFocusDispWindow().drawSetupWin(camVals);
-	}//drawSetup		
+		
 
 
 	/**
@@ -194,9 +181,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		//simulation section
 		boolean execSim = AppMgr.execSimDuringDrawLoop(modAmtMillis);
 		if(execSim) {++drawCount;}
-		//drawing section
-		pushMatState();
-		drawSetup();																//initialize camera, lights and scene orientation and set up eye movement
+		//drawing section																//initialize camera, lights and scene orientation and set up eye movement
 		AppMgr.drawMe(modAmtMillis);				
 		
 		//Draw UI and 
@@ -234,136 +219,51 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		++drawCount;
 		if(drawCount % cnslStrDecay == 0){drawCount = 0;	consoleStrings.poll();}			
 	}//updateConsoleStrs
-	
-//	@Override
-//	/**
-//	 * main draw loop - override if handling draw differently
-//	 */
-//	public void draw(){
-//		if(!AppMgr.isFinalInitDone()) {AppMgr.initOnce(); return;}	
-//		float modAmtMillis = getModAmtMillis();
-//		//simulation section
-//		AppMgr.execRunSim(modAmtMillis);
-////		if(AppMgr.isRunSim() ){
-////			//run simulation
-////			drawCount++;									//needed here to stop draw update so that pausing sim retains animation positions	
-////			for(int i =1; i<AppMgr.numDispWins; ++i){if((isShowingWindow(i)) && (AppMgr.dispWinFrames[i].getFlags(myDispWindow.isRunnable))){AppMgr.dispWinFrames[i].simulate(modAmtMillis);}}
-////			if(AppMgr.isSingleStep()){AppMgr.setSimIsRunning(false);}
-////			simCycles++;
-////		}		//play in current window
-//
-//		//drawing section
-//		pushMatState();
-//		drawSetup();																//initialize camera, lights and scene orientation and set up eye movement
-//		
-//		
-//		if((AppMgr.curFocusWin == -1) || (AppMgr.curDispWinIs3D())){	//allow for single window to have focus, but display multiple windows	
-//			//if refreshing screen, this clears screen, sets background
-//			if(AppMgr.getShouldClearBKG()) {
-//				AppMgr.setBkgrnd();				
-//				AppMgr.draw3D_solve3D(modAmtMillis, -c.getViewDimW()/2.0f+40);
-//				c.buildCanvas();
-//				if(AppMgr.curDispWinCanShow3dbox()){AppMgr.drawBoxBnds();}
-//				if(AppMgr.getCurFocusDispWindow().chkDrawMseRet()){			c.drawMseEdge(AppMgr.getCurFocusDispWindow());	}		
-//			} else {
-//				AppMgr.draw3D_solve3D(modAmtMillis, -c.getViewDimW()/2.0f+40);
-//				c.buildCanvas();
-//			}
-//			popMatState(); 
-//		} else {	//either/or 2d window
-//			//2d windows paint window box so background is always cleared
-//			c.buildCanvas();
-//			c.drawMseEdge(AppMgr.getCurFocusDispWindow());
-//			popMatState(); 
-//			//for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getFlags(myDispWindow.is3DWin))){dispWinFrames[i].draw2D(modAmtMillis);}}
-//			AppMgr.draw2D(modAmtMillis);
-//		}
-//		AppMgr.drawUI(modAmtMillis);																	//draw UI overlay on top of rendered results			
-//		if (AppMgr.doSaveAnim()) {	savePic();}
-//		AppMgr.updateConsoleStrs();
-//		surface.setTitle(AppMgr.getPrjNmLong() + " : " + (int)(frameRate) + " fps|cyc curFocusWin : " + AppMgr.curFocusWin);
-//	}//draw	
-//	
-	
-//	protected abstract String getPrjNmLong();
-//	protected abstract String getPrjNmShrt();
 
+	/**
+	 * set perspective matrix based on frustum for camera
+	 * @param left left coordinate of the clipping plane
+	 * @param right right coordinate of the clipping plane
+	 * @param bottom bottom coordinate of the clipping plane
+	 * @param top top coordinate of the clipping plane
+	 * @param near near component of the clipping plane (> 0)
+	 * @param far far component of the clipping plane (> near)
+	 */
+	@Override
+	public void setFrustum(float left, float right, float bottom, float top, float near, float far) {
+		frustum(left, right, bottom, top, near, far);
+	}
 	
-//	protected final void draw3D_solve3D(float modAmtMillis){
-//		//System.out.println("drawSolve");
-//		pushMatState();
-//		for(int i =1; i<numDispWins; ++i){
-//			if((isShowingWindow(i)) && (dispWinFrames[i].getFlags(myDispWindow.is3DWin))){	dispWinFrames[i].draw3D(modAmtMillis);}
-//		}
-//		popMatState();
-//		//fixed xyz rgb axes for visualisation purposes and to show movement and location in otherwise empty scene
-//		drawAxes(100,3, new myPoint(-c.getViewDimW()/2.0f+40,0.0f,0.0f), 200, false); 		
-//	}//draw3D_solve3D
+	/**
+	 * set perspective projection matrix for camera
+	 * @param fovy Vertical FOV
+	 * @param ar Aspect Ratio 
+	 * @param zNear Z position of near clipping plane
+	 * @param zFar Z position of far clipping plane 
+	 */
+	@Override
+	public void setPerspective(float fovy, float ar, float zNear, float zFar) {
+		perspective(fovy, ar, zNear, zFar);
+	}
 	
-//	protected final void drawUI(float modAmtMillis){					
-//		//for(int i =1; i<numDispWins; ++i){if ( !(dispWinFrames[i].dispFlags[myDispWindow.is3DWin])){dispWinFrames[i].draw(sceneCtrVals[sceneIDX]);}}
-//		//dispWinFrames[0].draw(sceneCtrVals[sceneIDX]);
-//		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
-//		//menu always idx 0
-//		normal(0,0,1);
-//		dispWinFrames[0].draw2D(modAmtMillis);
-//		dispWinFrames[0].drawHeader(modAmtMillis);
-//		drawOnScreenData();				//debug and on-screen data
-//	}//drawUI	
-//	
-//	/**
-//	 * Draw Axes at ctr point
-//	 * @param len length of axis
-//	 * @param stW stroke weight (line thickness)
-//	 * @param ctr ctr point to draw axes
-//	 * @param alpha alpha value for how dark/faint axes should be
-//	 * @param centered whether axis should be centered at ctr or just in positive direction at ctr
-//	 */
-//	@Override
-//	public void drawAxes(double len, float stW, myPoint ctr, int alpha, boolean centered){//axes using current global orientation
-//		pushMatState();
-//			strokeWeight(stW);
-//			stroke(255,0,0,alpha);
-//			if(centered){
-//				double off = len*.5f;
-//				line(ctr.x-off,ctr.y,ctr.z,ctr.x+off,ctr.y,ctr.z);stroke(0,255,0,alpha);line(ctr.x,ctr.y-off,ctr.z,ctr.x,ctr.y+off,ctr.z);stroke(0,0,255,alpha);line(ctr.x,ctr.y,ctr.z-off,ctr.x,ctr.y,ctr.z+off);} 
-//			else {		line(ctr.x,ctr.y,ctr.z,ctr.x+len,ctr.y,ctr.z);stroke(0,255,0,alpha);line(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y+len,ctr.z);stroke(0,0,255,alpha);line(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y,ctr.z+len);}
-//		popStyle();	popMatrix();	
-//	}//	drawAxes
-//	@Override
-//	public void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int alpha, boolean drawVerts){//RGB -> XYZ axes
-//		pushMatState();
-//		if(drawVerts){
-//			showPtAsSphere(ctr,3,5,gui_Black,gui_Black);
-//			for(int i=0;i<_axis.length;++i){showPtAsSphere(myPoint._add(ctr, myVector._mult(_axis[i],len)),3,5,rgbClrs[i],rgbClrs[i]);}
-//		}
-//		strokeWeight(stW);
-//		for(int i =0; i<3;++i){	setColorValStroke(rgbClrs[i],255);	showVec(ctr,len, _axis[i]);	}
-//		popStyle();	popMatrix();	
-//	}//	drawAxes
-//	@Override
-//	public void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int[] clr, boolean drawVerts){//all axes same color
-//		pushMatState();
-//			if(drawVerts){
-//				showPtAsSphere(ctr,2,5,gui_Black,gui_Black);
-//				for(int i=0;i<_axis.length;++i){showPtAsSphere(myPoint._add(ctr, myVector._mult(_axis[i],len)),2,5,rgbClrs[i],rgbClrs[i]);}
-//			}
-//			strokeWeight(stW);stroke(clr[0],clr[1],clr[2],clr[3]);
-//			for(int i =0; i<3;++i){	showVec(ctr,len, _axis[i]);	}
-//		popStyle();	popMatrix();	
-//	}//	drawAxes
-//	@Override
-//	public void drawAxes(double len, double stW, myPoint ctr, myVectorf[] _axis, int alpha){
-//		pushMatState();
-//			strokeWeight((float)stW);
-//			stroke(255,0,0,alpha);
-//			line(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[0].x)*len,ctr.y+(_axis[0].y)*len,ctr.z+(_axis[0].z)*len);
-//			stroke(0,255,0,alpha);
-//			line(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[1].x)*len,ctr.y+(_axis[1].y)*len,ctr.z+(_axis[1].z)*len);	
-//			stroke(0,0,255,alpha);	
-//			line(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[2].x)*len,ctr.y+(_axis[2].y)*len,ctr.z+(_axis[2].z)*len);
-//		popStyle();	popMatrix();	
-//	}//	drawAxes
+	/**
+	 * set orthographic projection matrix for camera (2d or 3d)
+	 * @param left left plane of clipping volume
+	 * @param right right plane of the clipping volume
+	 * @param bottom bottom plane of the clipping volume
+	 * @param top top plane of the clipping volume
+	 * @param near maximum distance from the origin to the viewer
+	 * @param far maximum distance from the origin away from the viewer
+	 */
+	@Override
+	public void setOrtho(float left, float right, float bottom, float top) {
+		ortho(left, right, bottom, top);
+	}
+	@Override
+	public void setOrtho(float left, float right, float bottom, float top, float near, float far) {
+		ortho(left, right, bottom, top, near, far);
+	}
+	
 	
 	@Override
 	public void gl_normal(float x, float y, float z) {super.normal(x,y,z);}                                          // changes normal for smooth shading
