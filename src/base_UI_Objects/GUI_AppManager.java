@@ -760,7 +760,7 @@ public abstract class GUI_AppManager {
 	public final void draw3D_solve3D(float modAmtMillis, float viewDimW){
 		pa.pushMatState();
 		for(int i =1; i<numDispWins; ++i){
-			if((isShowingWindow(i)) && (dispWinFrames[i].getFlags(myDispWindow.is3DWin))){	dispWinFrames[i].draw3D(modAmtMillis);}
+			if((isShowingWindow(i)) && (dispWinFrames[i].getIs3DWindow())){	dispWinFrames[i].draw3D(modAmtMillis);}
 		}
 		pa.popMatState();
 		//fixed xyz rgb axes for visualisation purposes and to show movement and location in otherwise empty scene
@@ -773,7 +773,7 @@ public abstract class GUI_AppManager {
 	 */
 	
 	public final void draw2D(float modAmtMillis) {
-		for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getFlags(myDispWindow.is3DWin))){dispWinFrames[i].draw2D(modAmtMillis);}}
+		for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getIs3DWindow())){dispWinFrames[i].draw2D(modAmtMillis);}}
 	}
 	
 	//vector and point functions to be compatible with earlier code from jarek's class or previous projects	
@@ -882,8 +882,6 @@ public abstract class GUI_AppManager {
 	}//	
 	
 	public final void drawUI(float modAmtMillis){					
-		//for(int i =1; i<numDispWins; ++i){if ( !(dispWinFrames[i].dispFlags[myDispWindow.is3DWin])){dispWinFrames[i].draw(sceneCtrVals[sceneIDX]);}}
-		//dispWinFrames[0].draw(sceneCtrVals[sceneIDX]);
 		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
 		//menu always idx 0
 		//normal(0,0,1);

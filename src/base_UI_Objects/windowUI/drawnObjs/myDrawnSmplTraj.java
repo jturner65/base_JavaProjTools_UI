@@ -55,7 +55,7 @@ public class myDrawnSmplTraj {
 		initTrajStuff();		
 		trajFlags[flatPtIDX] = _flat;
 		trajFlags[smCntlPtsIDX] = _smCntl;
-		trajFlags[ownrWinIs3dIDX] = win.getFlags(myDispWindow.is3DWin);
+		trajFlags[ownrWinIs3dIDX] = win.getIs3DWindow();
 		ctlRad = (trajFlags[smCntlPtsIDX] ? myDrawnObject.trajPtRad : 5 );
 	}
 	protected void initTrajFlags(){trajFlags = new boolean[numTrajFlags];for(int i=0;i<numTrajFlags;++i){trajFlags[i]=false;}}

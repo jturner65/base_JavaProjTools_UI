@@ -280,7 +280,6 @@ public abstract class myDispWindow {
 		sceneFcsVal = new myVector(_baseFcs);
 		sceneCtrVal = new myPoint(_ctr);
 		focusTar = new myVector(_baseFcs);		
-		//if(null!=trajMgr) {trajMgr.finalTrajValsInit(_ctr, _baseFcs);}
 		if(_canDrawTraj) {
 			trajMgr = new myTrajManager(this, _canDrawTraj,!thisIs3D);
 		} else {
@@ -410,12 +409,10 @@ public abstract class myDispWindow {
 				if(startNewLine){//button is starting new line
 					lastBtnHalfStLine = true;
 					setBtnDims(i, 0, btnLen);
-					//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-xOff), (float) uiClkCoords[3], btnLen, yOff };
 					startNewLine = false;
 				} else {//should only get here if 2nd of two <1/2 width buttons in a row
 					lastBtnHalfStLine = false;
 					setBtnDims(i, oldBtnLen, btnLen);
-					//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-xOff)+oldBtnLen, (float) uiClkCoords[3], btnLen, yOff };
 					this.uiClkCoords[3] += yOff;
 					startNewLine = true;					
 				}
@@ -482,6 +479,7 @@ public abstract class myDispWindow {
 	 * @return
 	 */
 	public boolean getFlags(int idx){int bitLoc = 1<<(idx%32);return (dispFlags[idx/32] & bitLoc) == bitLoc;}	
+	
 	/**
 	 * check list of flags
 	 * @param idxs
@@ -562,27 +560,9 @@ public abstract class myDispWindow {
 		// since horizontal row of UI comps, uiClkCoords[2] will be set in buildGUIObjs
 		guiObjs = new myGUIObj[numGUIObjs]; // list of modifiable gui objects
 		double[] off = new double[] { xOff, yOff };
-//		buildGUIObjs(guiObjNames, guiStVals, guiMinMaxModVals, guiBoolVals, off,tmpListObjVals); // builds a horizontal list of UI comps
-//	}
-//	
-//	/**
-//	 * build myGUIObj objects for interaction - call from setupMenuClkRegions of window, uiClkCoords 
-//	 * needs to be derived before this is called by child class - maxY val(for vertical stack) or 
-//	 * maxX val(for horizontal stack) will be derived here
-//	 * @param guiObjNames
-//	 * @param guiStVals
-//	 * @param guiMinMaxModVals
-//	 * @param guiBoolVals
-//	 * @param off
-//	 * @param listVals : keyed by object IDX i guiObjs, value is String array of list values
-//	 */
-//	protected void buildGUIObjs(String[] guiObjNames, double[] guiStVals, double[][] guiMinMaxModVals, boolean[][] guiBoolVals, double[] off, TreeMap<Integer, String[]> tmpListObjVals){
-		//myGUIObj tmp; 
-//			if(getFlags(uiObjsAreVert]){		//vertical stack of UI components - clickable region x is unchanged, y changes with # of objects
 		float stClkY = uiClkCoords[1];
 		int numListObjs = 0;
 		for(int i =0; i< guiObjs.length; ++i){
-			//guiObjs[i] = buildGUIObj(i,guiObjNames[i],guiStVals[i], guiMinMaxModVals[i], guiBoolVals[i], new double[]{uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff},off);
 			if(guiBoolVals[i][1]) {++numListObjs;}
 			guiObjs[i] = new myGUIObj(pa, this,i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], off);
 			stClkY += yOff;
@@ -593,7 +573,7 @@ public abstract class myDispWindow {
 		}
 		//build lists of data for all list UI objects
 		for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
-	}//
+	}//_buildGUIObjsFromMaps
 	
 	//this returns a formatted string holding the UI data
 	protected String getStrFromUIObj(int idx){
@@ -1029,10 +1009,17 @@ public abstract class myDispWindow {
 			focusTar._add(rt);
 		}
 		unSetCamOrient();
-	}//handleViewTargetChange
+	}//handleViewTargetChange	
 	
+	/**
+	 * Whether or not this window displays in 3D
+	 * @return
+	 */
+	public boolean getIs3DWindow() {return getFlags(is3DWin);}
 	protected myPoint getMsePoint(myPoint pt){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt(pt) : pt;}		//get appropriate representation of mouse location in 3d if 3d window
 	public myPoint getMsePoint(int mouseX, int mouseY){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt(new myPoint(mouseX,mouseY,0)) : new myPoint(mouseX,mouseY,0);}
+	
+	
 	public boolean handleMouseMove(int mouseX, int mouseY){
 		if(!getFlags(showIDX)){return false;}
 		if((getFlags(showIDX))&& (msePtInUIRect(mouseX, mouseY))){//in clickable region for UI interaction
@@ -1347,6 +1334,7 @@ public abstract class myDispWindow {
 				String.format("%.2f",rectDim[0])+","+String.format("%.2f",rectDim[1])+","+String.format("%.2f",rectDim[2])+","+String.format("%.2f",rectDim[3])+")\n";	
 		return res;
 	}
-}//dispWindow
+}//myDispWindow
+
 
 
