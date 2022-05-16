@@ -1,8 +1,5 @@
 package base_UI_Objects;
 
-
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -42,8 +39,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	//animation control variables	
 	public final float maxAnimCntr = PI*1000.0f, baseAnimSpd = 1.0f;
 
-	//replace old displayWidth, displayHeight variables being deprecated in processing
-	protected static int _displayWidth, _displayHeight;
 	////////////////////////
 	// code
 	
@@ -55,9 +50,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	//needs to be called by instancing class
 	public final static void _invokedMain(GUI_AppManager _appMgr, String[] passedArgs) {	
 		String[] appletArgs = new String[] { "base_UI_Objects.my_procApplet" };
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		_displayWidth = gd.getDisplayMode().getWidth();
-		_displayHeight = gd.getDisplayMode().getHeight();
 		AppMgr = _appMgr;
 		if (passedArgs != null) {processing.core.PApplet.main(processing.core.PApplet.concat(appletArgs, passedArgs)); } else {processing.core.PApplet.main(appletArgs);		    }
 	    
@@ -66,42 +58,16 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	//processing being run in eclipse uses settings for variable size dimensions
 	public void settings(){	
 		AppMgr.setIRenderInterface(this);
-		int[] desDims = getIdealAppWindowDims();
+		int[] desDims = AppMgr.getIdealAppWindowDims();
 		size(desDims[0], desDims[1],P3D);	
 		//allow user to set smoothing
 		AppMgr.setSmoothing();
-		//noSmooth();
 	}	
-	
-	/**
-	 * this will manage very large displays, while scaling window to smaller displays
-	 * the goal is to preserve a reasonably close to 16:10 ratio window with big/widescreen displays
-	 * @return int[] { desired application window width, desired application window height}
-	 */
-	protected final int[] getIdealAppWindowDims() {		
-		int winSizeCntrl = AppMgr.setAppWindowDimRestrictions();		
-		switch(winSizeCntrl) {
-			case 0 : {//don't care about window dimensions
-				return new int[] {(int)(_displayWidth*.95f), (int)(_displayHeight*.92f)};
-			}
-			case 1 : {//make screen manageable for wide screen monitors
-				float displayRatio = _displayWidth/(1.0f*_displayHeight);
-				float newWidth = (displayRatio > maxWinRatio) ?  _displayWidth * maxWinRatio/displayRatio : _displayWidth;
-				return new int[] {(int)(newWidth*.95f), (int)(_displayHeight*.92f)};
-			}
-			default :{//unsupported winSizeCntrl setting >= 2
-				System.out.println("Unsupported value from setAppWindowDimRestrictions(). Defaulting to 0.");
-				return new int[] {(int)(_displayWidth*.95f), (int)(_displayHeight*.92f)};
-			}			
-		}
-	}//getIdealAppWindowDims
-	
 	
 	@Override
 	public void setup() {
 		colorMode(RGB, 255, 255, 255, 255);
-//		frameRate(frate);
-		AppMgr.setup_indiv();
+		AppMgr.setup_Indiv();
 		initVisOnce();						//always first
 		//call this in first draw loop?
 		AppMgr.initOnce();		
@@ -109,7 +75,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		frameRate(frate);
 	}//setup()
 	
-	//public int getNumThreadsAvailable() {return Runtime.getRuntime().availableProcessors();}
 		//1 time initialization of visualization things that won't change
 	public void initVisOnce(){
 		//setup default stroke ends.  ROUND is very slow, SQUARE  makes points invisible	
@@ -167,9 +132,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		float modAmtMillis = (glblStartSimFrameTime - glblLastSimFrameTime);
 		glblLastSimFrameTime = millis();
 		return modAmtMillis;
-	}	
-		
-
+	}
 
 	/**
 	 * main draw loop - override if handling draw differently
@@ -193,7 +156,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}//draw	
 	
 	/**
-	 * draw a translucent represenation of a canvas plane ortho to eye-to-mouse vector
+	 * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector
 	 * @param eyeToMse vector 
 	 * @param canvas3D
 	 */
@@ -203,9 +166,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		pushMatState();
 		beginShape(PConstants.QUAD);
 		setFill(255,255,255,80);
-		//p.noStroke();
 		gl_normal(eyeToMse);
-     	//for(int i =0;i<canvas3D.length;++i){		//build invisible canvas to draw upon
         for(int i =canvas3D.length-1;i>=0;--i){		//build invisible canvas to draw upon
      		//p.line(canvas3D[i], canvas3D[(i+1)%canvas3D.length]);
      		gl_vertex(canvas3D[i]);
@@ -338,9 +299,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		beginShape();
 		this.strokeWeight(1.0f);
 		this.setColorValStroke(stClr, 255);
-		this.vertex((float)a.x,(float)a.y,(float)a.z);
+		this.gl_vertex(a);
 		this.setColorValStroke(endClr,255);
-		this.vertex((float)b.x,(float)b.y,(float)b.z);
+		this.gl_vertex(b);
 		endShape();
 	}
 	@Override
@@ -348,9 +309,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		beginShape();
 		this.strokeWeight(1.0f);
 		this.setStroke(stClr, 255);
-		this.vertex((float)a.x,(float)a.y,(float)a.z);
+		this.gl_vertex(a);
 		this.setStroke(endClr,255);
-		this.vertex((float)b.x,(float)b.y,(float)b.z);
+		this.gl_vertex(b);
 		endShape();
 	}
 	
@@ -366,17 +327,12 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void drawPointCloudWithColors(int numPts, int ptIncr, int[][] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
 		beginShape(PConstants.POINTS);
-		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {				
-			//pa.stroke(h_part_clr[i][0], h_part_clr[i][1], h_part_clr[i][2]);
-			stroke(h_part_clr_int[i][0], h_part_clr_int[i][1], h_part_clr_int[i][2]);
-			//pa.point(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
-			vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
+		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
+			this.setStroke(h_part_clr_int[i][0], h_part_clr_int[i][1], h_part_clr_int[i][2], 255);
+			this.gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
 		}
 		endShape();
-	}//drawPointCloudWithColors
-
-	
-	
+	}//drawPointCloudWithColors	
 	
 	/**
 	 * draw a box centered at origin with passed dimensions, in 3D
@@ -402,12 +358,12 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawCircle3D(myPoint P, float r, myVector I, myVector J, int n) {
 		myPoint[] pts = AppMgr.buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatState();noFill(); show(pts);popMatState();
-	}; 
+	}
 	@Override
 	public void drawCircle3D(myPointf P, float r, myVectorf I, myVectorf J, int n) {
 		myPointf[] pts = AppMgr.buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatState();noFill(); show(pts);popMatState();
-	}; 
+	} 
 	
 	/**
 	 * draw a 6 pointed star centered at p inscribed in circle radius r
@@ -436,7 +392,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawTriangle2D(myPoint a, myPoint b, myPoint c) {triangle((float)a.x,(float)a.y,(float) b.x, (float)b.y,(float) c.x,(float) c.y);}
 
 	
-	private final float deltaThet = MyMathUtils.twoPi_f/36, finalThet = MyMathUtils.twoPi_f+deltaThet;
+	private final float deltaThet = MyMathUtils.twoPi_f/36.0f, finalThet = MyMathUtils.twoPi_f+deltaThet;
 	@Override
 	public void drawCylinder_NoFill(myPoint A, myPoint B, float r, int c1, int c2) {
 		myVector[] frame = AppMgr.buildViewBasedFrame(A, B);
@@ -446,7 +402,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 			for(float a=0; a<=finalThet; a+=deltaThet) {
 				stroke(c1); 
 				rca = r*cos(a);rsa=r*sin(a);
-				//gl_vertex(myPoint._add(A,r*cos(a),I,r*sin(a),J,0,V)); 
 				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2])); 
 				stroke(c2); 
 				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
@@ -460,8 +415,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		beginShape(QUAD_STRIP);
 			for(float a=0; a<=finalThet; a+=deltaThet) {
 				stroke(c1); 
-				rca = r*cos(a);rsa=r*sin(a);
-				//gl_vertex(myPoint._add(A,r*cos(a),I,r*sin(a),J,0,V)); 
+				rca = r*cos(a);rsa=r*sin(a); 
 				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2])); 
 				stroke(c2); 
 				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
@@ -476,7 +430,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 			for(float a=0; a<=finalThet; a+=deltaThet) {
 				fill(c1); 
 				rca = r*cos(a);rsa=r*sin(a);
-				//gl_vertex(myPoint._add(A,r*cos(a),I,r*sin(a),J,0,V)); 
 				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2])); 
 				fill(c2); 
 				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
@@ -491,7 +444,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 			for(float a=0; a<=finalThet; a+=deltaThet) {
 				fill(c1); 
 				rca = r*cos(a);rsa=r*sin(a);
-				//gl_vertex(myPoint._add(A,r*cos(a),I,r*sin(a),J,0,V)); 
 				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2])); 
 				fill(c2); 
 				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
@@ -585,10 +537,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void mouseReleased(){	AppMgr.mouseReleased();	}
-	
-//	public void setCamOrient_Glbl(){rotateX(rx);rotateY(ry); rotateX(PI/(2.0f));		}//sets the rx, ry, pi/2 orientation of the camera eye	
-//	public void unSetCamOrient_Glbl(){rotateX(-PI/(2.0f)); rotateY(-ry);   rotateX(-rx); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
-	
+		
 	///////////////////////
 	// display directives
 	/**
@@ -655,9 +604,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public final myVector bezierTangent(myPoint[] C, float t) {return new myVector(bezierTangent((float)C[0].x,(float)C[1].x,(float)C[2].x,(float)C[3].x,(float)t),bezierTangent((float)C[0].y,(float)C[1].y,(float)C[2].y,(float)C[3].y,(float)t),bezierTangent((float)C[0].z,(float)C[1].z,(float)C[2].z,(float)C[3].z,(float)t)); }
 	
-//	//public final int color(myPoint p){return color((int)p.x,(int)p.z,(int)p.y);}	//needs to be x,z,y for some reason - to match orientation of color frames in z-up 3d geometry
-//	public final int color(myPoint p){return color((int)p.x,(int)p.y,(int)p.z);}	
-//	public final int color(myPointf p){return color((int)p.x,(int)p.y,(int)p.z);}	
 	/**
 	 * vertex with texture coordinates
 	 * @param P vertex location
@@ -700,14 +646,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	///////////
 	// points
 	
-	//base show function
-//	public void show(myPoint P, double rad, int det){			
-//		pushMatState(); 
-//		fill(0,0,0,255); 
-//		stroke(0,0,0,255);
-//		drawSphere(P, rad, det);
-//		popMatState();
-//	}
 	@Override
 	public void drawSphere(myPoint P, double rad, int det) {
 		pushMatState(); 
@@ -716,7 +654,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		sphere((float) rad); 
 		popMatState();
 	}
-
 	
 	////////////////////
 	// showing double points as spheres or circles
@@ -833,15 +770,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	///////////
 	// float points (pointf)
 	
-	/////////////
-	//base show functions
-//	public void show(myPointf P, float rad, int det){			
-//		pushMatState(); 
-//		fill(0,0,0,255); 
-//		stroke(0,0,0,255);
-//		drawSphere(P, rad, det);
-//		popMatState();
-//	}
 	@Override
 	public void drawSphere(myPointf P, float rad, int det) {
 		pushMatState(); 
@@ -912,14 +840,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		popMatState();
 	} // render sphere of radius r and center P)
 
-//	
-//	public void show(myPointf P, float rad, int det, int[] fclr, int[] sclr) {
-//		pushMatState(); 
-//		if((fclr!= null) && (sclr!= null)){setFill(fclr,255); setStroke(sclr,255);}
-//		drawSphere(P,rad, det);
-//		popMatState();
-//	}// render sphere of radius r and center P)
-
 	@Override
 	public void showPtWithText(myPointf P, float r, String s, myVectorf D, int clr, boolean flat){
 		if(flat) {			showPtAsCircle(P,r, clr, clr);} 
@@ -954,14 +874,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		}
 	}	
 
-//	public void show(myPointf P, float rad, int det, int[] clrs) {//only call with set fclr and sclr - idx0 == fill, idx 1 == strk
-//		pushMatState(); 
-//		setColorValFill(clrs[0],255); 
-//		setColorValStroke(clrs[1],255);
-//		drawSphere(P, rad, det);
-//		popMatState();
-//	} // render sphere of radius r and center P)
-//	
 	/**
 	 * show array displayed at specific point on screens
 	 * @param P
@@ -1011,15 +923,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		 popMatState();
 	} // render sphere of radius r and center P)
 	
-	
-	//public void showText(myPointf P, float r, String s, myVectorf D){showPtAsSphere(P,r,5, gui_Black, gui_Black);pushStyle();setColorValFill(gui_Black,255);showText(P,s,D);popStyle();}
-	
 	public void show(myPointf[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};                     
 	public void show(myPointf[] ara, myVectorf norm) {beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};                     
 	
 	public void showNoClose(myPoint[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape();};                     
-	public void showNoClose(myPointf[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape();};     
-
+	public void showNoClose(myPointf[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape();};   
 	
 	///end show functions
 	
@@ -1087,18 +995,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	//////////////////////////////////
 	
 	/**
-	 * returns the width of the visible display in pxls
-	 * @return
-	 */
-	@Override
-	public final int getDisplayWidth() {return _displayWidth;}
-	/**
-	 * returns the height of the visible display in pxls
-	 * @return
-	 */
-	@Override
-	public final int getDisplayHeight() {return _displayHeight;}
-	/**
 	 * returns application window width in pxls
 	 * @return
 	 */
@@ -1109,8 +1005,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @return
 	 */
 	@Override
-	public final int getHeight() {return height;}
-	
+	public final int getHeight() {return height;}	
 	
 	/**
 	 * set smoothing level based on renderer
@@ -1184,7 +1079,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public final int[] getMouseDrag_Int() {return new int[] {mouseX-pmouseX,mouseY-pmouseY};};              			// vector representing recent mouse displacement
 
-	
 	/**
 	 * get depth at specified screen dim location
 	 * @param x
@@ -1259,8 +1153,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		//p.outStr2Scr("Depth Buffer val : "+String.format("%.4f",depthValue)+ " for mx,my : ("+mX+","+mY+") and world loc : " + pickLoc.toStrBrf());
 		return pickLoc;
 	}		
-	
-	//public final myPoint WrldToScreen(myPoint wPt){			return new myPoint(screenX((float)wPt.x,(float)wPt.y,(float)wPt.z),screenY((float)wPt.x,(float)wPt.y,(float)wPt.z),screenZ((float)wPt.x,(float)wPt.y,(float)wPt.z));}
+
 	@Override
 	public final myPoint getScrLocOf3dWrldPt(myPoint pt){	return new myPoint(screenX((float)pt.x,(float)pt.y,(float)pt.z),screenY((float)pt.x,(float)pt.y,(float)pt.z),screenZ((float)pt.x,(float)pt.y,(float)pt.z));}
 
@@ -1271,18 +1164,10 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public ArrayDeque<String> getConsoleStrings() {		return consoleStrings;	}
 	
-	
-	
-	
 	/////////////////////		
 	///color utils
 	/////////////////////
 
-
-//	@Override
-//	public void setFill(int[] clr, int alpha){fill(clr[0],clr[1],clr[2], alpha);}
-//	@Override
-//	public void setStroke(int[] clr, int alpha){stroke(clr[0],clr[1],clr[2], alpha);}
 	@Override
 	public void setFill(int r, int g, int b, int alpha){fill(r,g,b,alpha);}
 	@Override
@@ -1347,7 +1232,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		if(null==picName) {return;}
 		save(picName);
 	}
-
 
 	protected String getScreenShotSaveName(String prjNmShrt) {
 		return sketchPath() +File.separatorChar+prjNmShrt+"_"+AppMgr.getDateString()+File.separatorChar+prjNmShrt+"_img"+AppMgr.getTimeString() + ".jpg";

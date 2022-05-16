@@ -1,5 +1,7 @@
 package base_UI_Objects;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -31,8 +33,16 @@ public abstract class GUI_AppManager {
 	//msg object interface
 	protected MessageObject msg;
 	//3d interaction stuff and mouse tracking
-	protected my3DCanvas c;												
-
+	protected my3DCanvas canvas;												
+	/**
+	 * max ratio of width to height to use for application window initialization
+	 */
+	public float maxWinRatio =  1.77777778f;
+	/**
+	 * physical display width and height this project is running on
+	 */
+	protected static int _displayWidth, _displayHeight;
+	
 	//individual display/HUD windows for gui/user interaction
 	protected myDispWindow[] dispWinFrames = new myDispWindow[0] ;
 	//set in instancing class - must be > 1
@@ -233,11 +243,40 @@ public abstract class GUI_AppManager {
 	//////////////////////////////
 	// code
 	
-	public GUI_AppManager() {	}//	
+	public GUI_AppManager() {
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		_displayWidth = gd.getDisplayMode().getWidth();
+		_displayHeight = gd.getDisplayMode().getHeight();	
+	}//	
 	
 	public void setIRenderInterface(IRenderInterface _pa) {
 		if (null == pa) {pa=_pa;}
-	}
+	}	
+	
+	/**
+	 * this will manage very large displays, while scaling window to smaller displays
+	 * the goal is to preserve a reasonably close to 16:10 ratio window with big/widescreen displays
+	 * @return int[] { desired application window width, desired application window height}
+	 */
+	public final int[] getIdealAppWindowDims() {		
+		int winSizeCntrl = setAppWindowDimRestrictions();		
+		switch(winSizeCntrl) {
+			case 0 : {//don't care about window dimensions
+				return new int[] {(int)(_displayWidth*.95f), (int)(_displayHeight*.92f)};
+			}
+			case 1 : {//make screen manageable for wide screen monitors
+				float displayRatio = _displayWidth/(1.0f*_displayHeight);
+				float newWidth = (displayRatio > maxWinRatio) ?  _displayWidth * maxWinRatio/displayRatio : _displayWidth;
+				return new int[] {(int)(newWidth*.95f), (int)(_displayHeight*.92f)};
+			}
+			default :{//unsupported winSizeCntrl setting >= 2
+				System.out.println("Unsupported value from setAppWindowDimRestrictions(). Defaulting to 0.");
+				return new int[] {(int)(_displayWidth*.95f), (int)(_displayHeight*.92f)};
+			}			
+		}
+	}//getIdealAppWindowDims
+	
+	
 	/**
 	 * set level of smoothing to use for rendering (depending on rendering used, this may be ignored)
 	 */
@@ -276,7 +315,7 @@ public abstract class GUI_AppManager {
 		hideWinWidth = width * hideWinWidthMult;				//dims for hidden windows
 		hidWinHeight = height * hideWinHeightMult;
 		//build canvas
-		c = new my3DCanvas(this, pa, width, height);	
+		canvas = new my3DCanvas(this, pa, width, height);	
 	}
 	
 	/**
@@ -303,7 +342,7 @@ public abstract class GUI_AppManager {
 	/**
 	 * called in pre-draw initial setup, before first init
 	 */
-	protected abstract void setup_indiv();	
+	protected abstract void setup_Indiv();	
 	/**
 	 * this is called to determine which main flags to display in the window
 	 */
@@ -341,8 +380,6 @@ public abstract class GUI_AppManager {
 	}//initProgram	
 	protected abstract void initProgram_Indiv();
 	
-	
-
 	/**
 	 * reset debug info array 
 	 */
@@ -442,7 +479,17 @@ public abstract class GUI_AppManager {
 		
 	}//setIniMenuWin
 	
-	//call once for each display window before calling constructor
+	/**
+	 * call once for each display window before calling constructor. Sets essential values describing windows
+	 * @param _winIDX The index in the various window-descriptor arrays for the dispWindow being set
+	 * @param _dimOpen The array of x,y,W,H dimensions for the dispWindow being open
+	 * @param _dimClosed The array of x,y,W,H dimensions for the dispWindow being closed
+	 * @param _dispFlags Essential flags describing the nature of the dispWindow
+	 * @param _fill Fill color to use for dispWindow
+	 * @param _strk Stroke color to use for dispWindow
+	 * @param _trajFill Trajetory's fill color to use for dispWindow
+	 * @param _trajStrk Trajetory's stroke color to use for dispWindow
+	 */
 	public void setInitDispWinVals(int _winIDX, float[] _dimOpen, float[] _dimClosed, boolean[] _dispFlags, int[] _fill, int[] _strk, int[] _trajFill, int[] _trajStrk) {
 		winRectDimOpen[_winIDX] = new float[_dimOpen.length];
 		System.arraycopy(_dimOpen, 0, winRectDimOpen[_winIDX], 0, _dimOpen.length);
@@ -654,59 +701,63 @@ public abstract class GUI_AppManager {
 			//drawCount++;									//needed here to stop draw update so that pausing sim retains animation positions - moved to IRenderInterface caller, if return is true	
 			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getFlags(myDispWindow.isRunnable))){dispWinFrames[i].simulate(modAmtMillis);}}
 			if(isSingleStep()){setSimIsRunning(false);}
-			simCycles++;
+			++simCycles;
 			return true;
 		}		//play in current window
 		return false;
-//		if(AppMgr.isRunSim() ){
-//			//run simulation
-//			drawCount++;									//needed here to stop draw update so that pausing sim retains animation positions	
-//			for(int i =1; i<AppMgr.numDispWins; ++i){if((isShowingWindow(i)) && (AppMgr.dispWinFrames[i].getFlags(myDispWindow.isRunnable))){AppMgr.dispWinFrames[i].simulate(modAmtMillis);}}
-//			if(AppMgr.isSingleStep()){AppMgr.setSimIsRunning(false);}
-//			simCycles++;
-//		}		//play in current window
 	}//execSimDuringDrawLoop
 	/**
 	 * setup 
 	 */
-	private void drawSetup(){
+	protected void drawSetup(){
 		pa.setPerspective(MyMathUtils.Pi_f/3.0f, (1.0f*pa.getWidth())/(1.0f*pa.getHeight()), .5f, camVals[2]*100.0f);
 		pa.enableLights(); 	
 		dispWinFrames[curFocusWin].drawSetupWin(camVals);
 	}//drawSetup
 	
 	/**
-	 * main draw loop - override if handling draw differently
+	 * main draw loop
 	 */
-	public void drawMe(float modAmtMillis){
+	public final void drawMe(float modAmtMillis){
 		pa.pushMatState();
 		drawSetup();
-		if((curFocusWin == -1) || (curDispWinIs3D())){	//allow for single window to have focus, but display multiple windows	
+		boolean is3DDraw = (curFocusWin == -1) || (curDispWinIs3D()); 
+		if(is3DDraw){	//allow for single window to have focus, but display multiple windows	
 			//if refreshing screen, this clears screen, sets background
 			if(getShouldClearBKG()) {
 				setBkgrnd();				
-				draw3D_solve3D(modAmtMillis, -c.getViewDimW()/2.0f+40);
-				c.buildCanvas();
+				draw3D_solve3D(modAmtMillis, -canvas.getViewDimW()/2.0f+40);
+				canvas.buildCanvas();
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}
-				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			c.drawMseEdge(dispWinFrames[curFocusWin]);	}		
+				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);	}		
 			} else {
-				draw3D_solve3D(modAmtMillis, -c.getViewDimW()/2.0f+40);
-				c.buildCanvas();
+				draw3D_solve3D(modAmtMillis, -canvas.getViewDimW()/2.0f+40);
+				canvas.buildCanvas();
 			}
 			pa.popMatState(); 
 		} else {	//either/or 2d window
 			//2d windows paint window box so background is always cleared
-			c.buildCanvas();
-			c.drawMseEdge(dispWinFrames[curFocusWin]);
+			canvas.buildCanvas();
+			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);
 			pa.popMatState(); 
-			//for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getFlags(myDispWindow.is3DWin))){dispWinFrames[i].draw2D(modAmtMillis);}}
 			draw2D(modAmtMillis);
 		}
+		drawMePost_Indiv(modAmtMillis, is3DDraw);
 	}//draw	
-
 	
+	/**
+	 * Individual extending Application Manager post-drawMe functions
+	 * @param modAmtMillis
+	 * @param is3DDraw
+	 */
+	protected abstract void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw);
+
+	/**
+	 * Draw 3d windows that are currently displayed
+	 * @param modAmtMillis
+	 * @param viewDimW
+	 */
 	public final void draw3D_solve3D(float modAmtMillis, float viewDimW){
-		//System.out.println("drawSolve");
 		pa.pushMatState();
 		for(int i =1; i<numDispWins; ++i){
 			if((isShowingWindow(i)) && (dispWinFrames[i].getFlags(myDispWindow.is3DWin))){	dispWinFrames[i].draw3D(modAmtMillis);}
@@ -715,6 +766,11 @@ public abstract class GUI_AppManager {
 		//fixed xyz rgb axes for visualisation purposes and to show movement and location in otherwise empty scene
 		drawAxes(100,3, new myPoint(viewDimW,0.0f,0.0f), 200, false); 		
 	}//draw3D_solve3D
+	
+	/**
+	 * Draw 2d windows that are currently displayed
+	 * @param modAmtMillis
+	 */
 	
 	public final void draw2D(float modAmtMillis) {
 		for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getFlags(myDispWindow.is3DWin))){dispWinFrames[i].draw2D(modAmtMillis);}}
@@ -909,38 +965,38 @@ public abstract class GUI_AppManager {
 	/////////////////
 	// canvas functions
 	
-	public final myVector getDrawSNorm() {return c.getDrawSNorm();}
-	public final myVectorf getDrawSNorm_f() {return c.getDrawSNorm_f();}
-	public final myVector getEyeToMse() {return c.getEyeToMse();}
-	public final myVectorf getEyeToMse_f() {return c.getEyeToMse_f();}
-	public myVector getUScrUpInWorld(){		return c.getUScrUpInWorld();}	
-	public myVector getUScrRightInWorld(){		return c.getUScrRightInWorld();}
-	public myVectorf getUScrUpInWorldf(){		return c.getUScrUpInWorldf();}	
-	public myVectorf getUScrRightInWorldf(){	return c.getUScrRightInWorldf();}
+	public final myVector getDrawSNorm() {return canvas.getDrawSNorm();}
+	public final myVectorf getDrawSNorm_f() {return canvas.getDrawSNorm_f();}
+	public final myVector getEyeToMse() {return canvas.getEyeToMse();}
+	public final myVectorf getEyeToMse_f() {return canvas.getEyeToMse_f();}
+	public myVector getUScrUpInWorld(){		return canvas.getUScrUpInWorld();}	
+	public myVector getUScrRightInWorld(){		return canvas.getUScrRightInWorld();}
+	public myVectorf getUScrUpInWorldf(){		return canvas.getUScrUpInWorldf();}	
+	public myVectorf getUScrRightInWorldf(){	return canvas.getUScrRightInWorldf();}
 	
-	public myPoint getMseLoc(){			return c.getMseLoc();}
-	public myPointf getMseLoc_f(){		return c.getMseLoc_f();	}
-	public myPoint getEyeLoc(){			return c.getEyeLoc();	}
-	public myPoint getOldMseLoc(){		return c.getOldMseLoc();	}	
-	public myVector getMseDragVec(){	return c.getMseDragVec();}
+	public myPoint getMseLoc(){			return canvas.getMseLoc();}
+	public myPointf getMseLoc_f(){		return canvas.getMseLoc_f();	}
+	public myPoint getEyeLoc(){			return canvas.getEyeLoc();	}
+	public myPoint getOldMseLoc(){		return canvas.getOldMseLoc();	}	
+	public myVector getMseDragVec(){	return canvas.getMseDragVec();}
 	
 	//relative to passed origin
-	public myPoint getMseLoc(myPoint glbTrans){			return c.getMseLoc(glbTrans);	}
+	public myPoint getMseLoc(myPoint glbTrans){			return canvas.getMseLoc(glbTrans);	}
 	//move by passed translation
-	public myPointf getTransMseLoc(myPointf glbTrans){	return c.getTransMseLoc(glbTrans);	}
+	public myPointf getTransMseLoc(myPointf glbTrans){	return canvas.getTransMseLoc(glbTrans);	}
 	//dist from mouse to passed location
-	public float getMseDist(myPointf glbTrans){			return c.getMseDist(glbTrans);}
-	public myPoint getOldMseLoc(myPoint glbTrans){		return c.getOldMseLoc(glbTrans);}
+	public float getMseDist(myPointf glbTrans){			return canvas.getMseDist(glbTrans);}
+	public myPoint getOldMseLoc(myPoint glbTrans){		return canvas.getOldMseLoc(glbTrans);}
 	
 	//get normalized ray from eye loc to mouse loc
-	public myVectorf getEyeToMouseRay_f() {				return c.getEyeToMouseRay_f();	}	
+	public myVectorf getEyeToMouseRay_f() {				return canvas.getEyeToMouseRay_f();	}	
 	
 	/**
 	 * return display string holding sreen and world mouse and eye locations 
 	 */
 	public final String getMseEyeInfoString(String winCamDisp) {
 		myPoint mseLocPt = pa.getMouse_Raw();
-		return "mse loc on screen : " + mseLocPt + " mse loc in world :"+c.mseLoc +"  Eye loc in world :"+ c.eyeInWorld+ winCamDisp;
+		return "mse loc on screen : " + mseLocPt + " mse loc in world :"+ canvas.mseLoc +"  Eye loc in world :"+ canvas.eyeInWorld+ winCamDisp;
 	}
 	
 
@@ -1100,6 +1156,17 @@ public abstract class GUI_AppManager {
 	//////////////////////////
 	//
 	
+	/**
+	 * returns the width of the visible display in pxls
+	 * @return
+	 */
+	public final int getDisplayWidth() {return _displayWidth;}
+	/**
+	 * returns the height of the visible display in pxls
+	 * @return
+	 */
+	public final int getDisplayHeight() {return _displayHeight;}
+	
 	//set the height of each window that is above the popup window, to move up or down when it changes size
 	public final void setWinsHeight(int popUpWinIDX){
 		//skip first window - ui menu
@@ -1223,7 +1290,7 @@ public abstract class GUI_AppManager {
 	private void myMouseClicked(int mouseX, int mouseY, int mseBtn){ 	for(int i =0; i<numDispWins; ++i){if (dispWinFrames[i].handleMouseClick(mouseX, mouseY,mseBtn)){return;}}}
 	
 	public final void mouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, boolean isLeft, boolean isRight){
-		myVector drag = c.getMseDragVec();
+		myVector drag = canvas.getMseDragVec();
 		
 		if(isLeft){							myMouseDragged(mouseX, mouseY, pmouseX, pmouseY,drag,0);}
 		else if (isRight) {						myMouseDragged(mouseX, mouseY, pmouseX, pmouseY,drag,1);}
@@ -1367,8 +1434,7 @@ public abstract class GUI_AppManager {
 	public final boolean isSingleStep() {return getBaseFlag(singleStep);}
 	public final boolean doSaveAnim() {return getBaseFlag(saveAnim);}
 	public final boolean doFlipTraj() {return getBaseFlag(flipDrawnTraj);}
-	public final boolean doShowRtSideMenu() {return getBaseFlag(showRtSideMenu);}
-	
+	public final boolean doShowRtSideMenu() {return getBaseFlag(showRtSideMenu);}	
 	
 	public final boolean shiftIsPressed() {return getBaseFlag(shiftKeyPressed);}
 	public final boolean altIsPressed() {return getBaseFlag(altKeyPressed);}
@@ -1429,7 +1495,7 @@ public abstract class GUI_AppManager {
 	 */
 	public myVector[] buildViewBasedFrame(myPoint A, myPoint B) {
 		myVector V = new myVector(A,B);
-		myVector I = c.getDrawSNorm();//U(Normal(V));
+		myVector I = canvas.getDrawSNorm();//U(Normal(V));
 		myVector J = I._cross(V)._normalize(); 
 		return new myVector[] {V,I,J};		
 	}
@@ -1442,7 +1508,7 @@ public abstract class GUI_AppManager {
 	 */
 	public myVectorf[] buildViewBasedFrame_f(myPointf A, myPointf B) {
 		myVectorf V = new myVectorf(A,B);
-		myVectorf I = c.getDrawSNorm_f();//U(Normal(V));
+		myVectorf I = canvas.getDrawSNorm_f();//U(Normal(V));
 		myVectorf J = I._cross(V)._normalize(); 
 		return new myVectorf[] {V,I,J};		
 	}

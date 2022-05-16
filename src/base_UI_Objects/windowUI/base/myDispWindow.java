@@ -172,7 +172,7 @@ public abstract class myDispWindow {
 		pFlagIdx = _flagIdx;
 		msgObj = MessageObject.buildMe(pa);
 		fileIO = new FileIOManager(msgObj, name);
-		//base screenshot path
+		//base screenshot path based on launch time
 		String tmpNow = AppMgr.now.toInstant().toString();
 		tmpNow = tmpNow.replace(':','_');
 		ssPathBase = AppMgr.getApplicationPath() +File.separatorChar +name+"_"+tmpNow + File.separatorChar;
@@ -181,7 +181,11 @@ public abstract class myDispWindow {
 		msClkObj = -1;
 		msOvrObj = -1;
 	}//ctor
-
+	
+	/**
+	 * Must be called by inheriting class constructor!
+	 * @param _isMenu
+	 */
 	public void initThisWin(boolean _isMenu){
 		initFlags();
 
@@ -1027,7 +1031,6 @@ public abstract class myDispWindow {
 		unSetCamOrient();
 	}//handleViewTargetChange
 	
-	//protected myPoint getMsePoint(myPoint pt){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt((int)pt.x, (int)pt.y) : pt;}
 	protected myPoint getMsePoint(myPoint pt){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt(pt) : pt;}		//get appropriate representation of mouse location in 3d if 3d window
 	public myPoint getMsePoint(int mouseX, int mouseY){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt(new myPoint(mouseX,mouseY,0)) : new myPoint(mouseX,mouseY,0);}
 	public boolean handleMouseMove(int mouseX, int mouseY){

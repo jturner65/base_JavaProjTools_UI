@@ -103,6 +103,7 @@ public class my3DCanvas {
 	public myVectorf getDrawSNorm_f() {return new myVectorf(drawSNorm);}
 	public int getViewDimW() {return viewDimW;}
 	public int getViewDimH() {return viewDimH;}
+	public myPoint[] getCanvasCorners() {return canvas3D;}
 	
 	public myVector getEyeToMse() {return eyeToMse;}
 	public myVectorf getEyeToMse_f() {return new myVectorf(eyeToMse.x,eyeToMse.y,eyeToMse.z);}
@@ -118,23 +119,6 @@ public class my3DCanvas {
 	public myVector getUScrRightInWorld(){		myVector res = new myVector(p.getWorldLoc(viewDimW2, viewDimH2,-.00001f),p.getWorldLoc(viewDimW, viewDimH2,-.00001f));	return res._normalize();	}
 	public myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(p.getWorldLoc(viewDimW2, viewDimH2,-.00001f),p.getWorldLoc(viewDimW2,viewDimH,-.00001f));			return res._normalize();}	
 	public myVectorf getUScrRightInWorldf(){	myVectorf res = new myVectorf(p.getWorldLoc(viewDimW2, viewDimH2,-.00001f),p.getWorldLoc(viewDimW, viewDimH2,-.00001f));	return res._normalize();}
-	
-//	public void drawCanvas(){
-//		p.disableLights();
-//		p.pushMatState();
-//		p.beginShape(PConstants.QUAD);
-//		p.setFill(new int[] {255,255,255},80);
-//		//p.noStroke();
-//		p.gl_normal(eyeToMse);
-//     	//for(int i =0;i<canvas3D.length;++i){		//build invisible canvas to draw upon
-//        for(int i =canvas3D.length-1;i>=0;--i){		//build invisible canvas to draw upon
-//     		//p.line(canvas3D[i], canvas3D[(i+1)%canvas3D.length]);
-//     		p.gl_vertex(canvas3D[i]);
-//     	}
-//     	p.endShape(PConstants.CLOSE);
-//     	p.popMatState();
-//     	p.enableLights();
-//	}
 	
 	//find pt in drawing plane that corresponds with point and camera eye normal
 	public myPoint getPlInterSect(myPoint pt, myVector unitT){
@@ -210,7 +194,7 @@ public class my3DCanvas {
 	}//drawText	
 	
 
-	public void drawMseEdge(myDispWindow win){//draw mouse sphere and edge normal to cam eye through mouse sphere 
+	public void drawMseEdge(myDispWindow win, boolean projOnBox){//draw mouse sphere and edge normal to cam eye through mouse sphere 
 		p.pushMatState();
 			p.setStrokeWt(1f);
 			p.setStroke(255, 0,255, 255);
@@ -219,8 +203,8 @@ public class my3DCanvas {
 			//p.line(camEdge.a,camEdge.b);
 			camEdge.drawMe(p);
 			p.translate(dfCtr);
-			//project mouse point on bounding box walls
-			if(((AppMgr.curFocusWin == -1) || (AppMgr.curDispWinIs3D()))){AppMgr.drawProjOnBox(dfCtr);}
+			//project mouse point on bounding box walls if appropriate
+			if(projOnBox){AppMgr.drawProjOnBox(dfCtr);}
 			myDispWindow.AppMgr.drawAxes(10000,1f, myPoint.ZEROPT, 100, true);//
 			//draw intercept with box
 			p.showPtAsSphere(myPointf.ZEROPT,3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
