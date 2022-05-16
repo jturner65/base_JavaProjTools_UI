@@ -324,7 +324,7 @@ public abstract class GUI_AppManager {
 	public void endInit() {		
 		initMainFlags_Indiv();
 		//instancing class version
-		initVisOnce_Indiv();
+		initAllDispWindows();
 
 		initPFlagColors();		
 		//after all display windows are drawn
@@ -349,9 +349,9 @@ public abstract class GUI_AppManager {
 	protected abstract void initMainFlags_Indiv();
 	
 	/**
-	 * this is called 
+	 * this is called to build all the myDispWindows in the instancing class
 	 */
-	protected abstract void initVisOnce_Indiv();
+	protected abstract void initAllDispWindows();
 
 	//1 time initialization of programmatic things that won't change
 	public final void initOnce() {
@@ -385,7 +385,6 @@ public abstract class GUI_AppManager {
 	 */
 	public final void reInitInfoStr(){		DebugInfoAra = new ArrayList<String>();		DebugInfoAra.add("");	}	
 
-	
 	/**
 	 * set up window structures - called from instanced class of IRenderInterface
 	 * @param _numWins
