@@ -8,10 +8,10 @@ import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.windowUI.base.myDispWindow;
 
 public abstract class myDrawnObject {
-	//public static IRenderInterface pa;
-	public static GUI_AppManager AppMgr;
+	public myDispWindow win;
 	public final float trajDragScaleAmt = 100.0f;					//amt of displacement when dragging drawn trajectory to edit
 	public final int drawnTrajEditWidth = 10; //TODO make ui component			//width in cntl points of the amount of the drawn trajectory deformed by dragging
 
@@ -86,8 +86,8 @@ public abstract class myDrawnObject {
 			_b = 3;									//idx2 for myPoint in ara for rotational axis
 	protected final int nAxisVals = 4;
 	
-	public myDrawnObject(GUI_AppManager _AppMgr, myVector _canvNorm) {
-		AppMgr=_AppMgr;
+	public myDrawnObject(myDispWindow _win, myVector _canvNorm) {
+		win =_win;
 		if(wScale == -1) {			wScale = GUI_AppManager.pa.getFrameRate()/5.0f;		}
 		canvasNorm = _canvNorm;		//c.drawSNorm  draw surface normal
 		initFlags();

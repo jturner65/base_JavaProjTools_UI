@@ -9,6 +9,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.MyMathUtils;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.drawnObjs.base.myDrawnObject;
 import base_UI_Objects.windowUI.drawnObjs.offsets.myNormOffset;
 import base_UI_Objects.windowUI.drawnObjs.offsets.base.baseOffset;
@@ -35,8 +36,8 @@ public class myVariStroke extends myDrawnObject {
 	public float[] d_interpPts;					//distance between interpolated points
 	public float interpLen;						//len of interp pts
 	
-	public myVariStroke(GUI_AppManager _AppMgr, myVector _canvNorm, int[] _fillClr, int[] _strkClr) {
-		super(_AppMgr, _canvNorm);
+	public myVariStroke(myDispWindow _win, myVector _canvNorm, int[] _fillClr, int[] _strkClr) {
+		super(_win, _canvNorm);
 		flags[isClosed] = false;	
 		fillClr = _fillClr;
 		strkClr= _strkClr;
@@ -292,14 +293,14 @@ public class myVariStroke extends myDrawnObject {
 	//print out all trajectory point locations for debugging
 	public void dbgPrintAllPoints(boolean useDrawnVels){
     	if(useDrawnVels){
-    		GUI_AppManager.pa.outStr2Scr("Drawn Vels Traj :\n");
+    		win.getMsgObj().dispInfoMessage("myVariStroke", "dbgPrintAllPoints","Drawn Vels Traj :\n");
 			for(int i = 0; i < interpCntlPts.length; ++i){
-				GUI_AppManager.pa.outStr2Scr("\tpt " + i +" : " + interpCntlPts[i].toStrBrf());
+				win.getMsgObj().dispInfoMessage("myVariStroke", "dbgPrintAllPoints","\tpt " + i +" : " + interpCntlPts[i].toStrBrf());
 			}
     	} else {			
-    		GUI_AppManager.pa.outStr2Scr("Drawn Traj :\n");
+    		win.getMsgObj().dispInfoMessage("myVariStroke", "dbgPrintAllPoints","Drawn Traj :\n");
 			for(int i = 0; i < cntlPts.length; ++i){
-				GUI_AppManager.pa.outStr2Scr("\tpt " + i +" : " + cntlPts[i].toStrBrf());
+				win.getMsgObj().dispInfoMessage("myVariStroke", "dbgPrintAllPoints","\tpt " + i +" : " + cntlPts[i].toStrBrf());
 			}
     	}
 	}

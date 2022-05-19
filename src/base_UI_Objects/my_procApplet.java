@@ -4,7 +4,6 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.ArrayDeque;
 
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
@@ -22,18 +21,7 @@ import processing.opengl.PGraphics3D;
 public final class my_procApplet extends processing.core.PApplet implements IRenderInterface {
 	
 	public static GUI_AppManager AppMgr;
-	
-	protected int glblStartSimFrameTime,			//begin of draw
-		glblLastSimFrameTime,					//begin of last draw
-		glblStartProgTime;					//start of program	
-	
-	//data being printed to console - show on screen
-	public ArrayDeque<String> consoleStrings;		
-	//count of draw cycles
-	public int drawCount;
-	//how long a message should last before it is popped from the console strings deque (how many frames)
-	protected final int cnslStrDecay = 10;			
-	
+		
 	public final float frate = 120;			//frame rate - # of playback updates per second
 	
 	//animation control variables	
@@ -67,39 +55,40 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void setup() {
 		colorMode(RGB, 255, 255, 255, 255);
-		AppMgr.setup_Indiv();
-		initVisOnce();						//always first
-		//call this in first draw loop?
-		AppMgr.initOnce();		
-		//needs to be the last thing called in setup, to avoid timeout 5000ms issue
-		frameRate(frate);
-	}//setup()
-	
-		//1 time initialization of visualization things that won't change
-	public void initVisOnce(){
 		//setup default stroke ends.  ROUND is very slow, SQUARE  makes points invisible	
 		strokeCap(PROJECT);
 		textSize(txtSz);
 		textureMode(NORMAL);			
 		rectMode(CORNER);	
 		sphereDetail(4);
-		//data being printed to console	
-		consoleStrings = new ArrayDeque<String>();
-		drawCount = 0;
+		//potentially override setup variables on per-project basis
+		AppMgr.setup_Indiv();
+
 		//mouse scrolling scale
 		AppMgr.firstInit(width, height);
 		
-		outStr2Scr("Current sketchPath " + sketchPath());
+		System.out.println("Current sketchPath " + sketchPath());
 		//finalize windows
 		AppMgr.endInit();
 		
-		glblStartProgTime = millis();
-		glblStartSimFrameTime = glblStartProgTime;
-		glblLastSimFrameTime =  glblStartProgTime;	
-		
-	}//	initVisOnce
+		//call this in first draw loop?
+		AppMgr.initOnce();		
+		//needs to be the last thing called in setup, to avoid timeout 5000ms issue
+		frameRate(frate);
+	}//setup()
 	
-	public int timeSinceStart() {return millis() - glblStartProgTime;}
+	/**
+	 * Set the background painted color
+	 * @param r
+	 * @param g
+	 * @param b
+	 * @param alpha
+	 */
+	@Override
+	public void setRenderBackground(int r, int g, int b, int alpha) {
+		super.background(r,g,b,alpha);
+	}
+
 
 	///////////////////////////////////////////
 	// draw routines
@@ -126,34 +115,26 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public int popJustStyleState(){		super.popStyle();return --pushPopJustStyleDepth;}
 	
-	//get difference between frames and set both glbl times
-	private float getModAmtMillis() {
-		glblStartSimFrameTime = millis();
-		float modAmtMillis = (glblStartSimFrameTime - glblLastSimFrameTime);
-		glblLastSimFrameTime = millis();
-		return modAmtMillis;
-	}
 
 	/**
 	 * main draw loop - override if handling draw differently
 	 */
 	@Override
 	public void draw(){
-		if(!AppMgr.isFinalInitDone()) {drawCount = 0;AppMgr.initOnce(); return;}	
-		float modAmtMillis = getModAmtMillis();
-		//simulation section
-		boolean execSim = AppMgr.execSimDuringDrawLoop(modAmtMillis);
-		if(execSim) {++drawCount;}
-		//drawing section																//initialize camera, lights and scene orientation and set up eye movement
-		AppMgr.drawMe(modAmtMillis);				
-		
-		//Draw UI and 
-		AppMgr.drawUI(modAmtMillis);												//draw UI overlay on top of rendered results			
+		//returns whether actually drawn or not
+		if(!AppMgr.mainSimAndDrawLoop()) {return;}
+		//TODO find better mechanism for saving screenshot
 		if (AppMgr.doSaveAnim()) {	savePic();}
-		updateConsoleStrs();
-		//build window title
-		surface.setTitle(AppMgr.getPrjNmLong() + " : " + (int)(frameRate) + " fps|cyc curFocusWin : " + AppMgr.curFocusWin);
 	}//draw	
+	
+	/**
+	 * Builds and sets window title
+	 */
+	public void setWindowTitle(String applicationTitle, String windowName) {
+		//build window title
+		surface.setTitle(applicationTitle + " : " + (int)(frameRate) + " fps|cyc curFocusWin : " + windowName);		
+	}
+		
 	
 	/**
 	 * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector
@@ -175,11 +156,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
      	popMatState();
      	enableLights();
 	}//drawCanvas
-	
-	private void updateConsoleStrs(){
-		++drawCount;
-		if(drawCount % cnslStrDecay == 0){drawCount = 0;	consoleStrings.poll();}			
-	}//updateConsoleStrs
+
 
 	/**
 	 * set perspective matrix based on frustum for camera
@@ -561,41 +538,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void enableLights(){ lights();}	
-	
-	/**
-	 * print out a string ara to screen with perLine # of strings per line
-	 * @param sAra array of strings
-	 * @param perLine # of strings per line to display to screen
-	 */
-	@Override
-	public void outStr2ScrAra(String[] sAra, int perLine){
-		for(int i=0;i<sAra.length; i+=perLine){
-			String s = "";
-			for(int j=0; j<perLine; ++j){	s+= sAra[i+j]+ "\t";}
-			outStr2Scr(s,true);}
-	}
-	/**
-	 * print out a string to screen
-	 * @param str string to display
-	 */	
-	@Override
-	public void outStr2Scr(String str){outStr2Scr(str,true);}
-	/**
-	 * print informational string data to console, and to screen
-	 * @param str
-	 * @param showDraw whether to show in graphical window as well as console
-	 */
-
-	@Override
-	public void outStr2Scr(String str, boolean showDraw){
-		if(str.trim() != ""){	System.out.println(str);}
-		String[] res = str.split("\\r?\\n");
-		if(showDraw){
-			for(int i =0; i<res.length; ++i){
-				consoleStrings.add(res[i]);		//add console string output to screen display- decays over time
-			}
-		}
-	}
 
 	@Override
 	public void bezier(myPoint A, myPoint B, myPoint C, myPoint D) {bezier((float)A.x,(float)A.y,(float)A.z,(float)B.x,(float)B.y,(float)B.z,(float)C.x,(float)C.y,(float)C.z,(float)D.x,(float)D.y,(float)D.z);} // draws a cubic Bezier curve with control points A, B, C, D
@@ -743,7 +685,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	@Override
 	public void showTextAtPt(myPoint P, String s, myVector D) {text(s, (float)(P.x+D.x), (float)(P.y+D.y), (float)(P.z+D.z));  } // prints string s in 3D at P+D
-	//public void showText(myPoint P, double r, String s, myVector D){showPtAsSphere(P,r, 5, gui_Black, gui_Black);pushStyle();setColorValFill(gui_Black,255);showText(P,s,D);popStyle();}
 	
 	public void show(myPoint P, double rad, int fclr, int sclr, int tclr, String txt) {
 		pushMatState(); 
@@ -1106,9 +1047,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public myPoint getWorldLoc(int x, int y, float depth){
 		int newY = height - y;
 		float depthValue = depth;
-		
 		if(depth == -1){depthValue = getDepth( x,  y); }	
-		//p.outStr2Scr("cur depth in pick : " + depthValue);
 		//get 3d matrices
 		PGraphics3D p3d = (PGraphics3D)g;
 		PMatrix3D proj = p3d.projection.get(), modelView = p3d.modelview.get(), modelViewProjInv = proj; modelViewProjInv.apply( modelView ); modelViewProjInv.invert();	  
@@ -1121,7 +1060,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		float[] unprojected = new float[4];	  
 		modelViewProjInv.mult( normalized, unprojected );
 		myPoint pickLoc = new myPoint( unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3] );
-		//p.outStr2Scr("Depth Buffer val : "+String.format("%.4f",depthValue)+ " for mx,my : ("+mX+","+mY+") and world loc : " + pickLoc.toStrBrf());
 		return pickLoc;
 	}		
 	/**
@@ -1137,7 +1075,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		float depthValue = depth;
 		
 		if(depth == -1){depthValue = getDepth( x,  y); }	
-		//p.outStr2Scr("cur depth in pick : " + depthValue);
 		//get 3d matrices
 		PGraphics3D p3d = (PGraphics3D)g;
 		PMatrix3D proj = p3d.projection.get(), modelView = p3d.modelview.get(), modelViewProjInv = proj; modelViewProjInv.apply( modelView ); modelViewProjInv.invert();	  
@@ -1150,19 +1087,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		float[] unprojected = new float[4];	  
 		modelViewProjInv.mult( normalized, unprojected );
 		myPointf pickLoc = new myPointf( unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3] );
-		//p.outStr2Scr("Depth Buffer val : "+String.format("%.4f",depthValue)+ " for mx,my : ("+mX+","+mY+") and world loc : " + pickLoc.toStrBrf());
 		return pickLoc;
 	}		
 
 	@Override
 	public final myPoint getScrLocOf3dWrldPt(myPoint pt){	return new myPoint(screenX((float)pt.x,(float)pt.y,(float)pt.z),screenY((float)pt.x,(float)pt.y,(float)pt.z),screenZ((float)pt.x,(float)pt.y,(float)pt.z));}
-
-	/**
-	 * return current array deque of console strings, to be printed to screen
-	 * @return
-	 */
-	@Override
-	public ArrayDeque<String> getConsoleStrings() {		return consoleStrings;	}
 	
 	/////////////////////		
 	///color utils
@@ -1222,7 +1151,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		return new Integer[]{(int)(((1.0f-t)*a[0])+t*b[0]),(int)(((1.0f-t)*a[1])+t*b[1]),(int)(((1.0f-t)*a[2])+t*b[2]),(int)(((1.0f-t)*a[3])+t*b[3])};
 	}
 
-	//public final int color(myPoint p){return color((int)p.x,(int)p.z,(int)p.y);}	//needs to be x,z,y for some reason - to match orientation of color frames in z-up 3d geometry
 	public final int color(myPoint p){return color((int)p.x,(int)p.y,(int)p.z);}	
 	public final int color(myPointf p){return color((int)p.x,(int)p.y,(int)p.z);}	
 

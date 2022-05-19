@@ -145,8 +145,9 @@ public class myClrRamp {
 	
 	public void showDebugOutput(){
 		double[] lab0 = RGBtoLAB(R0,G0,B0), lab1 = RGBtoLAB(R1,G1,B1);		 
-		pa.outStr2Scr(String.format("Mode: %s   k: %d   L: %d\nColor0: RGB(%3d,%3d,%3d) Lab(%3.2f,%3.2f,%3.2f)\nColor1: RGB(%3d,%3d,%3d) Lab(%3.2f,%3.2f,%3.2f)",
-                                mode.toUpperCase(),k,layer.l,R0,G0,B0,lab0[0],lab0[1],lab0[2],R1,G1,B1,lab1[0],lab1[1],lab1[2]));
+		AppMgr.getCurrentWindow().getMsgObj().dispInfoMessage("myClrRamp","showDebugOutput",
+				String.format("Mode: %s   k: %d   L: %d\nColor0: RGB(%3d,%3d,%3d) Lab(%3.2f,%3.2f,%3.2f)\nColor1: RGB(%3d,%3d,%3d) Lab(%3.2f,%3.2f,%3.2f)",
+                mode.toUpperCase(),k,layer.l,R0,G0,B0,lab0[0],lab0[1],lab0[2],R1,G1,B1,lab1[0],lab1[1],lab1[2]));
 	}
 	
 	public myClrPoint XYZtoPoint(double X, double Y, double Z) {int [] C= XYZtoRGB(X,Y,Z); return new myClrPoint(pa, "XYZ_Pt",C[0],C[1],C[2],clrPtRad); }

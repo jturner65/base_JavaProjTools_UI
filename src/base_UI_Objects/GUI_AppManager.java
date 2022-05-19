@@ -4,6 +4,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -28,10 +29,8 @@ import base_Utils_Objects.io.MessageObject;
  *
  */
 public abstract class GUI_AppManager {
-	//rendering engine
+	//rendering engine interface, providing expected methods.
 	public static IRenderInterface pa = null;
-	//msg object interface
-	protected MessageObject msg;
 	//3d interaction stuff and mouse tracking
 	protected my3DCanvas canvas;												
 	/**
@@ -42,6 +41,17 @@ public abstract class GUI_AppManager {
 	 * physical display width and height this project is running on
 	 */
 	protected static int _displayWidth, _displayHeight;
+	/////////////////
+	// Time and date
+	
+	//used to manage current time
+	public Calendar now;
+	//time that this application started
+	private long appStartTimeMillis;
+	protected int glblStartSimFrameTime,			//begin of draw
+	glblLastSimFrameTime,					//begin of last draw
+	glblStartProgTime;					//start of program	
+	
 	
 	//individual display/HUD windows for gui/user interaction
 	protected myDispWindow[] dispWinFrames = new myDispWindow[0] ;
@@ -79,15 +89,8 @@ public abstract class GUI_AppManager {
 	//9 element array holding camera loc, target, and orientation
 	public float[] camVals;		
 		
-	//used to manage current time
-	public Calendar now;
-	//data being printed to console - show on screen
-	//public ArrayDeque<String> consoleStrings;		
-	
-	protected int simCycles;												// counter for draw cycles		
-	
-	//enable drawing dbug info onto screen	
-	private ArrayList<String> DebugInfoAra;									
+	// counter for simulation cycles	
+	protected int simCycles;													
 
 	//visualization variables
 	//flags explicitly pertaining to window visibility
@@ -205,7 +208,7 @@ public abstract class GUI_AppManager {
 		new myPoint(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
 	};
 	
-	//3dbox stuff
+	//3D box stuff
 	public myVector[] boxNorms = new myVector[] {new myVector(1,0,0),new myVector(-1,0,0),new myVector(0,1,0),new myVector(0,-1,0),new myVector(0,0,1),new myVector(0,0,-1)};//normals to 3 d bounding boxes
 	protected float hGDimX = gridDimX/2.0f, hGDimY = gridDimY/2.0f, hGDimZ = gridDimZ/2.0f;
 	protected float tGDimX = gridDimX*10, tGDimY = gridDimY*10, tGDimZ = gridDimZ*20;
@@ -243,11 +246,25 @@ public abstract class GUI_AppManager {
 	//////////////////////////////
 	// code
 	
+	//invoke the renderer main function
+		
+		
 	public GUI_AppManager() {
+		//get primary monitor size
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		_displayWidth = gd.getDisplayMode().getWidth();
-		_displayHeight = gd.getDisplayMode().getHeight();	
+		_displayHeight = gd.getDisplayMode().getHeight();			
+
+		now = Calendar.getInstance();
+		//absolute start time of application
+		appStartTimeMillis = now.getTimeInMillis();	
 	}//	
+	
+	/**
+	 * Returns milliseconds that have passed since application began
+	 * @return
+	 */
+	public int timeSinceStart() {return (int)(Calendar.getInstance().getTimeInMillis() - appStartTimeMillis);}
 	
 	public void setIRenderInterface(IRenderInterface _pa) {
 		if (null == pa) {pa=_pa;}
@@ -286,7 +303,7 @@ public abstract class GUI_AppManager {
 	 * whether or not we want to restrict window size on widescreen monitors
 	 * 
 	 * @return 0 - use monitor size regardless
-	 * 			1 - use smaller dim to be determine window 
+	 * 			1 - use smaller dim of monitor size or minimized ratio to determine window size (for wide screen monitors) 
 	 * 			2+ - TBD
 	 */
 	protected abstract int setAppWindowDimRestrictions();
@@ -301,15 +318,8 @@ public abstract class GUI_AppManager {
 	public void firstInit(int width, int height) {
 		msSclX = MyMathUtils.Pi_f/width;
 		msSclY = MyMathUtils.Pi_f/height;
-		
-		int numThreadsAvail = getNumThreadsAvailable();
 		//init internal state flags structure
-		initBaseFlags();			
-
-		now = Calendar.getInstance();
-
-		//consoleStrings = new ArrayDeque<String>();				//data being printed to console		
-		pa.outStr2Scr("# threads : "+ numThreadsAvail);
+		initBaseFlags();
 		
 		menuWidth = width * menuWidthMult;						//grid2D_X of menu region	
 		hideWinWidth = width * hideWinWidthMult;				//dims for hidden windows
@@ -338,9 +348,21 @@ public abstract class GUI_AppManager {
 		
 		// set cam vals
 		camVals = new float[]{0, 0, (float) ((pa.getHeight()/2.0) / Math.tan(MyMathUtils.Pi/6.0)), 0, 0, 0, 0,1,0};		
+		// set milli time tracking
+		glblStartProgTime = timeSinceStart();
+		glblStartSimFrameTime = glblStartProgTime;
+		glblLastSimFrameTime =  glblStartProgTime;	
 	}
+	
 	/**
-	 * called in pre-draw initial setup, before first init
+	 * Called in pre-draw initial setup, before first init
+	 * potentially override setup variables on per-project basis :
+	 * (Current settings in my_procApplet) 	
+	 *  	strokeCap(PROJECT);
+	 *  	textSize(txtSz);
+	 *  	textureMode(NORMAL);			
+	 *  	rectMode(CORNER);	
+	 *  	sphereDetail(4);	 * 
 	 */
 	protected abstract void setup_Indiv();	
 	/**
@@ -368,7 +390,9 @@ public abstract class GUI_AppManager {
 	
 		//called every time re-initialized
 	public final void initVisProg(){	
-		reInitInfoStr();
+		for (int i=1; i<dispWinFrames.length;++i) {
+			dispWinFrames[i].reInitInfoStr();
+		}
 		initVisProg_Indiv();
 	}
 	protected abstract void initVisProg_Indiv();
@@ -380,11 +404,6 @@ public abstract class GUI_AppManager {
 	}//initProgram	
 	protected abstract void initProgram_Indiv();
 	
-	/**
-	 * reset debug info array 
-	 */
-	public final void reInitInfoStr(){		DebugInfoAra = new ArrayList<String>();		DebugInfoAra.add("");	}	
-
 	/**
 	 * set up window structures - called from instanced class of IRenderInterface
 	 * @param _numWins
@@ -626,7 +645,7 @@ public abstract class GUI_AppManager {
 	
 	public void loadFromFile(File file){
 		if (file == null) {
-			pa.outStr2Scr("AppMgr :: loadFromFile ::Load was cancelled.");
+			System.out.println("AppMgr :: loadFromFile ::Load was cancelled.");
 		    return;
 		} 		
 		//reset to match navigation in file IO window
@@ -637,7 +656,7 @@ public abstract class GUI_AppManager {
 	
 	public void saveToFile(File file){
 		if (file == null) {
-			pa.outStr2Scr("AppMgr :: saveToFile ::Save was cancelled.");
+			System.out.println("AppMgr :: saveToFile ::Save was cancelled.");
 		    return;
 		} 
 		//reset to match navigation in file IO window
@@ -656,12 +675,6 @@ public abstract class GUI_AppManager {
 				ssName[1] + File.separatorChar;	
 		return saveDirAndSubDir + String.format("%06d", animCounter++) + ".jpg";		
 	}
-	
-	
-//	protected void updateConsoleStrs(){
-//		++drawCount;
-//		if(drawCount % cnslStrDecay == 0){drawCount = 0;	consoleStrings.poll();}			
-//	}//updateConsoleStrs
 
 		
 	///////////////////////////////
@@ -679,15 +692,37 @@ public abstract class GUI_AppManager {
 		return res;
 	}
 	
-	/**
-	 * determine whether polled window is being shown currently
-	 * @param i
-	 * @return
-	 */
-	public final boolean isShowingWindow(int i){return getVisFlag(i);}//showUIMenu is first flag of window showing flags, visFlags are defined in instancing class
-	
 	protected abstract String getPrjNmLong();
 	protected abstract String getPrjNmShrt();
+	
+	/**
+	 * get difference between frames and set both glbl times
+	 * @return
+	 */
+	private float getModAmtMillis() {
+		glblStartSimFrameTime = timeSinceStart();
+		float modAmtMillis = (glblStartSimFrameTime - glblLastSimFrameTime);
+		glblLastSimFrameTime = timeSinceStart();
+		return modAmtMillis;
+	}
+	
+	/**
+	 * primary sim and draw loop.  Called from draw in IRenderInterface class
+	 */
+	public boolean mainSimAndDrawLoop() {
+		if(!isFinalInitDone()) {initOnce(); return false;}	
+		float modAmtMillis = getModAmtMillis();
+		//simulation section
+		execSimDuringDrawLoop(modAmtMillis);
+		//drawing section																//initialize camera, lights and scene orientation and set up eye movement
+		drawMe(modAmtMillis);				
+		//Draw UI and 
+		drawUI(modAmtMillis);												//draw UI overlay on top of rendered results			
+		//build window title
+		pa.setWindowTitle(getPrjNmLong(), ("IDX : " + curFocusWin + " : " + getCurFocusDispWindowName()));
+		return true;
+	}//mainSimAndDrawLoop
+	
 	
 	/**
 	 * sim loop, called from IRenderInterface draw method
@@ -697,7 +732,6 @@ public abstract class GUI_AppManager {
 		//simulation section
 		if(isRunSim() ){
 			//run simulation
-			//drawCount++;									//needed here to stop draw update so that pausing sim retains animation positions - moved to IRenderInterface caller, if return is true	
 			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getFlags(myDispWindow.isRunnable))){dispWinFrames[i].simulate(modAmtMillis);}}
 			if(isSingleStep()){setSimIsRunning(false);}
 			++simCycles;
@@ -884,27 +918,22 @@ public abstract class GUI_AppManager {
 		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
 		//menu always idx 0
 		//normal(0,0,1);
-		dispWinFrames[0].draw2D(modAmtMillis);
-		dispWinFrames[0].drawHeader(modAmtMillis);
+		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
+		dispWinFrames[dispMenuIDX].drawHeader(modAmtMillis);
 		if(isDebugMode()){
 			pa.pushMatState();			
-			reInitInfoStr();
-			addInfoStr(0,getMseEyeInfoString(dispWinFrames[curFocusWin].getCamDisp()));
+			dispWinFrames[curFocusWin].reInitInfoStr();
+			dispWinFrames[curFocusWin].addInfoStr(0,getMseEyeInfoString(dispWinFrames[curFocusWin].getCamDisp()));
 			String[] res = ((mySideBarMenu)dispWinFrames[dispMenuIDX]).getDebugData();		//get debug data for each UI object
 			int numToPrint = MyMathUtils.min(res.length,80);
-			for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
-			drawInfoStr(1.0f, dispWinFrames[curFocusWin].strkClr); 	
+			for(int s=0;s<numToPrint;++s) {	dispWinFrames[curFocusWin].addInfoStr(res[s]);}				//add info to string to be displayed for debug
+			dispWinFrames[curFocusWin].drawInfoStr(1.0f, dispWinFrames[curFocusWin].strkClr); 	
 			pa.popMatState();		
 		}
 		else if(showInfo){
-			pa.pushMatState();			
-			reInitInfoStr();	
-			String[] res = pa.getConsoleStrings().toArray(new String[0]);
-			int dispNum = MyMathUtils.min(res.length, 80);
-			for(int i=0;i<dispNum;++i){addInfoStr(res[i]);}
-		    drawInfoStr(1.1f, dispWinFrames[curFocusWin].strkClr); 
-		    pa.popMatState();
+			dispWinFrames[curFocusWin].drawOnscreenText();
 		}
+		dispWinFrames[curFocusWin].updateConsoleStrs();		
 	}//drawUI
 	
 	
@@ -1086,34 +1115,6 @@ public abstract class GUI_AppManager {
 		pa.popMatState();
 	} // render sphere of radius r and center P)
 	
-	
-	public final int addInfoStr(String str){return addInfoStr(DebugInfoAra.size(), str);}
-	public final int addInfoStr(int idx, String str){	
-		int lstIdx = DebugInfoAra.size();
-		if(idx >= lstIdx){		for(int i = lstIdx; i <= idx; ++i){	DebugInfoAra.add(i,"");	}}
-		setInfoStr(idx,str);	return idx;
-	}
-	public final void setInfoStr(int idx, String str){DebugInfoAra.set(idx,str);	}
-	public final void drawInfoStr(float sc, int clr){drawInfoStr(sc, pa.getClr(clr,255));}
-	public final void drawInfoStr(float sc, int[] fillClr){//draw text on main part of screen
-		pa.pushMatState();		
-			pa.setFill(fillClr,fillClr[3]);
-			pa.translate((menuWidth),0);
-			pa.scale(sc,sc);
-			for(int i = 0; i < DebugInfoAra.size(); ++i){		pa.showText((getBaseFlag(debugMode)?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(10+(12*i)));	}
-		pa.popMatState();
-	}		
-	
-	//print out multiple-line text to screen
-	public final void ml_text(String str, float x, float y){
-		String[] res = str.split("\\r?\\n");
-		float disp = 0;
-		for(int i =0; i<res.length; ++i){
-			pa.showText(res[i],x, y+disp);		//add console string output to screen display- decays over time
-			disp += 12;
-		}
-	}
-
 	///////////////////////////////
 	// end draw/display functions
 	//build a date with each component separated by token
@@ -1371,6 +1372,13 @@ public abstract class GUI_AppManager {
 		_visFlags[flIDX] = (val ?  _visFlags[flIDX] | mask : _visFlags[flIDX] & ~mask);
 		//doesn't perform any other ops - to prevent looping
 	}
+	
+	/**
+	 * determine whether polled window is being shown currently
+	 * @param i
+	 * @return
+	 */
+	public final boolean isShowingWindow(int i){return getVisFlag(i);}//showUIMenu is first flag of window showing flags, visFlags are defined in instancing class
 
 	//base class flags init
 	protected void initBaseFlags(){baseFlags = new int[1 + numBaseFlags/32];for(int i =0; i<numBaseFlags;++i){forceBaseFlag(i,false);}}		
@@ -1480,6 +1488,13 @@ public abstract class GUI_AppManager {
 	public myDispWindow getCurFocusDispWindow() {return dispWinFrames[curFocusWin];}	
 
 	public mySideBarMenu getSideBarMenuWindow() {return ((mySideBarMenu)dispWinFrames[dispMenuIDX]);}
+	public String getCurFocusDispWindowName() {return getDispWindowName(curFocusWin);}
+	public String getDispWindowName(int idx) { 
+		if ((idx >= 0) && (idx < dispWinFrames.length)){
+			return dispWinFrames[idx].getName();
+		}
+		return "None";
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// calculations
@@ -1617,9 +1632,8 @@ public abstract class GUI_AppManager {
 			tmp = _list[i];
 			_list[i] = _list[j];
 			_list[j] = tmp;
-		//	outStr2Scr("From i : " + i + " to j : " + j);
 		}
-		pa.outStr2Scr("String list of Sphere " + type + " shuffled");
+		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "shuffleStrList","String list of object " + type + " shuffled");
 		return _list;
 	}//shuffleStrList
 	
@@ -1695,11 +1709,11 @@ public abstract class GUI_AppManager {
 	 */
 	public void checkMemorySetup() {
 		Runtime runtime = Runtime.getRuntime();  
-		long maxMem = runtime.maxMemory(), allocMem = runtime.totalMemory(), freeMem = runtime.freeMemory();  
-		pa.outStr2Scr("Free memory: " + freeMem / 1024);  
-		pa.outStr2Scr("Allocated memory: " + allocMem / 1024);  
-		pa.outStr2Scr("Max memory: " + maxMem /1024);  
-		pa.outStr2Scr("Total free memory: " +  (freeMem + (maxMem - allocMem)) / 1024);   
+		long maxMem = runtime.maxMemory(), allocMem = runtime.totalMemory(), freeMem = runtime.freeMemory();
+		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Free memory: " + freeMem / 1024.0f);  
+		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Allocated memory: " + allocMem / 1024.0f);  
+		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Max memory: " + maxMem /1024.0f);  
+		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Total free memory: " +  (freeMem + (maxMem - allocMem)) / 1024.0f);   
 	
 	}//checkMemorySetup
 	
@@ -1723,7 +1737,6 @@ public abstract class GUI_AppManager {
 		pa.setFill((int)p.x,(int)p.y,(int)p.z, 255);
 		pa.setStroke((int)p.x,(int)p.y,(int)p.z, 255);
 		pa.drawRect(x,y,w,h);
-		//show(p,r,-1);
 	}	
 	
 }//class GUI_AppManager

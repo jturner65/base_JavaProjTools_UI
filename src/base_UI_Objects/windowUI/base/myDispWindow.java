@@ -33,6 +33,15 @@ public abstract class myDispWindow {
 	 * msg object for output to console or log
 	 */
 	protected MessageObject msgObj;
+
+	//enable drawing dbug info onto screen	
+	private ArrayList<String> DebugInfoAra;	
+	//count of draw cycles for consoleString decay
+	private int drawCount = 0;
+		
+	//how long a message should last before it is popped from the console strings deque (how many frames)
+	private final int cnslStrDecay = 10;
+	
 	/**
 	 * file IO object to manage IO
 	 */
@@ -170,7 +179,7 @@ public abstract class myDispWindow {
 		className = this.getClass().getSimpleName();
 		name = _n;
 		pFlagIdx = _flagIdx;
-		msgObj = MessageObject.buildMe(pa);
+		msgObj = MessageObject.buildMe(pa != null);
 		fileIO = new FileIOManager(msgObj, name);
 		//base screenshot path based on launch time
 		String tmpNow = AppMgr.now.toInstant().toString();
@@ -180,6 +189,7 @@ public abstract class myDispWindow {
 		winText = _winTxt;
 		msClkObj = -1;
 		msOvrObj = -1;
+		reInitInfoStr();
 	}//ctor
 	
 	/**
@@ -832,7 +842,7 @@ public abstract class myDispWindow {
 		pa.disableLights();		
 		pa.setStroke(strkClr, strkClr[3]);
 		pa.setFill(strkClr, strkClr[3]);
-		if(winText.trim() != ""){	AppMgr.ml_text(winText,  rectDim[0]+10,  rectDim[1]+10);}
+		if(winText.trim() != ""){	dispMultiLineText(winText,  rectDim[0]+10,  rectDim[1]+10);}
 		if(null!=trajMgr){	trajMgr.drawNotifications(pa);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		if(getFlags(closeable)){drawMouseBox();}
 		//TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
@@ -878,6 +888,19 @@ public abstract class myDispWindow {
 		}
 		pa.popMatState();			
 	}//drawRtSideInfoBar
+	
+	/**
+	 * Called by Appmgr to display window instance-specify Console Strings
+	 */
+	public void drawOnscreenText() {
+		pa.pushMatState();			
+		reInitInfoStr();	
+		String[] res = msgObj.getConsoleStringsAsArray();
+		int dispNum = MyMathUtils.min(res.length, 80);
+		for(int i=0;i<dispNum;++i){addInfoStr(res[i]);}
+	    drawInfoStr(1.1f,strkClr); 
+	    pa.popMatState();
+	}
 	
 	public void draw3D(float modAmtMillis){
 		if(!getFlags(showIDX)){return;}
@@ -929,10 +952,56 @@ public abstract class myDispWindow {
 		pa.setEndNoDepthTest();
 		pa.popMatState();
 	}
+
+	/**
+	 * Decay this window's console strings
+	 */
+	public void updateConsoleStrs(){
+		++drawCount;
+		if(drawCount % cnslStrDecay == 0){drawCount = 0;	msgObj.updateConsoleStrs();}			
+	}//updateConsoleStrs
+
+	/**
+	 * reset debug info array 
+	 */
+	public final void reInitInfoStr(){		DebugInfoAra = new ArrayList<String>();		DebugInfoAra.add("");	}	
+
+	
+	public final int addInfoStr(String str){return addInfoStr(DebugInfoAra.size(), str);}
+	public final int addInfoStr(int idx, String str){	
+		int lstIdx = DebugInfoAra.size();
+		if(idx >= lstIdx){		for(int i = lstIdx; i <= idx; ++i){	DebugInfoAra.add(i,"");	}}
+		setInfoStr(idx,str);	return idx;
+	}
+	public final void setInfoStr(int idx, String str){DebugInfoAra.set(idx,str);	}
+	public final void drawInfoStr(float sc, int clr){drawInfoStr(sc, pa.getClr(clr,255));}
+	public final void drawInfoStr(float sc, int[] fillClr){//draw text on main part of screen
+		pa.pushMatState();		
+			pa.setFill(fillClr,fillClr[3]);
+			pa.translate((AppMgr.getMenuWidth()),0);
+			pa.scale(sc,sc);
+			for(int i = 0; i < DebugInfoAra.size(); ++i){		pa.showText((AppMgr.isDebugMode()?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(10+(12*i)));	}
+		pa.popMatState();
+	}		
+	
+	//print out multiple-line text to screen
+	public final void dispMultiLineText(String str, float x, float y){
+		String[] res = str.split("\\r?\\n");
+		float disp = 0;
+		for(int i =0; i<res.length; ++i){
+			pa.showText(res[i],x, y+disp);		//add console string output to screen display- decays over time
+			disp += 12;
+		}
+	}
+	
+	
+	//////////////////
+	// Simulation
 	
 	public void simulate(float modAmtMillis){
 		boolean simDone = simMe(modAmtMillis);
 		if(simDone) {endSim();}
+		++drawCount;
 	}//
 	
 	//if ending simulation, call this function
@@ -1327,6 +1396,9 @@ public abstract class myDispWindow {
 	protected abstract void drawOnScreenStuffPriv(float modAmtMillis);
 	
 	public MessageObject getMsgObj() {return msgObj;}
+	
+	public String getName() {return name;}
+	public int getID() {return ID;}
 	
 	public String toString(){
 		String res = "Window : "+name+" ID: "+ID+" Fill :("+fillClr[0]+","+fillClr[1]+","+fillClr[2]+","+fillClr[3]+

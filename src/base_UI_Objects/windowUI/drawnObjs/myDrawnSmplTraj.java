@@ -93,7 +93,7 @@ public class myDrawnSmplTraj {
 		edtCrvEndPts[2] = null;
 		edtCrvEndPts[3] = null;
 		calcPerpPoints();
-		drawnTraj = new myVariStroke( myDispWindow.AppMgr, new myVector(AppMgr.getDrawSNorm()),fillClrCnst, strkClrCnst);
+		drawnTraj = new myVariStroke(win, new myVector(AppMgr.getDrawSNorm()),fillClrCnst, strkClrCnst);
 		drawnTraj.startDrawing();
 	}
 	public boolean startEditEndPoint(int idx){
@@ -214,7 +214,7 @@ public class myDrawnSmplTraj {
 			//pa.outStr2Scr("In Traj : " + this.ID + " endDrawObj ");
 			trajMgr.processTrajectory(this);
 		} else {
-			drawnTraj = new myVariStroke(myDispWindow.AppMgr, new myVector(AppMgr.getDrawSNorm()),fillClrCnst, strkClrCnst);
+			drawnTraj = new myVariStroke(win, new myVector(AppMgr.getDrawSNorm()),fillClrCnst, strkClrCnst);
 		}
 		trajMgr.setFlags(myTrajManager.drawingTraj, false);
 	}//endDrawObj
