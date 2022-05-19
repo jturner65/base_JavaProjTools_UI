@@ -6,14 +6,16 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 
 import processing.core.PConstants;
+import processing.core.PImage;
 import processing.core.PMatrix3D;
+import processing.core.PShape;
 import processing.event.MouseEvent;
 import processing.opengl.PGL;
 import processing.opengl.PGraphics3D;
@@ -26,7 +28,10 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	//animation control variables	
 	public final float maxAnimCntr = PI*1000.0f, baseAnimSpd = 1.0f;
-
+	
+	//giant sphere encapsulating entire scene
+	private PShape bgrndSphere;				
+	
 	////////////////////////
 	// code
 	
@@ -50,7 +55,33 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		size(desDims[0], desDims[1],P3D);	
 		//allow user to set smoothing
 		AppMgr.setSmoothing();
-	}	
+	}
+	
+	/**
+	 * Load a background "skybox" sphere using texture from filename
+	 * @param filename Texture to use for background skybox sphere
+	 */
+	@Override
+	public void loadBkgndSphere(String filename) {
+		int sDet = getSphereDetail();
+		setSphereDetail(100);
+		PImage bgrndTex = loadImage("bkgrndTex.jpg");
+		bgrndSphere = createShape(PConstants.SPHERE, 10000);
+		bgrndSphere.setTexture(bgrndTex);
+		bgrndSphere.rotate(MyMathUtils.halfPi_f,-1,0,0);
+		bgrndSphere.setStroke(false);	
+		setRenderBackground(getClr(gui_White, 255), 255);		
+		shape(bgrndSphere);	
+		setSphereDetail(sDet);
+	}
+	/**
+	 * Set loaded background sphere as skybox
+	 */
+	@Override
+	public void setBkgndSphere() {
+		shape(bgrndSphere);	
+	}
+	
 	
 	@Override
 	public void setup() {
@@ -258,8 +289,13 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	@Override
 	public void drawSphere(float rad) {sphere(rad);}
+	private int sphereDtl = 4;
+
 	@Override
-	public void setSphereDetail(int det) {sphereDetail(det);}
+	public void setSphereDetail(int det) {sphereDtl=det;sphereDetail(det);}
+
+	@Override
+	public int getSphereDetail() {return sphereDtl;}
 	
 	/**
 	 * draw a 2 d ellipse 
@@ -571,6 +607,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public float textWidth(String txt) {		return super.textWidth(txt);	}
+	
+	@Override
+	public void textSize(float fontSize) {super.textSize(fontSize);}
 	
 	private void checkClrInts(int fclr, int sclr) {
 		if(fclr > -1){setColorValFill(fclr,255); } else if(fclr <= -2) {noFill();}		
