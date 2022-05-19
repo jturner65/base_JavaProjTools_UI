@@ -4,7 +4,6 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -21,7 +20,6 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
 import base_UI_Objects.windowUI.sidebar.mySidebarMenuBtnConfig;
-import base_Utils_Objects.io.MessageObject;
 
 /**
  * this class manages all common functionality for a gui application, independent of renderer
@@ -49,8 +47,8 @@ public abstract class GUI_AppManager {
 	//time that this application started
 	private long appStartTimeMillis;
 	protected int glblStartSimFrameTime,			//begin of draw
-	glblLastSimFrameTime,					//begin of last draw
-	glblStartProgTime;					//start of program	
+			glblLastSimFrameTime,					//begin of last draw
+			glblStartProgTime;					//start of program	
 	
 	
 	//individual display/HUD windows for gui/user interaction
@@ -68,10 +66,10 @@ public abstract class GUI_AppManager {
 	protected boolean[][] dispWinFlags;
 	//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
 	protected static int
-		dispCanDrawInWinIDX 	= 0,
-		dispCanShow3dboxIDX 	= 1,
-		dispCanMoveViewIDX 		= 2,
-		dispWinIs3dIDX 			= 3;
+				dispCanDrawInWinIDX 	= 0,
+				dispCanShow3dboxIDX 	= 1,
+				dispCanMoveViewIDX 		= 2,
+				dispWinIs3dIDX 			= 3;
 	private static int numDispWinBoolFlags = 4;
 	
 	public int[][] winFillClrs, winStrkClrs;
@@ -246,9 +244,6 @@ public abstract class GUI_AppManager {
 	//////////////////////////////
 	// code
 	
-	//invoke the renderer main function
-		
-		
 	public GUI_AppManager() {
 		//get primary monitor size
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -259,6 +254,11 @@ public abstract class GUI_AppManager {
 		//absolute start time of application
 		appStartTimeMillis = now.getTimeInMillis();	
 	}//	
+		
+	//invoke the renderer main function
+	public static <T extends GUI_AppManager> void invokeProcessingMain(T _appMgr, String[] passedArgs) {
+		 my_procApplet._invokedMain(_appMgr, passedArgs);
+	}
 	
 	/**
 	 * Returns milliseconds that have passed since application began
