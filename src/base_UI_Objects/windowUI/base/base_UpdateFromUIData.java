@@ -2,8 +2,6 @@ package base_UI_Objects.windowUI.base;
 
 import java.util.TreeMap;
 
-import base_UI_Objects.windowUI.base.myDispWindow;
-
 /**
  * structure holding UI-derived/modified data used to update execution code
  * @author john

@@ -8,7 +8,6 @@ import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.MyMathUtils;
-import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.drawnObjs.base.myDrawnObject;
 import base_UI_Objects.windowUI.drawnObjs.offsets.myNormOffset;
@@ -171,7 +170,7 @@ public class myVariStroke extends myDrawnObject {
 		float modAmt, invdistLow = 1.0f/(drawnTrajPickedIdx - minBnd), invdistHigh = 1.0f/(maxBnd - drawnTrajPickedIdx);
 		for(int idx = minBnd; idx < maxBnd; ++idx){
 			float divMultVal = (idx > drawnTrajPickedIdx) ? invdistHigh:invdistLow;
-			modAmt = (float) (trajDragScaleAmt* Math.cos((idx-drawnTrajPickedIdx) * MyMathUtils.halfPi * divMultVal));//trajDragScaleAmt/abs(1 + (idx-drawnTrajPickedIdx));
+			modAmt = (float) (trajDragScaleAmt* Math.cos((idx-drawnTrajPickedIdx) * MyMathUtils.HALF_PI * divMultVal));//trajDragScaleAmt/abs(1 + (idx-drawnTrajPickedIdx));
 			//modAmt *= modAmt;
 			pts[idx]._add(myVector._mult(dispVec,modAmt));
 		}

@@ -124,8 +124,7 @@ public class myClrRamp {
 		
 		myPoint	ptu;			
 		for(float s = 0; s <= 1.0f; s+=sIncr){		
-			//float t = PApplet.pow(PApplet.sin(s*MyMathUtils.halfPi), 2);
-			float t = (float) Math.pow(Math.sin(s*MyMathUtils.halfPi), 2);
+			float t = (float) Math.pow(Math.sin(s*MyMathUtils.HALF_PI), 2);
 			ptu = pa.bezierPoint(new myPoint[] {new myPoint(p1),pt0,pt4,new myPoint(p2)}, t);
 			clrPtsArrays.add(new myClrPoint(pa, "USR3",ptu, clrPtRad));
 		}	

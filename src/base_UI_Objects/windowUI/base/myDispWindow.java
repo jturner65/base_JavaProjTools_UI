@@ -146,7 +146,7 @@ public abstract class myDispWindow {
 	///////////
 	//display and camera related variables - managed per window
 	//public static final float TWO_PI =(float) (Math.PI*2.0f), HALF_PI =(float) (Math.PI/2.0f);
-	protected float dz=0, rx= (-0.06f*MyMathUtils.twoPi_f), ry=-0.04f*MyMathUtils.twoPi_f;		// distance to camera. Manipulated with wheel or when,view angles manipulated when space pressed but not mouse	
+	protected float dz=0, rx= (-0.06f*MyMathUtils.TWO_PI_F), ry=-0.04f*MyMathUtils.TWO_PI_F;		// distance to camera. Manipulated with wheel or when,view angles manipulated when space pressed but not mouse	
 	public final float camInitialDist = -200,		//initial distance camera is from scene - needs to be negative
 			camInitRy = ry,
 			camInitRx = rx;

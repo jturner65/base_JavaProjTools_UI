@@ -316,8 +316,8 @@ public abstract class GUI_AppManager {
 	 * @param height
 	 */
 	public void firstInit(int width, int height) {
-		msSclX = MyMathUtils.Pi_f/width;
-		msSclY = MyMathUtils.Pi_f/height;
+		msSclX = MyMathUtils.PI_F/width;
+		msSclY = MyMathUtils.PI_F/height;
 		//init internal state flags structure
 		initBaseFlags();
 		
@@ -347,7 +347,7 @@ public abstract class GUI_AppManager {
 		initVisFlags();
 		
 		// set cam vals
-		camVals = new float[]{0, 0, (float) ((pa.getHeight()/2.0) / Math.tan(MyMathUtils.Pi/6.0)), 0, 0, 0, 0,1,0};		
+		camVals = new float[]{0, 0, (float) ((pa.getHeight()/2.0) / Math.tan(MyMathUtils.PI/6.0)), 0, 0, 0, 0,1,0};		
 		// set milli time tracking
 		glblStartProgTime = timeSinceStart();
 		glblStartSimFrameTime = glblStartProgTime;
@@ -743,7 +743,7 @@ public abstract class GUI_AppManager {
 	 * setup 
 	 */
 	protected void drawSetup(){
-		pa.setPerspective(MyMathUtils.Pi_f/3.0f, (1.0f*pa.getWidth())/(1.0f*pa.getHeight()), .5f, camVals[2]*100.0f);
+		pa.setPerspective(MyMathUtils.PI_F/3.0f, (1.0f*pa.getWidth())/(1.0f*pa.getHeight()), .5f, camVals[2]*100.0f);
 		pa.enableLights(); 	
 		dispWinFrames[curFocusWin].drawSetupWin(camVals);
 	}//drawSetup
@@ -1271,7 +1271,7 @@ public abstract class GUI_AppManager {
 		myPointf mouseFrcLoc = getTransMseLoc(new myPointf(gridDimX/2.0f, gridDimY/2.0f,gridDimZ/2.0f));// new myPointf(c.dfCtr.x+gridDimX/2.0f,c.dfCtr.y+gridDimY/2.0f,c.dfCtr.z+gridDimZ/2.0f);// new myVector(lstClkX,0,lstClkY);//translate click location to where the space where the boids are	
 		myVectorf resFrc = new myVectorf(_loc, mouseFrcLoc);		
 		float sqDist = resFrc.sqMagn;
-		if(sqDist<MyMathUtils.eps_f){sqDist=MyMathUtils.eps_f;}
+		if(sqDist<MyMathUtils.EPS_F){sqDist=MyMathUtils.EPS_F;}
 		float mag = (attractMode? 1 : -1) * msClickForce / sqDist;
 		resFrc._scale(mag);
 		return resFrc;	
@@ -1536,14 +1536,14 @@ public abstract class GUI_AppManager {
 	public synchronized myPoint[] buildCircleInscribedPoints(myPoint p, float r, myVector I, myVector J,int n) {
 		myPoint[] pts = new myPoint[n];
 		pts[0] = new myPoint(p,r,myVector._unit(I));
-		float a = (MyMathUtils.twoPi_f)/(1.0f*n); 
+		float a = (MyMathUtils.TWO_PI_F)/(1.0f*n); 
 		for(int i=1;i<n;++i){pts[i] = pts[i-1].rotMeAroundPt(a,J,I,p);}
 		return pts;
 	}
 	public synchronized myPointf[] buildCircleInscribedPoints(myPointf p, float r, myVectorf I, myVectorf J,int n) {
 		myPointf[] pts = new myPointf[n];
 		pts[0] = new myPointf(p,r,myVectorf._unit(I));
-		float a = (MyMathUtils.twoPi_f)/(1.0f*n);
+		float a = (MyMathUtils.TWO_PI_F)/(1.0f*n);
 		for(int i=1;i<n;++i){pts[i] = pts[i-1].rotMeAroundPt(a,J,I,p);}
 		return pts;
 	}
@@ -1570,7 +1570,7 @@ public abstract class GUI_AppManager {
 		double m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
 		myVector rotAxis = myVector._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find f
 		
-		myVector rAB = myVector._rotAroundAxis(AB, rotAxis, MyMathUtils.halfPi_f);
+		myVector rAB = myVector._rotAroundAxis(AB, rotAxis, MyMathUtils.HALF_PI_F);
 		double c=AB._dot(CD)/n,	s=rAB._dot(CD)/n;
 		double AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2, x=(a-m*( a*c+b*s)), y=(b-m*(-a*s+b*c)), d=1+m*(m-2*c);  if((c!=1)&&(m!=1)) { x/=d; y/=d; };
 		return new myPoint(new myPoint(A,x,AB),y,rAB);
@@ -1596,7 +1596,7 @@ public abstract class GUI_AppManager {
 		float m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
 		myVectorf rotAxis = myVectorf._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find f
 		
-		myVectorf rAB = myVectorf._rotAroundAxis(AB, rotAxis, MyMathUtils.halfPi_f);
+		myVectorf rAB = myVectorf._rotAroundAxis(AB, rotAxis, MyMathUtils.HALF_PI_F);
 		float c=AB._dot(CD)/n,	s=rAB._dot(CD)/n;
 		float AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2, x=(a-m*( a*c+b*s)), y=(b-m*(-a*s+b*c)), d=1+m*(m-2*c);  if((c!=1)&&(m!=1)) { x/=d; y/=d; };
 		return new myPointf(new myPointf(A,x,AB),y,rAB);
@@ -1643,7 +1643,7 @@ public abstract class GUI_AppManager {
 		do{
 			double u = ThreadLocalRandom.current().nextDouble(0,1), r = rad * Math.pow(u, third),
 					cosTheta = ThreadLocalRandom.current().nextDouble(-1,1), sinTheta =  Math.sin(Math.acos(cosTheta)),
-					phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.twoPi_f);
+					phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F);
 			pos.set(sinTheta * Math.cos(phi), sinTheta * Math.sin(phi),cosTheta);
 			pos._mult(r);
 			pos._add(ctr);
@@ -1655,7 +1655,7 @@ public abstract class GUI_AppManager {
 		myVectorf pos = new myVectorf();
 		//do{
 			double 	cosTheta = ThreadLocalRandom.current().nextDouble(-1,1), sinTheta =  Math.sin(Math.acos(cosTheta)),
-					phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.twoPi_f);
+					phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F);
 			pos.set(sinTheta * Math.cos(phi), sinTheta * Math.sin(phi),cosTheta);
 			pos._mult(rad);
 			pos._add(ctr);

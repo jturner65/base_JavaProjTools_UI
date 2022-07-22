@@ -19,7 +19,7 @@ public class my3DCanvas {
 
 	private myEdge camEdge;												//denotes line perp to cam eye, to use for intersections for mouse selection
 	private final float canvasDim = 15000,
-			canvasDimOvSqrt2 = MyMathUtils.invSqrt2_f * canvasDim; 									//canvas dimension for "virtual" 3d		
+			canvasDimOvSqrt2 = MyMathUtils.INV_SQRT_2_F * canvasDim; 									//canvas dimension for "virtual" 3d		
 	private myPoint[] canvas3D;											//3d plane, normal to camera eye, to be used for drawing - need to be in "view space" not in "world space", so that if camera moves they don't change
 	private myVector eyeToMse,											//eye to 2d mouse location 
 					eyeToCtr,													//vector from eye to center of cube, to be used to determine which panels of bounding box to show or hide
@@ -74,7 +74,7 @@ public class my3DCanvas {
      	//myPoint lastPt = p.P(myPoint._add(p.P(), .707 * canvasDim, planeTan));
      	//myPoint lastPt = p.P(myPoint._add(new myPoint(), canvasDimOvSqrt2, planeTan));
      	myPoint lastPt = new myPoint(new myPoint(), canvasDimOvSqrt2, planeTan);
-     	planeTan = myVector._rotAroundAxis(planeTan, drawSNorm, MyMathUtils.threeQtrPI);
+     	planeTan = myVector._rotAroundAxis(planeTan, drawSNorm, MyMathUtils.THREE_QTR_PI);
 		for(int i =0;i<canvas3D.length;++i){		//build invisible canvas to draw upon
      		canvas3D[i].set(myPoint._add(lastPt, canvasDim, planeTan));
      		//planeTan = myVector._cross(planeTan, drawSNorm)._normalize();												//this effectively rotates around center point by 90 degrees -builds a square

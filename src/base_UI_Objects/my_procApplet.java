@@ -68,7 +68,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		PImage bgrndTex = loadImage("bkgrndTex.jpg");
 		bgrndSphere = createShape(PConstants.SPHERE, 10000);
 		bgrndSphere.setTexture(bgrndTex);
-		bgrndSphere.rotate(MyMathUtils.halfPi_f,-1,0,0);
+		bgrndSphere.rotate(MyMathUtils.HALF_PI_F,-1,0,0);
 		bgrndSphere.setStroke(false);	
 		setRenderBackground(getClr(gui_White, 255), 255);		
 		shape(bgrndSphere);	
@@ -405,7 +405,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawTriangle2D(myPoint a, myPoint b, myPoint c) {triangle((float)a.x,(float)a.y,(float) b.x, (float)b.y,(float) c.x,(float) c.y);}
 
 	
-	private final float deltaThet = MyMathUtils.twoPi_f/36.0f, finalThet = MyMathUtils.twoPi_f+deltaThet;
+	private final float deltaThet = MyMathUtils.TWO_PI_F/36.0f, finalThet = MyMathUtils.TWO_PI_F+deltaThet;
 	@Override
 	public void drawCylinder_NoFill(myPoint A, myPoint B, float r, int c1, int c2) {
 		myVector[] frame = AppMgr.buildViewBasedFrame(A, B);
@@ -1006,12 +1006,12 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * used to handle camera location/motion
 	 */
 	@Override
-	public void setCamOrient(float rx, float ry){rotateX(rx);rotateY(ry); rotateX(MyMathUtils.halfPi_f);		}//sets the rx, ry, pi/2 orientation of the camera eye	
+	public void setCamOrient(float rx, float ry){rotateX(rx);rotateY(ry); rotateX(MyMathUtils.HALF_PI_F);		}//sets the rx, ry, pi/2 orientation of the camera eye	
 	/**
 	 * used to draw text on screen without changing mode - reverses camera orientation setting
 	 */
 	@Override
-	public void unSetCamOrient(float rx, float ry){rotateX(-MyMathUtils.halfPi_f); rotateY(-ry);   rotateX(-rx); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
+	public void unSetCamOrient(float rx, float ry){rotateX(-MyMathUtils.HALF_PI_F); rotateY(-ry);   rotateX(-rx); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
 
 	/**
 	 * return x screen value for 3d point
@@ -1182,9 +1182,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public final int[] getRndClrBright(int alpha){return new int[]{(int)random(50,255),(int)random(25,200),(int)random(80,255),alpha};	}
 	
+	@Override
+	public final int getRndClrInt(){return (int)random(0,IRenderInterface.gui_nextColorIDX);}		//return a random color flag value from IRenderInterface
+	 
 	
-	public final int getRndClrInt(){return (int)random(0,23);}		//return a random color flag value from below
-	public final Integer[] getClrMorph(int a, int b, double t){return getClrMorph(getClr(a,255), getClr(b,255), t);}    
+	@Override
 	public final Integer[] getClrMorph(int[] a, int[] b, double t){
 		if(t==0){return new Integer[]{a[0],a[1],a[2],a[3]};} else if(t==1){return new Integer[]{b[0],b[1],b[2],b[3]};}
 		return new Integer[]{(int)(((1.0f-t)*a[0])+t*b[0]),(int)(((1.0f-t)*a[1])+t*b[1]),(int)(((1.0f-t)*a[2])+t*b[2]),(int)(((1.0f-t)*a[3])+t*b[3])};
