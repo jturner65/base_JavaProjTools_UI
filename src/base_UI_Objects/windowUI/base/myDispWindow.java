@@ -430,7 +430,8 @@ public abstract class myDispWindow {
 			oldBtnLen = btnLen;
 		}
 		if(lastBtnHalfStLine){//set last button full length if starting new line
-			privFlagBtns[numBtns-1][2] = maxBtnLen;			
+			privFlagBtns[numBtns-1][2] = maxBtnLen;
+			this.uiClkCoords[3] += yOff;
 		}
 		this.uiClkCoords[3] += yOff;
 		initPrivFlagColors();
