@@ -587,8 +587,8 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @param P vertex location
 	 * @param u,v txtr coords
 	 */
-	public void vTextured(myPointf P, float u, float v) {vertex((float)P.x,(float)P.y,(float)P.z,(float)u,(float)v);};                         
-
+	public void vTextured(myPointf P, float u, float v) {vertex(P.x,P.y,P.z,u,v);}; 
+	public void vTextured(myPoint P, double u, double v) {vertex((float)P.x,(float)P.y,(float)P.z,(float)u,(float)v);};                         
 	
 	/////////////
 	// show functions 
