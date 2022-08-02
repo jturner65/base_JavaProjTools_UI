@@ -7,8 +7,6 @@ import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.windowUI.base.myDispWindow;
 
-import processing.core.PApplet;
-
 //object on menu that can be modified via mouse input
 public class myGUIObj {
 	public int ID;
@@ -121,10 +119,10 @@ public class myGUIObj {
 				p.translate(boxDrawTrans[0],boxDrawTrans[1],0);
 				p.drawRect(boxDim);
 			p.popMatState();
-			if(!getFlags(treatAsIntIDX)){		((PApplet) p).text(dispText + String.format("%.5f",val), 0,0);}
+			if(!getFlags(treatAsIntIDX)){		p.showText(dispText + String.format("%.5f",val), 0,0);}
 			else{
 				//String resStr = getFlags(hasListValsIDX) ?  win.getUIListValStr(winID, (int)val) : String.format("%.0f",val);
-				((PApplet) p).text(dispText + getListValStr((int)val), 0,0);
+				p.showText(dispText + getListValStr((int)val), 0,0);
 			}
 		p.popMatState();
 	}
