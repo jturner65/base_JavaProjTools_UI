@@ -10,10 +10,10 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.windowUI.myGUIObj;
-import base_UI_Objects.windowUI.myScrollBars;
 import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.drawnObjs.myTrajManager;
+import base_UI_Objects.windowUI.uiObjs.myGUIObj;
+import base_UI_Objects.windowUI.uiObjs.myScrollBars;
 import base_Utils_Objects.io.MessageObject;
 import base_Utils_Objects.io.FileIOManager;
 

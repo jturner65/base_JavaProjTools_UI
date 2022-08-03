@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI;
+package base_UI_Objects.windowUI.uiObjs;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
