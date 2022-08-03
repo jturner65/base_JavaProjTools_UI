@@ -85,18 +85,30 @@ public class myGUIObj {
 	public double getVal(){return val;}	
 	public double getMinVal() {return minVal;}
 	public double getMaxVal() {return maxVal;}
-	public void setNewMax(double _newval){	maxVal = _newval;val = ((val >= minVal)&&(val<=maxVal)) ? val : (val < minVal) ? minVal : maxVal;		}
-	public void setNewMin(double _newval){	minVal = _newval;val = ((val >= minVal)&&(val<=maxVal)) ? val : (val < minVal) ? minVal : maxVal;		}
+	
+	//Make sure val adheres to specified bounds
+	private double forceBounds(double _val) {
+		if (_val <= minVal) {return minVal;}
+		if (_val >= maxVal) {return maxVal;}
+		return _val;
+	}
+	public void setNewMax(double _newval){	
+		maxVal = _newval;
+		val = forceBounds(val);		
+	}
+	public void setNewMin(double _newval){	
+		minVal = _newval;
+		val = forceBounds(val);		
+	}
 	
 	public double setVal(double _newVal){
-		val = ((_newVal >= minVal)&&(_newVal<=maxVal)) ? _newVal : (_newVal < minVal) ? minVal : maxVal;		
+		val = forceBounds(_newVal);		
 		return val;
 	}	
 	public double modVal(double mod){
 		val += (mod*modMult);
 		if(getFlags(treatAsIntIDX)){val = Math.round(val);}
-		if(val<minVal){val = minVal;}
-		else if(val>maxVal){val = maxVal;}
+		val = forceBounds(val);
 		return val;		
 	}
 
