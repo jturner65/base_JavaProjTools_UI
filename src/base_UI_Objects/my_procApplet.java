@@ -1,6 +1,5 @@
 package base_UI_Objects;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -161,11 +160,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	/**
 	 * Builds and sets window title
 	 */
+	@Override
 	public void setWindowTitle(String applicationTitle, String windowName) {
 		//build window title
 		surface.setTitle(applicationTitle + " : " + (int)(frameRate) + " fps|cyc curFocusWin : " + windowName);		
-	}
-		
+	}		
 	
 	/**
 	 * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector
@@ -176,14 +175,14 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawCanvas(myVector eyeToMse, myPointf[] canvas3D){
 		disableLights();
 		pushMatState();
-		beginShape(PConstants.QUAD);
+		gl_beginShape(PConstants.QUAD);
 		setFill(255,255,255,80);
 		gl_normal(eyeToMse);
         for(int i =canvas3D.length-1;i>=0;--i){		//build invisible canvas to draw upon
      		//p.line(canvas3D[i], canvas3D[(i+1)%canvas3D.length]);
      		gl_vertex(canvas3D[i]);
      	}
-     	endShape(PConstants.CLOSE);
+     	gl_endShape(PConstants.CLOSE);
      	popMatState();
      	enableLights();
 	}//drawCanvas
@@ -200,7 +199,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void setFrustum(float left, float right, float bottom, float top, float near, float far) {
-		frustum(left, right, bottom, top, near, far);
+		super.frustum(left, right, bottom, top, near, far);
 	}
 	
 	/**
@@ -212,7 +211,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void setPerspective(float fovy, float ar, float zNear, float zFar) {
-		perspective(fovy, ar, zNear, zFar);
+		super.perspective(fovy, ar, zNear, zFar);
 	}
 	
 	/**
@@ -226,11 +225,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void setOrtho(float left, float right, float bottom, float top) {
-		ortho(left, right, bottom, top);
+		super.ortho(left, right, bottom, top);
 	}
 	@Override
 	public void setOrtho(float left, float right, float bottom, float top, float near, float far) {
-		ortho(left, right, bottom, top, near, far);
+		super.ortho(left, right, bottom, top, near, far);
 	}
 	
 	
@@ -283,8 +282,8 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void gl_endShape(int type) {		
-		if(type==-1) {			endShape();		}
-		else {				endShape(CLOSE);		}
+		if(type==-1) {			gl_endShape();		}
+		else {				gl_endShape(CLOSE);		}
 	}
 	
 	@Override
@@ -309,23 +308,23 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawLine(float x1, float y1, float z1, float x2, float y2, float z2){line(x1,y1,z1,x2,y2,z2 );}
 	@Override
 	public void drawLine(myPointf a, myPointf b, int stClr, int endClr){
-		beginShape();
-		this.strokeWeight(1.0f);
+		gl_beginShape();
+		this.setStrokeWt(1.0f);
 		this.setColorValStroke(stClr, 255);
 		this.gl_vertex(a);
 		this.setColorValStroke(endClr,255);
 		this.gl_vertex(b);
-		endShape();
+		gl_endShape();
 	}
 	@Override
 	public void drawLine(myPointf a, myPointf b, int[] stClr, int[] endClr){
-		beginShape();
-		this.strokeWeight(1.0f);
+		gl_beginShape();
+		this.setStrokeWt(1.0f);
 		this.setStroke(stClr, 255);
 		this.gl_vertex(a);
 		this.setStroke(endClr,255);
 		this.gl_vertex(b);
-		endShape();
+		gl_endShape();
 	}
 	
 	/**
@@ -339,12 +338,12 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void drawPointCloudWithColors(int numPts, int ptIncr, int[][] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
-		beginShape(PConstants.POINTS);
+		gl_beginShape(PConstants.POINTS);
 		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
 			this.setStroke(h_part_clr_int[i][0], h_part_clr_int[i][1], h_part_clr_int[i][2], 255);
 			this.gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
 		}
-		endShape();
+		gl_endShape();
 	}//drawPointCloudWithColors	
 	
 	/**
@@ -411,56 +410,56 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		myVector[] frame = AppMgr.buildViewBasedFrame(A, B);
 		float rca, rsa;
 		noFill();
-		beginShape(QUAD_STRIP);
+		gl_beginShape(QUAD_STRIP);
 			for(float a=0; a<=finalThet; a+=deltaThet) {
 				stroke(c1); 
 				rca = r*cos(a);rsa=r*sin(a);
 				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2])); 
 				stroke(c2); 
 				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
-		endShape();
+		gl_endShape();
 	}
 	@Override
 	public void drawCylinder_NoFill(myPointf A, myPointf B, float r, int c1, int c2) {
 		myVectorf[] frame = AppMgr.buildViewBasedFrame_f(A, B);
 		float rca, rsa;
 		noFill();
-		beginShape(QUAD_STRIP);
+		gl_beginShape(QUAD_STRIP);
 			for(float a=0; a<=finalThet; a+=deltaThet) {
 				stroke(c1); 
 				rca = r*cos(a);rsa=r*sin(a); 
 				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2])); 
 				stroke(c2); 
 				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
-		endShape();
+		gl_endShape();
 	}
 
 	@Override
 	public void drawCylinder(myPoint A, myPoint B, float r, int c1, int c2) {
 		myVector[] frame = AppMgr.buildViewBasedFrame(A, B);
 		float rca, rsa;
-		beginShape(QUAD_STRIP);
+		gl_beginShape(QUAD_STRIP);
 			for(float a=0; a<=finalThet; a+=deltaThet) {
 				fill(c1); 
 				rca = r*cos(a);rsa=r*sin(a);
 				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2])); 
 				fill(c2); 
 				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
-		endShape();
+		gl_endShape();
 	}
 	
 	@Override
 	public void drawCylinder(myPointf A, myPointf B, float r, int c1, int c2) {
 		myVectorf[] frame = AppMgr.buildViewBasedFrame_f(A, B);
 		float rca, rsa;
-		beginShape(QUAD_STRIP);
+		gl_beginShape(QUAD_STRIP);
 			for(float a=0; a<=finalThet; a+=deltaThet) {
 				fill(c1); 
 				rca = r*cos(a);rsa=r*sin(a);
 				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2])); 
 				fill(c2); 
 				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
-		endShape();
+		gl_endShape();
 	}
 	
 	//////////////////////////////////
@@ -610,6 +609,15 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	@Override
 	public void textSize(float fontSize) {super.textSize(fontSize);}
+
+	///////////
+	// end text	
+	
+	@Override
+	public void setNoFill() {noFill();}
+	
+	@Override
+	public void setNoStroke(){noStroke();}
 	
 	private void checkClrInts(int fclr, int sclr) {
 		if(fclr > -1){setColorValFill(fclr,255); } else if(fclr <= -2) {noFill();}		
@@ -621,8 +629,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		if(sclr!= null){setStroke(sclr,255);}
 	}	
 	
-	///////////
-	// end text
+
 	
 	///////////
 	// points
@@ -742,8 +749,8 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		sphere((float)r); 
 		popMatState();} // render sphere of radius r and center P)
 	
-	public void show(myPoint[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};                     
-	public void show(myPoint[] ara, myVector norm) {beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};   
+	public void show(myPoint[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(CLOSE);};                     
+	public void show(myPoint[] ara, myVector norm) {gl_beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(CLOSE);};   
 	
 	///////////
 	// end double points
@@ -903,11 +910,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		 popMatState();
 	} // render sphere of radius r and center P)
 	
-	public void show(myPointf[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};                     
-	public void show(myPointf[] ara, myVectorf norm) {beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape(CLOSE);};                     
+	public void show(myPointf[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(CLOSE);};                     
+	public void show(myPointf[] ara, myVectorf norm) {gl_beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(CLOSE);};                     
 	
-	public void showNoClose(myPoint[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape();};                     
-	public void showNoClose(myPointf[] ara) {beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} endShape();};   
+	public void showNoClose(myPoint[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape();};                     
+	public void showNoClose(myPointf[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape();};   
 	
 	///end show functions
 	
@@ -922,9 +929,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void catmullRom2D(myPointf[] ara) {
 		if(ara.length < 4){
 			if(ara.length == 0){return;}
-			beginShape(); curveVertex2D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} curveVertex2D(ara[ara.length-1]);endShape();
+			gl_beginShape(); curveVertex2D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} curveVertex2D(ara[ara.length-1]);gl_endShape();
 			return;}		
-		beginShape(); for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} endShape();
+		gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} gl_endShape();
 	}
 	/**
 	 * implementation of catumull rom - array needs to be at least 4 points, if not, then reuses first and last points as extra cntl points  
@@ -934,9 +941,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void catmullRom2D(myPoint[] ara) {
 		if(ara.length < 4){
 			if(ara.length == 0){return;}
-			beginShape(); curveVertex2D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} curveVertex2D(ara[ara.length-1]);endShape();
+			gl_beginShape(); curveVertex2D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} curveVertex2D(ara[ara.length-1]);gl_endShape();
 			return;}		
-		beginShape(); for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} endShape();		
+		gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} gl_endShape();		
 	}
 	protected final void curveVertex2D(myPoint P) {curveVertex((float)P.x,(float)P.y);};                                           // curveVertex for shading or drawing
 	protected final void curveVertex2D(myPointf P) {curveVertex(P.x,P.y);};                                           // curveVertex for shading or drawing
@@ -949,9 +956,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void catmullRom3D(myPointf[] ara) {
 		if(ara.length < 4){
 			if(ara.length == 0){return;}
-			beginShape(); curveVertex3D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} curveVertex3D(ara[ara.length-1]);endShape();
+			gl_beginShape(); curveVertex3D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} curveVertex3D(ara[ara.length-1]);gl_endShape();
 			return;}		
-		beginShape(); for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} endShape();
+		gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} gl_endShape();
 	}
 	/**
 	 * implementation of catumull rom - array needs to be at least 4 points, if not, then reuses first and last points as extra cntl points  
@@ -961,9 +968,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void catmullRom3D(myPoint[] ara) {
 		if(ara.length < 4){
 			if(ara.length == 0){return;}
-			beginShape(); curveVertex3D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} curveVertex3D(ara[ara.length-1]);endShape();
+			gl_beginShape(); curveVertex3D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} curveVertex3D(ara[ara.length-1]);gl_endShape();
 			return;}		
-		beginShape(); for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} endShape();		
+		gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} gl_endShape();		
 	}
 	
 	protected final void curveVertex3D(myPoint P) {curveVertex((float)P.x,(float)P.y,(float)P.z);};                                           // curveVertex for shading or drawing
@@ -1183,7 +1190,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public final int[] getRndClrBright(int alpha){return new int[]{(int)random(50,255),(int)random(25,200),(int)random(80,255),alpha};	}
 	
 	@Override
-	public final int getRndClrInt(){return (int)random(0,IRenderInterface.gui_nextColorIDX);}		//return a random color flag value from IRenderInterface
+	public final int getRndClrIndex(){return (int)random(0,IRenderInterface.gui_nextColorIDX);}		//return a random color flag value from IRenderInterface
 	 
 	
 	@Override
@@ -1192,40 +1199,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		return new Integer[]{(int)(((1.0f-t)*a[0])+t*b[0]),(int)(((1.0f-t)*a[1])+t*b[1]),(int)(((1.0f-t)*a[2])+t*b[2]),(int)(((1.0f-t)*a[3])+t*b[3])};
 	}
 
-	public final int color(myPoint p){return color((int)p.x,(int)p.y,(int)p.z);}	
-	public final int color(myPointf p){return color((int)p.x,(int)p.y,(int)p.z);}	
-
 	//save screenshot
 	public void savePic(){			
 		String picName = AppMgr.getAnimPicName(); 
 		if(null==picName) {return;}
 		save(picName);
 	}
-
-	protected String getScreenShotSaveName(String prjNmShrt) {
-		return sketchPath() +File.separatorChar+prjNmShrt+"_"+AppMgr.getDateString()+File.separatorChar+prjNmShrt+"_img"+AppMgr.getTimeString() + ".jpg";
-	}
-	
-	//handle user-driven file load or save - returns a filename + filepath string
-	public String FileSelected(File selection){
-		if (null==selection){return null;}
-		return selection.getAbsolutePath();		
-	}//FileSelected
-	
-
-	public String getFName(String fNameAndPath){
-		String[] strs = fNameAndPath.split("/");
-		return strs[strs.length-1];
-	}
-	
-	//load a file as text strings
-	public String[] loadFileIntoStringAra(String fileName, String dispYesStr, String dispNoStr){
-		String[] strs = null;
-		try{
-			strs = loadStrings(fileName);
-			System.out.println(dispYesStr+"\tLength : " + strs.length);
-		} catch (Exception e){System.out.println("!!"+dispNoStr);return null;}
-		return strs;		
-	}//loadFileIntoStrings
 
 }//my_procApplet

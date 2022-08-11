@@ -8,11 +8,10 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.MyMathUtils;
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.my_procApplet;
 
 
 public class myClrRamp {
-	public my_procApplet pa;	
+	public IRenderInterface pa;	
 	public GUI_AppManager AppMgr;
 	public int R0=250, G0=245, B0=20, R1=17, G1=60, B1=242, k=30;
 	
@@ -26,7 +25,6 @@ public class myClrRamp {
 	
 	public float barThick = 3;
 	public ArrayList<myClrPoint> usrPts;		//user controlled color points
-	//public ArrayList[] clrPtsArrays = new ArrayList[numGrads];
 	public ArrayList<myClrPoint> clrPtsArrays = new ArrayList<myClrPoint>();// only using idx 6 = new ArrayList[numGrads];
 	
 	public myClrPoint[] midPoints;		//midpoints of line segments of box - use to find knots for spline
@@ -49,13 +47,13 @@ public class myClrRamp {
 	                         {0.2126f, 0.7152f,  0.0722f},
 	                         {0.0193f, 0.1192f,  0.9505f}};
 	
-	public myClrRamp(my_procApplet _p, GUI_AppManager _AppMgr){
+	public myClrRamp(IRenderInterface _p, GUI_AppManager _AppMgr){
 		pa = _p; 	 AppMgr = _AppMgr;
 		layer = new Layer(50, 10);
 		scaleVals = new float[]{AppMgr.gridDimX/255.0f,AppMgr.gridDimY/255.0f,AppMgr.gridDimZ/255.0f};
 		
-		float y = pa.height *.15f;
-		grads = new myClrGrad(AppMgr, pa, this, pa.width *.85f, y, "Modified LCH");//(CAProject3 _pa, float _x, float _y){			
+		float y = pa.getHeight() *.15f;
+		grads = new myClrGrad(AppMgr, pa, this, pa.getWidth() *.85f, y, "Modified LCH");//(CAProject3 _pa, float _x, float _y){			
 
 		usrPts = new ArrayList<myClrPoint>();		
 		myPoint ptA =new myPoint(R0,G0,B0),
@@ -194,7 +192,7 @@ public class myClrRamp {
 		return LCHtoPoint((1.f-s)*LCH0[0]+s*LCH1[0],(1.f-s)*LCH0[1]+s*LCH1[1], LCH0[2]+s*d ); 
 	  } 
 	// LAB to color
-	public int LABtoColor(double L, double a, double b) {int [] C= LABtoRGB(L,a,b); return pa.color(C[0],C[1],C[2]);}  
+	public int LABtoColor(double L, double a, double b) {int [] C= LABtoRGB(L,a,b); return pa.getClrAsHex(C[0],C[1],C[2]);}  
 	
 	// LAB > RGB = (LAB > XYZ) + (XYZ > RGB)
 	public int[] LABtoRGB(double L, double a, double b) {return XYZtoRGB(LABtoXYZ(L, a, b));}
@@ -232,7 +230,7 @@ public class myClrRamp {
 	}
 	
 	// LCH to color
-	public int LCHtoColor(double L, double c, double h) {int [] C= LCHtoRGB(L,c,h); return pa.color(C[0],C[1],C[2]);}
+	public int LCHtoColor(double L, double c, double h) {int [] C= LCHtoRGB(L,c,h); return pa.getClrAsHex(C[0],C[1],C[2]);}
 	
 	// LCH > RGB = (LCH > LAB) + (LAB > XYZ) + (XYZ > RGB)
 	public int[] LCHtoRGB(double L, double c, double h) {return XYZtoRGB(LABtoXYZ(LCHtoLAB(L, c, h)));}
@@ -244,7 +242,7 @@ public class myClrRamp {
 	}
 	
 	// XYZ to color
-	public int XYZtoColor(double X, double Y, double Z) {int [] C= XYZtoRGB(X,Y,Z); return pa.color(C[0],C[1],C[2]);}
+	public int XYZtoColor(double X, double Y, double Z) {int [] C= XYZtoRGB(X,Y,Z); return pa.getClrAsHex(C[0],C[1],C[2]);}
 	
 	// XYZ > RGB  
 	public int calcXYZtoRGB(double c) {if (c>0.0031308f) {c=((1.055f*Math.pow(c,1.0f/2.4f))-0.055f);} else {c=(c*12.92f);}  return (int)((c < 0) ? 0 : ((c > 1) ? 1 : c));}
@@ -300,7 +298,7 @@ public class myClrRamp {
 	public int LABramp(myPoint p1, myPoint p2, float s) {return LABramp((int)p1.x, (int)p1.z, (int)p1.y,(int)p2.x, (int)p2.z, (int)p2.y,s); }
 	public int LCHramp(myPoint p1, myPoint p2, float s) {return LCHramp((int)p1.x, (int)p1.z, (int)p1.y,(int)p2.x, (int)p2.z, (int)p2.y,s); }
 
-	public int RGBramp(int R0, int G0, int B0, int R1, int G1, int B1, float s) {return pa.color((1.f-s)*R0+s*R1,(1.f-s)*G0+s*G1,(1.f-s)*B0+s*B1); }
+	public int RGBramp(int R0, int G0, int B0, int R1, int G1, int B1, float s) {return pa.getClrAsHex((int)((1.f-s)*R0+s*R1),(int)((1.f-s)*G0+s*G1),(int)((1.f-s)*B0+s*B1)); }
 	public int XYZramp(int R0, int G0, int B0, int R1, int G1, int B1, float s) {
 		double[] XYZ0 = RGBtoXYZ(R0, G0, B0), XYZ1 = RGBtoXYZ(R1, G1, B1);
 		return XYZtoColor((1.f-s)*XYZ0[0]+s*XYZ1[0],(1.f-s)*XYZ0[1]+s*XYZ1[1],(1.f-s)*XYZ0[2]+s*XYZ1[2]); 
@@ -316,27 +314,20 @@ public class myClrRamp {
 		d = d > 180 ? d - 360 : d;
 		return LCHtoColor((1.f-s)*LCH0[0]+s*LCH1[0],(1.f-s)*LCH0[1]+s*LCH1[1], LCH0[2]+s*d ); 
 	} 
-	// ***************** Jarek's tools for drawing ramps
 	
-	public void showColor(int c, float r) {myPointf C = PofColorf(c); pa.fill(c); pa.drawSphere(C,r,5);}
-	public void showColor(myPoint p, float r){int c = pa.color(p); pa.fill(c); pa.drawSphere(p,r,5);}
-	public myPoint PofColor(int c) {return new myPoint(pa.red(c), pa.green(c), pa.blue(c));}
-	public myPointf PofColorf(int c) {return new myPointf(pa.red(c), pa.green(c), pa.blue(c));}
-//	public int redC(int c) {return PApplet.parseInt (c >> 16 & 0xFF); } 
-//	public int greenC(int c) {return PApplet.parseInt (c >> 8 & 0xFF); }  
-//	public int blueC(int c) {return PApplet.parseInt (c & 0xFF); } 
+	public void showColor(int c, float r) {myPointf C = PofColorf(c); pa.setFill(c); pa.drawSphere(C,r,5);}
+	public void showColor(myPoint p, float r){int c = pa.getClrAsHex(p); pa.setFill(c); pa.drawSphere(p,r,5);}
 	
-	public int redC(int c) {return  (c >> 16 & 0xFF); } 
-	public int greenC(int c) {return (c >> 8 & 0xFF); }  
-	public int blueC(int c) {return (c & 0xFF); } 
+	public myPoint PofColor(int c) {return new myPoint(pa.getRed(c), pa.getGreen(c), pa.getBlue(c));}
+	public myPointf PofColorf(int c) {return new myPointf(pa.getRed(c), pa.getGreen(c), pa.getBlue(c));}
 
 	public void drawLabRamp(int c0, int c1) {
-		int rc0 = redC(c0), rc1 = redC(c1), bc0=blueC(c0), bc1=blueC(c1), gc0=greenC(c0), gc1=greenC(c1);
+		int rc0 = pa.getRed(c0), rc1 = pa.getRed(c1), bc0=pa.getBlue(c0), bc1=pa.getBlue(c1), gc0=pa.getGreen(c0), gc1=pa.getGreen(c1);
 		for(float s=0; s<=1; s+=0.01f) {showColor(LABramp( rc0, gc0, bc0,  rc1, gc1, bc1, s),5);}
 	}
 	
 	public void drawRGBRamp(int c0, int c1) {
-		int rc0 = redC(c0), rc1 = redC(c1), bc0=blueC(c0), bc1=blueC(c1), gc0=greenC(c0), gc1=greenC(c1);
+		int rc0 = pa.getRed(c0), rc1 = pa.getRed(c1), bc0=pa.getBlue(c0), bc1=pa.getBlue(c1), gc0=pa.getGreen(c0), gc1=pa.getGreen(c1);
 		for(float s=0; s<=1; s+=0.01f) {showColor(RGBramp( rc0, gc0, bc0,  rc1, gc1, bc1, s),5);} 
 	}
 	
@@ -355,12 +346,12 @@ public class myClrRamp {
 	  
 	public myPoint[] rampPoints(int[] colors) {
 		myPoint[] points = new myPoint[colors.length];
-		for (int i=0; i<colors.length; ++i) {points[i] = new myPoint(300.0f*pa.red(colors[i])/255.0f, 300.0f*pa.blue(colors[i])/255.0f, 300.0f*pa.green(colors[i])/255.0f);}
+		for (int i=0; i<colors.length; ++i) {points[i] = new myPoint(scaleVals[0]*pa.getRed(colors[i]), scaleVals[1]*pa.getBlue(colors[i]), scaleVals[2]*pa.getGreen(colors[i]));}
 		return points;
 	}
 	
 	public void drawRamp(int[] colors, myPoint[] points) {
-		for (int i=0; i<colors.length; ++i) {pa.fill(colors[i]); pa.showPtAsSphere(points[i],5,5, -1, -1);}
+		for (int i=0; i<colors.length; ++i) {pa.setFill(colors[i]); pa.showPtAsSphere(points[i],5,5, -1, -1);}
 	}
 	  
 	
@@ -368,6 +359,7 @@ public class myClrRamp {
 	public class Layer {
 		int l, sample;
 		myPoint[][] P;
+		//hex color vals ARGB
 		int[][] C;
 	  
 		public Layer(int l, int sample) {
@@ -386,14 +378,14 @@ public class myClrRamp {
 					else if(mode.equals("lab")) {rgb=LABtoRGB(l, 255*i-128, 255*j-128);}
 					else if(mode.equals("lch")) {rgb=LCHtoRGB(l, 100*i, 360*j);}
 					P[n][m] = new myPoint(300*rgb[0]/255,300*rgb[2]/255,300*rgb[1]/255);
-					C[n][m] = pa.color(rgb[0], rgb[1], rgb[2]);
+					C[n][m] = pa.getClrAsHex(rgb[0], rgb[1], rgb[2]);
 				}
 			}
 		}
 	}//class Layer
 	public void show(Layer l) {
-		for(int i=0; i<l.sample; ++i) {for(int j=0; j<l.sample; ++j) {pa.fill(l.C[i][j]); pa.showPtAsSphere(l.P[i][j], 5, 5, -1, -1);}}
-		pa.setStrokeWt(1); pa.stroke(0xff000000);
+		for(int i=0; i<l.sample; ++i) {for(int j=0; j<l.sample; ++j) {pa.setFill(l.C[i][j]); pa.showPtAsSphere(l.P[i][j], 5, 5, -1, -1);}}
+		pa.setStrokeWt(1); pa.setStroke(0,0,0,255);
 		for(int i=0; i<l.sample; ++i) {for(int j=0; j<l.sample-1; ++j) {pa.drawLine(l.P[i][j].x, l.P[i][j].y, l.P[i][j].z, l.P[i][j+1].x, l.P[i][j+1].y, l.P[i][j+1].z);}}
 		for(int i=0; i<l.sample-1; ++i) {for(int j=0; j<l.sample; ++j) {pa.drawLine(l.P[i][j].x, l.P[i][j].y, l.P[i][j].z, l.P[i+1][j].x, l.P[i+1][j].y, l.P[i+1][j].z);}}
 	}
@@ -402,19 +394,19 @@ public class myClrRamp {
 
 
 class myClrGrad{
-	public my_procApplet pa;
+	public IRenderInterface pa;
 	public GUI_AppManager AppMgr;
 	public myClrRamp rmp;
 	public String name;
 	public float x,y, w,h;
 	public myClrPoint[] clrs;				//all colors in this gradient - r = x, g = z, b = y
 
-	public myClrGrad(GUI_AppManager _AppMgr, my_procApplet _pa, myClrRamp _rmp, float _x, float _y, String _name){
+	public myClrGrad(GUI_AppManager _AppMgr, IRenderInterface _pa, myClrRamp _rmp, float _x, float _y, String _name){
 		pa = _pa;AppMgr=_AppMgr;
 		rmp = _rmp;
 		name = _name;
-		w = pa.width * .13f; 
-		h = pa.height * .07f;
+		w = pa.getWidth() * .13f; 
+		h = pa.getHeight() * .07f;
 
 		x = _x;
 		y = _y;
@@ -429,60 +421,60 @@ class myClrGrad{
 	}
 	
 	public void drawMe(){
-		pa.pushMatrix();pa.pushStyle();	
-		pa.fill(0,0,0,255);
-		pa.text(name, x, y-10);
-		pa.rect(x, y, w, h);
+		pa.pushMatState(); 
+		pa.setFill(0,0,0,255);
+		pa.showText(name, x, y-10);
+		pa.drawRect(x, y, w, h);
 		float offset = w/(1.0f * clrs.length);			//how much to move laterally in ramp for each color
 		float st = x;
 		for(int i = 0; i< clrs.length;++i){
 			AppMgr.fillAndShowLineByRBGPt(clrs[i],st, y, offset, h);//(myPoint p, float x,  float y, float w, float h)
 			st += offset;
 		}
-		pa.fill(0,0,0,255);
-		pa.text("3rd Color",x-100, y-10);
+		pa.setFill(0,0,0,255);
+		pa.showText("3rd Color",x-100, y-10);
 		AppMgr.fillAndShowLineByRBGPt(clrs[clrs.length/2],x-100, y, h, h);
-		pa.rect(x-100, y, h, h);
-		pa.popStyle();pa.popMatrix();
+		pa.drawRect(x-100, y, h, h);
+		pa.popMatState();
 	}//drawGradientRectangle	
 	
 	public void drawSpline(){
-		pa.pushMatrix();pa.pushStyle();
+		pa.pushMatState(); 
 		for(int i = 0; i< clrs.length;++i){	rmp.showColor(clrs[i],clrs[i].rad);}		
-		pa.popStyle();pa.popMatrix();	
+		pa.popMatState();
 	}
 }//class myClrGradient
 	
 class myClrPoint extends myPoint{
-	public my_procApplet pa;	
+	public IRenderInterface pa;	
 	public String name;
 	public float rad;
 	
-	public myClrPoint(my_procApplet _pa, String _nm, double _red, double _green, double _blue, double r){
+	public myClrPoint(IRenderInterface _pa, String _nm, double _red, double _green, double _blue, double r){
 		super(_red, _green, _blue);
 		pa = _pa;
 		name = _nm;
 		rad = (float)r;
 	}	
-	public myClrPoint(my_procApplet _pa, String _nm, myPoint pt, double r){
+	public myClrPoint(IRenderInterface _pa, String _nm, myPoint pt, double r){
 		super(pt);
 		pa = _pa;
 		name = _nm;
 		rad = (float)r;
 	}	
 	public void show(myPoint P, double r, String txt) {
-		pa.pushMatrix(); pa.pushStyle(); 
+		pa.pushMatState(); 
 		pa.setSphereDetail(5);
 		pa.translate((float)P.x,(float)P.y,(float)P.z); 
 		pa.drawSphere((float)r); 
 		pa.setColorValFill(IRenderInterface.gui_Black, 255);pa.setColorValStroke(IRenderInterface.gui_Black,255);
 		double d = 1.1 * r;
 		pa.showTextAtPt(myPoint.ZEROPT, txt, new myVector(d,d,d));
-		pa.popStyle(); pa.popMatrix();} // render sphere of radius r and center P)
+		pa.popMatState();
+	} // render sphere of radius r and center P)
 
 	public void showColor(){
-		int c = pa.color(this); 
-		pa.fill(c); 
+		pa.setFill((int)x, (int)y, (int)z, 255); 
 		show(this,rad, toString());
 	}
 	public String toString(){

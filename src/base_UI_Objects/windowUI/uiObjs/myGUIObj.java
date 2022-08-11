@@ -113,7 +113,7 @@ public class myGUIObj {
 	}
 
 	public final boolean shouldUpdateWin(boolean isRelease) {
-		return (getFlags(usedByWinsIDX) && ((isRelease) || (!isRelease && getFlags(updateWhileModIDX))));
+		return ((isRelease || getFlags(updateWhileModIDX)) && getFlags(usedByWinsIDX));
 	}
 	
 	public final int valAsInt(){return (int)(val) ;}

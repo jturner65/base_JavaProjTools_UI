@@ -43,7 +43,7 @@ public abstract class GUI_AppManager {
 	// Time and date
 	
 	//used to manage current time
-	public Calendar now;
+	public final Calendar now;
 	//time that this application started
 	private long appStartTimeMillis;
 	protected int glblStartSimFrameTime,			//begin of draw
