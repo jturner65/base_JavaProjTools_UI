@@ -268,6 +268,7 @@ public abstract class GUI_AppManager {
 	
 	public void setIRenderInterface(IRenderInterface _pa) {
 		if (null == pa) {pa=_pa;}
+		pa.initRenderInterface();
 	}	
 	
 	/**
@@ -975,6 +976,7 @@ public abstract class GUI_AppManager {
 			for(int i =0; i<3;++i){	pa.showVec(ctr,len, _axis[i]);	}
 		pa.popMatState();	
 	}//	drawAxes
+	
 	public void drawAxes(double len, double stW, myPoint ctr, myVectorf[] _axis, int alpha){
 		pa.pushMatState();
 			pa.setStrokeWt((float)stW);

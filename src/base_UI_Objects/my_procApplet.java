@@ -29,7 +29,15 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public final float maxAnimCntr = PI*1000.0f, baseAnimSpd = 1.0f;
 	
 	//giant sphere encapsulating entire scene
-	private PShape bgrndSphere;				
+	private PShape bgrndSphere;	
+	/////////////////
+	// pre-calc sin/cos for building cylinders
+		
+	//constant values defined for cylinder wall angles
+	private final float deltaThet = MyMathUtils.TWO_PI_F/36.0f, 
+			finalThet = MyMathUtils.TWO_PI_F+deltaThet;
+
+	private double[] cylCosVals, cylSinVals;
 	
 	////////////////////////
 	// code
@@ -47,6 +55,21 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	    
 	}//main	
 
+	/**
+	 * Initialize render interface implementation.
+	 */
+	@Override
+	public void initRenderInterface() {
+		//initialize constants
+		cylCosVals = new double[36];
+		cylSinVals = new double[36];
+		int i=0;
+		for(float a=0; a<=finalThet; a+=deltaThet) {			
+			cylCosVals[i] = Math.cos(a);
+			cylSinVals[i++] = Math.sin(a);
+		}
+	}
+	
 	//processing being run in eclipse uses settings for variable size dimensions
 	public void settings(){	
 		AppMgr.setIRenderInterface(this);
@@ -175,14 +198,15 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawCanvas(myVector eyeToMse, myPointf[] canvas3D){
 		disableLights();
 		pushMatState();
-		gl_beginShape(PConstants.QUAD);
+		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
 		setFill(255,255,255,80);
+		setNoStroke();
 		gl_normal(eyeToMse);
         for(int i =canvas3D.length-1;i>=0;--i){		//build invisible canvas to draw upon
      		//p.line(canvas3D[i], canvas3D[(i+1)%canvas3D.length]);
      		gl_vertex(canvas3D[i]);
      	}
-     	gl_endShape(PConstants.CLOSE);
+     	gl_endShape(true);
      	popMatState();
      	enableLights();
 	}//drawCanvas
@@ -266,24 +290,61 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
   static final int TRIANGLES       = 9;   // vertices
   static final int TRIANGLE_STRIP  = 10;  // vertices
   static final int TRIANGLE_FAN    = 11;  // vertices
+  
+  DONOT SUPPORT QUAD PRIMS - have been deprecated/Removed from opengl
   static final int QUADS           = 17;  // vertices
   static final int QUAD_STRIP      = 18;  // vertices
+  
   static final int POLYGON         = 20;  // 
 	 * 
 	 * 
 	 */
 	@Override
-	public void gl_beginShape(int type) {
-		if(type==-1) {			beginShape(POLYGON);		}
-		else {				beginShape(type);		}
-	}
+	public void gl_beginShape(GL_PrimStyle primType) {
+		switch (primType) {
+			case GL_POINTS : {
+				beginShape(POINTS);
+				return;
+			}
+			case GL_LINES : {
+				beginShape(LINES);
+				return;
+			}
+			case GL_LINE_LOOP : {
+				//Processing does not support line loop, so treat as polygon
+				beginShape(POLYGON);
+				return;
+			}
+			case GL_LINE_STRIP : {
+				//Processing does not support line_strip, treat as lines
+				beginShape(LINES);
+				break;
+			}
+			case GL_TRIANGLES : {
+				beginShape(TRIANGLES);
+				break;
+			}
+			case GL_TRIANGLE_STRIP : {
+				beginShape(TRIANGLE_STRIP);
+				break;
+			}
+			case GL_TRIANGLE_FAN : {
+				beginShape(TRIANGLE_FAN);
+				break;
+			}
+			default : {
+				beginShape(POLYGON);	
+				return;
+			}		
+		};
+	}//gl_beginShape
 	/**
 	 * type needs to be -1 for blank, otherwise will be CLOSE, regardless of passed value
 	 */
 	@Override
-	public void gl_endShape(int type) {		
-		if(type==-1) {			gl_endShape();		}
-		else {				gl_endShape(CLOSE);		}
+	public void gl_endShape(boolean isClosed) {		
+		if(isClosed) {			endShape(CLOSE);		}
+		else {				endShape(CLOSE);		}
 	}
 	
 	@Override
@@ -338,7 +399,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void drawPointCloudWithColors(int numPts, int ptIncr, int[][] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
-		gl_beginShape(PConstants.POINTS);
+		gl_beginShape(GL_PrimStyle.GL_POINTS);
 		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
 			this.setStroke(h_part_clr_int[i][0], h_part_clr_int[i][1], h_part_clr_int[i][2], 255);
 			this.gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
@@ -403,63 +464,89 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void drawTriangle2D(myPoint a, myPoint b, myPoint c) {triangle((float)a.x,(float)a.y,(float) b.x, (float)b.y,(float) c.x,(float) c.y);}
 
-	
-	private final float deltaThet = MyMathUtils.TWO_PI_F/36.0f, finalThet = MyMathUtils.TWO_PI_F+deltaThet;
-	@Override
-	public void drawCylinder_NoFill(myPoint A, myPoint B, float r, int c1, int c2) {
+
+	private myPoint[] buildCylVerts(myPoint A, myPoint B, float r) {
 		myVector[] frame = AppMgr.buildViewBasedFrame(A, B);
+		myPoint[] resList = new myPoint[2 * cylCosVals.length];
+		double rca, rsa;
+		int idx = 0;
+		for(int i = 0; i<cylCosVals.length; ++i) {
+			rca = r*cylCosVals[i];rsa=r*cylSinVals[i];
+			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2]); 
+			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
+		}
+		return resList;
+	}//build list of all cylinder vertices 
+	
+	private myPointf[] buildCylVerts(myPointf A, myPointf B, float r) {
+		myVectorf[] frame = AppMgr.buildViewBasedFrame_f(A, B);
+		myPointf[] resList = new myPointf[2 * cylCosVals.length];
 		float rca, rsa;
+		int idx = 0;
+		for(int i = 0; i<cylCosVals.length; ++i) {
+			rca = (float) (r*cylCosVals[i]);rsa=(float) (r*cylSinVals[i]);
+			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2]); 
+			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
+		}	
+		return resList;
+	}//build list of all cylinder vertices 
+		
+	
+	@Override
+	public void drawCylinder_NoFill(myPoint A, myPoint B, float r, int clr1, int clr2) {
+		myPoint[] vertList = buildCylVerts(A, B, r);
+		int[] c1 = getClr(clr1, 255);
+		int[] c2 = getClr(clr2, 255);
 		noFill();
-		gl_beginShape(QUAD_STRIP);
-			for(float a=0; a<=finalThet; a+=deltaThet) {
-				stroke(c1); 
-				rca = r*cos(a);rsa=r*sin(a);
-				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2])); 
-				stroke(c2); 
-				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
+		beginShape(QUAD_STRIP);
+			for(int i=0; i<=vertList.length; i+=2) {
+				gl_SetStroke(c1[0],c1[1],c1[2],255);
+				gl_vertex(vertList[i]);
+				gl_SetStroke(c2[0],c2[1],c2[2],255);
+				gl_vertex(vertList[i+1]);}
 		gl_endShape();
 	}
 	@Override
-	public void drawCylinder_NoFill(myPointf A, myPointf B, float r, int c1, int c2) {
-		myVectorf[] frame = AppMgr.buildViewBasedFrame_f(A, B);
-		float rca, rsa;
+	public void drawCylinder_NoFill(myPointf A, myPointf B, float r, int clr1, int clr2) {
+		myPointf[] vertList = buildCylVerts(A, B, r);
+		int[] c1 = getClr(clr1, 255);
+		int[] c2 = getClr(clr2, 255);
 		noFill();
-		gl_beginShape(QUAD_STRIP);
-			for(float a=0; a<=finalThet; a+=deltaThet) {
-				stroke(c1); 
-				rca = r*cos(a);rsa=r*sin(a); 
-				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2])); 
-				stroke(c2); 
-				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
+		beginShape(QUAD_STRIP);
+			for(int i=0; i<=vertList.length; i+=2) {
+				gl_SetStroke(c1[0],c1[1],c1[2],255);
+				gl_vertex(vertList[i]); 
+				gl_SetStroke(c2[0],c2[1],c2[2],255);
+				gl_vertex(vertList[i+1]);}
 		gl_endShape();
 	}
 
 	@Override
-	public void drawCylinder(myPoint A, myPoint B, float r, int c1, int c2) {
-		myVector[] frame = AppMgr.buildViewBasedFrame(A, B);
-		float rca, rsa;
-		gl_beginShape(QUAD_STRIP);
-			for(float a=0; a<=finalThet; a+=deltaThet) {
-				fill(c1); 
-				rca = r*cos(a);rsa=r*sin(a);
-				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2])); 
-				fill(c2); 
-				gl_vertex(myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
+	public void drawCylinder(myPoint A, myPoint B, float r, int clr1, int clr2) {
+		myPoint[] vertList = buildCylVerts(A, B, r);
+		int[] c1 = getClr(clr1, 255);
+		int[] c2 = getClr(clr2, 255);
+		beginShape(QUAD_STRIP);
+			for(int i=0; i<=vertList.length; i+=2) {
+				gl_SetFill(c1[0],c1[1],c1[2],255);		
+				gl_vertex(vertList[i]); 
+				gl_SetFill(c2[0],c2[1],c2[2],255);	
+				gl_vertex(vertList[i+1]);}
 		gl_endShape();
 	}
 	
 	@Override
-	public void drawCylinder(myPointf A, myPointf B, float r, int c1, int c2) {
-		myVectorf[] frame = AppMgr.buildViewBasedFrame_f(A, B);
-		float rca, rsa;
-		gl_beginShape(QUAD_STRIP);
-			for(float a=0; a<=finalThet; a+=deltaThet) {
-				fill(c1); 
-				rca = r*cos(a);rsa=r*sin(a);
-				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2])); 
-				fill(c2); 
-				gl_vertex(myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]));}
-		gl_endShape();
+	public void drawCylinder(myPointf A, myPointf B, float r, int clr1, int clr2) {
+		myPointf[] vertList = buildCylVerts(A, B, r);
+		int[] c1 = getClr(clr1, 255);
+		int[] c2 = getClr(clr2, 255);
+		beginShape(QUAD_STRIP);
+		for(int i=0; i<=vertList.length; i+=2) {
+			gl_SetFill(c1[0],c1[1],c1[2],255);		
+			gl_vertex(vertList[i]); 
+			gl_SetFill(c2[0],c2[1],c2[2],255);		
+			gl_vertex(vertList[i+1]);}
+	gl_endShape();
 	}
 	
 	//////////////////////////////////
@@ -749,8 +836,8 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		sphere((float)r); 
 		popMatState();} // render sphere of radius r and center P)
 	
-	public void show(myPoint[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(CLOSE);};                     
-	public void show(myPoint[] ara, myVector norm) {gl_beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(CLOSE);};   
+	public void show(myPoint[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(true);};                     
+	public void show(myPoint[] ara, myVector norm) {gl_beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(true);};   
 	
 	///////////
 	// end double points
@@ -910,8 +997,8 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		 popMatState();
 	} // render sphere of radius r and center P)
 	
-	public void show(myPointf[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(CLOSE);};                     
-	public void show(myPointf[] ara, myVectorf norm) {gl_beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(CLOSE);};                     
+	public void show(myPointf[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(true);};                     
+	public void show(myPointf[] ara, myVectorf norm) {gl_beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(true);};                     
 	
 	public void showNoClose(myPoint[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape();};                     
 	public void showNoClose(myPointf[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape();};   
