@@ -61,10 +61,10 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void initRenderInterface() {
 		//initialize constants
-		cylCosVals = new double[36];
-		cylSinVals = new double[36];
+		cylCosVals = new double[38];
+		cylSinVals = new double[38];
 		int i=0;
-		for(float a=0; a<=finalThet; a+=deltaThet) {			
+		for(float a=0; a<=finalThet; a+=deltaThet) {
 			cylCosVals[i] = Math.cos(a);
 			cylSinVals[i++] = Math.sin(a);
 		}
@@ -499,7 +499,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		int[] c2 = getClr(clr2, 255);
 		noFill();
 		beginShape(QUAD_STRIP);
-			for(int i=0; i<=vertList.length; i+=2) {
+			for(int i=0; i<vertList.length; i+=2) {
 				gl_SetStroke(c1[0],c1[1],c1[2],255);
 				gl_vertex(vertList[i]);
 				gl_SetStroke(c2[0],c2[1],c2[2],255);
@@ -513,7 +513,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		int[] c2 = getClr(clr2, 255);
 		noFill();
 		beginShape(QUAD_STRIP);
-			for(int i=0; i<=vertList.length; i+=2) {
+			for(int i=0; i<vertList.length; i+=2) {
 				gl_SetStroke(c1[0],c1[1],c1[2],255);
 				gl_vertex(vertList[i]); 
 				gl_SetStroke(c2[0],c2[1],c2[2],255);
@@ -527,7 +527,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
 		beginShape(QUAD_STRIP);
-			for(int i=0; i<=vertList.length; i+=2) {
+			for(int i=0; i<vertList.length; i+=2) {
 				gl_SetFill(c1[0],c1[1],c1[2],255);		
 				gl_vertex(vertList[i]); 
 				gl_SetFill(c2[0],c2[1],c2[2],255);	
@@ -541,7 +541,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
 		beginShape(QUAD_STRIP);
-		for(int i=0; i<=vertList.length; i+=2) {
+		for(int i=0; i<vertList.length; i+=2) {
 			gl_SetFill(c1[0],c1[1],c1[2],255);		
 			gl_vertex(vertList[i]); 
 			gl_SetFill(c2[0],c2[1],c2[2],255);		
