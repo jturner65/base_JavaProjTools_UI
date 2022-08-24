@@ -26,7 +26,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public final float frate = 120;			//frame rate - # of playback updates per second
 	
 	//animation control variables	
-	public final float maxAnimCntr = PI*1000.0f, baseAnimSpd = 1.0f;
+	public final float maxAnimCntr = MyMathUtils.PI_F*1000.0f, baseAnimSpd = 1.0f;
 	
 	//giant sphere encapsulating entire scene
 	private PShape bgrndSphere;	
