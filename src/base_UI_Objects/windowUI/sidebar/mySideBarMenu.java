@@ -43,6 +43,8 @@ public class mySideBarMenu extends myDispWindow{
 	protected int[] funcBtnIDXAra;
 	//offset in arrays where actual function buttons start
 	public int funcBtnIDXOffset=0;
+	//index in array where debug buttons reside
+	private int debugBtnRowIDX = -1;
 	
 	private boolean _initBtnShowWin = false, _initBtnMseFunc= false, _initBtnDBGSelCmp = false;
 
@@ -100,12 +102,8 @@ public class mySideBarMenu extends myDispWindow{
 	}//setFunctionButtonNames
 	
 	/**
-	 * set row names for each row of ui action buttons getMouseOverSelBtnNames()
-	 * @param _funcRowNames array of names for each row of functional buttons 
-	 * @param _numBtnsPerFuncRow array of # of buttons per row of functional buttons
-	 * @param _numDbgBtns # of debug buttons
-	 * @param _inclWinNames include the names of all the instanced windows
-	 * @param _inclMseOvValues include a row for possible mouse over values
+	 * Set values for ui action buttons, based on specifications of @class mySidebarMenuBtnConfig
+	 * Parameters user defined in main as window is specified, individual button names can be overridden in individual app windows
 	 */
 	//protected final void setBtnData(String[] _funcRowNames, int[] _numBtnsPerFuncRow, int _numDbgBtns, boolean _inclWinNames, boolean _inclMseOvValues) {
 	protected final void setBtnData() {
@@ -113,10 +111,13 @@ public class mySideBarMenu extends myDispWindow{
 		ArrayList<String[]> tmpBtnNames = new ArrayList<String[]>();
 		ArrayList<String[]> tmpDfltBtnNames = new ArrayList<String[]>();
 		
-		ArrayList<Boolean[]> tmpBntIsInst = new ArrayList<Boolean[]>();
-		ArrayList<Boolean[]> tmpBntWaitForProc = new ArrayList<Boolean[]>();
+		ArrayList<Boolean[]> tmpBtnIsInst = new ArrayList<Boolean[]>();
+		ArrayList<Boolean[]> tmpBtnWaitForProc = new ArrayList<Boolean[]>();
 		int numFuncBtnArrayNames = btnConfig.funcRowNames.length;
-		if(btnConfig.numDbgBtns > 0) {		++numFuncBtnArrayNames;	}
+		//if debug btn names array is not empty in config, add debug button names row to funcBtnIDXAra
+		if(btnConfig.debugBtnNames.length > 0) {
+			debugBtnRowIDX = numFuncBtnArrayNames++;
+		}
 		
 		funcBtnIDXAra = new int[numFuncBtnArrayNames];
 		
@@ -129,8 +130,8 @@ public class mySideBarMenu extends myDispWindow{
 			tmpBtnNames.add(titleArray);
 			tmpDfltBtnNames.add(titleArray);
 
-			tmpBntIsInst.add(buildDfltBtnFlagAra(titleArray.length));
-			tmpBntWaitForProc.add(buildDfltBtnFlagAra(titleArray.length));
+			tmpBtnIsInst.add(buildDfltBtnFlagAra(titleArray.length));
+			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(titleArray.length));
 			
 			tmpGuiBtnRowNames.add("Display Window");
 
@@ -143,8 +144,8 @@ public class mySideBarMenu extends myDispWindow{
 			tmpBtnNames.add(mseOvrBtnNames);
 			tmpDfltBtnNames.add(mseOvrBtnNames);
 		
-			tmpBntIsInst.add(buildDfltBtnFlagAra(mseOvrBtnNames.length));
-			tmpBntWaitForProc.add(buildDfltBtnFlagAra(mseOvrBtnNames.length));
+			tmpBtnIsInst.add(buildDfltBtnFlagAra(mseOvrBtnNames.length));
+			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(mseOvrBtnNames.length));
 
 			tmpGuiBtnRowNames.add("Mouse Over Info To Display");
 			btnMseFuncIdx = funcBtnIDXOffset;  //btnConfig.
@@ -157,31 +158,38 @@ public class mySideBarMenu extends myDispWindow{
 			tmpBtnNames.add(buildBtnNameAra(btnConfig.numBtnsPerFuncRow[i],"Func"));
 			tmpDfltBtnNames.add(buildBtnNameAra(btnConfig.numBtnsPerFuncRow[i],"Func"));
 			
-			tmpBntIsInst.add(buildDfltBtnFlagAra(btnConfig.numBtnsPerFuncRow[i]));
-			tmpBntWaitForProc.add(buildDfltBtnFlagAra(btnConfig.numBtnsPerFuncRow[i]));
+			tmpBtnIsInst.add(buildDfltBtnFlagAra(btnConfig.numBtnsPerFuncRow[i]));
+			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(btnConfig.numBtnsPerFuncRow[i]));
 			funcBtnIDXAra[i]=i+funcBtnIDXOffset;
 			tmpGuiBtnRowNames.add(s);
 		}
-		if(btnConfig.numDbgBtns > 0) {
-			tmpBtnNames.add(buildBtnNameAra(btnConfig.numDbgBtns,"Debug"));
-			tmpDfltBtnNames.add(buildBtnNameAra(btnConfig.numDbgBtns,"Debug"));
+		if(debugBtnRowIDX >= 0) {
+			tmpBtnNames.add(buildBtnNameAra(btnConfig.debugBtnNames.length,"Debug"));
+			tmpDfltBtnNames.add(buildBtnNameAra(btnConfig.debugBtnNames.length,"Debug"));
 			
-			tmpBntIsInst.add(buildDfltBtnFlagAra(btnConfig.numDbgBtns));
-			tmpBntWaitForProc.add(buildDfltBtnFlagAra(btnConfig.numDbgBtns));
+			tmpBtnIsInst.add(buildDfltBtnFlagAra(btnConfig.debugBtnNames.length));
+			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(btnConfig.debugBtnNames.length));
 			tmpGuiBtnRowNames.add("DEBUG");
 			btnDBGSelCmpIdx = tmpGuiBtnRowNames.size()-1;
-			funcBtnIDXAra[numFuncBtnArrayNames-1]=numFuncBtnArrayNames-1+funcBtnIDXOffset;
+			funcBtnIDXAra[debugBtnRowIDX]=debugBtnRowIDX+funcBtnIDXOffset;
 			_initBtnDBGSelCmp = true;
 		} else {	_initBtnDBGSelCmp = false;	}
 		
 		guiBtnRowNames = tmpGuiBtnRowNames.toArray(new String[0]);		
 		guiBtnNames = tmpBtnNames.toArray(new String[0][]);
 		defaultUIBtnNames = tmpDfltBtnNames.toArray(new String[0][]);
-		guiBtnInst = tmpBntIsInst.toArray(new Boolean[0][]);
-		guiBtnWaitForProc = tmpBntWaitForProc.toArray(new Boolean[0][]);
+		guiBtnInst = tmpBtnIsInst.toArray(new Boolean[0][]);
+		guiBtnWaitForProc = tmpBtnWaitForProc.toArray(new Boolean[0][]);
 		
 		guiBtnSt = new int[guiBtnRowNames.length][];
 		for(int i=0;i<guiBtnSt.length;++i) {guiBtnSt[i] = new int[guiBtnNames[i].length];}
+		
+		//set button names
+		for(int _type = 0;_type<btnConfig.funcBtnNames.length;++_type) {setAllFuncBtnNames(_type,btnConfig.funcBtnNames[_type]);}
+		//set debug button names from valus specified in btnConfig, if any provided
+		if (_initBtnDBGSelCmp) {
+			setAllFuncBtnNames(debugBtnRowIDX, btnConfig.debugBtnNames);
+		}
 		
 	}
 	

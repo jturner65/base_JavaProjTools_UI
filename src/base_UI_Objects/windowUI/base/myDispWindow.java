@@ -235,6 +235,8 @@ public abstract class myDispWindow {
 		if((!_isMenu)&&(uiUpdateData!=null)){buildUIUpdateStruct();}
 		//run instancing window-specific initialization
 		initMe();
+		//set any custom button names if necessary
+		setCustMenuBtnNames();
 		//pass all flag states to initialized structures in instancing window
 		setAllInitPrivFlagStates(_numPrivFlags);
 		setClosedBox();
@@ -1362,6 +1364,9 @@ public abstract class myDispWindow {
 	protected abstract void endAltKeyI();
 	protected abstract void endCntlKeyI();
 	
+	/**
+	 * Modify the application-wide ui button names based on context
+	 */
 	protected abstract void setCustMenuBtnNames();
 	
 	//ui init routines

@@ -547,14 +547,14 @@ public abstract class GUI_AppManager {
 	 * @param wIdx
 	 * @param fIdx
 	 * @param _funcRowNames array of names for each row of functional buttons 
-	 * @param _numBtnsPerFuncRow array of # of buttons per row of functional buttons - size must match # of entries in _funcRowNames array
-	 * @param _numDbgBtns # of debug buttons
+	 * @param _funcBtnNames array of arrays of names for each button
+	 * @param _dbgBtnNames array of names for each debug button. If array is empty then no debug buttons will be handled.
 	 * @param _inclWinNames include the names of all the instanced windows
 	 * @param _inclMseOvValues include a row for possible mouse over values
 	 * @return
 	 */
-	public final mySideBarMenu buildSideBarMenu(int wIdx, int fIdx, String[] _funcRowNames, int[] _numBtnsPerFuncRow, int _numDbgBtns, boolean _inclWinNames, boolean _inclMseOvValues){
-		mySidebarMenuBtnConfig sideBarConfig = new mySidebarMenuBtnConfig(_funcRowNames, _numBtnsPerFuncRow, _numDbgBtns, _inclWinNames, _inclMseOvValues);
+	public final mySideBarMenu buildSideBarMenu(int wIdx, int fIdx, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
+		mySidebarMenuBtnConfig sideBarConfig = new mySidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _inclWinNames, _inclMseOvValues);
 		return new mySideBarMenu(pa, this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx], sideBarConfig);		
 	}
 	
