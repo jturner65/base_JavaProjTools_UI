@@ -224,7 +224,7 @@ public abstract class GUI_AppManager {
 	protected float menuWidthMult = .15f;
 	protected float hideWinWidth;
 	protected float hideWinWidthMult = .03f;
-	protected float hidWinHeight;
+	protected float hideWinHeight;
 	protected float hideWinHeightMult = .05f;
 
 	protected String exeDir = Paths.get(".").toAbsolutePath().toString();
@@ -324,7 +324,7 @@ public abstract class GUI_AppManager {
 		
 		menuWidth = width * menuWidthMult;						//grid2D_X of menu region	
 		hideWinWidth = width * hideWinWidthMult;				//dims for hidden windows
-		hidWinHeight = height * hideWinHeightMult;
+		hideWinHeight = height * hideWinHeightMult;
 		//build canvas
 		canvas = new my3DCanvas(this, pa, width, height);	
 	}
