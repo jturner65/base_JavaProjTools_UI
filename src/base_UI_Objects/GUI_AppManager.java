@@ -30,7 +30,13 @@ public abstract class GUI_AppManager {
 	//rendering engine interface, providing expected methods.
 	public static IRenderInterface pa = null;
 	//3d interaction stuff and mouse tracking
-	protected my3DCanvas canvas;												
+	protected my3DCanvas canvas;		
+	
+	/**
+	 * runtime arguments key-value pair
+	 */
+	private TreeMap<String, Object> argsMap;
+	
 	/**
 	 * max ratio of width to height to use for application window initialization
 	 */
@@ -253,11 +259,15 @@ public abstract class GUI_AppManager {
 		now = Calendar.getInstance();
 		//absolute start time of application
 		appStartTimeMillis = now.getTimeInMillis();	
+		
+		//project arguments
+		argsMap = new TreeMap<String,Object>();
 	}//	
 		
 	//invoke the renderer main function
 	public static <T extends GUI_AppManager> void invokeProcessingMain(T _appMgr, String[] passedArgs) {
-		 my_procApplet._invokedMain(_appMgr, passedArgs);
+		_appMgr.setRuntimeArgsVals(passedArgs);
+		my_procApplet._invokedMain(_appMgr, passedArgs);
 	}
 	
 	/**
@@ -294,6 +304,23 @@ public abstract class GUI_AppManager {
 		}
 	}//getIdealAppWindowDims
 	
+	/**
+	 * Set various relevant runtime arguments in argsMap
+	 * @param _passedArgs command-line arguments
+	 */
+	protected abstract void setRuntimeArgsVals(String[] _passedArgs);
+	
+	protected void setArgsMap(TreeMap<String, Object> _argsMap) {
+		argsMap = _argsMap;
+	}
+	
+	/**
+	 * Returns a copy of the arguments used to launch the program (intended to be read-only)
+	 * @return
+	 */
+	public TreeMap<String, Object> getArgsMap(){
+		return new TreeMap<String, Object>(argsMap);
+	}
 	
 	/**
 	 * set level of smoothing to use for rendering (depending on rendering used, this may be ignored)
