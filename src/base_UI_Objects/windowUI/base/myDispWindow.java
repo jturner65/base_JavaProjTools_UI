@@ -14,9 +14,8 @@ import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.drawnObjs.myTrajManager;
 import base_UI_Objects.windowUI.uiObjs.myGUIObj;
 import base_UI_Objects.windowUI.uiObjs.myScrollBars;
-import base_Utils_Objects.io.MessageObject;
 import base_Utils_Objects.io.FileIOManager;
-
+import base_Utils_Objects.io.messaging.MessageObject;
 import processing.core.*;
 
 /**
@@ -34,7 +33,7 @@ public abstract class myDispWindow {
 	 */
 	protected MessageObject msgObj;
 
-	//enable drawing dbug info onto screen	
+	//enable drawing dbug info onto app canvas	
 	private ArrayList<String> DebugInfoAra;	
 	//count of draw cycles for consoleString decay
 	private int drawCount = 0;

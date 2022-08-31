@@ -9,7 +9,7 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 //import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
-import base_Utils_Objects.io.MessageObject;
+import base_Utils_Objects.io.messaging.MessageObject;
 
 
 /**
