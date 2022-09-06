@@ -5,7 +5,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_UI_Objects.windowUI.base.myDispWindow;
 
 //object on menu that can be modified via mouse input
 public class myGUIObj {
@@ -13,17 +12,17 @@ public class myGUIObj {
 	//static variables - put obj constructor counters here
 	private static int GUIObjID = 0;										//counter variable for gui objs
 
-	public IRenderInterface p;
-	public myDispWindow  win;			//mySideBarMenu owning window
-	public int winID;					//id in owning window
-	public myVector start, end;				//x,y coords of start corner, end corner (z==0) for clickable region
-	public String name, dispText;
+	private IRenderInterface p;
+	private int winID;							//id in owning window
+	private myVector start, end;				//x,y coords of start corner, end corner (z==0) for clickable region
+	public final String name;
+	private String dispText;
 
-	public double val;
+	private double val;
 	private double minVal, maxVal;
 	
 	private int[] uiFlags;
-	public static final int 
+	private static final int 
 			debugIDX 		= 0,
 			showIDX			= 1,				//show this component
 			//config flags
@@ -33,19 +32,18 @@ public class myGUIObj {
 			updateWhileModIDX = 5;
 	public static final int numFlags = 6;			
 	
-	public int[] _cVal;
-	public double modMult,						//multiplier for mod value
+	private int[] _cVal;
+	private double modMult,						//multiplier for mod value
 					xOff,yOff;						//Offset value
-	public float[] initDrawTrans, boxDrawTrans;
-	public int[] bxclr;
+	private float[] initDrawTrans, boxDrawTrans;
+	private int[] bxclr;
 	
 	private final float[] boxDim = new float[] {-2.5f, -2.5f, 5.0f, 5.0f};
 	
 	private String[] listVals = new String[] {"None"};
 	
-	public myGUIObj(IRenderInterface _p, myDispWindow _win, int _winID, String _name, myVector _start, myVector _end, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off) {
+	public myGUIObj(IRenderInterface _p, int _winID, String _name, myVector _start, myVector _end, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off) {
 		p=_p;
-		win = _win;
 		winID = _winID;
 		ID = GUIObjID++;
 		name = _name;
@@ -65,7 +63,10 @@ public class myGUIObj {
 		initDrawTrans= new float[]{(float)(start.x + xOff), (float)(start.y + yOff)};
 		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};		
 	}	
-	public myGUIObj(IRenderInterface _p, myDispWindow _win, int _winID, String _name,double _xst, double _yst, double _xend, double _yend, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _Off) {this(_p,_win, _winID,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _minMaxMod, _initVal, _flags, _Off);	}
+	public myGUIObj(IRenderInterface _p, int _winID, String _name,double _xst, double _yst, double _xend, double _yend, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _Off) {
+		this(_p,_winID,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _minMaxMod, _initVal, _flags, _Off);	
+	}
+	
 	public void initFlags(){			uiFlags = new int[1 + numFlags/32]; for(int i = 0; i<numFlags; ++i){setFlags(i,false);}	}
 	public boolean getFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiFlags[idx/32] & bitLoc) == bitLoc;}	
 	public void setFlags(int idx, boolean val){
@@ -82,6 +83,7 @@ public class myGUIObj {
 		}
 	}//setFlag	
 	
+	public String getName() {return name;}
 	public double getVal(){return val;}	
 	public double getMinVal() {return minVal;}
 	public double getMaxVal() {return maxVal;}
@@ -100,7 +102,12 @@ public class myGUIObj {
 		minVal = _newval;
 		val = forceBounds(val);		
 	}
-	
+	public void setNewMod(double _newval){	
+		if (_newval > (maxVal-minVal)) {
+			_newval = (maxVal-minVal);
+		}
+		modMult = _newval;	
+	}
 	public double setVal(double _newVal){
 		val = forceBounds(_newVal);		
 		return val;

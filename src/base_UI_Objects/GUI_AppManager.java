@@ -639,7 +639,8 @@ public abstract class GUI_AppManager {
 		}
 	}//handleFileCmd
 	
-	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val){handleMenuBtnSelCmp(row, funcOffset, col, val, true);}					//display specific windows - multi-select/ always on if sel
+	//display specific windows - multi-select/ always on if sel
+	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val){handleMenuBtnSelCmp(row, funcOffset, col, val, true);}					
 	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val, boolean callFlags){
 		if(!callFlags){			setMenuBtnState(row,col, val);		} //if called programmatically, not via ui action
 		else {					dispWinFrames[curFocusWin].clickSideMenuBtn(row, funcOffset, col);		}

@@ -576,7 +576,7 @@ public abstract class myDispWindow {
 		int numListObjs = 0;
 		for(int i =0; i< guiObjs.length; ++i){
 			if(guiBoolVals[i][1]) {++numListObjs;}
-			guiObjs[i] = new myGUIObj(pa, this,i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], off);
+			guiObjs[i] = new myGUIObj(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], off);
 			stClkY += yOff;
 		}
 		uiClkCoords[3] = stClkY;
@@ -1307,8 +1307,9 @@ public abstract class myDispWindow {
 		AppMgr.clearBtnState(curCstBtnRow,curCustBtn[curCstBtnRow], isSlowProc);
 		curCustBtn[curCstBtnRow] = -1;
 	}//resetButtonState	
+	
 	/**
-	 * set desired mouse over text to display from user choice on side bar menu
+	 * Handle selection of mouse-over-text option buttons in menu, specifying desired mouse over text to display in sim window
 	 * @param btn
 	 * @param val
 	 */
