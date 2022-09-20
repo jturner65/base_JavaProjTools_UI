@@ -344,7 +344,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void gl_endShape(boolean isClosed) {		
 		if(isClosed) {			endShape(CLOSE);		}
-		else {				endShape(CLOSE);		}
+		else {				endShape();		}
 	}
 	
 	@Override

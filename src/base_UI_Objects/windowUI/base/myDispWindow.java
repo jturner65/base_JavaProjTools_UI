@@ -1016,8 +1016,15 @@ public abstract class myDispWindow {
 		for (Integer idx : privBtnsToClear) {this.setPrivFlags(idx, false);}
 		privBtnsToClear.clear();
 	}//clearPrivBtns()
+		
+	/**
+	 * clear button next frame - to act like momentary switch.  will also clear UI object
+	 * @param idx
+	 */
+	protected final void clearBtnNextFrame(int idx) {addPrivBtnToClear(idx);		checkAndSetBoolValue(idx, false);}
+		
 	//add a button to clear after next draw
-	protected void addPrivBtnToClear(int idx) {
+	protected final void addPrivBtnToClear(int idx) {
 		privBtnsToClear.add(idx);
 	}
 	

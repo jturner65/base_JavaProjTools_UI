@@ -32,6 +32,10 @@ public abstract class GUI_AppManager {
 	//3d interaction stuff and mouse tracking
 	protected my3DCanvas canvas;		
 	
+	
+	//platform independent path separator
+	public final String dirSep = File.separator;
+	
 	/**
 	 * runtime arguments key-value pair
 	 */
