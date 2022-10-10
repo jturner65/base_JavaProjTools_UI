@@ -191,6 +191,9 @@ public abstract class myDispWindow {
 		reInitInfoStr();
 	}//ctor
 	
+	public myDispWindow(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, int _flagIdx) {
+		this(_p, _AppMgr,_AppMgr.winTitles[_winIdx], _flagIdx,_AppMgr.winFillClrs[_winIdx], _AppMgr.winStrkClrs[_winIdx], _AppMgr.winRectDimOpen[_winIdx], _AppMgr.winRectDimClose[_winIdx], _AppMgr.winDescr[_winIdx]);
+	}//ctor
 	/**
 	 * Must be called by inheriting class constructor!
 	 * @param _isMenu

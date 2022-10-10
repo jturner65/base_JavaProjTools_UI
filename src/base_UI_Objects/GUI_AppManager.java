@@ -586,7 +586,7 @@ public abstract class GUI_AppManager {
 	 */
 	public final mySideBarMenu buildSideBarMenu(int wIdx, int fIdx, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
 		mySidebarMenuBtnConfig sideBarConfig = new mySidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _inclWinNames, _inclMseOvValues);
-		return new mySideBarMenu(pa, this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx], sideBarConfig);		
+		return new mySideBarMenu(pa, this, wIdx, fIdx, sideBarConfig);		
 	}
 	
 	//set up initial colors for primary flags for display

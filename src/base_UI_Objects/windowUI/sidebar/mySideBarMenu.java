@@ -81,8 +81,8 @@ public class mySideBarMenu extends myDispWindow{
 //	public BaseBarMenu(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, boolean _canDrawTraj) {
 //		super(_p, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt, _canDrawTraj);
 
-	public mySideBarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, mySidebarMenuBtnConfig _c) {
-		super(_p, _AppMgr, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt);
+	public mySideBarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, int _flagIdx, mySidebarMenuBtnConfig _c) {
+		super(_p, _AppMgr, _winIdx, _flagIdx);
 		btnConfig=_c;
 		//these have to be set before setupGUIObjsAras is called from initThisWin
 		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
