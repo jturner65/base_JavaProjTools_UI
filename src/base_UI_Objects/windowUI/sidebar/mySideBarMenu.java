@@ -267,12 +267,6 @@ public class mySideBarMenu extends myDispWindow{
 		//initSideBarMenuBtns_Priv();
 		setBtnData();
 		
-		guiMinMaxModVals = new double [][]{	{}};//min max mod values		
-		guiStVals = new double[]{};
-		guiObjNames = new String[]{};			
-		//idx 0 is treat as int, idx 1 is obj has list vals, idx 2 is object gets sent to windows
-		guiBoolVals = new boolean [][]{{}};		
-		
 		minBtnClkY = (numMainFlagsToShow+3) * yOff + clkFlgsStY;										//start of buttons from under boolean flags
 		//all ui ojbects for all windows will follow this format and share the x[0] value
 		initUIClickCoords(rectDim[0] + xLblOffsetMult * rectDim[2],minBtnClkY + (guiBtnRowNames.length * 2.0f) * yOff,rectDim[0] + .99f * rectDim[2],0);//last val over-written by actual value in buildGuiObjs

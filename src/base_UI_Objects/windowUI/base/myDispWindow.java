@@ -12,6 +12,7 @@ import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.drawnObjs.myTrajManager;
+import base_UI_Objects.windowUI.uiObjs.GUIObj_Type;
 import base_UI_Objects.windowUI.uiObjs.myGUIObj;
 import base_UI_Objects.windowUI.uiObjs.myScrollBars;
 import base_Utils_Objects.io.FileIOManager;
@@ -113,12 +114,7 @@ public abstract class myDispWindow {
 	public float[] uiClkCoords;												//subregion of window where UI objects may be found
 	public static final double uiWidthMult = 9;							//multipler of size of label for width of UI components, when aligning components horizontally
 	
-	public double[][] guiMinMaxModVals;					//min max mod values
-	public double[] guiStVals;							//starting values
-	public String[] guiObjNames;							//display labels for UI components	
-	//idx 0 is treat as int, idx 1 is obj has list vals, idx 2 is object gets sent to windows
-	public boolean[][] guiBoolVals;						//array of UI flags for UI objects
-	
+	private double[] guiStVals;											//starting values for each UI object
 	//offset to bottom of custom window menu 
 	protected float custMenuOffset;
 	
@@ -205,36 +201,16 @@ public abstract class myDispWindow {
 			initUIBox();				//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
 		}
 		
-		// list box values - keyed by list obj IDX, value is string array of list obj values
-		TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
-		// ui object values - keyed by object idx, value is object array of describing values
-		TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
-		//  set up all gui objects for this window
-		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);				//setup all ui objects and record final y value in sidebar menu for UI Objects in this window		
-		if(!_isMenu){
-			//build ui objects - not used for sidebar menu
-			_buildGUIObjsFromMaps(tmpUIObjArray, tmpListObjVals);	
-		}
-		
 		privBtnsToClear = new ArrayList<Integer>();
-		//set up UI->to->Functionality class communication object - only make instance of object here, initialize it after private flags are build and initialized
-		uiUpdateData = buildUIDataUpdateObject(); 
 		
-		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
-		//  set up all window-specific boolean buttons for this window
-		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
-		_numPrivFlags = initAllPrivBtns(tmpBtnNamesArray);
-		//initialize all private buttons based on values put in arraylist
-		_initAllPrivButtons(tmpBtnNamesArray);
-		// init specific sim flags
-		initPrivFlags(_numPrivFlags);
-		// set instance-specific initial flags
-		int[] trueFlagIDXs= getFlagIDXsToInitToTrue();
-		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
-		if(null!=trueFlagIDXs) {initPassedPrivFlagsToTrue(trueFlagIDXs);}
+		// build all UI objects using specifications from instancing window
+		_initAllGUIObjs(_isMenu);
 		
+		//set up UI->to->Functionality class communication object - only make instance of object here, initialize it after private flags are built and initialized
+		uiUpdateData = buildUIDataUpdateObject();
 		// build instance-specific UI update communication object if exists
 		if((!_isMenu)&&(uiUpdateData!=null)){buildUIUpdateStruct();}
+		
 		//run instancing window-specific initialization
 		initMe();
 		//set any custom button names if necessary
@@ -250,10 +226,38 @@ public abstract class myDispWindow {
 	
 	protected abstract base_UpdateFromUIData buildUIDataUpdateObject();
 	
+	private void _initAllGUIObjs(boolean _isMenu) {
+		// list box values - keyed by list obj IDX, value is string array of list obj values
+		TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
+		// ui object values - keyed by object idx, value is object array of describing values
+		TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
+		//  set up all gui objects for this window
+		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);				//setup all ui objects and record final y value in sidebar menu for UI Objects in this window		
+		if(!_isMenu){
+			//build ui objects - not used for sidebar menu
+			_buildGUIObjsFromMaps(tmpUIObjArray, tmpListObjVals);	
+		}	
+		
+		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
+		//  set up all window-specific boolean buttons for this window
+		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
+		_numPrivFlags = initAllPrivBtns(tmpBtnNamesArray);
+		//initialize all private buttons based on values put in arraylist
+		_initAllPrivButtons(tmpBtnNamesArray);
+		// init specific sim flags
+		initPrivFlags(_numPrivFlags);
+		// set instance-specific initial flags
+		int[] trueFlagIDXs= getFlagIDXsToInitToTrue();
+		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
+		if(null!=trueFlagIDXs) {initPassedPrivFlagsToTrue(trueFlagIDXs);}
+
+		
+	}//_initAllGUIObjs
+	
 	/**
 	 * has to be called after UI structs are built and set
 	 */
-	protected void buildUIUpdateStruct() {		
+	private void buildUIUpdateStruct() {		
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();          
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>(); 
@@ -560,16 +564,24 @@ public abstract class myDispWindow {
 	 */
 	private void _buildGUIObjsFromMaps(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
 		int numGUIObjs = tmpUIObjArray.size();
-		guiMinMaxModVals = new double[numGUIObjs][3];
-		guiStVals = new double[numGUIObjs];
-		guiObjNames = new String[numGUIObjs];
-		guiBoolVals = new boolean[numGUIObjs][4];
+		
+		double[][] guiMinMaxModVals = new double[numGUIObjs][3];			//min max mod values
+		guiStVals = new double[numGUIObjs];						//starting values
+		String[] guiObjNames = new String[numGUIObjs];						//display labels for UI components	
+		//idx 0 is treat as int, idx 1 is obj has list vals, idx 2 is object gets sent to windows
+		boolean[][] guiBoolVals = new boolean[numGUIObjs][4];				//array of UI flags for UI objects
+				
+		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
+		
+		guiObjTypes = new GUIObj_Type[numGUIObjs];
 		uiVals = new double[numGUIObjs];// raw values
 		for (int i = 0; i < numGUIObjs; ++i) {
 			guiMinMaxModVals[i] = (double[]) tmpUIObjArray.get(i)[0];
 			guiStVals[i] = (Double)(tmpUIObjArray.get(i)[1]);
 			guiObjNames[i] = (String) tmpUIObjArray.get(i)[2];
 			guiBoolVals[i] = (boolean[]) tmpUIObjArray.get(i)[3];
+			guiObjTypes[i] = (guiBoolVals[i][1]) ? GUIObj_Type.ListVal : ((guiBoolVals[i][1]) ? GUIObj_Type.IntVal : GUIObj_Type.FloatVal);
+
 			uiVals[i] = guiStVals[i];
 		}
 		// since horizontal row of UI comps, uiClkCoords[2] will be set in buildGUIObjs
@@ -579,7 +591,7 @@ public abstract class myDispWindow {
 		int numListObjs = 0;
 		for(int i =0; i< guiObjs.length; ++i){
 			if(guiBoolVals[i][1]) {++numListObjs;}
-			guiObjs[i] = new myGUIObj(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], off);
+			guiObjs[i] = new myGUIObj(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i],guiObjTypes[i] , guiBoolVals[i], off);
 			stClkY += yOff;
 		}
 		uiClkCoords[3] = stClkY;
@@ -590,23 +602,7 @@ public abstract class myDispWindow {
 		for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
 	}//_buildGUIObjsFromMaps
 	
-	//this returns a formatted string holding the UI data
-	protected String getStrFromUIObj(int idx){
-		StringBuilder sb = new StringBuilder(400);
-		sb.append("ui_idx: ");
-		sb.append(idx);
-		sb.append(" |name: ");
-		sb.append(guiObjs[idx].name);
-		sb.append(" |value: ");
-		sb.append(guiObjs[idx].getVal());
-		sb.append(" |flags: ");
-		for(int i =0;i<myGUIObj.numFlags; ++i){
-			sb.append(" ");
-			sb.append((guiObjs[idx].getFlags(i) ? "true" : "false"));
-		}
-		return sb.toString().trim();		
-		
-	}//getStrFromUIObj
+	public final void resetUIVals(){for(int i=0; i<guiStVals.length;++i){				guiObjs[i].setVal(guiStVals[i]);		}}	
 		
 	//this sets the value of a gui object from the data held in a string
 	protected void setValFromFileStr(String str){
@@ -614,12 +610,7 @@ public abstract class myDispWindow {
 		//window has no data values to load
 		if(toks.length==0){return;}
 		int uiIdx = Integer.parseInt(toks[0].split("\\s")[1].trim());
-		//String name = toks[3];
-		double uiVal = Double.parseDouble(toks[2].split("\\s")[1].trim());	
-		guiObjs[uiIdx].setVal(uiVal);
-		for(int i =0;i<myGUIObj.numFlags; ++i){
-			guiObjs[uiIdx].setFlags(i, Boolean.parseBoolean(toks[3].split("\\s")[i].trim()));
-		}	
+		guiObjs[uiIdx].setValFromStrTokens(toks);
 		setUIWinVals(uiIdx);//update window's values with UI construct's values
 	}//setValFromFileStr
 
@@ -663,14 +654,14 @@ public abstract class myDispWindow {
 			if(vals[stIdx[0]].trim() != ""){	setValFromFileStr(vals[stIdx[0]]);	}
 			++stIdx[0];
 		}
-		++stIdx[0];		
-		
+		++stIdx[0];				
 	}//hndlFileLoad_GUI
+	
 	//manage saving this window's UI component values.  if needed call from child window's implementation
 	protected ArrayList<String> hndlFileSave_GUI(){
 		ArrayList<String> res = new ArrayList<String>();
 		res.add(name);
-		for(int i=0;i<guiObjs.length;++i){	res.add(getStrFromUIObj(i));}		
+		for(int i=0;i<guiObjs.length;++i){	res.add(guiObjs[i].getStrFromUIObj(i));}		
 		//bound for custom components
 		res.add(name + "_custUIComps");
 		//add blank space

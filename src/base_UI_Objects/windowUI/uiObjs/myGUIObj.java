@@ -21,6 +21,8 @@ public class myGUIObj {
 	private double val;
 	private double minVal, maxVal;
 	
+	private final GUIObj_Type objType;
+	
 	private int[] uiFlags;
 	private static final int 
 			debugIDX 		= 0,
@@ -42,7 +44,7 @@ public class myGUIObj {
 	
 	private String[] listVals = new String[] {"None"};
 	
-	public myGUIObj(IRenderInterface _p, int _winID, String _name, myVector _start, myVector _end, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off) {
+	public myGUIObj(IRenderInterface _p, int _winID, String _name, myVector _start, myVector _end, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
 		p=_p;
 		winID = _winID;
 		ID = GUIObjID++;
@@ -54,22 +56,25 @@ public class myGUIObj {
 		start = new myVector(_start); end = new myVector(_end);
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
+		objType = _objType;
 		initFlags();
 		int numToInit = (_flags.length < numFlags-2 ? _flags.length : numFlags-2);
 		for(int i =0; i<numToInit;++i){ 	setFlags(i+2,_flags[i]);	}
+		
+		
 		_cVal = new int[] {0,0,0};
 		bxclr = new int[]{ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),255};
 		
 		initDrawTrans= new float[]{(float)(start.x + xOff), (float)(start.y + yOff)};
 		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};		
 	}	
-	public myGUIObj(IRenderInterface _p, int _winID, String _name,double _xst, double _yst, double _xend, double _yend, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _Off) {
-		this(_p,_winID,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _minMaxMod, _initVal, _flags, _Off);	
+	public myGUIObj(IRenderInterface _p, int _winID, String _name,double _xst, double _yst, double _xend, double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _Off) {
+		this(_p,_winID,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _minMaxMod, _initVal, _objType, _flags, _Off);	
 	}
 	
 	public void initFlags(){			uiFlags = new int[1 + numFlags/32]; for(int i = 0; i<numFlags; ++i){setFlags(i,false);}	}
-	public boolean getFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiFlags[idx/32] & bitLoc) == bitLoc;}	
-	public void setFlags(int idx, boolean val){
+	private boolean getFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiFlags[idx/32] & bitLoc) == bitLoc;}	
+	private void setFlags(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		uiFlags[flIDX] = (val ?  uiFlags[flIDX] | mask : uiFlags[flIDX] & ~mask);
 		switch (idx) {//special actions for each flag
@@ -87,6 +92,7 @@ public class myGUIObj {
 	public double getVal(){return val;}	
 	public double getMinVal() {return minVal;}
 	public double getMaxVal() {return maxVal;}
+	public double getModStep() {return modMult;}	
 	
 	//Make sure val adheres to specified bounds
 	private double forceBounds(double _val) {
@@ -114,7 +120,7 @@ public class myGUIObj {
 	}	
 	public double modVal(double mod){
 		val += (mod*modMult);
-		if(getFlags(treatAsIntIDX)){val = Math.round(val);}
+		if(objType == GUIObj_Type.IntVal){val = Math.round(val);}
 		val = forceBounds(val);
 		return val;		
 	}
@@ -125,6 +131,43 @@ public class myGUIObj {
 	
 	public final int valAsInt(){return (int)(val) ;}
 	public final float valAsFloat(){return (float)( val);}
+	
+	/**
+	 * Set this UI object's value based on string tokens from file
+	 * @param toks
+	 */
+	public final void setValFromStrTokens(String[] toks) {
+		//String name = toks[1];
+		//objtype == toks[2]
+		double uiVal = Double.parseDouble(toks[3].split("\\s")[1].trim());	
+		setVal(uiVal);
+		for(int i =0;i<myGUIObj.numFlags; ++i){
+			setFlags(i, Boolean.parseBoolean(toks[4].split("\\s")[i].trim()));
+		}	
+	}//setValFromStrTokens
+	
+	/**
+	 * Builds a string to save the value from this UI Object
+	 * @param idx
+	 * @return
+	 */
+	public String getStrFromUIObj(int idx){
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("ui_idx: ");
+		sb.append(idx);
+		sb.append(" |name: ");
+		sb.append(name);
+		sb.append(" |type: ");
+		sb.append(objType.getVal());
+		sb.append(" |value: ");
+		sb.append(getVal());
+		sb.append(" |flags: ");
+		for(int i =0;i<myGUIObj.numFlags; ++i){
+			sb.append(getFlags(i) ? " true" : " false");
+		}
+		return sb.toString().trim();		
+		
+	}//getStrFromUIObj
 	
 	public final boolean checkIn(float _clkx, float _clky){return (_clkx > start.x)&&(_clkx < end.x)&&(_clky > start.y)&&(_clky < end.y);}
 	public final void draw(){
@@ -138,9 +181,9 @@ public class myGUIObj {
 				p.translate(boxDrawTrans[0],boxDrawTrans[1],0);
 				p.drawRect(boxDim);
 			p.popMatState();
-			if(!getFlags(treatAsIntIDX)){		p.showText(dispText + String.format("%.5f",val), 0,0);}
+			if(objType != GUIObj_Type.IntVal){		p.showText(dispText + String.format("%.5f",val), 0,0);}
 			else{
-				//String resStr = getFlags(hasListValsIDX) ?  win.getUIListValStr(winID, (int)val) : String.format("%.0f",val);
+				//String resStr = (objType == GUIObj_Type.ListVal) ?  win.getUIListValStr(winID, (int)val) : String.format("%.0f",val);
 				p.showText(dispText + getListValStr((int)val), 0,0);
 			}
 		p.popMatState();
@@ -151,7 +194,7 @@ public class myGUIObj {
 	 * @return
 	 */
 	public final String getListValStr(int idx) {
-		if(getFlags(hasListValsIDX)) {	return listVals[(idx % listVals.length)];} 
+		if(objType == GUIObj_Type.ListVal) {	return listVals[(idx % listVals.length)];} 
 		else {							return String.format("%.0f",val);		}
 	}
 	/**
@@ -161,7 +204,7 @@ public class myGUIObj {
 	 */
 	public final int setListVals(String[] _vals) {
 		if((null == _vals) || (_vals.length == 0)) {			
-			String dfltEntry = (getFlags(hasListValsIDX)) ? "List Not Initialized!" : "None";
+			String dfltEntry = (objType == GUIObj_Type.ListVal) ? "List Not Initialized!" : "None";
 			listVals = new String[] {dfltEntry};			
 		} 
 		else {
@@ -193,6 +236,8 @@ public class myGUIObj {
 		if(idx >=0){		return new int[] {(int) setVal(idx), 0};}
 		return new int[] {idx, 1};
 	}
+	
+	public final GUIObj_Type getObjType() {return objType;}
 	
 	public final int getIDXofStringInArray(String tok) {for(int i=0;i<listVals.length;++i) {if(listVals[i].trim().equals(tok.trim())) {return i;}}return -1;}
 	
