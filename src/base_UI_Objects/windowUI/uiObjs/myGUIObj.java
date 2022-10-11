@@ -13,7 +13,7 @@ public class myGUIObj {
 	private static int GUIObjID = 0;										//counter variable for gui objs
 
 	private IRenderInterface p;
-	private int winID;							//id in owning window
+	private final int objID;							//id in owning window
 	private myVector start, end;				//x,y coords of start corner, end corner (z==0) for clickable region
 	public final String name;
 	private String dispText;
@@ -28,11 +28,9 @@ public class myGUIObj {
 			debugIDX 		= 0,
 			showIDX			= 1,				//show this component
 			//config flags
-			treatAsIntIDX	= 2,
-			hasListValsIDX	= 3,
-			usedByWinsIDX	= 4, 
-			updateWhileModIDX = 5;
-	public static final int numFlags = 6;			
+			usedByWinsIDX	= 2, 
+			updateWhileModIDX = 3;
+	public static final int numFlags = 4;			
 	
 	private int[] _cVal;
 	private double modMult,						//multiplier for mod value
@@ -44,9 +42,9 @@ public class myGUIObj {
 	
 	private String[] listVals = new String[] {"None"};
 	
-	public myGUIObj(IRenderInterface _p, int _winID, String _name, myVector _start, myVector _end, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
+	public myGUIObj(IRenderInterface _p, int _objID, String _name, myVector _start, myVector _end, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
 		p=_p;
-		winID = _winID;
+		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
 		xOff = _off[0];
@@ -59,8 +57,7 @@ public class myGUIObj {
 		objType = _objType;
 		initFlags();
 		int numToInit = (_flags.length < numFlags-2 ? _flags.length : numFlags-2);
-		for(int i =0; i<numToInit;++i){ 	setFlags(i+2,_flags[i]);	}
-		
+		for(int i =0; i<numToInit;++i){ 	setFlags(i+2,_flags[i]);	}	
 		
 		_cVal = new int[] {0,0,0};
 		bxclr = new int[]{ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),255};
@@ -68,8 +65,8 @@ public class myGUIObj {
 		initDrawTrans= new float[]{(float)(start.x + xOff), (float)(start.y + yOff)};
 		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};		
 	}	
-	public myGUIObj(IRenderInterface _p, int _winID, String _name,double _xst, double _yst, double _xend, double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _Off) {
-		this(_p,_winID,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _minMaxMod, _initVal, _objType, _flags, _Off);	
+	public myGUIObj(IRenderInterface _p, int _objID, String _name,double _xst, double _yst, double _xend, double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _Off) {
+		this(_p,_objID,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _minMaxMod, _initVal, _objType, _flags, _Off);	
 	}
 	
 	public void initFlags(){			uiFlags = new int[1 + numFlags/32]; for(int i = 0; i<numFlags; ++i){setFlags(i,false);}	}
@@ -80,8 +77,6 @@ public class myGUIObj {
 		switch (idx) {//special actions for each flag
 		case debugIDX 			:{break;}
 		case showIDX			:{break;}	//show this component
-		case treatAsIntIDX		:{break;}
-		case hasListValsIDX		:{break;}
 		case usedByWinsIDX		:{break;}
 		case updateWhileModIDX	:{break;}
 		
@@ -181,9 +176,10 @@ public class myGUIObj {
 				p.translate(boxDrawTrans[0],boxDrawTrans[1],0);
 				p.drawRect(boxDim);
 			p.popMatState();
-			if(objType != GUIObj_Type.IntVal){		p.showText(dispText + String.format("%.5f",val), 0,0);}
+			if(objType == GUIObj_Type.FloatVal){		p.showText(dispText + String.format("%.5f",val), 0,0);}
 			else{
-				//String resStr = (objType == GUIObj_Type.ListVal) ?  win.getUIListValStr(winID, (int)val) : String.format("%.0f",val);
+				//disp ints and list values
+				//String resStr = (objType == GUIObj_Type.ListVal) ?  win.getUIListValStr(objID, (int)val) : String.format("%.0f",val);
 				p.showText(dispText + getListValStr((int)val), 0,0);
 			}
 		p.popMatState();
@@ -243,8 +239,8 @@ public class myGUIObj {
 	
 	public String[] getStrData(){
 		ArrayList<String> tmpRes = new ArrayList<String>();
-		tmpRes.add("ID : "+ ID+" Win ID : " + winID  + " Name : "+ name + " distText : " + dispText);
-		tmpRes.add("Start loc : "+ start + " End loc : "+ end + " Treat as Int  : " + uiFlags[treatAsIntIDX]);
+		tmpRes.add("ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " distText : " + dispText);
+		tmpRes.add("Start loc : "+ start + " End loc : "+ end + " Treat as Int  : " + (objType == GUIObj_Type.IntVal));
 		tmpRes.add("Value : "+ val +" Max Val : "+ maxVal + " Min Val : " + minVal+ " Mod multiplier : " + modMult);
 		return tmpRes.toArray(new String[0]);
 	}

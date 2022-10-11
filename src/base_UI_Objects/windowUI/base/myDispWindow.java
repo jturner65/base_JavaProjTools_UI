@@ -559,7 +559,8 @@ public abstract class myDispWindow {
 	 *           the first element double array of min/max/mod values                                                   
 	 *           the 2nd element is starting value                                                                      
 	 *           the 3rd elem is label for object                                                                       
-	 *           the 4th element is boolean array of {treat as int, has list values, value is sent to owning window, value is sent on any modifications (while being modified, not just on release)}    
+	 *           the 4th element is object type (GUIObj_Type enum)
+	 *           the 5th element is boolean array of {value is sent to owning window, value is sent on any modifications (while being modified, not just on release)}    
 	 * @param tmpListObjVals
 	 */
 	private void _buildGUIObjsFromMaps(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
@@ -569,19 +570,19 @@ public abstract class myDispWindow {
 		guiStVals = new double[numGUIObjs];						//starting values
 		String[] guiObjNames = new String[numGUIObjs];						//display labels for UI components	
 		//idx 0 is treat as int, idx 1 is obj has list vals, idx 2 is object gets sent to windows
-		boolean[][] guiBoolVals = new boolean[numGUIObjs][4];				//array of UI flags for UI objects
+		boolean[][] guiBoolVals = new boolean[numGUIObjs][5];				//array of UI flags for UI objects
 				
 		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
 		
-		guiObjTypes = new GUIObj_Type[numGUIObjs];
 		uiVals = new double[numGUIObjs];// raw values
 		for (int i = 0; i < numGUIObjs; ++i) {
-			guiMinMaxModVals[i] = (double[]) tmpUIObjArray.get(i)[0];
-			guiStVals[i] = (Double)(tmpUIObjArray.get(i)[1]);
-			guiObjNames[i] = (String) tmpUIObjArray.get(i)[2];
-			guiBoolVals[i] = (boolean[]) tmpUIObjArray.get(i)[3];
-			guiObjTypes[i] = (guiBoolVals[i][1]) ? GUIObj_Type.ListVal : ((guiBoolVals[i][1]) ? GUIObj_Type.IntVal : GUIObj_Type.FloatVal);
-
+			Object[] obj = tmpUIObjArray.get(i);
+			guiMinMaxModVals[i] = (double[]) obj[0];
+			guiStVals[i] = (Double)(obj[1]);
+			guiObjNames[i] = (String)obj[2];
+			guiObjTypes[i] = (GUIObj_Type)obj[3];
+			System.out.println("Idx :"+i+" obj type :" + guiObjTypes[i]);
+			guiBoolVals[i] = (boolean[])obj[4];
 			uiVals[i] = guiStVals[i];
 		}
 		// since horizontal row of UI comps, uiClkCoords[2] will be set in buildGUIObjs
@@ -590,7 +591,7 @@ public abstract class myDispWindow {
 		float stClkY = uiClkCoords[1];
 		int numListObjs = 0;
 		for(int i =0; i< guiObjs.length; ++i){
-			if(guiBoolVals[i][1]) {++numListObjs;}
+			if(guiObjTypes[i] == GUIObj_Type.ListVal) {++numListObjs;}
 			guiObjs[i] = new myGUIObj(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i],guiObjTypes[i] , guiBoolVals[i], off);
 			stClkY += yOff;
 		}
