@@ -1,5 +1,6 @@
 package base_UI_Objects.windowUI.base;
 
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -50,9 +51,9 @@ public abstract class base_UpdateFromUIData {
 	}
 	
 	public final void setAllVals(TreeMap<Integer, Integer> _intValues, TreeMap<Integer, Float> _floatValues,TreeMap<Integer, Boolean> _boolValues) {
-		if(_intValues!=null) {for(Integer key : _intValues.keySet()) {intValues.put(key, _intValues.get(key));}}
-		if(_floatValues!=null) {for(Integer key : _floatValues.keySet()) {floatValues.put(key, _floatValues.get(key));}}
-		if(_boolValues!=null) {for(Integer key : _boolValues.keySet()) {boolValues.put(key, _boolValues.get(key));}}
+		if(_intValues!=null) {for (Map.Entry<Integer, Integer> entry : _intValues.entrySet()) {intValues.put(entry.getKey(), entry.getValue());}}
+		if(_floatValues!=null) {for (Map.Entry<Integer, Float> entry : _floatValues.entrySet()) {floatValues.put(entry.getKey(), entry.getValue());}}
+		if(_boolValues!=null) {for (Map.Entry<Integer, Boolean> entry : _boolValues.entrySet()) {boolValues.put(entry.getKey(), entry.getValue());}}
 	}
 	
 	public final boolean compareIntValue(Integer idx, Integer value) {	return (intValues.get(idx) != null) && (intValues.get(idx).equals(value));	}
@@ -85,14 +86,46 @@ public abstract class base_UpdateFromUIData {
 	 */	
 	public final boolean checkAndSetFloatVal(int idx, float value) {if(!compareFloatValue(idx, value)) {floatValues.put(idx,value);return true;}return false;}
 	
-	
-	
 	/**
-	 * accessors
+	 * Getters
 	 */
-	public final boolean getFlags(int idx) {return boolValues.get(idx);}
+	public final boolean getFlag(int idx) {return boolValues.get(idx);}
 	public final int getIntValue(Integer idx, Integer value){	return intValues.get(idx);  }
 	public final float getFloatValue(Integer idx, Float value){	return floatValues.get(idx);  }
 	
-
+	/**
+	 * Updaters - these will update the owning window's data values as well
+	 */
+	public final void updateBoolValuee(int idx, boolean value) {
+		setBoolValue(idx, value);
+		win.updateBoolValFromExecCode(idx, value);
+	}
+	
+	public final void updateIntValue(int idx, Integer value) {
+		setIntValue(idx,value);
+		win.updateIntValFromExecCode(idx, value);
+	}
+	
+	public final void updateFloatValue(int idx, Float value) {
+		setFloatValue(idx,value);
+		win.updateFloatValFromExecCode(idx, value);
+	}
+	
+	
+	@Override
+	public String toString() {
+		String res = "Owning Window Name: "+win.name+"\n\tInt Values: (" +intValues.size() +")\n";
+		for (Map.Entry<Integer, Integer> entry : intValues.entrySet()) {
+			res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
+		}
+		res+="Float Values: (" +floatValues.size() +")\n";
+		for (Map.Entry<Integer, Float> entry : floatValues.entrySet()) {
+			res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
+		}
+		res+="Boolean Values: (" +boolValues.size() +")\n";
+		for (Map.Entry<Integer, Boolean> entry : boolValues.entrySet()) {
+			res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
+		}		
+		return res;
+	}
 }//class base_UpdateFromUIData

@@ -209,8 +209,6 @@ public class mySideBarMenu extends myDispWindow{
 		return tmpAra1;
 	}
 	
-	
-	
 	@Override
 	//initialize all private-flag based UI buttons here - called by base class
 	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray){
@@ -222,11 +220,11 @@ public class mySideBarMenu extends myDispWindow{
 		setFlags(closeable, false);
 	}	
 	
+	//window UI object not used for sidebar menu
 	@Override
-	protected base_UpdateFromUIData buildUIDataUpdateObject() {//window UI object not used for sidebar menu
-		return null;
-	}
-
+	protected base_UpdateFromUIData buildUIDataUpdateObject() {return null;}
+	@Override
+	protected final void updateCalcObjUIVals() {}
 
 	@Override
 	protected int[] getFlagIDXsToInitToTrue() {

@@ -260,7 +260,8 @@ public abstract class myDispWindow {
 	}//_initAllGUIObjs
 	
 	/**
-	 * has to be called after UI structs are built and set
+	 * This has to be called after UI structs are built and set - this populates the 
+	 * structure that serves to communicate UI data to consumer
 	 */
 	private void buildUIUpdateStruct() {		
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
@@ -277,16 +278,9 @@ public abstract class myDispWindow {
 		//buildUIUpdateStruct_Indiv(intValues, floatValues, boolValues); 
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}
-//	/**
-//	 * Add the UI int, float and boolean values that are implementation-specific in inheriting window.
-//	 * @param intValues
-//	 * @param floatValues
-//	 * @param boolValues
-//	 */
-//	protected abstract void buildUIUpdateStruct_Indiv(TreeMap<Integer, Integer> intValues, TreeMap<Integer, Float> floatValues, TreeMap<Integer, Boolean> boolValues);
-	
+
 	/**
-	 * this will check if value is different than previous value, and if so will change it
+	 * This will check if value is different than previous value, and if so will change it
 	 * @param idx
 	 * @param val
 	 * @return whether new value was set
@@ -296,13 +290,18 @@ public abstract class myDispWindow {
 	protected final boolean checkAndSetFloatVal(int idx, float value) {return uiUpdateData.checkAndSetFloatVal(idx, value);}
 	
 	/**
-	 * these are called externally from execution code object to synchronize ui values that might change during execution
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
 	public final void updateBoolValFromExecCode(int idx, boolean value) {setPrivFlags(idx, value);uiUpdateData.setBoolValue(idx, value);}
 	public final void updateIntValFromExecCode(int idx, int value) {guiObjs[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
 	public final void updateFloatValFromExecCode(int idx, float value) {guiObjs[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
+	
+	/**
+	 * This function is called on ui value update, to pass new ui values on to window-owned consumers
+	 */
+	protected abstract void updateCalcObjUIVals();
 	
 	//final initialization stuff, after window made, but necessary to make sure window displays correctly
 	public void finalInit(boolean _canDrawTraj, boolean thisIs3D, boolean viewCanChange, myPoint _ctr, myVector _baseFcs) {
