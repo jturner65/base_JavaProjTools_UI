@@ -114,7 +114,12 @@ public abstract class myDispWindow {
 	public float[] uiClkCoords;												//subregion of window where UI objects may be found
 	public static final double uiWidthMult = 9;							//multipler of size of label for width of UI components, when aligning components horizontally
 	
-	private double[] guiStVals;											//starting values for each UI object
+	//starting values for each UI object
+	private double[] guiStVals;											
+	//array lists of idxs for integer/list-based and float-based UI objects
+	private ArrayList<Integer> guiFloatValIDXs, guiIntValIDXs;
+	
+	
 	//offset to bottom of custom window menu 
 	protected float custMenuOffset;
 	
@@ -258,19 +263,27 @@ public abstract class myDispWindow {
 	 * has to be called after UI structs are built and set
 	 */
 	private void buildUIUpdateStruct() {		
-		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();          
+		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
+		for (Integer idx : guiIntValIDXs) {
+			intValues.put(idx, (int) guiObjs[idx].getVal()); 
+		}		
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
-		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>(); 
-		buildUIUpdateStruct_Indiv(intValues, floatValues, boolValues); 
+		for (Integer idx : guiFloatValIDXs) {
+			floatValues.put(idx, (float)guiObjs[idx].getVal()); 
+		}
+		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
+		for(Integer i=0;i<this._numPrivFlags;++i) {	boolValues.put(i, getPrivFlags(i));}	
+		
+		//buildUIUpdateStruct_Indiv(intValues, floatValues, boolValues); 
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}
-	/**
-	 * Add the UI int, float and boolean values that are implementation-specific in inheriting window.
-	 * @param intValues
-	 * @param floatValues
-	 * @param boolValues
-	 */
-	protected abstract void buildUIUpdateStruct_Indiv(TreeMap<Integer, Integer> intValues, TreeMap<Integer, Float> floatValues, TreeMap<Integer, Boolean> boolValues);
+//	/**
+//	 * Add the UI int, float and boolean values that are implementation-specific in inheriting window.
+//	 * @param intValues
+//	 * @param floatValues
+//	 * @param boolValues
+//	 */
+//	protected abstract void buildUIUpdateStruct_Indiv(TreeMap<Integer, Integer> intValues, TreeMap<Integer, Float> floatValues, TreeMap<Integer, Boolean> boolValues);
 	
 	/**
 	 * this will check if value is different than previous value, and if so will change it
@@ -574,6 +587,9 @@ public abstract class myDispWindow {
 				
 		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
 		
+		guiFloatValIDXs= new ArrayList<Integer>();
+		guiIntValIDXs = new ArrayList<Integer>();
+		
 		uiVals = new double[numGUIObjs];// raw values
 		for (int i = 0; i < numGUIObjs; ++i) {
 			Object[] obj = tmpUIObjArray.get(i);
@@ -581,7 +597,12 @@ public abstract class myDispWindow {
 			guiStVals[i] = (Double)(obj[1]);
 			guiObjNames[i] = (String)obj[2];
 			guiObjTypes[i] = (GUIObj_Type)obj[3];
-			System.out.println("Idx :"+i+" obj type :" + guiObjTypes[i]);
+			if(guiObjTypes[i] == GUIObj_Type.FloatVal) {
+				guiFloatValIDXs.add(i);
+			} else {
+				//int and list values are considered ints
+				guiIntValIDXs.add(i);
+			}
 			guiBoolVals[i] = (boolean[])obj[4];
 			uiVals[i] = guiStVals[i];
 		}
@@ -603,7 +624,16 @@ public abstract class myDispWindow {
 		for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
 	}//_buildGUIObjsFromMaps
 	
-	public final void resetUIVals(){for(int i=0; i<guiStVals.length;++i){				guiObjs[i].setVal(guiStVals[i]);		}}	
+	/**
+	 * Reset all values to be initial values. 
+	 * @param forceVals If true, this will bypass setUIWinVals, if false, will call set vals, to propagate changes to window vars 
+	 */
+	public final void resetUIVals(boolean forceVals){
+		for(int i=0; i<guiStVals.length;++i){				guiObjs[i].setVal(guiStVals[i]);		}
+		if (!forceVals) {
+			setAllUIWinVals();
+		}
+	}//resetUIVals
 		
 	//this sets the value of a gui object from the data held in a string
 	protected void setValFromFileStr(String str){
@@ -1179,7 +1209,6 @@ public abstract class myDispWindow {
 	/**
 	 * set all window values for UI objects
 	 */
-	//protected void setAllUIWinVals() {for(int i=0;i<guiObjs.length;++i){if(guiObjs[i].getFlags(myGUIObj.usedByWinsIDX)){setUIWinVals(i);}}}
 	protected void setAllUIWinVals() {for(int i=0;i<guiObjs.length;++i){if(guiObjs[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
 	//set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	private void setUIObjValFromClickAlone(int j) {

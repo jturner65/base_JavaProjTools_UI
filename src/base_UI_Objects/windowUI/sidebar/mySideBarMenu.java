@@ -227,9 +227,7 @@ public class mySideBarMenu extends myDispWindow{
 		return null;
 	}
 
-	@Override
-	protected void buildUIUpdateStruct_Indiv(TreeMap<Integer, Integer> intValues, TreeMap<Integer, Float> floatValues,TreeMap<Integer, Boolean> boolValues) {
-	}
+
 	@Override
 	protected int[] getFlagIDXsToInitToTrue() {
 		ArrayList<Integer> resAra = new ArrayList<Integer>();
