@@ -1,7 +1,9 @@
-package base_UI_Objects.windowUI.base;
+package base_UI_Objects.windowUI.baseUI;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
+
+import base_UI_Objects.windowUI.base.myDispWindow;
 
 /**
  * structure holding UI-derived/modified data used to update execution code
@@ -17,18 +19,18 @@ public abstract class base_UpdateFromUIData {
 	/**
 	 * map to hold UI-driven int values, using the UI object idx's as keys
 	 */
-	protected TreeMap<Integer, Integer> intValues;
+	protected Map<Integer, Integer> intValues;
 	/**
 	 * map to hold UI-driven float values, using the UI object idx's as keys
 	 */
-	protected TreeMap<Integer, Float> floatValues;
+	protected Map<Integer, Float> floatValues;
 	/**
 	 * map to hold UI-driven boolean values, using the UI object flags' idx's as keys 
 	 */
-	protected TreeMap<Integer, Boolean> boolValues;
-
+	protected Map<Integer, Boolean> boolValues;	
+	
 	public base_UpdateFromUIData(myDispWindow _win) { win=_win;	initMaps();}
-	public base_UpdateFromUIData(myDispWindow _win, TreeMap<Integer, Integer> _iVals, TreeMap<Integer, Float> _fVals,TreeMap<Integer, Boolean> _bVals) {
+	public base_UpdateFromUIData(myDispWindow _win, Map<Integer, Integer> _iVals, Map<Integer, Float> _fVals, Map<Integer, Boolean> _bVals) {
 		win=_win;
 		initMaps();
 		setAllVals(_iVals, _fVals, _bVals);
@@ -41,16 +43,16 @@ public abstract class base_UpdateFromUIData {
 	}
 	
 	protected final void initMaps() {
-		intValues = new TreeMap<Integer, Integer>();
-		floatValues = new TreeMap<Integer, Float>(); 
-		boolValues = new TreeMap<Integer, Boolean>();
+		intValues = new HashMap<Integer, Integer>();
+		floatValues = new HashMap<Integer, Float>(); 
+		boolValues = new HashMap<Integer, Boolean>();
 	}
 	
 	public final void setAllVals(base_UpdateFromUIData _otr) {
 		setAllVals(_otr.intValues,_otr.floatValues,_otr.boolValues);		
 	}
 	
-	public final void setAllVals(TreeMap<Integer, Integer> _intValues, TreeMap<Integer, Float> _floatValues,TreeMap<Integer, Boolean> _boolValues) {
+	public final void setAllVals(Map<Integer, Integer> _intValues, Map<Integer, Float> _floatValues,Map<Integer, Boolean> _boolValues) {
 		if(_intValues!=null) {for (Map.Entry<Integer, Integer> entry : _intValues.entrySet()) {intValues.put(entry.getKey(), entry.getValue());}}
 		if(_floatValues!=null) {for (Map.Entry<Integer, Float> entry : _floatValues.entrySet()) {floatValues.put(entry.getKey(), entry.getValue());}}
 		if(_boolValues!=null) {for (Map.Entry<Integer, Boolean> entry : _boolValues.entrySet()) {boolValues.put(entry.getKey(), entry.getValue());}}
@@ -63,6 +65,46 @@ public abstract class base_UpdateFromUIData {
 	public final void setIntValue(Integer idx, Integer value){	intValues.put(idx,value);  }
 	public final void setFloatValue(Integer idx, Float value){	floatValues.put(idx,value);}
 	public final void setBoolValue(Integer idx, Boolean value){	boolValues.put(idx,value);}
+	
+	
+	protected <T extends Comparable<T>> boolean checkMapIsChanged(HashMap<Integer,Integer> idxsToIgnore, Map<Integer, T> thisMap, Map<Integer, T> thatMap ) {
+		if(idxsToIgnore.size() == 0) {
+			for (Map.Entry<Integer, T> entry : thisMap.entrySet()) {
+				Integer key = entry.getKey();
+				//ignore key if specified to ignore or if other map does not have value
+				if (thatMap.get(key) == null){
+					continue;
+				}
+				if (entry.getValue() != thatMap.get(key)) {return true;}
+			}			
+		} else {			
+			for (Map.Entry<Integer, T> entry : thisMap.entrySet()) {
+				Integer key = entry.getKey();
+				//ignore key if specified to ignore or if other map does not have value
+				if ((idxsToIgnore.get(key) != null) ||(thatMap.get(key) == null)){
+					continue;
+				}
+				if (entry.getValue() != thatMap.get(key)) {return true;}
+			}		
+		}			
+		return false;
+	}//checkMapIsChanged
+	
+	/**
+	 * Rebuild simulation if any simulator-dependent variables have changed. These are variables that are sent to the cuda kernel
+	 * @param _otr
+	 * @return
+	 */
+	protected boolean haveValuesChanged(base_UpdateFromUIData _otr, 
+			HashMap<Integer,Integer> IntIdxsToIgnore, 
+			HashMap<Integer,Integer> FloatIdxsToIgnore, 
+			HashMap<Integer,Integer> BoolIdxsToIgnore) {	
+		if (checkMapIsChanged(IntIdxsToIgnore, intValues, _otr.intValues)) {		return true;}
+		if (checkMapIsChanged(FloatIdxsToIgnore, floatValues, _otr.floatValues)) {	return true;}
+		if (checkMapIsChanged(BoolIdxsToIgnore, boolValues, _otr.boolValues)) {		return true;}		
+		return false;
+	}//haveValuesChanged
+	
 	
 	/**
 	 * this will check if bool value is different than previous value, and if so will change it
@@ -114,18 +156,26 @@ public abstract class base_UpdateFromUIData {
 	
 	@Override
 	public String toString() {
-		String res = "Owning Window Name: "+win.name+"\n\tInt Values: (" +intValues.size() +")\n";
-		for (Map.Entry<Integer, Integer> entry : intValues.entrySet()) {
-			res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
-		}
-		res+="Float Values: (" +floatValues.size() +")\n";
-		for (Map.Entry<Integer, Float> entry : floatValues.entrySet()) {
-			res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
-		}
-		res+="Boolean Values: (" +boolValues.size() +")\n";
-		for (Map.Entry<Integer, Boolean> entry : boolValues.entrySet()) {
-			res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
-		}		
+		String res = "Owning Window Name: "+win.name+" | Tracked values : "+intValues.size() +" Integers, " +floatValues.size() +" Floats, " +boolValues.size() + " Booleans\n";
+		if (intValues.size() > 0) {
+			res +="Int Values: (" +intValues.size() +")\n";
+			for (Map.Entry<Integer, Integer> entry : intValues.entrySet()) {
+				res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
+			}
+		} else {		res+="No Integer values present/being tracked";	}
+		if (floatValues.size() > 0) {
+			res+="Float Values: (" +floatValues.size() +")\n";
+			for (Map.Entry<Integer, Float> entry : floatValues.entrySet()) {
+				res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
+			}
+		} else {		res+="No Float values present/being tracked";	}
+		if (boolValues.size() > 0) {	
+			res+="Boolean Values: (" +boolValues.size() +")\n";
+			for (Map.Entry<Integer, Boolean> entry : boolValues.entrySet()) {
+				res += "\tKey : "+entry.getKey()+" | Value : "+entry.getValue()+"\n";
+			}	
+		} else {		res+="No Boolean values present/being tracked";	}
+		
 		return res;
 	}
 }//class base_UpdateFromUIData

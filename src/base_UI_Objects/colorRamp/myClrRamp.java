@@ -478,7 +478,7 @@ class myClrPoint extends myPoint{
 		show(this,rad, toString());
 	}
 	public String toString(){
-		String res = ""+ name + " R :"+x+" G : " + z  + " B : " + y;
+		String res = ""+ name + " R :"+x+" G : " + y  + " B : " + z;
 		return res;
 	}
 }//myClrPoint

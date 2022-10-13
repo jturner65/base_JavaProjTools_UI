@@ -10,6 +10,7 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.windowUI.baseUI.base_UpdateFromUIData;
 import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.drawnObjs.myTrajManager;
 import base_UI_Objects.windowUI.uiObjs.GUIObj_Type;
@@ -211,11 +212,6 @@ public abstract class myDispWindow {
 		// build all UI objects using specifications from instancing window
 		_initAllGUIObjs(_isMenu);
 		
-		//set up UI->to->Functionality class communication object - only make instance of object here, initialize it after private flags are built and initialized
-		uiUpdateData = buildUIDataUpdateObject();
-		// build instance-specific UI update communication object if exists
-		if((!_isMenu)&&(uiUpdateData!=null)){buildUIUpdateStruct();}
-		
 		//run instancing window-specific initialization
 		initMe();
 		//set any custom button names if necessary
@@ -255,7 +251,11 @@ public abstract class myDispWindow {
 		int[] trueFlagIDXs= getFlagIDXsToInitToTrue();
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
 		if(null!=trueFlagIDXs) {initPassedPrivFlagsToTrue(trueFlagIDXs);}
-
+		
+		//set up UI->to->Functionality class communication object - only make instance of object here, initialize it after private flags are built and initialized
+		uiUpdateData = buildUIDataUpdateObject();
+		// build instance-specific UI update communication object if exists
+		if((!_isMenu)&&(uiUpdateData!=null)){buildUIUpdateStruct();}
 		
 	}//_initAllGUIObjs
 	
@@ -263,17 +263,19 @@ public abstract class myDispWindow {
 	 * This has to be called after UI structs are built and set - this populates the 
 	 * structure that serves to communicate UI data to consumer
 	 */
-	private void buildUIUpdateStruct() {		
+	private void buildUIUpdateStruct() {
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
 		for (Integer idx : guiIntValIDXs) {
-			intValues.put(idx, (int) guiObjs[idx].getVal()); 
+			intValues.put(idx, (int) guiObjs[idx].getVal());
 		}		
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		for (Integer idx : guiFloatValIDXs) {
-			floatValues.put(idx, (float)guiObjs[idx].getVal()); 
+			floatValues.put(idx, (float)guiObjs[idx].getVal());
 		}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
-		for(Integer i=0;i<this._numPrivFlags;++i) {	boolValues.put(i, getPrivFlags(i));}	
+		for(Integer i=0;i<this._numPrivFlags;++i) {	
+			boolValues.put(i, getPrivFlags(i));
+		}	
 		
 		//buildUIUpdateStruct_Indiv(intValues, floatValues, boolValues); 
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
@@ -817,9 +819,11 @@ public abstract class myDispWindow {
 	public abstract void drawCustMenuObjs();
 	
 	/**
-	 * build button descriptive arrays : each object array holds true label, false label, and idx of button in owning child class
-	 * this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
-	 * @param tmpBtnNamesArray
+	 * Build button descriptive arrays : each object array holds true label, false label, and idx of button in owning child class
+	 * this must return count of -all- booleans managed by privFlags, not just those that are interactive buttons (some may be 
+	 * hidden to manage booleans that manage or record state)
+	 * @param tmpBtnNamesArray ArrayList of Object arrays to be built containing all button definitions. 
+	 * @return count of -all- booleans to be managed by privFlags
 	 */
 	public abstract int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray);
 	
