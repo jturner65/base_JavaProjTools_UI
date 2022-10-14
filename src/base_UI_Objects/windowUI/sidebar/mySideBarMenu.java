@@ -9,8 +9,8 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.myDispWindow;
-import base_UI_Objects.windowUI.baseUI.base_UpdateFromUIData;
 import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
+import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.myGUIObj;
 
 //displays sidebar menu of interaction and functionality
@@ -49,16 +49,26 @@ public class mySideBarMenu extends myDispWindow{
 	private boolean _initBtnShowWin = false, _initBtnMseFunc= false, _initBtnDBGSelCmp = false;
 
 	private String[] guiBtnRowNames;
-	//names for each row of buttons - idx 1 is name of row
-	private String[][] guiBtnNames;
-	//default names, to return to if not specified by user
-	private String[][] defaultUIBtnNames;
-	//whether buttons are momentary or not (on only while being clicked)
+	/**
+	 * names for each row of buttons - idx 1 is name of row
+	 */
+	private String[][] guiBtnLabels;
+	/**
+	 * default names, to return to if not specified by user
+	 */
+	private String[][] defaultUIBtnLabels;
+	/**
+	 * whether buttons are momentary or not (on only while being clicked)
+	 */
 	private Boolean[][] guiBtnInst;
-	//whether buttons are waiting for processing to complete (for non-momentary buttons)
+	/**
+	 * whether buttons are waiting for processing to complete (for non-momentary buttons)
+	 */
 	private Boolean[][] guiBtnWaitForProc;
 	
-	//whether buttons are disabled(-1), enabled but not clicked/on (0), or enabled and on/clicked(1)
+	/**
+	 * whether buttons are disabled(-1), enabled but not clicked/on (0), or enabled and on/clicked(1)
+	 */
 	private int[][] guiBtnSt;
 	
 	public final int[] guiBtnStFillClr = new int[]{		//button colors based on state
@@ -91,14 +101,14 @@ public class mySideBarMenu extends myDispWindow{
 	
 		
 	/**
-	 * call this from each new window to set function btn names, if specified, when window gets focus
+	 * call this from each new window to set function btn labels, if specified, when window gets focus
 	 * @param rowIdx
-	 * @param btnNames
+	 * @param BtnLabels
 	 */
-	public void setAllFuncBtnNames(int _funRowIDX, String[] btnNames) {
+	public void setAllFuncBtnLabels(int _funRowIDX, String[] BtnLabels) {
 		int rowIdx = funcBtnIDXAra[_funRowIDX];		
-		String[] replAra = ((null==btnNames) || (btnNames.length != guiBtnNames[rowIdx].length)) ? defaultUIBtnNames[rowIdx] : btnNames;
-		for(int i=0;i<guiBtnNames[rowIdx].length;++i) {guiBtnNames[rowIdx][i]=replAra[i];}
+		String[] replAra = ((null==BtnLabels) || (BtnLabels.length != guiBtnLabels[rowIdx].length)) ? defaultUIBtnLabels[rowIdx] : BtnLabels;
+		for(int i=0;i<guiBtnLabels[rowIdx].length;++i) {guiBtnLabels[rowIdx][i]=replAra[i];}
 	}//setFunctionButtonNames
 	
 	/**
@@ -108,14 +118,14 @@ public class mySideBarMenu extends myDispWindow{
 	//protected final void setBtnData(String[] _funcRowNames, int[] _numBtnsPerFuncRow, int _numDbgBtns, boolean _inclWinNames, boolean _inclMseOvValues) {
 	protected final void setBtnData() {
 		ArrayList<String> tmpGuiBtnRowNames = new ArrayList<String>();
-		ArrayList<String[]> tmpBtnNames = new ArrayList<String[]>();
-		ArrayList<String[]> tmpDfltBtnNames = new ArrayList<String[]>();
+		ArrayList<String[]> tmpBtnLabels = new ArrayList<String[]>();
+		ArrayList<String[]> tmpDfltBtnLabels = new ArrayList<String[]>();
 		
 		ArrayList<Boolean[]> tmpBtnIsInst = new ArrayList<Boolean[]>();
 		ArrayList<Boolean[]> tmpBtnWaitForProc = new ArrayList<Boolean[]>();
 		int numFuncBtnArrayNames = btnConfig.funcRowNames.length;
 		//if debug btn names array is not empty in config, add debug button names row to funcBtnIDXAra
-		if(btnConfig.debugBtnNames.length > 0) {
+		if(btnConfig.debugBtnLabels.length > 0) {
 			debugBtnRowIDX = numFuncBtnArrayNames++;
 		}
 		
@@ -127,8 +137,8 @@ public class mySideBarMenu extends myDispWindow{
 		String[] titleArray = new String[AppMgr.winTitles.length-1];		
 		if((btnConfig.inclWinNames)&&(titleArray.length != 0)) {
 			for(int i=0;i<titleArray.length;++i) {titleArray[i] = AppMgr.winTitles[i+1];}
-			tmpBtnNames.add(titleArray);
-			tmpDfltBtnNames.add(titleArray);
+			tmpBtnLabels.add(titleArray);
+			tmpDfltBtnLabels.add(titleArray);
 
 			tmpBtnIsInst.add(buildDfltBtnFlagAra(titleArray.length));
 			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(titleArray.length));
@@ -139,13 +149,13 @@ public class mySideBarMenu extends myDispWindow{
 			++funcBtnIDXOffset;
 		} else {			_initBtnShowWin= false;		}
 		
-		String[] mseOvrBtnNames = AppMgr.getMouseOverSelBtnNames();	
-		if((btnConfig.inclMseOvValues) && (mseOvrBtnNames!=null) && (mseOvrBtnNames.length > 0)) {
-			tmpBtnNames.add(mseOvrBtnNames);
-			tmpDfltBtnNames.add(mseOvrBtnNames);
+		String[] mseOvrBtnLabels = AppMgr.getMouseOverSelBtnLabels();	
+		if((btnConfig.inclMseOvValues) && (mseOvrBtnLabels!=null) && (mseOvrBtnLabels.length > 0)) {
+			tmpBtnLabels.add(mseOvrBtnLabels);
+			tmpDfltBtnLabels.add(mseOvrBtnLabels);
 		
-			tmpBtnIsInst.add(buildDfltBtnFlagAra(mseOvrBtnNames.length));
-			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(mseOvrBtnNames.length));
+			tmpBtnIsInst.add(buildDfltBtnFlagAra(mseOvrBtnLabels.length));
+			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(mseOvrBtnLabels.length));
 
 			tmpGuiBtnRowNames.add("Mouse Over Info To Display");
 			btnMseFuncIdx = funcBtnIDXOffset;  //btnConfig.
@@ -155,8 +165,8 @@ public class mySideBarMenu extends myDispWindow{
 		
  		for(int i=0;i<btnConfig.numBtnsPerFuncRow.length;++i) {
 			String s = btnConfig.funcRowNames[i];
-			tmpBtnNames.add(buildBtnNameAra(btnConfig.numBtnsPerFuncRow[i],"Func"));
-			tmpDfltBtnNames.add(buildBtnNameAra(btnConfig.numBtnsPerFuncRow[i],"Func"));
+			tmpBtnLabels.add(buildBtnNameAra(btnConfig.numBtnsPerFuncRow[i],"Func"));
+			tmpDfltBtnLabels.add(buildBtnNameAra(btnConfig.numBtnsPerFuncRow[i],"Func"));
 			
 			tmpBtnIsInst.add(buildDfltBtnFlagAra(btnConfig.numBtnsPerFuncRow[i]));
 			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(btnConfig.numBtnsPerFuncRow[i]));
@@ -164,11 +174,11 @@ public class mySideBarMenu extends myDispWindow{
 			tmpGuiBtnRowNames.add(s);
 		}
 		if(debugBtnRowIDX >= 0) {
-			tmpBtnNames.add(buildBtnNameAra(btnConfig.debugBtnNames.length,"Debug"));
-			tmpDfltBtnNames.add(buildBtnNameAra(btnConfig.debugBtnNames.length,"Debug"));
+			tmpBtnLabels.add(buildBtnNameAra(btnConfig.debugBtnLabels.length,"Debug"));
+			tmpDfltBtnLabels.add(buildBtnNameAra(btnConfig.debugBtnLabels.length,"Debug"));
 			
-			tmpBtnIsInst.add(buildDfltBtnFlagAra(btnConfig.debugBtnNames.length));
-			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(btnConfig.debugBtnNames.length));
+			tmpBtnIsInst.add(buildDfltBtnFlagAra(btnConfig.debugBtnLabels.length));
+			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(btnConfig.debugBtnLabels.length));
 			tmpGuiBtnRowNames.add("DEBUG");
 			btnDBGSelCmpIdx = tmpGuiBtnRowNames.size()-1;
 			funcBtnIDXAra[debugBtnRowIDX]=debugBtnRowIDX+funcBtnIDXOffset;
@@ -176,22 +186,22 @@ public class mySideBarMenu extends myDispWindow{
 		} else {	_initBtnDBGSelCmp = false;	}
 		
 		guiBtnRowNames = tmpGuiBtnRowNames.toArray(new String[0]);		
-		guiBtnNames = tmpBtnNames.toArray(new String[0][]);
-		defaultUIBtnNames = tmpDfltBtnNames.toArray(new String[0][]);
+		guiBtnLabels = tmpBtnLabels.toArray(new String[0][]);
+		defaultUIBtnLabels = tmpDfltBtnLabels.toArray(new String[0][]);
 		guiBtnInst = tmpBtnIsInst.toArray(new Boolean[0][]);
 		guiBtnWaitForProc = tmpBtnWaitForProc.toArray(new Boolean[0][]);
 		
 		guiBtnSt = new int[guiBtnRowNames.length][];
-		for(int i=0;i<guiBtnSt.length;++i) {guiBtnSt[i] = new int[guiBtnNames[i].length];}
+		for(int i=0;i<guiBtnSt.length;++i) {guiBtnSt[i] = new int[guiBtnLabels[i].length];}
 		
 		//set button names
-		for(int _type = 0;_type<btnConfig.funcBtnNames.length;++_type) {setAllFuncBtnNames(_type,btnConfig.funcBtnNames[_type]);}
+		for(int _type = 0;_type<btnConfig.funcBtnLabels.length;++_type) {setAllFuncBtnLabels(_type,btnConfig.funcBtnLabels[_type]);}
 		//set debug button names from valus specified in btnConfig, if any provided
 		if (_initBtnDBGSelCmp) {
-			setAllFuncBtnNames(debugBtnRowIDX, btnConfig.debugBtnNames);
+			setAllFuncBtnLabels(debugBtnRowIDX, btnConfig.debugBtnLabels);
 		}
 		
-	}
+	}//setBtnData
 	
 	public Boolean[][] getGuiBtnWaitForProc() {return guiBtnWaitForProc;}
 	public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {		this.guiBtnWaitForProc = _guiBtnWaitForProc;}
@@ -211,7 +221,7 @@ public class mySideBarMenu extends myDispWindow{
 	
 	@Override
 	//initialize all private-flag based UI buttons here - called by base class
-	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray){
+	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnLabelsArray){
 		return numPrivFlags;
 	}//
 	
@@ -222,7 +232,7 @@ public class mySideBarMenu extends myDispWindow{
 	
 	//window UI object not used for sidebar menu
 	@Override
-	protected base_UpdateFromUIData buildUIDataUpdateObject() {return null;}
+	protected UIDataUpdater buildUIDataUpdateObject() {return null;}
 	@Override
 	protected final void updateCalcObjUIVals() {}
 
@@ -240,7 +250,7 @@ public class mySideBarMenu extends myDispWindow{
 	
 	/**
 	 * initialize application-specific windows and titles in structs :
-	 *  guiBtnRowNames, guiBtnNames, defaultUIBtnNames, guiBtnInst, guiBtnWaitForProc;
+	 *  guiBtnRowNames, guiBtnLabels, defaultUIBtnLabels, guiBtnInst, guiBtnWaitForProc;
 	 */
 	//protected abstract void initSideBarMenuBtns_Priv();
 	//set flag values and execute special functionality for this sequencer
@@ -277,9 +287,9 @@ public class mySideBarMenu extends myDispWindow{
 	private boolean checkButtons(int mseX, int mseY){
 		double stY = minBtnClkY + rowStYOff, endY = stY+yOff, stX = 0, endX, widthX; //btnLblYOff			
 		for(int row=0; row<guiBtnRowNames.length;++row){
-			widthX = rectDim[2]/(1.0f * guiBtnNames[row].length);
+			widthX = rectDim[2]/(1.0f * guiBtnLabels[row].length);
 			stX =0;	endX = widthX;
-			for(int col =0; col<guiBtnNames[row].length;++col){	
+			for(int col =0; col<guiBtnLabels[row].length;++col){	
 				if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (guiBtnSt[row][col] != -1)){
 					handleButtonClick(row,col);
 					return true;
@@ -290,13 +300,13 @@ public class mySideBarMenu extends myDispWindow{
 		}
 		return false;
 	}//handleButtonClick	
-	//public void clearAllBtnStates(){for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnNames[row].length;++col){if((guiBtnInst[row][col]) && (guiBtnSt[row][col] ==1)){	guiBtnSt[row][col] = 0;}}}}
+	//public void clearAllBtnStates(){for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnLabels[row].length;++col){if((guiBtnInst[row][col]) && (guiBtnSt[row][col] ==1)){	guiBtnSt[row][col] = 0;}}}}
 	
 	//turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
 	public final void clearAllBtnStates(){
 		if(this.getPrivFlags(mseClickedInBtnsIDX)) {
 			//guiBtnWaitForProc should only be set for non-momentary buttons when they are pushed and cleared when whatever they are do is complete
-			for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnNames[row].length;++col){				
+			for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnLabels[row].length;++col){				
 				if((guiBtnSt[row][col]==1) && (guiBtnInst[row][col]  || !guiBtnWaitForProc[row][col])){	guiBtnSt[row][col] = 0;}//btn is on, and either is momentary or it is not waiting for processing
 			}}
 			this.setPrivFlags(mseClickedInBtnsIDX, false);
@@ -309,7 +319,7 @@ public class mySideBarMenu extends myDispWindow{
 	 * @param btnToKeepOn btn whose state should stay on
 	 */
 	protected final void clearRowExceptPassedBtn(int row, int btnToKeepOn) {
-		for(int col =0; col<guiBtnNames[row].length;++col){	guiBtnSt[row][col] = 0;}
+		for(int col =0; col<guiBtnLabels[row].length;++col){	guiBtnSt[row][col] = 0;}
 		guiBtnSt[row][btnToKeepOn]=1;
 	}
 	
@@ -331,54 +341,21 @@ public class mySideBarMenu extends myDispWindow{
 			
 		}
 		else if((row == btnDBGSelCmpIdx) && this.getPrivFlags(usesDbgBtnDispIDX)) {AppMgr.handleMenuBtnDebugSel(col, val);}
-		else {AppMgr.handleMenuBtnSelCmp(row, funcBtnIDXOffset, col, val);}
-//		switch(row){
-//			case btnShowWinIdx 			: {pa.handleShowWin(col, val);break;}
-//			case btnAuxFunc1Idx 		: //{pa.handleMenuBtnSelCmp(btnAuxFunc1Idx,col, val);break;}
-//			case btnAuxFunc2Idx 		: //{pa.handleMenuBtnSelCmp(btnAuxFunc2Idx,col, val);break;}
-//			case btnAuxFunc3Idx 		: //{pa.handleMenuBtnSelCmp(btnAuxFunc2Idx,col, val);break;}
-//			case btnAuxFunc4Idx			:
-//			case btnDBGSelCmpIdx  		: {pa.handleMenuBtnSelCmp(row, col, val);break;}//{pa.handleMenuBtnSelCmp(btnDBGSelCmpIdx,col, val);break;}
-////			case btnFileCmdIdx 			: {pa.handleFileCmd(btnFileCmdIdx, col, val);break;}
-//		}
-		
+		else {AppMgr.handleMenuBtnSelCmp(row, funcBtnIDXOffset, col, val);}		
 	}	
-	
+
+	@Override
+	protected void setUI_IntValsCustom(int UIidx, int ival) {}
+	@Override
+	protected void setUI_FloatValsCustom(int UIidx, float val) {}
 	@Override
 	protected final void launchMenuBtnHndlr(int funcRow, int btn) {	}
-
 	@Override
 	public final void handleSideMenuMseOvrDispSel(int btn, boolean val) {	}
-
 	@Override
 	public final void handleSideMenuDebugSelEnable(int btn) {	}
 	@Override
 	public final void handleSideMenuDebugSelDisable(int btn) {	}
-
-	//uses passed time
-	@Override //only send new values if actually new values
-	protected void setUIWinVals(int UIidx){
-		switch(UIidx){
-//		//set lcl/global vals
-//		case gIDX_UIElem2List 		: {
-////			int sel = (int)guiObjs[UIidx].getVal() % keySigs.length;
-////			if (sel != myDispWindow.glblKeySig.keyIdx){for(int i=1; i<pa.dispWinFrames.length; ++i){pa.dispWinFrames[i].setGlobalKeySigVal(sel);} pa.setFlags(pa.forceInKey,false); }			
-//			break;}
-//		case gIDX_UIElem3 	: 
-//		case gIDX_UIElem3List 	: {
-////			int tsDenom = timeSigDenom[(int)guiObjs[gIDX_UIElem3List].getVal() %timeSigDenom.length],
-////					tsNum = (int)guiObjs[gIDX_TimeSigNum].getVal();
-////			durType dType = pa.getDurTypeForNote(tsDenom);			
-////			if((dType != glblBeatNote) || (glblTimeSig.beatPerMeas != tsNum) || (glblTimeSig.beatNote != tsDenom)){			
-////				for(int i=1; i<pa.dispWinFrames.length; ++i){pa.dispWinFrames[i].setGlobalTimeSigVal(tsNum,tsDenom, dType);} 
-////			}
-//			break;}
-//		case gIDX_UIElem1			: {
-//			float tmpTempo = (float)guiObjs[UIidx].getVal();
-////			if(PApplet.abs(tmpTempo - glblTempo) > pa.feps){for(int i=1; i<pa.dispWinFrames.length; ++i){pa.dispWinFrames[i].setGlobalTempoVal(tmpTempo);}}
-//			break;}
-		}			
-	}//setUIWinVals
 	@Override
 	protected boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld){		return false;	}
 	@Override
@@ -419,18 +396,18 @@ public class mySideBarMenu extends myDispWindow{
 		for(int row=0; row<guiBtnRowNames.length;++row){
 			pa.showText(guiBtnRowNames[row],0,-yOff*.15f);
 			pa.translate(0,rowStYOff);
-			float xWidthOffset = rectDim[2]/(1.0f * guiBtnNames[row].length), halfWay;
+			float xWidthOffset = rectDim[2]/(1.0f * guiBtnLabels[row].length), halfWay;
 			pa.pushMatState();
 			pa.setStrokeWt(1.0f);
 			pa.setColorValStroke(IRenderInterface.gui_Black,255);
 			pa.noFill();
 			pa.translate(-xOff*.5f, 0);
-			for(int col =0; col<guiBtnNames[row].length;++col){
-				halfWay = (xWidthOffset - pa.textWidth(guiBtnNames[row][col]))/2.0f;
+			for(int col =0; col<guiBtnLabels[row].length;++col){
+				halfWay = (xWidthOffset - pa.textWidth(guiBtnLabels[row][col]))/2.0f;
 				pa.setColorValFill(guiBtnStFillClr[guiBtnSt[row][col]+1],255);
 				pa.drawRect(new float[] {0,0,xWidthOffset, yOff});	
 				pa.setColorValFill(guiBtnStTxtClr[guiBtnSt[row][col]+1],255);
-				pa.showText(guiBtnNames[row][col], halfWay, yOff*.75f);
+				pa.showText(guiBtnLabels[row][col], halfWay, yOff*.75f);
 				pa.translate(xWidthOffset, 0);
 			}
 			pa.popMatState();						
@@ -498,7 +475,7 @@ public class mySideBarMenu extends myDispWindow{
 	@Override
 	protected final void resizeMe(float scale) {}	
 	@Override
-	protected final void setCustMenuBtnNames() {}
+	protected final void setCustMenuBtnLabels() {}
 	@Override
 	protected boolean simMe(float modAmtSec) {return false;}
 	@Override
@@ -521,6 +498,4 @@ public class mySideBarMenu extends myDispWindow{
 		String res = super.toString();
 		return res;
 	}
-
-
 }//mySideBarMenu

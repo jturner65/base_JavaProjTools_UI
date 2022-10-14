@@ -29,8 +29,9 @@ public class myGUIObj {
 			showIDX			= 1,				//show this component
 			//config flags
 			usedByWinsIDX	= 2, 
-			updateWhileModIDX = 3;
-	public static final int numFlags = 4;			
+			updateWhileModIDX = 3,
+			objValChangedIDX = 4;				//object value is dirty/clean
+	public static final int numFlags = 5;			
 	
 	private int[] _cVal;
 	private double modMult,						//multiplier for mod value
@@ -79,29 +80,35 @@ public class myGUIObj {
 		case showIDX			:{break;}	//show this component
 		case usedByWinsIDX		:{break;}
 		case updateWhileModIDX	:{break;}
-		
+		case objValChangedIDX 	:{break;}		
 		}
 	}//setFlag	
 	
-	public String getName() {return name;}
+	public String getName(){return name;}
 	public double getVal(){return val;}	
-	public double getMinVal() {return minVal;}
-	public double getMaxVal() {return maxVal;}
-	public double getModStep() {return modMult;}	
+	public double getMinVal(){return minVal;}
+	public double getMaxVal(){return maxVal;}
+	public double getModStep(){return modMult;}	
 	
+	private void setIsDirty(boolean isDirty) {setFlags(objValChangedIDX, isDirty);}
+		
 	//Make sure val adheres to specified bounds
 	private double forceBounds(double _val) {
-		if (_val <= minVal) {return minVal;}
-		if (_val >= maxVal) {return maxVal;}
+		if (_val < minVal) {return minVal;}
+		if (_val > maxVal) {return maxVal;}
 		return _val;
 	}
-	public void setNewMax(double _newval){	
+	public void setNewMax(double _newval){
+		double oldVal = val;
 		maxVal = _newval;
-		val = forceBounds(val);		
+		val = forceBounds(val);	
+		if (oldVal != val) {setIsDirty(true);}		
 	}
 	public void setNewMin(double _newval){	
+		double oldVal = val;
 		minVal = _newval;
 		val = forceBounds(val);		
+		if (oldVal != val) {setIsDirty(true);}		
 	}
 	public void setNewMod(double _newval){	
 		if (_newval > (maxVal-minVal)) {
@@ -110,18 +117,25 @@ public class myGUIObj {
 		modMult = _newval;	
 	}
 	public double setVal(double _newVal){
-		val = forceBounds(_newVal);		
+		double oldVal = val;
+		val = forceBounds(_newVal);	
+		if (oldVal != val) {setIsDirty(true);}		
 		return val;
 	}	
 	public double modVal(double mod){
+		double oldVal = val;
 		val += (mod*modMult);
 		if(objType == GUIObj_Type.IntVal){val = Math.round(val);}
 		val = forceBounds(val);
+		if (oldVal != val) {setIsDirty(true);}		
 		return val;		
 	}
 
 	public final boolean shouldUpdateWin(boolean isRelease) {
-		return ((isRelease || getFlags(updateWhileModIDX)) && getFlags(usedByWinsIDX));
+		boolean isDirty = getFlags(objValChangedIDX);
+		//only clear once processed
+		if (isRelease){	setIsDirty(false);	}
+		return isDirty && ((isRelease || getFlags(updateWhileModIDX)) && getFlags(usedByWinsIDX));
 	}
 	
 	public final int valAsInt(){return (int)(val) ;}

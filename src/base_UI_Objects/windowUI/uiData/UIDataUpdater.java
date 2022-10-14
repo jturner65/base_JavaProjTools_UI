@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI.baseUI;
+package base_UI_Objects.windowUI.uiData;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,7 @@ import base_UI_Objects.windowUI.base.myDispWindow;
  * @author john
  */
 
-public abstract class base_UpdateFromUIData {
+public class UIDataUpdater {
 	/**
 	 * Owning UI Window
 	 */
@@ -29,14 +29,14 @@ public abstract class base_UpdateFromUIData {
 	 */
 	protected Map<Integer, Boolean> boolValues;	
 	
-	public base_UpdateFromUIData(myDispWindow _win) { win=_win;	initMaps();}
-	public base_UpdateFromUIData(myDispWindow _win, Map<Integer, Integer> _iVals, Map<Integer, Float> _fVals, Map<Integer, Boolean> _bVals) {
+	public UIDataUpdater(myDispWindow _win) { win=_win;	initMaps();}
+	public UIDataUpdater(myDispWindow _win, Map<Integer, Integer> _iVals, Map<Integer, Float> _fVals, Map<Integer, Boolean> _bVals) {
 		win=_win;
 		initMaps();
 		setAllVals(_iVals, _fVals, _bVals);
 	}
 	
-	public base_UpdateFromUIData(base_UpdateFromUIData _otr) {
+	public UIDataUpdater(UIDataUpdater _otr) {
 		win=_otr.win;
 		initMaps();
 		setAllVals(_otr);
@@ -48,7 +48,7 @@ public abstract class base_UpdateFromUIData {
 		boolValues = new HashMap<Integer, Boolean>();
 	}
 	
-	public final void setAllVals(base_UpdateFromUIData _otr) {
+	public final void setAllVals(UIDataUpdater _otr) {
 		setAllVals(_otr.intValues,_otr.floatValues,_otr.boolValues);		
 	}
 	
@@ -71,20 +71,14 @@ public abstract class base_UpdateFromUIData {
 		if(idxsToIgnore.size() == 0) {
 			for (Map.Entry<Integer, T> entry : thisMap.entrySet()) {
 				Integer key = entry.getKey();
-				//ignore key if specified to ignore or if other map does not have value
-				if (thatMap.get(key) == null){
-					continue;
-				}
-				if (entry.getValue() != thatMap.get(key)) {return true;}
+				if ((thatMap.get(key) == null) || (entry.getValue() != thatMap.get(key))) {return true;}
 			}			
 		} else {			
 			for (Map.Entry<Integer, T> entry : thisMap.entrySet()) {
 				Integer key = entry.getKey();
 				//ignore key if specified to ignore or if other map does not have value
-				if ((idxsToIgnore.get(key) != null) ||(thatMap.get(key) == null)){
-					continue;
-				}
-				if (entry.getValue() != thatMap.get(key)) {return true;}
+				if (idxsToIgnore.get(key) != null){		continue;}
+				if ((thatMap.get(key) == null) || (entry.getValue() != thatMap.get(key))) {return true;}
 			}		
 		}			
 		return false;
@@ -95,7 +89,7 @@ public abstract class base_UpdateFromUIData {
 	 * @param _otr
 	 * @return
 	 */
-	protected boolean haveValuesChanged(base_UpdateFromUIData _otr, 
+	protected boolean haveValuesChanged(UIDataUpdater _otr, 
 			HashMap<Integer,Integer> IntIdxsToIgnore, 
 			HashMap<Integer,Integer> FloatIdxsToIgnore, 
 			HashMap<Integer,Integer> BoolIdxsToIgnore) {	
@@ -104,8 +98,7 @@ public abstract class base_UpdateFromUIData {
 		if (checkMapIsChanged(BoolIdxsToIgnore, boolValues, _otr.boolValues)) {		return true;}		
 		return false;
 	}//haveValuesChanged
-	
-	
+		
 	/**
 	 * this will check if bool value is different than previous value, and if so will change it
 	 * @param idx
@@ -136,18 +129,22 @@ public abstract class base_UpdateFromUIData {
 	public final float getFloatValue(Integer idx, Float value){	return floatValues.get(idx);  }
 	
 	/**
-	 * Updaters - these will update the owning window's data values as well
+	 * Boolean value updater - this will update the owning window's corresponding data values as well
 	 */
 	public final void updateBoolValuee(int idx, boolean value) {
 		setBoolValue(idx, value);
 		win.updateBoolValFromExecCode(idx, value);
 	}
-	
+	/**
+	 * Integer value updater - this will update the owning window's corresponding data values as well
+	 */	
 	public final void updateIntValue(int idx, Integer value) {
 		setIntValue(idx,value);
 		win.updateIntValFromExecCode(idx, value);
 	}
-	
+	/**
+	 * Float value updater - this will update the owning window's corresponding data values as well
+	 */	
 	public final void updateFloatValue(int idx, Float value) {
 		setFloatValue(idx,value);
 		win.updateFloatValFromExecCode(idx, value);

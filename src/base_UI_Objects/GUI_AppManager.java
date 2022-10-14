@@ -615,7 +615,7 @@ public abstract class GUI_AppManager {
 	 * @param btnNames
 	 */
 	public final void setAllMenuBtnNames(String[][] btnNames) {
-		for(int _type = 0;_type<btnNames.length;++_type) {((mySideBarMenu)dispWinFrames[dispMenuIDX]).setAllFuncBtnNames(_type,btnNames[_type]);}
+		for(int _type = 0;_type<btnNames.length;++_type) {((mySideBarMenu)dispWinFrames[dispMenuIDX]).setAllFuncBtnLabels(_type,btnNames[_type]);}
 	}
 	
 	
@@ -1294,10 +1294,10 @@ public abstract class GUI_AppManager {
 	public abstract float[] getUIRectVals(int idx);
 	
 	/**
-	 * return a list of names to apply to mse-over display select buttons - an empty or null list will not display option
+	 * return a list of labels to apply to mse-over display select buttons - an empty or null list will not display option
 	 * @return
 	 */
-	public abstract String[] getMouseOverSelBtnNames();
+	public abstract String[] getMouseOverSelBtnLabels();
 	
 	
 	//find mouse "force" exerted upon a particular location - distance from mouse to passed location

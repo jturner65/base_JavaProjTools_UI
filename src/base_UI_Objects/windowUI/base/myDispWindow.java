@@ -10,9 +10,9 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.windowUI.baseUI.base_UpdateFromUIData;
 import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.drawnObjs.myTrajManager;
+import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.GUIObj_Type;
 import base_UI_Objects.windowUI.uiObjs.myGUIObj;
 import base_UI_Objects.windowUI.uiObjs.myScrollBars;
@@ -54,7 +54,7 @@ public abstract class myDispWindow {
 	
 	public static int winCnt = 0;
 	public int ID;	
-	public String name, winText;		
+	public final String name, winText;		
 	public int[] fillClr, strkClr, rtSideUIFillClr, rtSideUIStrkClr;
 	public float[] rectDim, closeBox, rectDimClosed, mseClickCrnr;	
 	//current visible screen width and height
@@ -89,8 +89,8 @@ public abstract class myDispWindow {
 	
 	//private window-specific flags and UI components (buttons)
 	public int[] privFlags;
-	public String[] truePrivFlagNames; //needs to be in order of flags	
-	public String[] falsePrivFlagNames;//needs to be in order of flags
+	public String[] truePrivFlagLabels; //needs to be in order of flags	
+	public String[] falsePrivFlagLabels;//needs to be in order of flags
 	/**
 	 * # of priv flags from base class and instancing class
 	 */
@@ -108,8 +108,7 @@ public abstract class myDispWindow {
 	//UI objects in this window
 	//GUI Objects
 	public myGUIObj[] guiObjs;	
-	//raw values from ui components	
-	protected double[] uiVals;	
+
 	public int msClkObj, msOvrObj;												//myGUIObj object that was clicked on  - for modification, object mouse moved over
 	public int msBtnClcked;														//mouse button clicked
 	public float[] uiClkCoords;												//subregion of window where UI objects may be found
@@ -131,7 +130,7 @@ public abstract class myDispWindow {
 	/**
 	 * structure to facilitate communicating UI changes with functional code
 	 */
-	protected base_UpdateFromUIData uiUpdateData;
+	protected UIDataUpdater uiUpdateData;
 	//key pressed
 	protected char keyPressed = ' ';
 	protected int keyCodePressed = 0;	
@@ -215,7 +214,7 @@ public abstract class myDispWindow {
 		//run instancing window-specific initialization
 		initMe();
 		//set any custom button names if necessary
-		setCustMenuBtnNames();
+		setCustMenuBtnLabels();
 		//pass all flag states to initialized structures in instancing window
 		setAllInitPrivFlagStates(_numPrivFlags);
 		setClosedBox();
@@ -225,7 +224,7 @@ public abstract class myDispWindow {
 		if((!_isMenu) && (getFlags(hasScrollBars))){scbrs = new myScrollBars[4];	for(int i =0; i<scbrs.length;++i){scbrs[i] = new myScrollBars(pa, this);}}
 	}//initThisWin	
 	
-	protected abstract base_UpdateFromUIData buildUIDataUpdateObject();
+	protected abstract UIDataUpdater buildUIDataUpdateObject();
 	
 	private void _initAllGUIObjs(boolean _isMenu) {
 		// list box values - keyed by list obj IDX, value is string array of list obj values
@@ -233,7 +232,11 @@ public abstract class myDispWindow {
 		// ui object values - keyed by object idx, value is object array of describing values
 		TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
 		//  set up all gui objects for this window
-		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);				//setup all ui objects and record final y value in sidebar menu for UI Objects in this window		
+		//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
+		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);				
+		//initialize arrays to hold idxs of int and float items being created.
+		guiFloatValIDXs= new ArrayList<Integer>();
+		guiIntValIDXs = new ArrayList<Integer>();		
 		if(!_isMenu){
 			//build ui objects - not used for sidebar menu
 			_buildGUIObjsFromMaps(tmpUIObjArray, tmpListObjVals);	
@@ -244,7 +247,7 @@ public abstract class myDispWindow {
 		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
 		_numPrivFlags = initAllPrivBtns(tmpBtnNamesArray);
 		//initialize all private buttons based on values put in arraylist
-		_initAllPrivButtons(tmpBtnNamesArray);
+		_buildAllPrivButtons(tmpBtnNamesArray);
 		// init specific sim flags
 		initPrivFlags(_numPrivFlags);
 		// set instance-specific initial flags
@@ -252,34 +255,29 @@ public abstract class myDispWindow {
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
 		if(null!=trueFlagIDXs) {initPassedPrivFlagsToTrue(trueFlagIDXs);}
 		
-		//set up UI->to->Functionality class communication object - only make instance of object here, initialize it after private flags are built and initialized
-		uiUpdateData = buildUIDataUpdateObject();
 		// build instance-specific UI update communication object if exists
-		if((!_isMenu)&&(uiUpdateData!=null)){buildUIUpdateStruct();}
-		
+		if(!_isMenu){
+			//build ui data updater - not used for sidebar menu
+			buildUIUpdateStruct();
+		}
 	}//_initAllGUIObjs
 	
 	/**
-	 * This has to be called after UI structs are built and set - this populates the 
-	 * structure that serves to communicate UI data to consumer
+	 * This has to be called after UI structs are built and set - this creates and populates the 
+	 * structure that serves to communicate UI data to consumer from UI Window.
 	 */
 	private void buildUIUpdateStruct() {
+		//set up UI->to->Consumer class communication object - only make instance of object here, 
+		//initialize it after private flags are built and initialized
+		uiUpdateData = buildUIDataUpdateObject();		
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
-		for (Integer idx : guiIntValIDXs) {
-			intValues.put(idx, (int) guiObjs[idx].getVal());
-		}		
+		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, (int) guiObjs[idx].getVal());}		
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
-		for (Integer idx : guiFloatValIDXs) {
-			floatValues.put(idx, (float)guiObjs[idx].getVal());
-		}
+		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, (float)guiObjs[idx].getVal());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
-		for(Integer i=0;i<this._numPrivFlags;++i) {	
-			boolValues.put(i, getPrivFlags(i));
-		}	
-		
-		//buildUIUpdateStruct_Indiv(intValues, floatValues, boolValues); 
+		for(Integer i=0;i<this._numPrivFlags;++i) {		boolValues.put(i, getPrivFlags(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
-	}
+	}//buildUIUpdateStruct
 
 	/**
 	 * This will check if value is different than previous value, and if so will change it
@@ -368,7 +366,7 @@ public abstract class myDispWindow {
 	
 	//set up initial colors for sim specific flags for display
 	protected void initPrivFlagColors(){
-		privFlagColors = new int[truePrivFlagNames.length][4];
+		privFlagColors = new int[truePrivFlagLabels.length][4];
 		ThreadLocalRandom tr = ThreadLocalRandom.current();
 		for (int i = 0; i < privFlagColors.length; ++i) { privFlagColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150), 255}; }			
 	}
@@ -393,28 +391,28 @@ public abstract class myDispWindow {
 	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
 	 * @param tmpBtnNamesArray arraylist of object arrays, each entry in object array holding a true string, a false string and an integer idx for the button
 	 */	
-	private void _initAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray) {
+	private void _buildAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray) {
 		// finalize setup for UI toggle buttons - convert to arrays
-		truePrivFlagNames = new String[tmpBtnNamesArray.size()];
-		falsePrivFlagNames = new String[truePrivFlagNames.length];
-		privModFlgIdxs = new int[truePrivFlagNames.length];
-		for (int i = 0; i < truePrivFlagNames.length; ++i) {
+		truePrivFlagLabels = new String[tmpBtnNamesArray.size()];
+		falsePrivFlagLabels = new String[truePrivFlagLabels.length];
+		privModFlgIdxs = new int[truePrivFlagLabels.length];
+		for (int i = 0; i < truePrivFlagLabels.length; ++i) {
 			Object[] tmpAra = tmpBtnNamesArray.get(i);
-			truePrivFlagNames[i] = (String) tmpAra[0];
-			falsePrivFlagNames[i] = (String) tmpAra[1];
+			truePrivFlagLabels[i] = (String) tmpAra[0];
+			falsePrivFlagLabels[i] = (String) tmpAra[1];
 			privModFlgIdxs[i] = (int) tmpAra[2];
 		}
-		numClickBools = truePrivFlagNames.length;
-		initPrivBtnRects(0, numClickBools);
-	}//_initAllPrivButtons
+		numClickBools = truePrivFlagLabels.length;
+		_buildPrivBtnRects(0, numClickBools);
+	}//_buildAllPrivButtons
 	
 	/**
-	 * set up child class boolean button rectangles using initialized truePrivFlagNames and falsePrivFlagNames
+	 * set up child class boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
 	 * @param yDisp displacement for button to be drawn
 	 * @param numBtns number of buttons to make
 	 */
-	private void initPrivBtnRects(float yDisp, int numBtns){
-		//msgObj.dispInfoMessage("myDispWindow","initPrivBtnRects","initPrivBtnRects in :"+ name + "st value for uiClkCoords[3]");
+	private void _buildPrivBtnRects(float yDisp, int numBtns){
+		//msgObj.dispInfoMessage("myDispWindow","_buildPrivBtnRects","_buildPrivBtnRects in :"+ name + "st value for uiClkCoords[3]");
 		float maxBtnLen = maxBtnWidthMult * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
 		//pa.pr("maxBtnLen : " + maxBtnLen);
 		privFlagBtns = new float[numBtns][];
@@ -422,9 +420,9 @@ public abstract class myDispWindow {
 		float oldBtnLen = 0;
 		boolean lastBtnHalfStLine = false, startNewLine = true;
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
-			float btnLen = calcBtnLength(truePrivFlagNames[i].trim(),falsePrivFlagNames[i].trim());
+			float btnLen = calcBtnLength(truePrivFlagLabels[i].trim(),falsePrivFlagLabels[i].trim());
 			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
-			//pa.pr("initPrivBtnRects: i "+i+" len : " +btnLen+" cap 1: " + truePrivFlagNames[i].trim()+"|"+falsePrivFlagNames[i].trim());
+			//pa.pr("_buildPrivBtnRects: i "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
 			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
@@ -457,7 +455,7 @@ public abstract class myDispWindow {
 		}
 		this.uiClkCoords[3] += yOff;
 		initPrivFlagColors();
-	}//initPrivBtnRects
+	}//_buildPrivBtnRects
 	/**
 	 * find index in flag name arrays of passed boolean IDX
 	 * @param idx
@@ -587,11 +585,7 @@ public abstract class myDispWindow {
 		boolean[][] guiBoolVals = new boolean[numGUIObjs][5];				//array of UI flags for UI objects
 				
 		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
-		
-		guiFloatValIDXs= new ArrayList<Integer>();
-		guiIntValIDXs = new ArrayList<Integer>();
-		
-		uiVals = new double[numGUIObjs];// raw values
+			
 		for (int i = 0; i < numGUIObjs; ++i) {
 			Object[] obj = tmpUIObjArray.get(i);
 			guiMinMaxModVals[i] = (double[]) obj[0];
@@ -605,7 +599,6 @@ public abstract class myDispWindow {
 				guiIntValIDXs.add(i);
 			}
 			guiBoolVals[i] = (boolean[])obj[4];
-			uiVals[i] = guiStVals[i];
 		}
 		// since horizontal row of UI comps, uiClkCoords[2] will be set in buildGUIObjs
 		guiObjs = new myGUIObj[numGUIObjs]; // list of modifiable gui objects
@@ -624,6 +617,64 @@ public abstract class myDispWindow {
 		//build lists of data for all list UI objects
 		for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
 	}//_buildGUIObjsFromMaps
+
+	/**
+	 * Set UI values by object type, sending value to 
+	 * @param UIidx
+	 */
+	protected final void setUIWinVals(int UIidx) {
+		//Determine whether int (int or list) or float
+		GUIObj_Type objType = guiObjs[UIidx].getObjType();
+		switch (objType) {
+			case IntVal : {
+				int ival = (int)guiObjs[UIidx].getVal();
+				if(checkAndSetIntVal(UIidx, ival)) {
+					updateCalcObjUIVals();
+					//Special per-obj int handling, if pertinent
+					setUI_IntValsCustom(UIidx, ival);
+				}
+				break;}
+			case ListVal : {
+				int ival = (int)guiObjs[UIidx].getVal();
+				if(checkAndSetIntVal(UIidx, ival)) {
+					updateCalcObjUIVals(); 
+					//Special per-obj int (list idx)-related handling, if pertinent
+					setUI_IntValsCustom(UIidx, ival);
+				}
+				break;}
+			case FloatVal : {
+				float val = (float)guiObjs[UIidx].getVal();
+				if(checkAndSetFloatVal(UIidx, val)) {
+					updateCalcObjUIVals(); 
+					//Special per-obj float handling, if pertinent
+					setUI_FloatValsCustom(UIidx, val);
+				}
+				break;}
+		}//switch on obj type
+	}//setUIWinVals
+	
+	/**
+	 * Reset guiObj given by passed index to starting value
+	 * @param uiIdx
+	 */
+	protected final void resetUIObj(int uiIdx) {guiObjs[uiIdx].setVal(guiStVals[uiIdx]);setUIWinVals(uiIdx);}
+	
+	/**
+	 * Called if int-handling guiObjs[UIidx] (int or list) has new data which updated UI adapter. 
+	 * Intended to support custom per-object handling by owning window.
+	 * Only called if data changed!
+	 * @param UIidx Index of gui obj with new data
+	 * @param ival integer value of new data
+	 */
+	protected abstract void setUI_IntValsCustom(int UIidx, int ival);
+	/**
+	 * Called if float-handling guiObjs[UIidx] has new data which updated UI adapter.  
+	 * Intended to support custom per-object handling by owning window.
+	 * Only called if data changed!
+	 * @param UIidx Index of gui obj with new data
+	 * @param val float value of new data
+	 */
+	protected abstract void setUI_FloatValsCustom(int UIidx, float val);
 	
 	/**
 	 * Reset all values to be initial values. 
@@ -801,15 +852,15 @@ public abstract class myDispWindow {
 		pa.setColorValFill(IRenderInterface.gui_Black,255);
 		if(getFlags(useRndBtnClrs)){
 			for(int i =0; i<privModFlgIdxs.length; ++i){//prlFlagRects dispBttnAtLoc(String txt, float[] loc, int[] clrAra)
-				if(getPrivFlags(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagNames[i],privFlagBtns[i],privFlagColors[i]);			}
-				else {	if(truePrivFlagNames[i].equals(falsePrivFlagNames[i])) {	dispBttnAtLoc(truePrivFlagNames[i],privFlagBtns[i],new int[]{180,180,180, 255});}	
-						else {														dispBttnAtLoc(falsePrivFlagNames[i],privFlagBtns[i],new int[]{0,255-privFlagColors[i][1],255-privFlagColors[i][2], 255});}		
+				if(getPrivFlags(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],privFlagColors[i]);			}
+				else {	if(truePrivFlagLabels[i].equals(falsePrivFlagLabels[i])) {	dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],new int[]{180,180,180, 255});}	
+						else {														dispBttnAtLoc(falsePrivFlagLabels[i],privFlagBtns[i],new int[]{0,255-privFlagColors[i][1],255-privFlagColors[i][2], 255});}		
 				}
 			}		
 		} else {
 			for(int i =0; i<privModFlgIdxs.length; ++i){//prlFlagRects dispBttnAtLoc(String txt, float[] loc, int[] clrAra)
-				if(getPrivFlags(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagNames[i],privFlagBtns[i],trueBtnClr);			}
-				else {																dispBttnAtLoc(falsePrivFlagNames[i],privFlagBtns[i],falseBtnClr);	}
+				if(getPrivFlags(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],trueBtnClr);			}
+				else {																dispBttnAtLoc(falsePrivFlagLabels[i],privFlagBtns[i],falseBtnClr);	}
 			}	
 		}
 		pa.popMatState();
@@ -1177,8 +1228,9 @@ public abstract class myDispWindow {
 	public boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn){
 		boolean mod = false;
 		if(!getFlags(showIDX)){return mod;}
+		boolean shiftPressed = AppMgr.shiftIsPressed();
 		//check if modding view
-		if ((AppMgr.shiftIsPressed()) && getFlags(canChgView) && (msClkObj==-1)) {//modifying view angle/zoom
+		if (shiftPressed && getFlags(canChgView) && (msClkObj==-1)) {//modifying view angle/zoom
 			AppMgr.setModView(true);	
 			if(mseBtn == 0){			handleViewChange(false,AppMgr.msSclY*(mouseY-pmouseY), AppMgr.msSclX*(mouseX-pmouseX));}	
 			else if (mseBtn == 1) {		handleViewChange(true,(mouseY-pmouseY), 0);}	//moveZoom(mouseY-pmouseY);}//dz-=(
@@ -1187,12 +1239,11 @@ public abstract class myDispWindow {
 			AppMgr.setModView(true);
 			handleViewTargetChange((mouseY-pmouseY), (mouseX-pmouseX));
 			return true;
-		} else {//modify UI elements
-		
+		} else {//modify UI elements		
 			//any generic dragging stuff - need flag to determine if trajectory is being entered		
 			//modify object that was clicked in by mouse motion
 			if(msClkObj!=-1){	
-				guiObjs[msClkObj].modVal((mouseX-pmouseX)+(mouseY-pmouseY)*-(AppMgr.shiftIsPressed() ? 50.0f : 5.0f));
+				guiObjs[msClkObj].modVal((mouseX-pmouseX)+(mouseY-pmouseY)*-(shiftPressed ? 50.0f : 5.0f));
 				setFlags(uiObjMod, true); 
 				if(guiObjs[msClkObj].shouldUpdateWin(false)){setUIWinVals(msClkObj);}
 				return true;
@@ -1233,10 +1284,12 @@ public abstract class myDispWindow {
 			setFlags(uiObjMod, false);
 			msClkObj = -1;	
 		}
+		
 		if(null!=trajMgr) {trajMgr.handleMouseRelease_Traj(getMsePoint(pa.getMouse_Raw()));}
 		msClkObj = -1;	
 		//if buttons have been put in clear queue (set to clear), set flag to clear them next draw
-		if (privBtnsToClear.size() > 0){setFlags(clearPrivBtns, true);	}		
+		if (privBtnsToClear.size() > 0){setFlags(clearPrivBtns, true);	}
+		
 		hndlMouseRelIndiv();//specific instancing window implementation stuff
 
 		if(null!=trajMgr) {trajMgr.clearTmpDrawnTraj();}
@@ -1399,9 +1452,9 @@ public abstract class myDispWindow {
 	protected abstract void endCntlKeyI();
 	
 	/**
-	 * Modify the application-wide ui button names based on context
+	 * Modify the application-wide ui button labels based on context
 	 */
-	protected abstract void setCustMenuBtnNames();
+	protected abstract void setCustMenuBtnLabels();
 	
 	//ui init routines
 	/**
@@ -1414,7 +1467,6 @@ public abstract class myDispWindow {
 	 * @param tmpListObjVals
 	 */
 	protected abstract void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);	
-	protected abstract void setUIWinVals(int UIidx);
 	
 	public abstract void processTrajIndiv(myDrawnSmplTraj drawnTraj);
 	
