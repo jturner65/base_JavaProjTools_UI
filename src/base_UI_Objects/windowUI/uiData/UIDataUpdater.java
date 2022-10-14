@@ -61,7 +61,18 @@ public class UIDataUpdater {
 	public final boolean compareIntValue(Integer idx, Integer value) {	return (intValues.get(idx) != null) && (intValues.get(idx).equals(value));	}
 	public final boolean compareFloatValue(Integer idx, Float value) {	return (floatValues.get(idx) != null) && (floatValues.get(idx).equals(value));	}
 	public final boolean compareBoolValue(Integer idx, Boolean value) {	return (boolValues.get(idx) != null) && (boolValues.get(idx).equals(value));	}
+
 	
+	/**
+	 * Getters
+	 */
+	public final boolean getFlag(int idx) {return boolValues.get(idx);}
+	public final int getIntValue(int idx) {return intValues.get(idx);  }
+	public final float getFloatValue(int idx) {return floatValues.get(idx);  }
+	
+	/**
+	 * Setters
+	 */	
 	public final void setIntValue(Integer idx, Integer value){	intValues.put(idx,value);  }
 	public final void setFloatValue(Integer idx, Float value){	floatValues.put(idx,value);}
 	public final void setBoolValue(Integer idx, Boolean value){	boolValues.put(idx,value);}
@@ -120,13 +131,6 @@ public class UIDataUpdater {
 	 * @return whether new value was set
 	 */	
 	public final boolean checkAndSetFloatVal(int idx, float value) {if(!compareFloatValue(idx, value)) {floatValues.put(idx,value);return true;}return false;}
-	
-	/**
-	 * Getters
-	 */
-	public final boolean getFlag(int idx) {return boolValues.get(idx);}
-	public final int getIntValue(Integer idx, Integer value){	return intValues.get(idx);  }
-	public final float getFloatValue(Integer idx, Float value){	return floatValues.get(idx);  }
 	
 	/**
 	 * Boolean value updater - this will update the owning window's corresponding data values as well

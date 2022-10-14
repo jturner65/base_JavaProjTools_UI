@@ -88,8 +88,6 @@ public class mySideBarMenu extends myDispWindow{
 	 * configuration of side bar buttons
 	 */
 	public mySidebarMenuBtnConfig btnConfig;
-//	public BaseBarMenu(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed, String _winTxt, boolean _canDrawTraj) {
-//		super(_p, _n, _flagIdx, fc, sc,  rd, rdClosed, _winTxt, _canDrawTraj);
 
 	public mySideBarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, int _flagIdx, mySidebarMenuBtnConfig _c) {
 		super(_p, _AppMgr, _winIdx, _flagIdx);
@@ -98,8 +96,7 @@ public class mySideBarMenu extends myDispWindow{
 		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
 		super.initThisWin(true);
 	}
-	
-		
+			
 	/**
 	 * call this from each new window to set function btn labels, if specified, when window gets focus
 	 * @param rowIdx
@@ -199,14 +196,13 @@ public class mySideBarMenu extends myDispWindow{
 		//set debug button names from valus specified in btnConfig, if any provided
 		if (_initBtnDBGSelCmp) {
 			setAllFuncBtnLabels(debugBtnRowIDX, btnConfig.debugBtnLabels);
-		}
-		
+		}		
 	}//setBtnData
 	
 	public Boolean[][] getGuiBtnWaitForProc() {return guiBtnWaitForProc;}
-	public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {		this.guiBtnWaitForProc = _guiBtnWaitForProc;}
+	public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {		guiBtnWaitForProc = _guiBtnWaitForProc;}
 	public int[][] getGuiBtnSt() {		return guiBtnSt;	}
-	public void setGuiBtnSt(int[][] guiBtnSt) {	this.guiBtnSt = guiBtnSt;	}
+	public void setGuiBtnSt(int[][] _guiBtnSt) {	guiBtnSt = _guiBtnSt;	}
 
 	private String[] buildBtnNameAra(int numBtns, String prfx) {
 		String[] res = new String[numBtns];
@@ -221,21 +217,16 @@ public class mySideBarMenu extends myDispWindow{
 	
 	@Override
 	//initialize all private-flag based UI buttons here - called by base class
-	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnLabelsArray){
-		return numPrivFlags;
-	}//
+	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
 	
+	//init/reinit this window
 	@Override
-	protected final void initMe() {//init/reinit this window
-		setFlags(closeable, false);
-	}	
-	
+	protected final void initMe() {		setFlags(closeable, false);	}	
 	//window UI object not used for sidebar menu
 	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {return null;}
 	@Override
 	protected final void updateCalcObjUIVals() {}
-
 	@Override
 	protected int[] getFlagIDXsToInitToTrue() {
 		ArrayList<Integer> resAra = new ArrayList<Integer>();
@@ -246,13 +237,11 @@ public class mySideBarMenu extends myDispWindow{
 		for(int i=0;i<res.length;++i) {			res[i]=resAra.get(i);		}
 		return res;
 	}
-
 	
 	/**
 	 * initialize application-specific windows and titles in structs :
 	 *  guiBtnRowNames, guiBtnLabels, defaultUIBtnLabels, guiBtnInst, guiBtnWaitForProc;
 	 */
-	//protected abstract void initSideBarMenuBtns_Priv();
 	//set flag values and execute special functionality for this sequencer
 	@Override
 	public final void setPrivFlags(int idx, boolean val){
@@ -267,19 +256,16 @@ public class mySideBarMenu extends myDispWindow{
 	}
 
 	//initialize structure to hold modifiable menu regions
+	//called from super.initThisWin
 	@Override
-	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals){						//called from super.initThisWin
+	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals){
 		//set up side bar menu buttons with format specific to instancing application
-		//initSideBarMenuBtns_Priv();
 		setBtnData();
 		
 		minBtnClkY = (numMainFlagsToShow+3) * yOff + clkFlgsStY;										//start of buttons from under boolean flags
 		//all ui ojbects for all windows will follow this format and share the x[0] value
 		initUIClickCoords(rectDim[0] + xLblOffsetMult * rectDim[2],minBtnClkY + (guiBtnRowNames.length * 2.0f) * yOff,rectDim[0] + .99f * rectDim[2],0);//last val over-written by actual value in buildGuiObjs
 		guiObjs = new myGUIObj[0];			//list of modifiable gui objects
-//		TreeMap<Integer, String[]> listObjs = new TreeMap<Integer, String[]>();
-//		if(0!=guiObjs.length){			buildGUIObjs(guiObjNames,guiStVals,guiMinMaxModVals,guiBoolVals, new double[]{xOff,yOff}, listObjs);		} 
-//		else {			uiClkCoords[3] = uiClkCoords[1];	}	//set y start values
 		uiClkCoords[3] = uiClkCoords[1]-20;
 	}//setupGUIObjsAras
 	
@@ -300,16 +286,15 @@ public class mySideBarMenu extends myDispWindow{
 		}
 		return false;
 	}//handleButtonClick	
-	//public void clearAllBtnStates(){for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnLabels[row].length;++col){if((guiBtnInst[row][col]) && (guiBtnSt[row][col] ==1)){	guiBtnSt[row][col] = 0;}}}}
 	
 	//turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
 	public final void clearAllBtnStates(){
-		if(this.getPrivFlags(mseClickedInBtnsIDX)) {
+		if(getPrivFlags(mseClickedInBtnsIDX)) {
 			//guiBtnWaitForProc should only be set for non-momentary buttons when they are pushed and cleared when whatever they are do is complete
 			for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnLabels[row].length;++col){				
 				if((guiBtnSt[row][col]==1) && (guiBtnInst[row][col]  || !guiBtnWaitForProc[row][col])){	guiBtnSt[row][col] = 0;}//btn is on, and either is momentary or it is not waiting for processing
 			}}
-			this.setPrivFlags(mseClickedInBtnsIDX, false);
+			setPrivFlags(mseClickedInBtnsIDX, false);
 		}
 	}//clearAllBtnStates
 	
@@ -331,23 +316,21 @@ public class mySideBarMenu extends myDispWindow{
 	public final void handleButtonClick(int row, int col){
 		int val = guiBtnSt[row][col];//initial state, before being changed
 		guiBtnSt[row][col] = (guiBtnSt[row][col] + 1)%2;//change state
-		//int newVal = guiBtnSt[row][col];//curr state, after being changed
 		//if not momentary buttons, set wait for proc to true
 		setWaitForProc(row,col);
-		if((row == btnShowWinIdx) && this.getPrivFlags(usesWinBtnDispIDX)) {AppMgr.handleShowWin(col, val);}
-		else if((row == btnMseFuncIdx) && this.getPrivFlags(usesMseOvrBtnDispIDX)) {
+		if((row == btnShowWinIdx) && getPrivFlags(usesWinBtnDispIDX)) {AppMgr.handleShowWin(col, val);}
+		else if((row == btnMseFuncIdx) && getPrivFlags(usesMseOvrBtnDispIDX)) {
 			if(val==0) {clearRowExceptPassedBtn(row,col);}
-			AppMgr.handleMenuBtnMseOvDispSel(col, val==0);
-			
+			AppMgr.handleMenuBtnMseOvDispSel(col, val==0);			
 		}
-		else if((row == btnDBGSelCmpIdx) && this.getPrivFlags(usesDbgBtnDispIDX)) {AppMgr.handleMenuBtnDebugSel(col, val);}
+		else if((row == btnDBGSelCmpIdx) && getPrivFlags(usesDbgBtnDispIDX)) {AppMgr.handleMenuBtnDebugSel(col, val);}
 		else {AppMgr.handleMenuBtnSelCmp(row, funcBtnIDXOffset, col, val);}		
 	}	
 
 	@Override
-	protected void setUI_IntValsCustom(int UIidx, int ival) {}
+	protected void setUI_IntValsCustom(int UIidx, int ival, int oldval) {}
 	@Override
-	protected void setUI_FloatValsCustom(int UIidx, float val) {}
+	protected void setUI_FloatValsCustom(int UIidx, float val, float oldval) {}
 	@Override
 	protected final void launchMenuBtnHndlr(int funcRow, int btn) {	}
 	@Override
@@ -366,7 +349,7 @@ public class mySideBarMenu extends myDispWindow{
 			AppMgr.flipMainFlag(i);return true;	
 		} else if(MyMathUtils.ptInRange(mouseX, mouseY, 0, minBtnClkY, uiClkCoords[2], uiClkCoords[1])){
 			boolean clkInBtnRegion = checkButtons(mouseX, mouseY);
-			if(clkInBtnRegion) { this.setPrivFlags(mseClickedInBtnsIDX, true);}
+			if(clkInBtnRegion) { setPrivFlags(mseClickedInBtnsIDX, true);}
 			return clkInBtnRegion;
 		}//in region where clickable buttons are - uiClkCoords[1] is bottom of buttons
 		return false;

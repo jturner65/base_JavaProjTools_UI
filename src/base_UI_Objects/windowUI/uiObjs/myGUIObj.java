@@ -27,12 +27,13 @@ public class myGUIObj {
 	private static final int 
 			debugIDX 		= 0,
 			showIDX			= 1,				//show this component
+			valChangedIDX   = 2,				//object value is dirty/clean
 			//config flags
-			usedByWinsIDX	= 2, 
-			updateWhileModIDX = 3,
-			objValChangedIDX = 4;				//object value is dirty/clean
-	public static final int numFlags = 5;			
-	
+			usedByWinsIDX	= 3, 
+			updateWhileModIDX = 4,
+			explicitUIDataUpdateIDX = 5;		//does not update UIDataUpdate structure on changes - must be explicitly sent to consumers 
+	public static final int numFlags = 6;			
+	private static final int numPrivFlags = 3;	// # of internal state booleans
 	private int[] _cVal;
 	private double modMult,						//multiplier for mod value
 					xOff,yOff;						//Offset value
@@ -57,8 +58,8 @@ public class myGUIObj {
 		val = _initVal;
 		objType = _objType;
 		initFlags();
-		int numToInit = (_flags.length < numFlags-2 ? _flags.length : numFlags-2);
-		for(int i =0; i<numToInit;++i){ 	setFlags(i+2,_flags[i]);	}	
+		int numToInit = (_flags.length < numFlags-numPrivFlags ? _flags.length : numFlags-numPrivFlags);
+		for(int i =0; i<numToInit;++i){ 	setFlags(i+numPrivFlags,_flags[i]);	}	
 		
 		_cVal = new int[] {0,0,0};
 		bxclr = new int[]{ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),255};
@@ -76,11 +77,12 @@ public class myGUIObj {
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		uiFlags[flIDX] = (val ?  uiFlags[flIDX] | mask : uiFlags[flIDX] & ~mask);
 		switch (idx) {//special actions for each flag
-		case debugIDX 			:{break;}
-		case showIDX			:{break;}	//show this component
-		case usedByWinsIDX		:{break;}
-		case updateWhileModIDX	:{break;}
-		case objValChangedIDX 	:{break;}		
+		case debugIDX 					:{break;}
+		case showIDX					:{break;}	//show this component
+		case valChangedIDX 				:{break;}		
+		case usedByWinsIDX				:{break;}
+		case updateWhileModIDX			:{break;}
+		case explicitUIDataUpdateIDX 	:{break;}
 		}
 	}//setFlag	
 	
@@ -90,7 +92,8 @@ public class myGUIObj {
 	public double getMaxVal(){return maxVal;}
 	public double getModStep(){return modMult;}	
 	
-	private void setIsDirty(boolean isDirty) {setFlags(objValChangedIDX, isDirty);}
+	private void setIsDirty(boolean isDirty) {setFlags(valChangedIDX, isDirty);}
+	public boolean shouldUpdateConsumer() {return !getFlags(explicitUIDataUpdateIDX);}
 		
 	//Make sure val adheres to specified bounds
 	private double forceBounds(double _val) {
@@ -132,7 +135,7 @@ public class myGUIObj {
 	}
 
 	public final boolean shouldUpdateWin(boolean isRelease) {
-		boolean isDirty = getFlags(objValChangedIDX);
+		boolean isDirty = getFlags(valChangedIDX);
 		//only clear once processed
 		if (isRelease){	setIsDirty(false);	}
 		return isDirty && ((isRelease || getFlags(updateWhileModIDX)) && getFlags(usedByWinsIDX));

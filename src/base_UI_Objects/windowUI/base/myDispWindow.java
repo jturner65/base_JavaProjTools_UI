@@ -572,7 +572,10 @@ public abstract class myDispWindow {
 	 *           the 2nd element is starting value                                                                      
 	 *           the 3rd elem is label for object                                                                       
 	 *           the 4th element is object type (GUIObj_Type enum)
-	 *           the 5th element is boolean array of {value is sent to owning window, value is sent on any modifications (while being modified, not just on release)}    
+	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 *           	{value is sent to owning window, 
+	 *           	value is sent on any modifications (while being modified, not just on release), 
+	 *           	changes to value must be explicitly sent to consumer (are not automatically sent)}    
 	 * @param tmpListObjVals
 	 */
 	private void _buildGUIObjsFromMaps(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
@@ -582,7 +585,7 @@ public abstract class myDispWindow {
 		guiStVals = new double[numGUIObjs];						//starting values
 		String[] guiObjNames = new String[numGUIObjs];						//display labels for UI components	
 		//idx 0 is treat as int, idx 1 is obj has list vals, idx 2 is object gets sent to windows
-		boolean[][] guiBoolVals = new boolean[numGUIObjs][5];				//array of UI flags for UI objects
+		boolean[][] guiBoolVals = new boolean[numGUIObjs][];				//array of UI flags for UI objects
 				
 		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
 			
@@ -598,7 +601,12 @@ public abstract class myDispWindow {
 				//int and list values are considered ints
 				guiIntValIDXs.add(i);
 			}
-			guiBoolVals[i] = (boolean[])obj[4];
+			boolean[] tmpAra = (boolean[])obj[4];
+			guiBoolVals[i] = new boolean[(tmpAra.length < 5 ? 5 : tmpAra.length)];
+			int idx = 0;
+			for (boolean val : tmpAra) {
+				guiBoolVals[i][idx++] = val;
+			}
 		}
 		// since horizontal row of UI comps, uiClkCoords[2] will be set in buildGUIObjs
 		guiObjs = new myGUIObj[numGUIObjs]; // list of modifiable gui objects
@@ -628,26 +636,29 @@ public abstract class myDispWindow {
 		switch (objType) {
 			case IntVal : {
 				int ival = (int)guiObjs[UIidx].getVal();
+				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
-					updateCalcObjUIVals();
+					if(guiObjs[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
 					//Special per-obj int handling, if pertinent
-					setUI_IntValsCustom(UIidx, ival);
+					setUI_IntValsCustom(UIidx, ival, origVal);
 				}
 				break;}
 			case ListVal : {
 				int ival = (int)guiObjs[UIidx].getVal();
+				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
-					updateCalcObjUIVals(); 
+					if(guiObjs[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
 					//Special per-obj int (list idx)-related handling, if pertinent
-					setUI_IntValsCustom(UIidx, ival);
+					setUI_IntValsCustom(UIidx, ival, origVal);
 				}
 				break;}
 			case FloatVal : {
 				float val = (float)guiObjs[UIidx].getVal();
+				float origVal = uiUpdateData.getFloatValue(UIidx);
 				if(checkAndSetFloatVal(UIidx, val)) {
-					updateCalcObjUIVals(); 
+					if(guiObjs[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
 					//Special per-obj float handling, if pertinent
-					setUI_FloatValsCustom(UIidx, val);
+					setUI_FloatValsCustom(UIidx, val, origVal);
 				}
 				break;}
 		}//switch on obj type
@@ -665,16 +676,20 @@ public abstract class myDispWindow {
 	 * Only called if data changed!
 	 * @param UIidx Index of gui obj with new data
 	 * @param ival integer value of new data
+	 * @param oldVal integer value of old data in UIUpdater
 	 */
-	protected abstract void setUI_IntValsCustom(int UIidx, int ival);
+	protected abstract void setUI_IntValsCustom(int UIidx, int ival, int oldVal);
+	
 	/**
 	 * Called if float-handling guiObjs[UIidx] has new data which updated UI adapter.  
 	 * Intended to support custom per-object handling by owning window.
 	 * Only called if data changed!
 	 * @param UIidx Index of gui obj with new data
 	 * @param val float value of new data
+	 * @param oldVal float value of old data in UIUpdater
 	 */
-	protected abstract void setUI_FloatValsCustom(int UIidx, float val);
+	protected abstract void setUI_FloatValsCustom(int UIidx, float val, float oldVal);
+	
 	
 	/**
 	 * Reset all values to be initial values. 
