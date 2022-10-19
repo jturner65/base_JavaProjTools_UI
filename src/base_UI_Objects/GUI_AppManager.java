@@ -251,6 +251,19 @@ public abstract class GUI_AppManager {
 		{IRenderInterface.gui_DarkMagenta,IRenderInterface.gui_DarkBlue,IRenderInterface.gui_DarkGreen,IRenderInterface.gui_DarkCyan}, 
 		{IRenderInterface.gui_LightMagenta,IRenderInterface.gui_LightBlue,IRenderInterface.gui_LightGreen,IRenderInterface.gui_TransCyan}};
 
+	/////////////////
+	// pre-calc sin/cos for building cylinders
+	
+	//constant values defined for cylinder wall angles
+	private final float deltaThet = MyMathUtils.TWO_PI_F/36.0f, 
+		finalThet = MyMathUtils.TWO_PI_F+deltaThet;
+	
+	/**
+	 * Precalculated cosine and sine values
+	 */
+	private double[] cylCosVals, cylSinVals;
+		
+		
 	//////////////////////////////
 	// code
 	
@@ -263,7 +276,14 @@ public abstract class GUI_AppManager {
 		now = Calendar.getInstance();
 		//absolute start time of application
 		appStartTimeMillis = now.getTimeInMillis();	
-		
+		//precalc cylinder cosine and sine vals
+		cylCosVals = new double[38];
+		cylSinVals = new double[38];
+		int i=0;
+		for(float a=0; a<=finalThet; a+=deltaThet) {
+			cylCosVals[i] = Math.cos(a);
+			cylSinVals[i++] = Math.sin(a);
+		}
 		//project arguments
 		argsMap = new TreeMap<String,Object>();
 	}//	
@@ -1559,6 +1579,47 @@ public abstract class GUI_AppManager {
 		return new myVectorf[] {V,I,J};		
 	}
 	
+	
+	/**
+	 * Derive the points of a cylinder of radius r around axis through A and B
+	 * @param A center point of endcap
+	 * @param B center point of endcap
+	 * @param r desired radius of cylinder
+	 * @return array of points for cylinder
+	 */
+	public myPoint[] buildCylVerts(myPoint A, myPoint B, float r) {
+		myVector[] frame = buildViewBasedFrame(A, B);
+		myPoint[] resList = new myPoint[2 * cylCosVals.length];
+		double rca, rsa;
+		int idx = 0;
+		for(int i = 0; i<cylCosVals.length; ++i) {
+			rca = r*cylCosVals[i];rsa=r*cylSinVals[i];
+			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2]); 
+			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
+		}
+		return resList;
+	}//build list of all cylinder vertices 
+	
+	/**
+	 * Derive the points of a cylinder of radius r around axis through A and B
+	 * @param A center point of endcap
+	 * @param B center point of endcap
+	 * @param r desired radius of cylinder
+	 * @return array of points for cylinder
+	 */
+	public myPointf[] buildCylVerts(myPointf A, myPointf B, float r) {
+		myVectorf[] frame = buildViewBasedFrame_f(A, B);
+		myPointf[] resList = new myPointf[2 * cylCosVals.length];
+		float rca, rsa;
+		int idx = 0;
+		for(int i = 0; i<cylCosVals.length; ++i) {
+			rca = (float) (r*cylCosVals[i]);rsa=(float) (r*cylSinVals[i]);
+			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2]); 
+			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
+		}	
+		return resList;
+	}//build list of all cylinder vertices 
+	
 	/**
 	 * Build a set of n points inscribed on a circle centered at p in plane I,J
 	 * @param p center point
@@ -1574,6 +1635,14 @@ public abstract class GUI_AppManager {
 		for(int i=1;i<n;++i){pts[i] = pts[i-1].rotMeAroundPt(a,J,I,p);}
 		return pts;
 	}
+	/**
+	 * Build a set of n points inscribed on a circle centered at p in plane I,J
+	 * @param p center point
+	 * @param r circle radius
+	 * @param I, J axes of plane
+	 * @param n # of points
+	 * @return array of n equal-arc-length points centered around p
+	 */
 	public synchronized myPointf[] buildCircleInscribedPoints(myPointf p, float r, myVectorf I, myVectorf J,int n) {
 		myPointf[] pts = new myPointf[n];
 		pts[0] = new myPointf(p,r,myVectorf._unit(I));
@@ -1654,15 +1723,20 @@ public abstract class GUI_AppManager {
 		if(radical < 0) return -1;
 		double t1 = (b + Math.sqrt(radical))/(2*VdV), t2 = (b - Math.sqrt(radical))/(2*VdV);			
 		return ((t1 > 0) && (t2 > 0) ? Math.min(t1, t2) : ((t1 < 0 ) ? ((t2 < 0 ) ? -1 : t2) : t1) );
-		
 	}	
 	
-	//performs shuffle
+	/**
+	 * performs shuffle on list of strings. Moves from end of list, picks string i, finds random string j [0,i] and swaps if i!=j
+	 * @param _list
+	 * @param type
+	 * @return
+	 */
 	public String[] shuffleStrList(String[] _list, String type){
 		String tmp = "";
 		ThreadLocalRandom tr = ThreadLocalRandom.current();
 		for(int i=(_list.length-1);i>0;--i){
-			int j = (int)(tr.nextDouble(0,(i+1))) ;
+			int j = (int)(tr.nextDouble(0,(i+1)));
+			if (i==j) {continue;}
 			tmp = _list[i];
 			_list[i] = _list[j];
 			_list[j] = tmp;
@@ -1672,7 +1746,14 @@ public abstract class GUI_AppManager {
 	}//shuffleStrList
 	
 	private static final double third = 1.0/3.0;
-	public final myVectorf getRandPosInSphere(double rad, myVectorf ctr){
+	/**
+	 * Find a random position in a sphere centered at ctr of radius rad, using spherical coords as rand axes
+	 * @param rad
+	 * @param ctr
+	 * @return
+	 */
+	public final myVectorf getRandPosInSphere(double rad){ return getRandPosInSphere(rad, new myPointf());}
+	public final myVectorf getRandPosInSphere(double rad, myPointf ctr){
 		myVectorf pos = new myVectorf();
 		do{
 			double u = ThreadLocalRandom.current().nextDouble(0,1), r = rad * Math.pow(u, third),
@@ -1684,8 +1765,14 @@ public abstract class GUI_AppManager {
 		} while (pos.z < 0);
 		return pos;
 	}
-	
-	public final myVectorf getRandPosOnSphere(double rad, myVectorf ctr){
+	/**
+	 * Find a random position on a sphere's surface centered at ctr of radius rad, using spherical coords as rand axes
+	 * @param rad
+	 * @param ctr
+	 * @return
+	 */
+	public final myVectorf getRandPosOnSphere(double rad){ return getRandPosOnSphere(rad, new myPointf());}
+	public final myVectorf getRandPosOnSphere(double rad, myPointf ctr){
 		myVectorf pos = new myVectorf();
 		//do{
 			double 	cosTheta = ThreadLocalRandom.current().nextDouble(-1,1), sinTheta =  Math.sin(Math.acos(cosTheta)),
@@ -1696,13 +1783,63 @@ public abstract class GUI_AppManager {
 		//} while (pos.z < 0);
 		return pos;
 	}
-	//random location within coords[0] and coords[1] extremal corners of a cube - bnds is to give a margin of possible random values
+	/**
+	 * random location within coords[0] and coords[1] extremal corners of a cube - bnds is to give a margin of possible random values
+	 * @param coords
+	 * @param bnds
+	 * @return
+	 */
 	public myVectorf getRandPosInCube(float[][] coords, float bnds){
 		ThreadLocalRandom tr = ThreadLocalRandom.current();
 		return new myVectorf(
 				tr.nextDouble(coords[0][0]+bnds,(coords[0][0] + coords[1][0] - bnds)),
 				tr.nextDouble(coords[0][1]+bnds,(coords[0][1] + coords[1][1] - bnds)),
 				tr.nextDouble(coords[0][2]+bnds,(coords[0][2] + coords[1][2] - bnds)));}		
+	
+	/** 
+	 * convert from spherical coords to cartesian. Returns Array :
+	 * 	idx0 : norm of vector through point from origin
+	 * 	idx1 : point
+	 * @param rad
+	 * @param thet
+	 * @param phi
+	 * @param scaleZ scaling factor to make ellipsoid
+	 * @return ara : norm, surface point == x,y,z of coords passed
+	 */
+	public myVectorf[] getXYZFromRThetPhi(double rad, double thet, double phi, double scaleZ) {
+		double sinThet = Math.sin(thet);	
+		myVectorf[] res = new myVectorf[2];
+		res[1] = new myVectorf(sinThet * Math.cos(phi) * rad, sinThet * Math.sin(phi) * rad,Math.cos(thet)*rad*scaleZ);
+		res[0] = myVectorf._normalize(res[1]);
+		return res;
+	}//
+	
+	
+	private static final double twoPi = 2.0*MyMathUtils.PI;
+	/** 
+	 * builds a list of N regularly placed vertices and normals for a sphere of radius rad centered at ctr
+	 * @param rad radius of sphere
+	 * @param N # of verts we want in result
+	 * @param scaleZ scaling factor for ellipsoid
+	 * @return list of points (as vectors) where each entry is a tuple of norm/point
+	 */
+	public myVectorf[][] getRegularSphereList(float rad, int N, float scaleZ) {
+		ArrayList<myVectorf[]> res = new ArrayList<myVectorf[]>();
+		//choose 1 point per dArea, where dArea is area of sphere parsed into N equal portions
+		double lclA = 4*MyMathUtils.PI/N, lclD = Math.sqrt(lclA);
+		int Mthet = (int) Math.round(MyMathUtils.PI/lclD), Mphi;
+		double dThet = MyMathUtils.PI/Mthet, dPhi = lclA/dThet, thet, phi, twoPiOvDPhi = twoPi/dPhi;
+		for(int i=0;i<Mthet;++i) {
+			thet = dThet * (i + 0.5f);
+			Mphi = (int) Math.round(twoPiOvDPhi * Math.sin(thet));
+			for (int j=0;j<Mphi; ++j) { 
+				phi = (twoPi*j)/Mphi;		
+				res.add(getXYZFromRThetPhi(rad, thet, phi, scaleZ));
+			}
+		}
+		return res.toArray(new myVectorf[0][]);
+	}//getRegularSphereList	
+	
 	
 	public final myPoint bndChkInBox2D(myPoint p){p.set(Math.max(0,Math.min(p.x,grid2D_X)),Math.max(0,Math.min(p.y,grid2D_Y)),0);return p;}
 	public final myPoint bndChkInBox3D(myPoint p){p.set(Math.max(0,Math.min(p.x,gridDimX)), Math.max(0,Math.min(p.y,gridDimY)),Math.max(0,Math.min(p.z,gridDimZ)));return p;}	

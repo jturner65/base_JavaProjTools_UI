@@ -30,15 +30,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	//giant sphere encapsulating entire scene
 	private PShape bgrndSphere;	
-	/////////////////
-	// pre-calc sin/cos for building cylinders
 		
-	//constant values defined for cylinder wall angles
-	private final float deltaThet = MyMathUtils.TWO_PI_F/36.0f, 
-			finalThet = MyMathUtils.TWO_PI_F+deltaThet;
-
-	private double[] cylCosVals, cylSinVals;
-	
 	////////////////////////
 	// code
 	
@@ -61,13 +53,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void initRenderInterface() {
 		//initialize constants
-		cylCosVals = new double[38];
-		cylSinVals = new double[38];
-		int i=0;
-		for(float a=0; a<=finalThet; a+=deltaThet) {
-			cylCosVals[i] = Math.cos(a);
-			cylSinVals[i++] = Math.sin(a);
-		}
 	}
 	
 	//processing being run in eclipse uses settings for variable size dimensions
@@ -482,38 +467,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void drawTriangle2D(myPoint a, myPoint b, myPoint c) {triangle((float)a.x,(float)a.y,(float) b.x, (float)b.y,(float) c.x,(float) c.y);}
-
-
-	private myPoint[] buildCylVerts(myPoint A, myPoint B, float r) {
-		myVector[] frame = AppMgr.buildViewBasedFrame(A, B);
-		myPoint[] resList = new myPoint[2 * cylCosVals.length];
-		double rca, rsa;
-		int idx = 0;
-		for(int i = 0; i<cylCosVals.length; ++i) {
-			rca = r*cylCosVals[i];rsa=r*cylSinVals[i];
-			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2]); 
-			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
-		}
-		return resList;
-	}//build list of all cylinder vertices 
 	
-	private myPointf[] buildCylVerts(myPointf A, myPointf B, float r) {
-		myVectorf[] frame = AppMgr.buildViewBasedFrame_f(A, B);
-		myPointf[] resList = new myPointf[2 * cylCosVals.length];
-		float rca, rsa;
-		int idx = 0;
-		for(int i = 0; i<cylCosVals.length; ++i) {
-			rca = (float) (r*cylCosVals[i]);rsa=(float) (r*cylSinVals[i]);
-			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2]); 
-			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
-		}	
-		return resList;
-	}//build list of all cylinder vertices 
-		
 	
 	@Override
 	public void drawCylinder_NoFill(myPoint A, myPoint B, float r, int clr1, int clr2) {
-		myPoint[] vertList = buildCylVerts(A, B, r);
+		myPoint[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
 		noFill();
@@ -527,7 +485,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}
 	@Override
 	public void drawCylinder_NoFill(myPointf A, myPointf B, float r, int clr1, int clr2) {
-		myPointf[] vertList = buildCylVerts(A, B, r);
+		myPointf[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
 		noFill();
@@ -542,7 +500,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 
 	@Override
 	public void drawCylinder(myPoint A, myPoint B, float r, int clr1, int clr2) {
-		myPoint[] vertList = buildCylVerts(A, B, r);
+		myPoint[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
 		beginShape(QUAD_STRIP);
@@ -556,7 +514,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	@Override
 	public void drawCylinder(myPointf A, myPointf B, float r, int clr1, int clr2) {
-		myPointf[] vertList = buildCylVerts(A, B, r);
+		myPointf[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
 		beginShape(QUAD_STRIP);
