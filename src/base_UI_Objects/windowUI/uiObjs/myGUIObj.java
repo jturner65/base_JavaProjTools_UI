@@ -43,6 +43,8 @@ public class myGUIObj {
 	private final float[] boxDim = new float[] {-2.5f, -2.5f, 5.0f, 5.0f};
 	
 	private String[] listVals = new String[] {"None"};
+	//Initial values for min, max, mod and val
+	private double[] initVals;
 	
 	public myGUIObj(IRenderInterface _p, int _objID, String _name, myVector _start, myVector _end, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
 		p=_p;
@@ -56,6 +58,9 @@ public class myGUIObj {
 		start = new myVector(_start); end = new myVector(_end);
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
+		initVals = new double[4];
+		for(int i=0;i<_minMaxMod.length;++i) {initVals[i]=_minMaxMod[i];}
+		initVals[3] = _initVal;
 		objType = _objType;
 		initFlags();
 		int numToInit = (_flags.length < numFlags-numPrivFlags ? _flags.length : numFlags-numPrivFlags);
@@ -101,37 +106,46 @@ public class myGUIObj {
 		if (_val > maxVal) {return maxVal;}
 		return _val;
 	}
-	public void setNewMax(double _newval){
+	public final void setNewMax(double _newval){
 		double oldVal = val;
 		maxVal = _newval;
 		val = forceBounds(val);	
 		if (oldVal != val) {setIsDirty(true);}		
 	}
-	public void setNewMin(double _newval){	
+	public final void setNewMin(double _newval){	
 		double oldVal = val;
 		minVal = _newval;
 		val = forceBounds(val);		
 		if (oldVal != val) {setIsDirty(true);}		
 	}
-	public void setNewMod(double _newval){	
+	public final void setNewMod(double _newval){	
 		if (_newval > (maxVal-minVal)) {
 			_newval = (maxVal-minVal);
 		}
 		modMult = _newval;	
 	}
-	public double setVal(double _newVal){
+	public final double setVal(double _newVal){
 		double oldVal = val;
 		val = forceBounds(_newVal);	
 		if (oldVal != val) {setIsDirty(true);}		
 		return val;
 	}	
-	public double modVal(double mod){
+	public final double modVal(double mod){
 		double oldVal = val;
 		val += (mod*modMult);
 		if(objType == GUIObj_Type.IntVal){val = Math.round(val);}
 		val = forceBounds(val);
 		if (oldVal != val) {setIsDirty(true);}		
 		return val;		
+	}
+	/**
+	 * Reset this UI component to its initialization values
+	 */
+	public final void resetToInit() {		
+		setNewMin(initVals[0]);
+		setNewMax(initVals[1]);
+		setNewMod(initVals[2]);
+		setVal(initVals[3]);
 	}
 
 	public final boolean shouldUpdateWin(boolean isRelease) {
@@ -260,5 +274,15 @@ public class myGUIObj {
 		tmpRes.add("Start loc : "+ start + " End loc : "+ end + " Treat as Int  : " + (objType == GUIObj_Type.IntVal));
 		tmpRes.add("Value : "+ val +" Max Val : "+ maxVal + " Min Val : " + minVal+ " Mod multiplier : " + modMult);
 		return tmpRes.toArray(new String[0]);
+	}
+	
+	@Override
+	public String toString() {
+		String res = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " distText : " + dispText+"\n";
+		res += "Start loc : "+ start + " End loc : "+ end + " Treat as Int  : " + (objType == GUIObj_Type.IntVal)+"\n";
+		res += "Value : "+ val +"|Max Val : "+ maxVal + "|Min Val : " + minVal+ "|Mod : " + modMult+"\n";
+		res += "Init Value : "+ initVals[3] +"|Init Max Val : "+ initVals[1] + "|Init Min Val : " + initVals[0]+ "|Init Mod : " + initVals[2]+"\n";
+		res += "Is Dirty :"+getFlags(valChangedIDX);
+		return res;
 	}
 }//class myGUIObj

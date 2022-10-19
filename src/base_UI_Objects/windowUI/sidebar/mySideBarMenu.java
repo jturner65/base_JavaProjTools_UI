@@ -112,7 +112,6 @@ public class mySideBarMenu extends myDispWindow{
 	 * Set values for ui action buttons, based on specifications of @class mySidebarMenuBtnConfig
 	 * Parameters user defined in main as window is specified, individual button names can be overridden in individual app windows
 	 */
-	//protected final void setBtnData(String[] _funcRowNames, int[] _numBtnsPerFuncRow, int _numDbgBtns, boolean _inclWinNames, boolean _inclMseOvValues) {
 	protected final void setBtnData() {
 		ArrayList<String> tmpGuiBtnRowNames = new ArrayList<String>();
 		ArrayList<String[]> tmpBtnLabels = new ArrayList<String[]>();
@@ -198,6 +197,21 @@ public class mySideBarMenu extends myDispWindow{
 			setAllFuncBtnLabels(debugBtnRowIDX, btnConfig.debugBtnLabels);
 		}		
 	}//setBtnData
+	
+	/**
+	 * Return the label on the sidebar button specified by the passed row and column
+	 * @param row
+	 * @param col
+	 * @return
+	 */
+	public final String getSidebarMenuButtonLabel(int row, int col) {
+		if(row >= guiBtnLabels.length) {
+			return "Row " +row+" too high for max rows : "+guiBtnLabels.length;
+		}
+		if(col >= guiBtnLabels[row].length) {
+			return "Col " +col+" too high for max cols @ row " + row+" : "+guiBtnLabels[row].length;
+		}
+		return guiBtnLabels[row][col];}
 	
 	public Boolean[][] getGuiBtnWaitForProc() {return guiBtnWaitForProc;}
 	public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {		guiBtnWaitForProc = _guiBtnWaitForProc;}
@@ -332,7 +346,7 @@ public class mySideBarMenu extends myDispWindow{
 	@Override
 	protected void setUI_FloatValsCustom(int UIidx, float val, float oldval) {}
 	@Override
-	protected final void launchMenuBtnHndlr(int funcRow, int btn) {	}
+	protected final void launchMenuBtnHndlr(int funcRow, int btn, String label) {	}
 	@Override
 	public final void handleSideMenuMseOvrDispSel(int btn, boolean val) {	}
 	@Override

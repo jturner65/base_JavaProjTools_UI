@@ -113,9 +113,7 @@ public abstract class myDispWindow {
 	public int msBtnClcked;														//mouse button clicked
 	public float[] uiClkCoords;												//subregion of window where UI objects may be found
 	public static final double uiWidthMult = 9;							//multipler of size of label for width of UI components, when aligning components horizontally
-	
-	//starting values for each UI object
-	private double[] guiStVals;											
+											
 	//array lists of idxs for integer/list-based and float-based UI objects
 	private ArrayList<Integer> guiFloatValIDXs, guiIntValIDXs;
 	
@@ -582,7 +580,7 @@ public abstract class myDispWindow {
 		int numGUIObjs = tmpUIObjArray.size();
 		
 		double[][] guiMinMaxModVals = new double[numGUIObjs][3];			//min max mod values
-		guiStVals = new double[numGUIObjs];						//starting values
+		double[] guiStVals = new double[numGUIObjs];						//starting values
 		String[] guiObjNames = new String[numGUIObjs];						//display labels for UI components	
 		//idx 0 is treat as int, idx 1 is obj has list vals, idx 2 is object gets sent to windows
 		boolean[][] guiBoolVals = new boolean[numGUIObjs][];				//array of UI flags for UI objects
@@ -668,7 +666,7 @@ public abstract class myDispWindow {
 	 * Reset guiObj given by passed index to starting value
 	 * @param uiIdx
 	 */
-	protected final void resetUIObj(int uiIdx) {guiObjs[uiIdx].setVal(guiStVals[uiIdx]);setUIWinVals(uiIdx);}
+	protected final void resetUIObj(int uiIdx) {guiObjs[uiIdx].resetToInit();setUIWinVals(uiIdx);}
 	
 	/**
 	 * Called if int-handling guiObjs[UIidx] (int or list) has new data which updated UI adapter. 
@@ -696,7 +694,7 @@ public abstract class myDispWindow {
 	 * @param forceVals If true, this will bypass setUIWinVals, if false, will call set vals, to propagate changes to window vars 
 	 */
 	public final void resetUIVals(boolean forceVals){
-		for(int i=0; i<guiStVals.length;++i){				guiObjs[i].setVal(guiStVals[i]);		}
+		for(int i=0; i<guiObjs.length;++i){				guiObjs[i].resetToInit();		}
 		if (!forceVals) {
 			setAllUIWinVals();
 		}
@@ -816,28 +814,6 @@ public abstract class myDispWindow {
 		if( getFlags(showIDX)){	closeBox[0] = rectDim[0]+rectDim[2]-clkBxDim;closeBox[1] = rectDim[1];	closeBox[2] = clkBxDim;	closeBox[3] = clkBxDim;} 
 		else {					closeBox[0] = rectDimClosed[0]+rectDimClosed[2]-clkBxDim;closeBox[1] = rectDimClosed[1];	closeBox[2] = clkBxDim;	closeBox[3] = clkBxDim;}
 	}	
-//	
-//	//draw a series of strings in a column
-//	public void dispMenuTxtLat(String txt, int[] clrAra, boolean showSphere){
-//		pa.setFill(clrAra, 255); 
-//		pa.translate(xOffHalf,yOffHalf);
-//		if(showSphere){pa.setStroke(clrAra, 255);		pa.sphere(5);	} 
-//		else {	pa.noStroke();		}
-//		pa.translate(-xOffHalf,yOffHalf);
-//		pa.showText(""+txt,xOff,-yOff*.25f);	
-//	}
-//	protected void dispBoolStFlag(String txt, int[] clrAra, boolean state, float stMult){
-//		if(state){
-//			pa.setFill(clrAra, 255); 
-//			pa.setStroke(clrAra, 255);
-//		} else {
-//			pa.setColorValFill(IRenderInterface.gui_DarkGray,255); 
-//			pa.noStroke();	
-//		}
-//		pa.sphere(5);
-//		//pa.showText(""+txt,-xOff,yOff*.8f);	
-//		pa.showText(""+txt,stMult*txt.length(),yOff*.8f);	
-//	}
 	
 	//draw a series of strings in a row
 	protected void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
@@ -1396,7 +1372,10 @@ public abstract class myDispWindow {
 		//no function has been requested to launch
 		if (!custFuncDoLaunch) {return;}
 		//launch special menu button handling
-		launchMenuBtnHndlr(curCstBtnRow-curCstFuncBtnOffset,curCustBtn[curCstBtnRow]);
+		int row = curCstBtnRow-curCstFuncBtnOffset;
+		int col = curCustBtn[curCstBtnRow];
+		String label = AppMgr.getSidebarMenuButtonLabel(curCstBtnRow,col);
+		launchMenuBtnHndlr(row, col, label);
 		custFuncDoLaunch=false;
 	}//checkCustMenuUIObjs
 
@@ -1430,8 +1409,13 @@ public abstract class myDispWindow {
 	 */
 	public abstract void handleSideMenuDebugSelDisable(int btn);	
 
-	//type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
-	protected abstract void launchMenuBtnHndlr(int funcRow, int btn) ;
+	/**
+	 * type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
+	 * @param funcRow idx for button row
+	 * @param btn idx for button within row (column)
+	 * @param label label for this button (for display purposes)
+	 */
+	protected abstract void launchMenuBtnHndlr(int funcRow, int btn, String label) ;
 	
 	//return relevant name information for files and directories to be used to build screenshots/saved files	
 	protected abstract String[] getSaveFileDirNamesPriv();

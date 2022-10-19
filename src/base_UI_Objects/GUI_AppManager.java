@@ -1079,7 +1079,16 @@ public abstract class GUI_AppManager {
 		return "mse loc on screen : " + mseLocPt + " mse loc in world :"+ canvas.mseLoc +"  Eye loc in world :"+ canvas.eyeInWorld+ winCamDisp;
 	}
 	
-
+	/**
+	 * Get label of sidebar menu button specified by row and column
+	 * @param row
+	 * @param col
+	 * @return
+	 */
+	public final String getSidebarMenuButtonLabel(int row, int col) {
+		return ((mySideBarMenu) dispWinFrames[dispMenuIDX]).getSidebarMenuButtonLabel(row,col);
+	}
+	
 	///////////////////////////////
 	// showing functions
 	
