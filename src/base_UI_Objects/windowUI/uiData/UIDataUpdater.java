@@ -77,39 +77,74 @@ public class UIDataUpdater {
 	public final void setFloatValue(Integer idx, Float value){	floatValues.put(idx,value);}
 	public final void setBoolValue(Integer idx, Boolean value){	boolValues.put(idx,value);}
 	
-	
-	protected <T extends Comparable<T>> boolean checkMapIsChanged(HashMap<Integer,Integer> idxsToIgnore, Map<Integer, T> thisMap, Map<Integer, T> thatMap ) {
-		if(idxsToIgnore.size() == 0) {
-			for (Map.Entry<Integer, T> entry : thisMap.entrySet()) {
-				Integer key = entry.getKey();
-				if ((thatMap.get(key) == null) || (entry.getValue() != thatMap.get(key))) {return true;}
-			}			
-		} else {			
-			for (Map.Entry<Integer, T> entry : thisMap.entrySet()) {
-				Integer key = entry.getKey();
-				//ignore key if specified to ignore or if other map does not have value
-				if (idxsToIgnore.get(key) != null){		continue;}
-				if ((thatMap.get(key) == null) || (entry.getValue() != thatMap.get(key))) {return true;}
-			}		
-		}			
-		return false;
-	}//checkMapIsChanged
+	/**
+	 * Check thatMap vs thisMap to determine if they are different
+	 * @param <T>
+	 * @param idxsToIgnore any map keys to ignore
+	 * @param thisMap map to compare
+	 * @param thatMap map to compare
+	 * @return whether there are differences in the two maps
+	 */
+	protected <T extends Comparable<T>> boolean checkMapIsChangedExcludeIDXs(HashMap<Integer,Integer> idxsToIgnore, Map<Integer, T> thisMap, Map<Integer, T> thatMap ) {
+	    if (thisMap.size() != thatMap.size()) {	        return true;    }
+	    //either values match or key is in idxsToIgnore for comparison. Want inverse to show the map is changed
+	    return ! (thisMap.entrySet().stream().allMatch(e -> (e.getValue().equals(thatMap.get(e.getKey())) || idxsToIgnore.containsKey(e.getKey()))));
+	}//checkMapIsChangedExcludeIDXs
 	
 	/**
-	 * Rebuild simulation if any simulator-dependent variables have changed. These are variables that are sent to the cuda kernel
-	 * @param _otr
-	 * @return
+	 * Checks for changes between thatMap and thisMap at passed idxs.
+	 * @param <T>
+	 * @param idxsToCheck idxs to check for changes
+	 * @param thisMap map to compare
+	 * @param thatMap map to compare
+	 * @return whether there are differences in the two maps
 	 */
-	protected boolean haveValuesChanged(UIDataUpdater _otr, 
+	protected <T extends Comparable<T>> boolean checkMapIsChangedAtIDXs(HashMap<Integer,Integer> idxsToCheck, Map<Integer, T> thisMap, Map<Integer, T> thatMap ) {
+		//if no idxs to check, nothing has changed.
+	    if (idxsToCheck.size() == 0) {					return false;}
+		if (thisMap.size() != thatMap.size()) {	        return true;    }
+	    //check idxsToCheck contains the key and values are equal. if true for all keys then did not change
+	    return ! (thisMap.entrySet().stream().allMatch(e -> ((idxsToCheck.containsKey(e.getKey()) && e.getValue().equals(thatMap.get(e.getKey()))) 
+	    		|| !(idxsToCheck.containsKey(e.getKey())))));
+	}//checkMapIsChangedExcludeIDXs
+	
+	
+	/**
+	 * Return whether or not the values are different in this updater and the passed updater, 
+	 * excluding passed IDXs. Assumes they are both of the same type.
+	 * @param _otr passed updater to verify this against
+	 * @param IntIdxsToIgnore indexes/keys of integer values to ignore
+	 * @param FloatIdxsToIgnore indexes/keys of float values to ignore
+	 * @param BoolIdxsToIgnore indexes/keys of boolean values to ignore
+	 * @return whether or not updaters' data are different
+	 */
+	protected final boolean haveValuesChangedExceptPassed(UIDataUpdater _otr, 
 			HashMap<Integer,Integer> IntIdxsToIgnore, 
 			HashMap<Integer,Integer> FloatIdxsToIgnore, 
 			HashMap<Integer,Integer> BoolIdxsToIgnore) {	
-		if (checkMapIsChanged(IntIdxsToIgnore, intValues, _otr.intValues)) {		return true;}
-		if (checkMapIsChanged(FloatIdxsToIgnore, floatValues, _otr.floatValues)) {	return true;}
-		if (checkMapIsChanged(BoolIdxsToIgnore, boolValues, _otr.boolValues)) {		return true;}		
+		if (checkMapIsChangedExcludeIDXs(IntIdxsToIgnore, intValues, _otr.intValues)) {		return true;}
+		if (checkMapIsChangedExcludeIDXs(FloatIdxsToIgnore, floatValues, _otr.floatValues)) {	return true;}
+		if (checkMapIsChangedExcludeIDXs(BoolIdxsToIgnore, boolValues, _otr.boolValues)) {		return true;}		
 		return false;
-	}//haveValuesChanged
-		
+	}//haveValuesChangedExceptPassed
+	/**
+	 * Return whether or not the values at the passed idxs have changed.
+	 * @param _otr
+	 * @param IntIdxsToCheck
+	 * @param FloatIdxsToCheck
+	 * @param BoolIdxsToCheck
+	 * @return
+	 */
+	protected final boolean havePassedValuesChanged(UIDataUpdater _otr, 
+			HashMap<Integer,Integer> IntIdxsToCheck, 
+			HashMap<Integer,Integer> FloatIdxsToCheck, 
+			HashMap<Integer,Integer> BoolIdxsToCheck) {
+		if (checkMapIsChangedAtIDXs(IntIdxsToCheck, intValues, _otr.intValues)) {		return true;}
+		if (checkMapIsChangedAtIDXs(FloatIdxsToCheck, floatValues, _otr.floatValues)) {	return true;}
+		if (checkMapIsChangedAtIDXs(BoolIdxsToCheck, boolValues, _otr.boolValues)) {		return true;}		
+		return false;
+	}
+	
 	/**
 	 * this will check if bool value is different than previous value, and if so will change it
 	 * @param idx
