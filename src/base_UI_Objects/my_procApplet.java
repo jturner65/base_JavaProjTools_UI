@@ -408,6 +408,25 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}//drawPointCloudWithColors	
 	
 	/**
+	 * draw a cloud of points with all points having same color value as an integrated shape
+	 * @param numPts number of points to draw
+	 * @param ptIncr incrementer between points, to draw only every 2nd, 3rd or more'th point
+	 * @param h_part_clr_int array of 3-color stroke values for all points
+	 * @param h_part_pos_x per point x value
+	 * @param h_part_pos_y per point y value
+	 * @param h_part_pos_z per point z value
+	 */
+	@Override
+	public void drawPointCloudWithColor(int numPts, int ptIncr, int[] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
+		gl_beginShape(GL_PrimStyle.GL_POINTS);
+		this.setStroke(h_part_clr_int[0], h_part_clr_int[1], h_part_clr_int[2], 255);
+		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
+			this.gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
+		}
+		gl_endShape();
+	}//drawPointCloudWithColors	
+	
+	/**
 	 * draw a box centered at origin with passed dimensions, in 3D
 	 */
 	@Override
