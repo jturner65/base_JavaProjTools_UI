@@ -1761,17 +1761,16 @@ public abstract class GUI_AppManager {
 	 * @param ctr
 	 * @return
 	 */
-	public final myVectorf getRandPosInSphere(double rad){ return getRandPosInSphere(rad, new myPointf());}
-	public final myVectorf getRandPosInSphere(double rad, myPointf ctr){
-		myVectorf pos = new myVectorf();
-		do{
-			double u = ThreadLocalRandom.current().nextDouble(0,1), r = rad * Math.pow(u, third),
-					cosTheta = ThreadLocalRandom.current().nextDouble(-1,1), sinTheta =  Math.sin(Math.acos(cosTheta)),
-					phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F);
-			pos.set(sinTheta * Math.cos(phi), sinTheta * Math.sin(phi),cosTheta);
-			pos._mult(r);
-			pos._add(ctr);
-		} while (pos.z < 0);
+	public final myPointf getRandPosInSphere(double rad){ return getRandPosInSphere(rad, new myPointf());}
+	public final myPointf getRandPosInSphere(double rad, myPointf ctr){
+		myPointf pos = new myPointf();
+		double u = ThreadLocalRandom.current().nextDouble(0,1),	
+			cosTheta = ThreadLocalRandom.current().nextDouble(-1,1),
+			phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F),
+			r = rad * Math.pow(u, third),
+			rSinTheta = r * Math.sin(Math.acos(cosTheta));			
+		pos.set(rSinTheta * Math.cos(phi), rSinTheta * Math.sin(phi),cosTheta*r);
+		pos._add(ctr);
 		return pos;
 	}
 	/**
@@ -1780,16 +1779,14 @@ public abstract class GUI_AppManager {
 	 * @param ctr
 	 * @return
 	 */
-	public final myVectorf getRandPosOnSphere(double rad){ return getRandPosOnSphere(rad, new myPointf());}
-	public final myVectorf getRandPosOnSphere(double rad, myPointf ctr){
-		myVectorf pos = new myVectorf();
-		//do{
-			double 	cosTheta = ThreadLocalRandom.current().nextDouble(-1,1), sinTheta =  Math.sin(Math.acos(cosTheta)),
-					phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F);
-			pos.set(sinTheta * Math.cos(phi), sinTheta * Math.sin(phi),cosTheta);
-			pos._mult(rad);
-			pos._add(ctr);
-		//} while (pos.z < 0);
+	public final myPointf getRandPosOnSphere(double rad){ return getRandPosOnSphere(rad, new myPointf());}
+	public final myPointf getRandPosOnSphere(double rad, myPointf ctr){
+		myPointf pos = new myPointf();
+		double 	cosTheta = ThreadLocalRandom.current().nextDouble(-1,1),
+				phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F), 
+				rSinTheta = rad* Math.sin(Math.acos(cosTheta));
+		pos.set(rSinTheta * Math.cos(phi), rSinTheta * Math.sin(phi),cosTheta * rad);
+		pos._add(ctr);
 		return pos;
 	}
 	/**
