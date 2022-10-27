@@ -36,7 +36,7 @@ public abstract class baseOffset {
 	 * @param _obj drawn stroke to build offset myPoints from
 	 */
 	public abstract ArrayList<myPoint> calcOffset(myCntlPt[] cntlPts, myVector[] nAra, myVector[] tAra);				
-	public abstract void drawCntlPts(IRenderInterface pa, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived);
+	public abstract void drawCntlPts(IRenderInterface ri, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived);
 	
 	/**
 	 * build an array of points that sweeps around c clockwise in plane of norm and tan, with starting radius c.r * norm

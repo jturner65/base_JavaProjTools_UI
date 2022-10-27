@@ -7,7 +7,6 @@ import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
-//import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Utils_Objects.io.messaging.MessageObject;
 
@@ -18,7 +17,6 @@ import base_Utils_Objects.io.messaging.MessageObject;
  *
  */
 public class myTrajManager {
-	//public static IRenderInterface pa;
 	//owning window
 	public myDispWindow ownr;
 	/**
@@ -65,7 +63,7 @@ public class myTrajManager {
 	public int[][] drawTrajBoxFillClrs;
 	
 	private int[] trajFlags;	
-	public static final int 
+	private static final int 
 		debugIDX			= 0,
 		canDrawTraj 		= 1,			//whether or not owning window will accept a drawn trajectory
 		drawingTraj 		= 2,			//whether a trajectory is being drawn in owning window - all windows handle trajectory input, has different functions in each window
@@ -78,10 +76,10 @@ public class myTrajManager {
 	private static final int numTrajFlags = 8;
 
 
-	public myTrajManager(myDispWindow _ownr, boolean _canDrawTraj, boolean _trajIsFlat) {
+	public myTrajManager(myDispWindow _ownr, boolean _trajIsFlat) {
 		ownr=_ownr; msgObj = ownr.getMsgObj();
 		initFlags();
-		setFlags(canDrawTraj, _canDrawTraj);
+		setFlags(canDrawTraj, true);
 		setFlags(trajPointsAreFlat, _trajIsFlat);
 		initTmpTrajStuff();
 	}
@@ -278,7 +276,7 @@ public class myTrajManager {
 			}			
 		}//if del else add
 		//rebuild arrays of start loc
-		rbldTrnsprtAras(scrKey, modMthd);
+		rebuildTrnsprtAras(scrKey, modMthd);
 	}
 	
 	//add trajectory to appropriately keyed current trajectory ara in treemap	
@@ -327,7 +325,7 @@ public class myTrajManager {
 	 * @param modVal
 	 */
 	@SuppressWarnings("unused")
-	protected void rbldTrnsprtAras(int modScrKey, int modVal){
+	protected void rebuildTrnsprtAras(int modScrKey, int modVal){
 		if(modVal == -1){return;}//denotes no mod taken place
 		int tmpNumSubScrInWin = drwnTrajMap.size();
 		int [] tmpNumTrajInSubScr = new int[tmpNumSubScrInWin];
@@ -381,17 +379,14 @@ public class myTrajManager {
 	 * Draw text for notifications regarding process of drawing or editing trajectory
 	 * 
 	 */
-	public void drawNotifications(IRenderInterface pa){		
+	public void drawNotifications(IRenderInterface ri){		
 		if(!getFlags(canDrawTraj)) {return;}
 		//debug stuff
-		pa.pushMatState();	
-		pa.translate(ownr.rectDim[0]+20,ownr.rectDim[1]+ownr.rectDim[3]-70, 0);
-		myDispWindow.AppMgr.dispMenuTxtLat("Drawing trajectory curve", pa.getClr((getFlags(drawingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, myDispWindow.xOffHalf,myDispWindow.yOffHalf);
-		//pa.show(new myPoint(0,0,0),4, "Drawing curve",new myVector(10,15,0),(getFlags(this.drawingTraj) ? pa.gui_Green : pa.gui_Red));
-		//pa.translate(0,-30);
-		myDispWindow.AppMgr.dispMenuTxtLat("Editing trajectory curve", pa.getClr((getFlags(editingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, myDispWindow.xOffHalf,myDispWindow.yOffHalf);
-		//pa.show(new myPoint(0,0,0),4, "Editing curve",new myVector(10,15,0),(getFlags(this.editingTraj) ? pa.gui_Green : pa.gui_Red));
-		pa.popMatState();		
+		ri.pushMatState();	
+		ri.translate(ownr.rectDim[0]+20,ownr.rectDim[1]+ownr.rectDim[3]-70, 0);
+		myDispWindow.AppMgr.dispMenuTxtLat("Drawing trajectory curve", ri.getClr((getFlags(drawingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, myDispWindow.xOffHalf,myDispWindow.yOffHalf);
+		myDispWindow.AppMgr.dispMenuTxtLat("Editing trajectory curve", ri.getClr((getFlags(editingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, myDispWindow.xOffHalf,myDispWindow.yOffHalf);
+		ri.popMatState();		
 	}//drawNotifications
 
 	
@@ -488,6 +483,11 @@ public class myTrajManager {
 
 	/////////////////////
 	// state flag handling
+	
+	public boolean getIsSmoothing() {return getFlags(smoothTraj);}
+	public void setShouldSmooth(boolean _doSmooth) {setFlags(smoothTraj, _doSmooth);}
+	public void setShouldDraw(boolean _doDraw) {setFlags(drawingTraj, _doDraw);}
+	public void setShouldEdit(boolean _doEdit) {setFlags(editingTraj, _doEdit);}
 	
 	public void initFlags(){trajFlags = new int[1 + numTrajFlags/32];for(int i =0; i<numTrajFlags;++i){setFlags(i,false);}}		
 	public boolean getFlags(int idx){int bitLoc = 1<<(idx%32);return (trajFlags[idx/32] & bitLoc) == bitLoc;}	

@@ -14,8 +14,11 @@ import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.drawnObjs.myTrajManager;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.GUIObj_Type;
-import base_UI_Objects.windowUI.uiObjs.myGUIObj;
+import base_UI_Objects.windowUI.uiObjs.myGUIObj_Float;
+import base_UI_Objects.windowUI.uiObjs.myGUIObj_Int;
+import base_UI_Objects.windowUI.uiObjs.myGUIObj_List;
 import base_UI_Objects.windowUI.uiObjs.myScrollBars;
+import base_UI_Objects.windowUI.uiObjs.base.myGUIObj;
 import base_Utils_Objects.io.FileIOManager;
 import base_Utils_Objects.io.messaging.MessageObject;
 import processing.core.*;
@@ -154,7 +157,7 @@ public abstract class myDispWindow {
 	protected myPoint sceneCtrVal;							//set this value to be different display center translations -to be used to calculate mouse offset in world for pick
 	
 	//to control how much is shown in the window - if stuff extends off the screen and for 2d window
-	public myScrollBars[] scbrs;
+	protected myScrollBars[] scbrs;
 	
 	private final int[] trueBtnClr = new int[]{220,255,220,255}, falseBtnClr = new int[]{255,215,215,255};
 	
@@ -197,7 +200,7 @@ public abstract class myDispWindow {
 	 * Must be called by inheriting class constructor!
 	 * @param _isMenu
 	 */
-	public void initThisWin(boolean _isMenu){
+	public final void initThisWin(boolean _isMenu){
 		initFlags();
 
 		if(!_isMenu){
@@ -301,22 +304,31 @@ public abstract class myDispWindow {
 	 */
 	protected abstract void updateCalcObjUIVals();
 	
-	//final initialization stuff, after window made, but necessary to make sure window displays correctly
-	public void finalInit(boolean _canDrawTraj, boolean thisIs3D, boolean viewCanChange, myPoint _ctr, myVector _baseFcs) {
+	/**
+	 * Final initialization stuff, after window made, but necessary to make sure window displays correctly
+	 * @param _canDrawTraj
+	 * @param thisIs3D
+	 * @param viewCanChange
+	 * @param _ctr
+	 * @param _baseFcs
+	 */
+	public final void finalInit(boolean _canDrawTraj, boolean thisIs3D, boolean viewCanChange, myPoint _ctr, myVector _baseFcs) {
 		setFlags(is3DWin, thisIs3D);
 		setFlags(canChgView, viewCanChange);
 		sceneFcsVal = new myVector(_baseFcs);
 		sceneCtrVal = new myPoint(_ctr);
 		focusTar = new myVector(_baseFcs);		
 		if(_canDrawTraj) {
-			trajMgr = new myTrajManager(this, _canDrawTraj,!thisIs3D);
+			trajMgr = new myTrajManager(this,!thisIs3D);
 		} else {
 			trajMgr = null;
 		}
 	}
 	
-	//set up initial trajectories - 2d array, 1 per UI Page, 1 per modifiable construct within page.
-	public void initDrwnTrajs(){
+	/**
+	 * set up initial trajectories - 2d array, 1 per UI Page, 1 per modifiable construct within page.
+	 */
+	public final void initDrwnTrajs(){
 		if(null!=trajMgr) {		trajMgr.initDrwnTrajs();	initDrwnTrajIndiv();				}
 	}
 	
@@ -337,26 +349,26 @@ public abstract class myDispWindow {
 		curVisScrDims = new float[] {closedUIRtSideRecBox[0],rectDim[3]};
 	}//initClrDims	
 	
-	protected void setVisScreenWidth(float visScrWidth) {setVisScreenDims(visScrWidth,curVisScrDims[1]);}
-	protected void setVisScreenHeight(float visScrHeight) {setVisScreenDims(curVisScrDims[0],visScrHeight);}
+	protected final void setVisScreenWidth(float visScrWidth) {setVisScreenDims(visScrWidth,curVisScrDims[1]);}
+	protected final void setVisScreenHeight(float visScrHeight) {setVisScreenDims(curVisScrDims[0],visScrHeight);}
 	//based on current visible screen width, set map and calc analysis display locations
-	protected void setVisScreenDims(float visScrWidth, float visScrHeight) {
+	protected final void setVisScreenDims(float visScrWidth, float visScrHeight) {
 		curVisScrDims[0] = visScrWidth;
 		curVisScrDims[1] = visScrHeight;
 		setVisScreenDimsPriv();
 	}//calcAndSetMapLoc
 	
 	//set right side data display fill/stroke colors
-	public void setRtSideUIBoxClrs(int[] fc,  int[] sc) {
+	public final void setRtSideUIBoxClrs(int[] fc,  int[] sc) {
 		for(int i =0;i<4;++i){rtSideUIFillClr[i] = fc[i];rtSideUIStrkClr[i]=sc[i];}				
 	}		
 
 	//build UI clickable region
-	protected void initUIClickCoords(float x1, float y1, float x2, float y2){uiClkCoords[0] = x1;uiClkCoords[1] = y1;uiClkCoords[2] = x2; uiClkCoords[3] = y2;}
-	protected void initUIClickCoords(float[] cpy){	uiClkCoords[0] = cpy[0];uiClkCoords[1] = cpy[1];uiClkCoords[2] = cpy[2]; uiClkCoords[3] = cpy[3];}
+	protected final void initUIClickCoords(float x1, float y1, float x2, float y2){uiClkCoords[0] = x1;uiClkCoords[1] = y1;uiClkCoords[2] = x2; uiClkCoords[3] = y2;}
+	protected final void initUIClickCoords(float[] cpy){	uiClkCoords[0] = cpy[0];uiClkCoords[1] = cpy[1];uiClkCoords[2] = cpy[2]; uiClkCoords[3] = cpy[3];}
 	//public void initFlags(){dispFlags = new boolean[numDispFlags];for(int i =0; i<numDispFlags;++i){dispFlags[i]=false;}}		
 	//base class flags init
-	public void initFlags(){dispFlags = new int[1 + numDispFlags/32];for(int i =0; i<numDispFlags;++i){setFlags(i,false);}}		
+	public final void initFlags(){dispFlags = new int[1 + numDispFlags/32];for(int i =0; i<numDispFlags;++i){setFlags(i,false);}}		
 	//child-class flag init
 	//private void initPrivFlags(int numPrivFlags){privFlags = new int[1 + numPrivFlags/32]; for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,false);}}
 	private void initPrivFlags(int numPrivFlags){privFlags = new int[1 + numPrivFlags/32]; }//for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,false);}}
@@ -370,7 +382,7 @@ public abstract class myDispWindow {
 	}
 	
 	/**
-	 * set up child class button rectangles
+	 * set up child class button rectangles. Overrideable for nested windows
 	 */
 	protected void initUIBox(){		
 		float [] menuUIClkCoords = AppMgr.getUIRectVals(ID); 
@@ -459,7 +471,7 @@ public abstract class myDispWindow {
 	 * @param idx
 	 * @return
 	 */
-	protected int getFlagAraIdxOfBool(int idx) {
+	protected final int getFlagAraIdxOfBool(int idx) {
 		for(int i=0;i<privModFlgIdxs.length;++i) {if(idx == privModFlgIdxs[i]) {return i;}	}		
 		return -1;//not found
 	}	
@@ -468,7 +480,7 @@ public abstract class myDispWindow {
 	 * @param idx
 	 * @param val
 	 */
-	public void setFlags(int idx, boolean val){
+	public final void setFlags(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		dispFlags[flIDX] = (val ?  dispFlags[flIDX] | mask : dispFlags[flIDX] & ~mask);
 		switch(idx){
@@ -501,21 +513,21 @@ public abstract class myDispWindow {
 	 * set the right side menu state for this window - if it is actually present, show it
 	 * @param visible
 	 */
-	public void setRtSideInfoWinSt(boolean visible) {if(getFlags(drawRightSideMenu)) {setFlags(showRightSideMenu,visible);}}		
+	public final void setRtSideInfoWinSt(boolean visible) {if(getFlags(drawRightSideMenu)) {setFlags(showRightSideMenu,visible);}}		
 	/**
 	 * get baseclass flag
 	 * @param idx
 	 * @return
 	 */
-	public boolean getFlags(int idx){int bitLoc = 1<<(idx%32);return (dispFlags[idx/32] & bitLoc) == bitLoc;}	
+	public final boolean getFlags(int idx){int bitLoc = 1<<(idx%32);return (dispFlags[idx/32] & bitLoc) == bitLoc;}	
 	
 	/**
 	 * check list of flags
 	 * @param idxs
 	 * @return
 	 */
-	public boolean getAllFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
-	public boolean getAnyFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
+	public final boolean getAllFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
+	public final boolean getAnyFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
 	
 	/**
 	 * set/get child class flags
@@ -530,11 +542,11 @@ public abstract class myDispWindow {
 	protected abstract int[] getFlagIDXsToInitToTrue();
 	
 
-	public boolean getPrivFlags(int idx){int bitLoc = 1<<(idx%32);return (privFlags[idx/32] & bitLoc) == bitLoc;}	
-	public boolean getAllPrivFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((privFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
-	public boolean getAnyPrivFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((privFlags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
+	public final boolean getPrivFlags(int idx){int bitLoc = 1<<(idx%32);return (privFlags[idx/32] & bitLoc) == bitLoc;}	
+	public final boolean getAllPrivFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((privFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
+	public final boolean getAnyPrivFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((privFlags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
 	//set a list of indexes in private flags array to be a specific value
-	public void setAllPrivFlags(int[] idxs, boolean val) { for(int idx =0;idx<idxs.length;++idx) {setPrivFlags(idxs[idx],val);}}
+	public final void setAllPrivFlags(int[] idxs, boolean val) { for(int idx =0;idx<idxs.length;++idx) {setPrivFlags(idxs[idx],val);}}
 	/**
 	 * sets flag values without calling instancing window flag handler - only for init!
 	 * @param idxs
@@ -553,7 +565,7 @@ public abstract class myDispWindow {
 	 * window, and calls the instance class's code for resizing
 	 * @param height
 	 */
-	public void setRectDimsY(float height){
+	public final void setRectDimsY(float height){
 		float oldVal = getFlags(showIDX) ? rectDim[3] : rectDimClosed[3];
 		rectDim[3] = height;
 		rectDimClosed[3] = height;
@@ -612,8 +624,23 @@ public abstract class myDispWindow {
 		float stClkY = uiClkCoords[1];
 		int numListObjs = 0;
 		for(int i =0; i< guiObjs.length; ++i){
-			if(guiObjTypes[i] == GUIObj_Type.ListVal) {++numListObjs;}
-			guiObjs[i] = new myGUIObj(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i],guiObjTypes[i] , guiBoolVals[i], off);
+			switch(guiObjTypes[i]) {
+				case IntVal : {
+					guiObjs[i] = new myGUIObj_Int(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], off);
+					
+					break;}
+				case ListVal : {
+					++numListObjs;
+					guiObjs[i] = new myGUIObj_List(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], off);
+					((myGUIObj_List)guiObjs[i]).setListVals(tmpListObjVals.get(i));
+					break;}
+				case FloatVal : {
+					guiObjs[i] = new myGUIObj_Float(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], off);
+					
+					break;}
+			}			
+			//if(guiObjTypes[i] == GUIObj_Type.ListVal) {++numListObjs;}
+			//guiObjs[i] = new myGUIObj(pa, i, guiObjNames[i], uiClkCoords[0], stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], guiStVals[i],guiObjTypes[i] , guiBoolVals[i], off);
 			stClkY += yOff;
 		}
 		uiClkCoords[3] = stClkY;
@@ -621,7 +648,7 @@ public abstract class myDispWindow {
 			msgObj.dispWarningMessage("myDispWindow", "buildGUIObjs", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
 		}
 		//build lists of data for all list UI objects
-		for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
+		//for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
 	}//_buildGUIObjsFromMaps
 
 	/**
@@ -701,7 +728,7 @@ public abstract class myDispWindow {
 	}//resetUIVals
 		
 	//this sets the value of a gui object from the data held in a string
-	protected void setValFromFileStr(String str){
+	protected final void setValFromFileStr(String str){
 		String[] toks = str.trim().split("\\|");
 		//window has no data values to load
 		if(toks.length==0){return;}
@@ -710,7 +737,7 @@ public abstract class myDispWindow {
 		setUIWinVals(uiIdx);//update window's values with UI construct's values
 	}//setValFromFileStr
 
-	public void loadFromFile(File file){
+	public final void loadFromFile(File file){
 		if (file == null) {
 			msgObj.dispWarningMessage("myDispWindow","loadFromFile","Load was cancelled.");
 		    return;
@@ -720,7 +747,7 @@ public abstract class myDispWindow {
 		hndlFileLoad(file, res,stIdx);
 	}//loadFromFile
 	
-	public String[] getSaveFileDirName() {
+	public final String[] getSaveFileDirName() {
 		String[] vals = getSaveFileDirNamesPriv();
 		if((null==vals) || (vals.length != 2)) {return new String[0];}
 		String[] res = new String[] {
@@ -730,7 +757,7 @@ public abstract class myDispWindow {
 	}
 	
 	
-	public void saveToFile(File file){
+	public final void saveToFile(File file){
 		if (file == null) {
 			msgObj.dispWarningMessage("myDispWindow","saveToFile","Save was cancelled.");
 		    return;
@@ -742,8 +769,12 @@ public abstract class myDispWindow {
 		fileIO.saveStrings(file.getAbsolutePath(), res);  
 	}//saveToFile	
 	
-	//manage loading pre-saved UI component values, if useful for this window's load/save (if so call from child window's implementation
-	protected void hndlFileLoad_GUI(String[] vals, int[] stIdx) {
+	/**
+	 * manage loading pre-saved UI component values, if useful for this window's load/save (if so call from child window's implementation
+	 * @param vals
+	 * @param stIdx
+	 */
+	protected final void hndlFileLoad_GUI(String[] vals, int[] stIdx) {
 		++stIdx[0];
 		//set values for ui sliders
 		while(!vals[stIdx[0]].contains(name + "_custUIComps")){
@@ -753,8 +784,11 @@ public abstract class myDispWindow {
 		++stIdx[0];				
 	}//hndlFileLoad_GUI
 	
-	//manage saving this window's UI component values.  if needed call from child window's implementation
-	protected ArrayList<String> hndlFileSave_GUI(){
+	/**
+	 * manage saving this window's UI component values.  if needed call from child window's implementation
+	 * @return
+	 */
+	protected final ArrayList<String> hndlFileSave_GUI(){
 		ArrayList<String> res = new ArrayList<String>();
 		res.add(name);
 		for(int i=0;i<guiObjs.length;++i){	res.add(guiObjs[i].getStrFromUIObj(i));}		
@@ -764,18 +798,21 @@ public abstract class myDispWindow {
 		res.add("");
 		return res;
 	}//
+	
 	//////////////////////
 	//camera stuff
 	
-	//resets camera view and focus target
-	public void setInitCamView(){
+	/**
+	 * resets camera view and focus target
+	 */
+	public final void setInitCamView(){
 		rx = camInitRx;
 		ry = camInitRy;
 		dz = camInitialDist;	
 		resetViewFocus();
 	}//setCamView()	
 
-	public void setCamera(float[] camVals){
+	public final void setCamera(float[] camVals){
 		if(getFlags(useCustCam)){setCameraIndiv (camVals);}//individual window camera handling
 		else {
 			pa.setCameraWinVals(camVals);  
@@ -786,37 +823,39 @@ public abstract class myDispWindow {
 		}
 	}//setCamera
 
-	//used to handle camera location/motion
-	public void setCamOrient(){pa.setCamOrient(rx,ry); }//sets the rx, ry, pi/2 orientation of the camera eye	
-	//used to draw text on screen without changing mode - reverses camera orientation setting
-	public void unSetCamOrient(){pa.unSetCamOrient(rx,ry); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
-	//return display string for camera location
-	public String getCamDisp() {return " camera rx :  " + rx + " ry : " + ry + " dz : " + dz ; }
+	/**
+	 * used to handle camera location/motion
+	 */
+	public final void setCamOrient(){pa.setCamOrient(rx,ry); }//sets the rx, ry, pi/2 orientation of the camera eye	
+	/**
+	 * used to draw text on screen without changing mode - reverses camera orientation setting
+	 */
+	public final void unSetCamOrient(){pa.unSetCamOrient(rx,ry); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
+	/**
+	 * return display string for camera location
+	 * @return
+	 */
+	public final String getCamDisp() {return " camera rx :  " + rx + " ry : " + ry + " dz : " + dz ; }
 	
-	//initial draw stuff for each frame draw
-	public void drawSetupWin(float[] camVals) {
-		setCamera(camVals);
-		//move to focus target
-		pa.translate(focusTar.x,focusTar.y,focusTar.z);
-	}
-	
-	//recenter view on original focus target
-	public void resetViewFocus() {focusTar.set(sceneFcsVal);}
+	/**
+	 * recenter view on original focus target
+	 */
+	public final void resetViewFocus() {focusTar.set(sceneFcsVal);}
 	//////////////////////
 	//end camera stuff
 	
-	public float calcOffsetScale(double val, float sc, float off){float res =(float)val - off; res *=sc; return res+=off;}
-	public double calcDBLOffsetScale(double val, float sc, double off){double res = val - off; res *=sc; return res+=off;}
+	public final float calcOffsetScale(double val, float sc, float off){float res =(float)val - off; res *=sc; return res+=off;}
+	public final double calcDBLOffsetScale(double val, float sc, double off){double res = val - off; res *=sc; return res+=off;}
 	//returns passed current passed dimension from either rectDim or rectDimClosed
-	public float getRectDim(int idx){return ( getFlags(showIDX) ? rectDim[idx] : rectDimClosed[idx]);	}
+	public final float getRectDim(int idx){return ( getFlags(showIDX) ? rectDim[idx] : rectDimClosed[idx]);	}
 
-	public void setClosedBox(){
+	public final void setClosedBox(){
 		if( getFlags(showIDX)){	closeBox[0] = rectDim[0]+rectDim[2]-clkBxDim;closeBox[1] = rectDim[1];	closeBox[2] = clkBxDim;	closeBox[3] = clkBxDim;} 
 		else {					closeBox[0] = rectDimClosed[0]+rectDimClosed[2]-clkBxDim;closeBox[1] = rectDimClosed[1];	closeBox[2] = clkBxDim;	closeBox[3] = clkBxDim;}
 	}	
 	
 	//draw a series of strings in a row
-	protected void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
+	protected final void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
 		pa.setFill(clrAra, clrAra[3]);
 		pa.setColorValStroke(IRenderInterface.gui_Black,255);
 		pa.drawRect(loc);		
@@ -827,18 +866,26 @@ public abstract class myDispWindow {
 	}
 	
 	//whether or not to draw the mouse reticle/rgb(xyz) projection/edge to eye
-	public boolean chkDrawMseRet(){		return getFlags(drawMseEdge);	}
+	public final boolean chkDrawMseRet(){		return getFlags(drawMseEdge);	}
 
 	
-	//draw ui objects
-	public void drawGUIObjs(){	
-		pa.pushMatState();	
-		for(int i =0; i<guiObjs.length; ++i){guiObjs[i].draw();}
-		pa.popMatState();
+	//////////////////////
+	//draw functions	
+	
+	/**
+	 * initial draw stuff for each frame draw
+	 * @param camVals
+	 */
+	public final void drawSetupWin(float[] camVals) {
+		setCamera(camVals);
+		//move to focus target
+		pa.translate(focusTar.x,focusTar.y,focusTar.z);
 	}
 	
-	//draw all boolean-based buttons for this window
-	public void drawClickableBooleans() {	
+	public final void drawWindowGuiObjs() {
+		//draw UI Objs
+		drawGUIObjs();
+		//draw all boolean-based buttons for this window
 		pa.pushMatState();	
 		pa.setColorValFill(IRenderInterface.gui_Black,255);
 		if(getFlags(useRndBtnClrs)){
@@ -854,11 +901,27 @@ public abstract class myDispWindow {
 				else {																dispBttnAtLoc(falsePrivFlagLabels[i],privFlagBtns[i],falseBtnClr);	}
 			}	
 		}
-		pa.popMatState();
-	}//drawClickableBooleans
+		pa.popMatState();	
+		//draw any custom menu objects for sidebar menu
+		drawCustMenuObjs();
+		//also launch custom function here if any are specified
+		checkCustMenuUIObjs();
+		
+	}//drawWindowGuiObjs
 	
-	//draw any custom menu objects for sidebar menu
-	public abstract void drawCustMenuObjs();
+	/**
+	 * Draw UI Objs
+	 */
+	protected final void drawGUIObjs() {
+		pa.pushMatState();	
+		for(int i =0; i<guiObjs.length; ++i){guiObjs[i].draw();}
+		pa.popMatState();	
+	}
+	
+	/**
+	 * draw any custom menu objects for sidebar menu
+	 */
+	protected abstract void drawCustMenuObjs();
 	
 	/**
 	 * Build button descriptive arrays : each object array holds true label, false label, and idx of button in owning child class
@@ -870,8 +933,10 @@ public abstract class myDispWindow {
 	public abstract int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray);
 	
 	
-	//draw box to hide window
-	protected void drawMouseBox(){
+	/**
+	 * draw box to hide window
+	 */
+	private final void drawMouseBox(){
 		if( getFlags(showIDX)){
 		    pa.setColorValFill(IRenderInterface.gui_LightGreen ,255);
 			pa.drawRect(closeBox);
@@ -884,7 +949,7 @@ public abstract class myDispWindow {
 			pa.showText("Open", closeBox[0]-35, closeBox[1]+10);			
 		}
 	}
-	public void drawSmall(){
+	private final void drawSmall(){
 		pa.pushMatState();
 		//msgObj.dispInfoMessage("myDispWindow","drawSmall","Hitting hint code draw small");
 		pa.setBeginNoDepthTest();
@@ -906,7 +971,7 @@ public abstract class myDispWindow {
 	 * called by drawUI in IRenderInterface
 	 * @param modAmtMillis
 	 */
-	public void drawHeader(float modAmtMillis){
+	public final void drawHeader(float modAmtMillis){
 		if(!getFlags(showIDX)){return;}
 		pa.pushMatState();		
 		//msgObj.dispInfoMessage("myDispWindow","drawHeader","Hitting hint code drawHeader");
@@ -931,6 +996,34 @@ public abstract class myDispWindow {
 //		//if buttons have been set to clear, clear them next draw - put this in mouse release?
 //		if (privBtnsToClear.size() > 0){setFlags(clearPrivBtns, true);	}		
 	}//drawHeader
+	
+	/**
+	 * separating bar for menu
+	 * @param uiClkCoords2
+	 */
+	protected void drawSepBar(double uiClkCoords2) {
+		pa.pushMatState();
+			pa.translate(0,uiClkCoords2 + (.5*IRenderInterface.txtSz),0);
+			pa.setFill(0,0,0,255);
+			pa.setStrokeWt(1.0f);
+			pa.setStroke(0,0,0,255);
+			pa.drawLine(0,0,0,AppMgr.getMenuWidth(),0,0);
+		pa.popMatState();				
+	}//
+	
+	/**
+	 * Draw UI data debug info
+	 * @param res UI debug data from dispMenu window
+	 */
+	public final void drawUIDebugMode(String[] res) {
+		pa.pushMatState();			
+		reInitInfoStr();
+		addInfoStr(0,AppMgr.getMseEyeInfoString(getCamDisp()));
+		int numToPrint = MyMathUtils.min(res.length,80);
+		for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
+		drawInfoStr(1.0f, strkClr); 	
+		pa.popMatState();		
+	}//drawUIDebugMode
 	
 	/**
 	 * draw stuff on screen - start next to left-side menu
@@ -964,7 +1057,7 @@ public abstract class myDispWindow {
 	/**
 	 * Called by Appmgr to display window instance-specify Console Strings
 	 */
-	public void drawOnscreenText() {
+	public final void drawOnscreenText() {
 		pa.pushMatState();			
 		reInitInfoStr();	
 		String[] res = msgObj.getConsoleStringsAsArray();
@@ -974,11 +1067,9 @@ public abstract class myDispWindow {
 	    pa.popMatState();
 	}
 	
-	public void draw3D(float modAmtMillis){
+	public final void draw3D(float modAmtMillis){
 		if(!getFlags(showIDX)){return;}
-		//stAnimTime = pa.millis();
 		float animTimeMod = (modAmtMillis/1000.0f);//in seconds
-		//lastAnimTime = pa.millis();
 		pa.pushMatState();		
 		pa.setFill(fillClr, fillClr[3]);
 		pa.setStroke(strkClr,strkClr[3]);
@@ -1003,11 +1094,9 @@ public abstract class myDispWindow {
 //			pa.popMatState();		
 	}//drawTraj3D
 	
-	public void draw2D(float modAmtMillis){
+	public final void draw2D(float modAmtMillis){
 		if(!getFlags(showIDX)){drawSmall();return;}
-		//stAnimTime = pa.millis();
 		float animTimeMod = (modAmtMillis/1000.0f);
-		//lastAnimTime = pa.millis();
 		pa.pushMatState();
 		//msgObj.dispInfoMessage("myDispWindow","draw2D","Hitting hint code draw2D");
 		pa.setBeginNoDepthTest();
@@ -1028,7 +1117,7 @@ public abstract class myDispWindow {
 	/**
 	 * Decay this window's console strings
 	 */
-	public void updateConsoleStrs(){
+	public final void updateConsoleStrs(){
 		++drawCount;
 		if(drawCount % cnslStrDecay == 0){drawCount = 0;	msgObj.updateConsoleStrs();}			
 	}//updateConsoleStrs
@@ -1070,7 +1159,7 @@ public abstract class myDispWindow {
 	//////////////////
 	// Simulation
 	
-	public void simulate(float modAmtMillis){
+	public final void simulate(float modAmtMillis){
 		boolean simDone = simMe(modAmtMillis);
 		if(simDone) {endSim();}
 		++drawCount;
@@ -1080,7 +1169,7 @@ public abstract class myDispWindow {
 	private void endSim() {	AppMgr.setSimIsRunning(false);}//endSim
 	
 	//call after single draw - will clear window-based priv buttons that are momentary
-	protected void clearAllPrivBtns() {
+	protected final void clearAllPrivBtns() {
 		if(privBtnsToClear.size() == 0) {return;}
 		//only clear button if button is currently set to true, otherwise concurrent modification error
 		for (Integer idx : privBtnsToClear) {this.setPrivFlags(idx, false);}
@@ -1099,25 +1188,36 @@ public abstract class myDispWindow {
 	}
 	
 	//stuff to do when shown/hidden
-	public void setShow(boolean val){
+	public final void setShow(boolean val){
 		setFlags(showIDX,val);
 		setClosedBox();
 		if(!getFlags(showIDX)){		closeMe();}//not showing window : specific instancing window implementation stuff to do when hidden
 		else {						showMe();}//specific instance window functionality to do when window is shown		
 	}
 	
-	protected void toggleWindowState(){
+	protected final void toggleWindowState(){
 		//msgObj.dispInfoMessage("myDispWindow","toggleWindowState","Attempting to close window : " + this.name);
 		setFlags(showIDX,!getFlags(showIDX));
 		AppMgr.setVisFlag(pFlagIdx, getFlags(showIDX));		//value has been changed above by close box
 	}
 	
-	protected boolean checkClsBox(int mouseX, int mouseY){
+	/**
+	 * Check for click in closeable box
+	 * @param mouseX
+	 * @param mouseY
+	 * @return
+	 */
+	protected final boolean checkClsBox(int mouseX, int mouseY){
 		boolean res = false;
 		if(MyMathUtils.ptInRange(mouseX, mouseY, closeBox[0], closeBox[1], closeBox[0]+closeBox[2], closeBox[1]+closeBox[3])){toggleWindowState(); res = true;}				
 		return res;		
 	}
-	//check if mouse location is in UI buttons, and handle button click if so
+	/**
+	 * check if mouse location is in UI buttons, and handle button click if so
+	 * @param mouseX
+	 * @param mouseY
+	 * @return
+	 */
 	private boolean checkUIButtons(int mouseX, int mouseY){
 		if(0==privFlagBtns.length) {return false;}
 		boolean mod = false;
@@ -1135,15 +1235,23 @@ public abstract class myDispWindow {
 		return mod;
 	}//checkUIButtons	
 	
-	//change view based on mouse click/drag behavior and whether we are moving or zooming
-	//use delX for zoom
-	public void handleViewChange(boolean doZoom, float delX, float delY ) {
+	/**
+	 * change view based on mouse click/drag behavior and whether we are moving or zooming use delX for zoom
+	 * @param doZoom
+	 * @param delX
+	 * @param delY
+	 */
+	public final void handleViewChange(boolean doZoom, float delX, float delY ) {
 		if(doZoom) {	dz-=delX;	} 
 		else {			rx-=delX; ry+=delY;} 		
 	}//handleViewChange()
 	
-	//modify the viewing target by finding -TODO doesn't behave appropriately if camera is rotated around origin
-	public void handleViewTargetChange(float delY, float delX) {
+	/**
+	 * modify the viewing target by finding -TODO doesn't behave appropriately if camera is rotated around origin
+	 * @param delY
+	 * @param delX
+	 */
+	public final void handleViewTargetChange(float delY, float delX) {
 		//find screen up unit vector, screen right unit vector in world space, dot focus tar with that, move in that direction
 		setCamOrient();
 		if(delY != 0.0f) {
@@ -1163,12 +1271,12 @@ public abstract class myDispWindow {
 	 * Whether or not this window displays in 3D
 	 * @return
 	 */
-	public boolean getIs3DWindow() {return getFlags(is3DWin);}
-	protected myPoint getMsePoint(myPoint pt){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt(pt) : pt;}		//get appropriate representation of mouse location in 3d if 3d window
-	public myPoint getMsePoint(int mouseX, int mouseY){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt(new myPoint(mouseX,mouseY,0)) : new myPoint(mouseX,mouseY,0);}
+	public final boolean getIs3DWindow() {return getFlags(is3DWin);}
+	protected final myPoint getMsePoint(myPoint pt){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt(pt) : pt;}		//get appropriate representation of mouse location in 3d if 3d window
+	public final myPoint getMsePoint(int mouseX, int mouseY){return getFlags(myDispWindow.is3DWin) ? getMsePtAs3DPt(new myPoint(mouseX,mouseY,0)) : new myPoint(mouseX,mouseY,0);}
 	
 	
-	public boolean handleMouseMove(int mouseX, int mouseY){
+	public final boolean handleMouseMove(int mouseX, int mouseY){
 		if(!getFlags(showIDX)){return false;}
 		if((getFlags(showIDX))&& (msePtInUIRect(mouseX, mouseY))){//in clickable region for UI interaction
 			for(int j=0; j<guiObjs.length; ++j){if(guiObjs[j].checkIn(mouseX, mouseY)){	msOvrObj=j;return true;	}}
@@ -1179,8 +1287,8 @@ public abstract class myDispWindow {
 		return false;
 	}//handleMouseMove
 	
-	public boolean msePtInRect(int x, int y, float[] r){return ((x > r[0])&&(x <= r[0]+r[2])&&(y > r[1])&&(y <= r[1]+r[3]));}	
-	public boolean msePtInUIRect(int x, int y){return ((x > uiClkCoords[0])&&(x <= uiClkCoords[2])&&(y > uiClkCoords[1])&&(y <= uiClkCoords[3]));}	
+	public final boolean msePtInRect(int x, int y, float[] r){return ((x > r[0])&&(x <= r[0]+r[2])&&(y > r[1])&&(y <= r[1]+r[3]));}	
+	public final boolean msePtInUIRect(int x, int y){return ((x > uiClkCoords[0])&&(x <= uiClkCoords[2])&&(y > uiClkCoords[1])&&(y <= uiClkCoords[3]));}	
 	/**
 	 * handle a mouse click
 	 * @param mouseX x location on screen
@@ -1188,7 +1296,7 @@ public abstract class myDispWindow {
 	 * @param mseBtn which button is pressed : 0 is left, 1 is right
 	 * @return
 	 */
-	public boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
+	public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
 		boolean mod = false;
 		if((getFlags(showIDX))&& (msePtInUIRect(mouseX, mouseY))){//in clickable region for UI interaction
 			for(int j=0; j<guiObjs.length; ++j){
@@ -1215,8 +1323,17 @@ public abstract class myDispWindow {
 		}			//click + alt for traj drawing : only allow drawing trajectory if it can be drawn and no other interaction has occurred
 		return mod;
 	}//handleMouseClick
-	//vector for drag in 3D
-	public boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn){
+	/**
+	 * vector for drag in 3D
+	 * @param mouseX
+	 * @param mouseY
+	 * @param pmouseX
+	 * @param pmouseY
+	 * @param mseDragInWorld
+	 * @param mseBtn
+	 * @return
+	 */
+	public final boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn){
 		boolean mod = false;
 		if(!getFlags(showIDX)){return mod;}
 		boolean shiftPressed = AppMgr.shiftIsPressed();
@@ -1254,7 +1371,7 @@ public abstract class myDispWindow {
 	/**
 	 * set all window values for UI objects
 	 */
-	protected void setAllUIWinVals() {for(int i=0;i<guiObjs.length;++i){if(guiObjs[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
+	protected final void setAllUIWinVals() {for(int i=0;i<guiObjs.length;++i){if(guiObjs[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
 	//set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	private void setUIObjValFromClickAlone(int j) {
 		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
@@ -1262,7 +1379,7 @@ public abstract class myDispWindow {
 		guiObjs[j].modVal(mult * AppMgr.clickValModMult());
 	}//setUIObjValFromClickAlone
 	
-	public void handleMouseRelease(){
+	public final void handleMouseRelease(){
 		if(!getFlags(showIDX)){return;}
 		if(getFlags(uiObjMod)){
 			setAllUIWinVals();
@@ -1287,25 +1404,25 @@ public abstract class myDispWindow {
 	}//handleMouseRelease	
 	
 	//release shift/control/alt keys
-	public void endShiftKey(){
+	public final void endShiftKey(){
 		if(!getFlags(showIDX)){return;}
 		if(null!=trajMgr) {trajMgr.endShiftKey(getMsePoint(pa.getMouse_Raw()));}
 		endShiftKeyI();
 	}
-	public void endAltKey(){
+	public final void endAltKey(){
 		if(!getFlags(showIDX)){return;}
 		if(null!=trajMgr) {trajMgr.endAltKey(getMsePoint(pa.getMouse_Raw()));}
 		endAltKeyI();
 	}	
-	public void endCntlKey(){
+	public final void endCntlKey(){
 		if(!getFlags(showIDX)){return;}
 		if(null!=trajMgr) {trajMgr.endCntlKey(getMsePoint(pa.getMouse_Raw()));}
 		endCntlKeyI();
 	}	
 	
-	public void setValueKeyPress(char _key, int _keyCode) {	if(!getFlags(showIDX)){return;}keyPressed = _key; keyCodePressed = _keyCode;}
+	public final void setValueKeyPress(char _key, int _keyCode) {	if(!getFlags(showIDX)){return;}keyPressed = _key; keyCodePressed = _keyCode;}
 	
-	public void endValueKeyPress() {
+	public final void endValueKeyPress() {
 		if(!getFlags(showIDX)){return;}
 		if(null!=trajMgr) {trajMgr.endValueKeyPress();}
 		keyPressed = ' ';
@@ -1320,13 +1437,15 @@ public abstract class myDispWindow {
 		return res;
 	}
 
-	public void rebuildAllDrawnTrajs(){
+	public final void rebuildAllDrawnTrajs(){
 		if(null!=trajMgr) {trajMgr.rebuildAllDrawnTrajs();}
 	}//rebuildAllDrawnTrajs
 	
-	//debug data to display on screen
-	//get string array for onscreen display of debug info for each object
-	public String[] getDebugData(){
+	/**
+	 * debug data to display on screen get string array for onscreen display of debug info for each object
+	 * @return
+	 */
+	public final String[] getDebugData(){
 		ArrayList<String> res = new ArrayList<String>();
 		List<String>tmp;
 		for(int j = 0; j<guiObjs.length; j++){tmp = Arrays.asList(guiObjs[j].getStrData());res.addAll(tmp);}
@@ -1336,25 +1455,24 @@ public abstract class myDispWindow {
 	//setup the launch of UI-driven custom functions or debugging capabilities, which will execute next frame
 	
 	//set colors of the trajectory for this window
-	public void setTrajColors(int[] _tfc, int[] _tsc){if(null!=trajMgr) {trajMgr.setTrajColors(_tfc, _tsc);}};//trajFillClrCnst = _tfc;trajStrkClrCnst = _tsc;initTmpTrajStuff(getFlags(trajPointsAreFlat));}
+	public final void setTrajColors(int[] _tfc, int[] _tsc){if(null!=trajMgr) {trajMgr.setTrajColors(_tfc, _tsc);}};//trajFillClrCnst = _tfc;trajStrkClrCnst = _tsc;initTmpTrajStuff(getFlags(trajPointsAreFlat));}
 	//get key used to access arrays in traj array
-	protected String getTrajAraKeyStr(int i){if(null==trajMgr) {return "";} return trajMgr.getTrajAraKeyStr(i);}
-	protected int getTrajAraIDXVal(String str){if(null==trajMgr) {return -1;} return trajMgr.getTrajAraIDXVal(str);  }
+	protected final String getTrajAraKeyStr(int i){if(null==trajMgr) {return "";} return trajMgr.getTrajAraKeyStr(i);}
+	protected final int getTrajAraIDXVal(String str){if(null==trajMgr) {return -1;} return trajMgr.getTrajAraIDXVal(str);  }
 	
-	public void clearAllTrajectories(){	if(null!=trajMgr) {		trajMgr.clearAllTrajectories();}}//clearAllTrajectories
+	public final void clearAllTrajectories(){	if(null!=trajMgr) {		trajMgr.clearAllTrajectories();}}//clearAllTrajectories
 	
 	//add another screen to this window - need to handle specific trajectories - always remake traj structure
-	public void addSubScreenToWin(int newWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(newWinKey, "",false);			addSScrToWinIndiv(newWinKey);}}
-	public void addTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,false);	addTrajToScrIndiv(subScrKey, newTrajKey);}}
-	public void delSubScreenToWin(int delWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(delWinKey, "",true);				delSScrToWinIndiv(delWinKey);}}
-	public void delTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,true);		delTrajToScrIndiv(subScrKey,newTrajKey);}}
+	public final void addSubScreenToWin(int newWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(newWinKey, "",false);			addSScrToWinIndiv(newWinKey);}}
+	public final void addTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,false);	addTrajToScrIndiv(subScrKey, newTrajKey);}}
+	public final void delSubScreenToWin(int delWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(delWinKey, "",true);				delSScrToWinIndiv(delWinKey);}}
+	public final void delTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,true);		delTrajToScrIndiv(subScrKey,newTrajKey);}}
 		
 	//updates values in UI with programatic changes 
-	public boolean setWinToUIVals(int UIidx, double val){return val == guiObjs[UIidx].setVal(val);}	
+	public final boolean setWinToUIVals(int UIidx, double val){return val == guiObjs[UIidx].setVal(val);}	
 	//UI controlled auxiliary/debug functionality	
 	public final void clickSideMenuBtn(int _row, int _funcOffset, int btnNum) {	curCstBtnRow = _row; curCstFuncBtnOffset = _funcOffset; curCustBtn[_row] = btnNum; custClickSetThisFrame = true;}
-	
-	
+		
 	public final void setThisWinDebugState(int btn,int val) {
 		if(val==0) {//turning on
 			handleSideMenuDebugSelEnable(btn);
@@ -1364,8 +1482,10 @@ public abstract class myDispWindow {
 	}
 	
 	
-	//check if either custom function or debugging has been launched and process if so, skip otherwise.latched by a frame so that button can be turned on
-	public final void checkCustMenuUIObjs() {
+	/**
+	 * check if either custom function or debugging has been launched and process if so, skip otherwise.latched by a frame so that button can be turned on
+	 */
+	private final void checkCustMenuUIObjs() {
 		//was set last frame and processed, so latch to launch request.  
 		//this will enable buttons to be displayed even if their processing only takes a single cycle
 		if (custClickSetThisFrame) { custClickSetThisFrame = false;custFuncDoLaunch=true;return;}	 
@@ -1381,8 +1501,8 @@ public abstract class myDispWindow {
 
 	//call from custFunc/custDbg functions being launched in threads
 	//these are launched in threads to allow UI to respond to user input
-	public void resetButtonState() {resetButtonState(true);}
-	public void resetButtonState(boolean isSlowProc) {
+	public final void resetButtonState() {resetButtonState(true);}
+	public final void resetButtonState(boolean isSlowProc) {
 		if (curCstBtnRow == -1) {return;}
 		if (curCustBtn[curCstBtnRow] == -1) {return;}
 		AppMgr.clearBtnState(curCstBtnRow,curCustBtn[curCstBtnRow], isSlowProc);
@@ -1437,7 +1557,7 @@ public abstract class myDispWindow {
 	protected abstract boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld);
 	protected abstract boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn);
 	
-	public boolean sideBarMenu_CallWinMseDragIndiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
+	public final boolean sideBarMenu_CallWinMseDragIndiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
 		return hndlMouseDragIndiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
 	}
 	
@@ -1490,10 +1610,10 @@ public abstract class myDispWindow {
 	protected abstract void drawRightSideInfoBarPriv(float modAmtMillis);
 	protected abstract void drawOnScreenStuffPriv(float modAmtMillis);
 	
-	public MessageObject getMsgObj() {return msgObj;}
+	public final MessageObject getMsgObj() {return msgObj;}
 	
-	public String getName() {return name;}
-	public int getID() {return ID;}
+	public final String getName() {return name;}
+	public final int getID() {return ID;}
 	
 	public String toString(){
 		String res = "Window : "+name+" ID: "+ID+" Fill :("+fillClr[0]+","+fillClr[1]+","+fillClr[2]+","+fillClr[3]+

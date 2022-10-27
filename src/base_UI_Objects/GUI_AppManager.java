@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.jogamp.newt.opengl.GLWindow;
+
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
@@ -27,12 +29,20 @@ import base_UI_Objects.windowUI.sidebar.mySidebarMenuBtnConfig;
  *
  */
 public abstract class GUI_AppManager {
-	//rendering engine interface, providing expected methods.
+	/**
+	 * rendering engine interface, providing expected methods.
+	 */
 	public static IRenderInterface pa = null;
-	//3d interaction stuff and mouse tracking
-	protected my3DCanvas canvas;		
+	/**
+	 * 3d interaction stuff and mouse tracking
+	 */
+	protected my3DCanvas canvas;	
+	/**
+	 * Reference to GL Window underlying IRenderInterface surface
+	 */
+	public GLWindow window;
 	
-	
+	////////////////////////////////////////////////////////////////////////////////////////////////////	
 	//platform independent path separator
 	public final String dirSep = File.separator;
 	
@@ -49,7 +59,7 @@ public abstract class GUI_AppManager {
 	 * physical display width and height this project is running on
 	 */
 	protected static int _displayWidth, _displayHeight;
-	/////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time and date
 	
 	//used to manage current time
@@ -75,7 +85,7 @@ public abstract class GUI_AppManager {
 	//whether or not the display windows will accept a drawn trajectory
 	protected boolean[][] dispWinFlags;
 	//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
-	protected static int
+	protected static final int
 				dispCanDrawInWinIDX 	= 0,
 				dispCanShow3dboxIDX 	= 1,
 				dispCanMoveViewIDX 		= 2,
@@ -100,13 +110,14 @@ public abstract class GUI_AppManager {
 	// counter for simulation cycles	
 	protected int simCycles;													
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	//visualization variables
 	//flags explicitly pertaining to window visibility
 	private int[] _visFlags;		
 	// boolean flags used to control various elements of the program 
 	private int[] baseFlags;
 	//dev/debug flags
-	private final int 
+	private static final int 
 			debugMode 			= 0,			//whether we are in debug mode or not	
 			finalInitDone		= 1,			//used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
 			saveAnim 			= 2,			//whether we are saving or not an anim screenie
@@ -164,8 +175,6 @@ public abstract class GUI_AppManager {
 			};
 	private int[][] pFlagColors;
 	
-	
-	//public final int numDebugVisFlags = 6;
 	//flags to actually display in menu as clickable text labels - order does matter
 	private List<Integer> flagsToShow = Arrays.asList( 
 		debugMode, 			
@@ -231,13 +240,13 @@ public abstract class GUI_AppManager {
 
 	protected float menuWidth;			
 	//side menu is 15% of screen grid2D_X, 
-	protected float menuWidthMult = .15f;
+	protected final float menuWidthMult = .15f;
 	protected float hideWinWidth;
-	protected float hideWinWidthMult = .03f;
+	protected final float hideWinWidthMult = .03f;
 	protected float hideWinHeight;
-	protected float hideWinHeightMult = .05f;
+	protected final float hideWinHeightMult = .05f;
 
-	protected String exeDir = Paths.get(".").toAbsolutePath().toString();
+	protected final String exeDir = Paths.get(".").toAbsolutePath().toString();
 	//file location of current executable
 	protected File currFileIOLoc = Paths.get(".").toAbsolutePath().toFile();
 	//mouse wheel sensitivity
@@ -251,7 +260,7 @@ public abstract class GUI_AppManager {
 		{IRenderInterface.gui_DarkMagenta,IRenderInterface.gui_DarkBlue,IRenderInterface.gui_DarkGreen,IRenderInterface.gui_DarkCyan}, 
 		{IRenderInterface.gui_LightMagenta,IRenderInterface.gui_LightBlue,IRenderInterface.gui_LightGreen,IRenderInterface.gui_TransCyan}};
 
-	/////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// pre-calc sin/cos for building cylinders
 	
 	//constant values defined for cylinder wall angles
@@ -264,7 +273,7 @@ public abstract class GUI_AppManager {
 	private double[] cylCosVals, cylSinVals;
 		
 		
-	//////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// code
 	
 	public GUI_AppManager() {
@@ -368,6 +377,7 @@ public abstract class GUI_AppManager {
 	 * @param height
 	 */
 	public void firstInit(int width, int height) {
+		window = pa.getGLWindow();
 		msSclX = MyMathUtils.PI_F/width;
 		msSclY = MyMathUtils.PI_F/height;
 		//init internal state flags structure
@@ -590,7 +600,7 @@ public abstract class GUI_AppManager {
 	
 	public myDispWindow getCurrentWindow() {return dispWinFrames[curFocusWin];}
 	
-	//////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// side bar menu stuff
 	
 	/**
@@ -730,7 +740,7 @@ public abstract class GUI_AppManager {
 	}
 
 		
-	///////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// draw/display functions
 	
 	protected abstract void setBkgrnd();//{	background(_bground[0],_bground[1],_bground[2],_bground[3]);}//setBkgrnd
@@ -862,8 +872,9 @@ public abstract class GUI_AppManager {
 		for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getIs3DWindow())){dispWinFrames[i].draw2D(modAmtMillis);}}
 	}
 	
-	//vector and point functions to be compatible with earlier code from jarek's class or previous projects	
-	//draw bounding box for 3d
+	/**
+	 * draw bounding box for 3d
+	 */
 	public final void drawBoxBnds(){
 		pa.pushMatState();
 		pa.setStrokeWt(3f);
@@ -873,7 +884,10 @@ public abstract class GUI_AppManager {
 		pa.popMatState();
 	}	
 	
-	//project passed point onto box surface based on location - to help visualize the location in 3d
+	/**
+	 * project passed point onto box surface based on location - to help visualize the location in 3d
+	 * @param p
+	 */
 	public final void drawProjOnBox(myPoint p){
 		//myPoint[]  projOnPlanes = new myPoint[6];
 		myPoint prjOnPlane;
@@ -958,11 +972,7 @@ public abstract class GUI_AppManager {
 	public final void drawWindowGuiObjs(){
 		if(curFocusWin != -1){
 			pa.pushMatState();
-			dispWinFrames[curFocusWin].drawGUIObjs();					//draw what user-modifiable fields are currently available
-			dispWinFrames[curFocusWin].drawClickableBooleans();					//draw what user-modifiable fields are currently available
-			dispWinFrames[curFocusWin].drawCustMenuObjs();					//customizable menu objects for each window
-			//also launch custom function here
-			dispWinFrames[curFocusWin].checkCustMenuUIObjs();			
+			dispWinFrames[curFocusWin].drawWindowGuiObjs();					//draw what user-modifiable fields are currently available
 			pa.popMatState();	
 		}
 	}//	
@@ -974,16 +984,8 @@ public abstract class GUI_AppManager {
 		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
 		dispWinFrames[dispMenuIDX].drawHeader(modAmtMillis);
 		if(isDebugMode()){
-			pa.pushMatState();			
-			dispWinFrames[curFocusWin].reInitInfoStr();
-			dispWinFrames[curFocusWin].addInfoStr(0,getMseEyeInfoString(dispWinFrames[curFocusWin].getCamDisp()));
-			String[] res = ((mySideBarMenu)dispWinFrames[dispMenuIDX]).getDebugData();		//get debug data for each UI object
-			int numToPrint = MyMathUtils.min(res.length,80);
-			for(int s=0;s<numToPrint;++s) {	dispWinFrames[curFocusWin].addInfoStr(res[s]);}				//add info to string to be displayed for debug
-			dispWinFrames[curFocusWin].drawInfoStr(1.0f, dispWinFrames[curFocusWin].strkClr); 	
-			pa.popMatState();		
-		}
-		else if(showInfo){
+			dispWinFrames[curFocusWin].drawUIDebugMode(dispWinFrames[dispMenuIDX].getDebugData());		
+		} else if(showInfo){
 			dispWinFrames[curFocusWin].drawOnscreenText();
 		}
 		dispWinFrames[curFocusWin].updateConsoleStrs();		
@@ -1042,7 +1044,7 @@ public abstract class GUI_AppManager {
 	}//	drawAxes
 	
 
-	/////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// canvas functions
 	
 	public final myVector getDrawSNorm() {return canvas.getDrawSNorm();}
@@ -1060,15 +1062,30 @@ public abstract class GUI_AppManager {
 	public myPoint getOldMseLoc(){		return canvas.getOldMseLoc();	}	
 	public myVector getMseDragVec(){	return canvas.getMseDragVec();}
 	
-	//relative to passed origin
+	/**
+	 * relative to passed origin
+	 * @param glbTrans
+	 * @return
+	 */
 	public myPoint getMseLoc(myPoint glbTrans){			return canvas.getMseLoc(glbTrans);	}
-	//move by passed translation
+	/**
+	 * move by passed translation
+	 * @param glbTrans
+	 * @return
+	 */
 	public myPointf getTransMseLoc(myPointf glbTrans){	return canvas.getTransMseLoc(glbTrans);	}
-	//dist from mouse to passed location
+	/**
+	 * dist from mouse to passed location
+	 * @param glbTrans
+	 * @return
+	 */
 	public float getMseDist(myPointf glbTrans){			return canvas.getMseDist(glbTrans);}
 	public myPoint getOldMseLoc(myPoint glbTrans){		return canvas.getOldMseLoc(glbTrans);}
 	
-	//get normalized ray from eye loc to mouse loc
+	/**
+	 * get normalized ray from eye loc to mouse loc
+	 * @return
+	 */
 	public myVectorf getEyeToMouseRay_f() {				return canvas.getEyeToMouseRay_f();	}	
 	
 	/**
@@ -1089,7 +1106,7 @@ public abstract class GUI_AppManager {
 		return ((mySideBarMenu) dispWinFrames[dispMenuIDX]).getSidebarMenuButtonLabel(row,col);
 	}
 	
-	///////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// showing functions
 	
 	/**
@@ -1114,14 +1131,6 @@ public abstract class GUI_AppManager {
 	public final void showOffsetText2D(float d, int tclr, String txt){
 		pa.setColorValFill(tclr, 255);pa.setColorValStroke(tclr, 255);
 		pa.showText(txt, d, d,0); 
-	}
-	public final void showOffsetTextAra(float d, int tclr, String[] txtAra){
-		pa.setColorValFill(tclr, 255);pa.setColorValStroke(tclr, 255);
-		float y = d;
-		for (String txt : txtAra) {
-			pa.showText(txt, d, y, d);
-			y+=10;
-		}
 	}
 		
 	public final void showBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, String txt) {
@@ -1214,7 +1223,7 @@ public abstract class GUI_AppManager {
 		return result;
 	}//getDateString
 	
-	//////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
 	
 	/**
@@ -1227,6 +1236,13 @@ public abstract class GUI_AppManager {
 	 * @return
 	 */
 	public final int getDisplayHeight() {return _displayHeight;}
+	
+	/**
+	 * Returns window dims : X,Y,Width,Height
+	 */
+	public final int[] getWindowLoc() {
+		return new int[] {window.getX(),window.getY(), window.getWidth(), window.getHeight()};
+	}
 	
 	//set the height of each window that is above the popup window, to move up or down when it changes size
 	public final void setWinsHeight(int popUpWinIDX){
@@ -1385,7 +1401,7 @@ public abstract class GUI_AppManager {
 		numFlagsToShow = flagsToShow.size();
 	}
 	
-	//////////////////////////////////////////////////////////////////////////////////////////	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// state and control flag handling
 	/**
 	 * init boolean state machine flags for visible flags
@@ -1534,7 +1550,7 @@ public abstract class GUI_AppManager {
 	public final void setFinalInitDone(boolean val) {setBaseFlag(finalInitDone, val);}	
 	public final void setSaveAnim(boolean val) {setBaseFlag(saveAnim, val);}
 	public final void toggleSaveAnim() {setBaseFlag(saveAnim, !getBaseFlag(saveAnim));}
-	///////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// flags to show
 	protected void setMainFlagToShow_debugMode(boolean val) {_setMainFlagToShow(debugMode, val);}
 	protected void setMainFlagToShow_saveAnim(boolean val) {_setMainFlagToShow(saveAnim, val);}
@@ -1559,7 +1575,7 @@ public abstract class GUI_AppManager {
 		return "None";
 	}
 	
-	////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// calculations
 	
 	/**

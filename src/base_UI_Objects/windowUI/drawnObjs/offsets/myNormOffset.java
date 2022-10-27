@@ -41,16 +41,16 @@ public class myNormOffset extends baseOffset{
 //          myPoints[i].drawNorm((derived ? 0 : 1), nAra[i], tAra[i]);
 //      }
 //  }
-  public void drawCntlPts(IRenderInterface pa, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived) {
-	  pa.pushMatState();
+  public void drawCntlPts(IRenderInterface ri, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived) {
+	  ri.pushMatState();
 	  int clrInt = 0;
       for(int i = 0; i < myPoints.length; ++i){
     	  clrInt = (int)(i/(1.0f * myPoints.length) * 255.0f);
-          pa.setFill(clrInt,0,(255 - clrInt),255);  
-          pa.setStroke(clrInt,0,(255 - clrInt),255); 
-          pa.drawCircle3D( myPoints[i], myPoints[i].r, nAra[i], tAra[i],20);
+    	  ri.setFill(clrInt,0,(255 - clrInt),255);  
+    	  ri.setStroke(clrInt,0,(255 - clrInt),255); 
+          ri.drawCircle3D( myPoints[i], myPoints[i].r, nAra[i], tAra[i],20);
       }
-      pa.popMatState();
+      ri.popMatState();
   }
       
 

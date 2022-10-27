@@ -11,6 +11,8 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 
+import com.jogamp.newt.opengl.GLWindow;
+
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -126,8 +128,15 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void setRenderBackground(int r, int g, int b, int alpha) {
 		super.background(r,g,b,alpha);
 	}
-
-
+	
+	/**
+	 * Return the underlying GL Window for this JOGL 
+	 * @return
+	 */
+	@Override
+	public GLWindow getGLWindow() {
+		return (GLWindow)getSurface().getNative();
+	}
 	///////////////////////////////////////////
 	// draw routines
 	protected static int pushPopAllDepth = 0, pushPopJustStyleDepth = 0;

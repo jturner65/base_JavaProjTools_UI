@@ -8,9 +8,12 @@ import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.drawnObjs.base.myDrawnObject;
 
 
-//class holds trajectory and 4 macro cntl points, and handling for them
+/**
+ * class holds trajectory and 4 macro cntl points, and the handling for them
+ * @author 7strb
+ *
+ */
 public class myDrawnSmplTraj {
-	//public IRenderInterface pa;
 	public static GUI_AppManager AppMgr;
 	public myDispWindow win;
 	public myTrajManager trajMgr;
@@ -97,7 +100,7 @@ public class myDrawnSmplTraj {
 		drawnTraj.startDrawing();
 	}
 	public boolean startEditEndPoint(int idx){
-		editEndPt = idx; trajMgr.setFlags(myTrajManager.editingTraj, true);
+		editEndPt = idx; trajMgr.setShouldEdit(true);
 		//pa.outStr2Scr("Handle TrajClick 2 startEditEndPoint : " + name + " | Move endpoint : "+editEndPt);
 		return true;
 	}
@@ -116,14 +119,14 @@ public class myDrawnSmplTraj {
 			//pa.outStr2Scr("Handle TrajClick 2 startEditObj : " + name);
 			if(distToPts[0] < chkDist){//close enough to mod
 				trajMgr.setEditCueCircle(0,mse);
-				trajMgr.setFlags(myTrajManager.editingTraj, true);
+				trajMgr.setShouldEdit(true);
 				doEdit = true;
 				//pa.outStr2Scr("Handle TrajClick 3 startEditObj modPt : " + name + " : pIdx : "+ pIdx);
 				drawnTrajPickedIdx = pIdx;	
 				editEndPt = -1;
 			} else if (distToPts[0] < sqMsClkRad){//not close enough to mod but close to curve
 				trajMgr.setEditCueCircle(1,mse);
-				trajMgr.setFlags(myTrajManager.smoothTraj, true);
+				trajMgr.setShouldSmooth(true);
 			}
 		}
 		return doEdit;
@@ -165,10 +168,19 @@ public class myDrawnSmplTraj {
 		}			
 	}
 	
-	//edit the trajectory used for UI input in this window
+	/**
+	 * Edit the trajectory used for UI input in this window
+	 * @param mouseX
+	 * @param mouseY
+	 * @param pmouseX
+	 * @param pmouseY
+	 * @param mouseClickIn3D
+	 * @param mseDragInWorld
+	 * @return
+	 */
 	public boolean editTraj(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld){
 		boolean mod = false;
-		if((drawnTrajPickedIdx == -1) && (editEndPt == -1) && (!trajMgr.getFlags(myTrajManager.smoothTraj))){return mod;}			//neither endpoints nor drawn points have been edited, and we're not smoothing
+		if((drawnTrajPickedIdx == -1) && (editEndPt == -1) && (!trajMgr.getIsSmoothing())){return mod;}			//neither endpoints nor drawn points have been edited, and we're not smoothing
 		myVector diff = trajFlags[ownrWinIs3dIDX] ? mseDragInWorld : new myVector(mouseX-pmouseX, mouseY-pmouseY,0);		
 		//pa.outStr2Scr("Diff in editTraj for  " + name + "  : " +diff.toStrBrf());
 		//needs to be before templateZoneY check
@@ -184,8 +196,7 @@ public class myDrawnSmplTraj {
 	}//editTraj
 	
 	public void endEditObj(){
-		if((drawnTrajPickedIdx != -1) || (editEndPt != -1)
-			|| ( trajMgr.getFlags(myTrajManager.smoothTraj))){//editing curve
+		if((drawnTrajPickedIdx != -1) || (editEndPt != -1) || trajMgr.getIsSmoothing()){//editing curve
 			drawnTraj.remakeDrawnTraj(false);
 			rebuildDrawnTraj();		
 		}
@@ -197,8 +208,8 @@ public class myDrawnSmplTraj {
 		trajMgr.processTrajectory(this);//dispFlags[trajDirty, true);
 		drawnTrajPickedIdx = -1;
 		editEndPt = -1;
-		trajMgr.setFlags(myTrajManager.editingTraj, false);
-		trajMgr.setFlags(myTrajManager.smoothTraj, false);
+		trajMgr.setShouldEdit(false);
+		trajMgr.setShouldSmooth(false);
 	}
 	
 	public void endDrawObj(myPoint endPoint){
@@ -216,7 +227,7 @@ public class myDrawnSmplTraj {
 		} else {
 			drawnTraj = new myVariStroke(win, new myVector(AppMgr.getDrawSNorm()),fillClrCnst, strkClrCnst);
 		}
-		trajMgr.setFlags(myTrajManager.drawingTraj, false);
+		trajMgr.setShouldDraw(false);
 	}//endDrawObj
 	
 	public void addPoint(myPoint mse){
@@ -228,17 +239,23 @@ public class myDrawnSmplTraj {
 		((myVariStroke) drawnTraj).dbgPrintAllPoints(false);
 	}
 	
-	//use animTimeMod to animate/decay showing this traj TODO 
-	public void drawMe(IRenderInterface pa, float animTimeMod){
+	/**
+	 * Draw trajectory.  use animTimeMod to animate/decay showing this traj TODO 
+	 * @param ri
+	 * @param animTimeMod
+	 */
+	public void drawMe(IRenderInterface ri, float animTimeMod){
 		if(drawnTraj != null){
-			pa.setFill(fillClrCnst,255);
-			pa.setStroke(strkClrCnst,255);
+			ri.setFill(fillClrCnst,255);
+			ri.setStroke(strkClrCnst,255);
 			for(int i =0; i< edtCrvEndPts.length; ++i){
-				trajMgr.showKeyPt(pa, edtCrvEndPts[i],""+ (i+1),ctlRad);
+				trajMgr.showKeyPt(ri, edtCrvEndPts[i],""+ (i+1),ctlRad);
 			}	
-			((myVariStroke)drawnTraj).drawMe(pa, false,trajFlags[flatPtIDX]);
+			((myVariStroke)drawnTraj).drawMe(ri, false,trajFlags[flatPtIDX]);
 		} 
 	}
+	
+	//Unused is for moveVelCurveToEndPoints
 	@SuppressWarnings("unused")
 	public void rebuildDrawnTraj(){
 		//Once edge is drawn
@@ -258,4 +275,4 @@ public class myDrawnSmplTraj {
 		}	
 	}//rebuildDrawnTraj	
 	public void setTopOffy(float _topOffy){	topOffY = _topOffy;	}		//offset in y from top of screen
-}//class myDrawnNoteTraj
+}//class myDrawnSmplTraj

@@ -11,7 +11,7 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
-import base_UI_Objects.windowUI.uiObjs.myGUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.myGUIObj;
 
 //displays sidebar menu of interaction and functionality
 
@@ -451,8 +451,6 @@ public class mySideBarMenu extends myDispWindow{
 	}
 	@Override
 	protected String[] getSaveFileDirNamesPriv() {return new String[]{"menuDir","menuFile"};	}
-	@Override
-	public void drawClickableBooleans() {	}//this is only for non-sidebar menu windows, to display their own personal buttons
 	@Override
 	protected final void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc){}//not a snap-to window
 	@Override

@@ -304,11 +304,11 @@ public class myVariStroke extends myDrawnObject {
     	}
 	}
 	
-	public void drawMe(IRenderInterface pa, boolean useDrawnVels, boolean flat){
-		pa.pushMatState();
-			pa.setFill(fillClr,255);
-			pa.setStroke(strkClr,255);
-			pa.setStrokeWt(1.0f);
+	public void drawMe(IRenderInterface ri, boolean useDrawnVels, boolean flat){
+		ri.pushMatState();
+			ri.setFill(fillClr,255);
+			ri.setStroke(strkClr,255);
+			ri.setStrokeWt(1.0f);
 			if(flat) {
 		       	if(useDrawnVels){
 	        		//int clrInt = 0;
@@ -316,15 +316,15 @@ public class myVariStroke extends myDrawnObject {
 	    	        	//clrInt = (int)(i/(1.0f * interpCntlPts.length) * 255.0f);
 	    	            //pa.fill(clrInt,255,(255 - clrInt),255);  
 	    	            //pa.stroke(clrInt,255,(255 - clrInt),255); 
-	    				pa.showPtAsCircle(interpCntlPts[i],trajPtRad,-1,-1);
-	    				if(flags[drawCntlRad]){pa.drawCircle3D(this.interpCntlPts[i], this.cntlPts[i].r,this.c_bAra[i], this.c_tAra[i],20);}
+	    				ri.showPtAsCircle(interpCntlPts[i],trajPtRad,-1,-1);
+	    				if(flags[drawCntlRad]){ri.drawCircle3D(this.interpCntlPts[i], this.cntlPts[i].r,this.c_bAra[i], this.c_tAra[i],20);}
 	    			}
 	        	} else {			
 					for(int i = 0; i < cntlPts.length; ++i){
-						pa.showPtAsCircle(cntlPts[i],1.0*trajPtRad,fillClr,strkClr);
+						ri.showPtAsCircle(cntlPts[i],1.0*trajPtRad,fillClr,strkClr);
 						//cntlPts[i].showMe(pa,trajPtRad,fillClr,strkClr, flat);
 					}
-					if(flags[drawCntlRad]){this._offset.drawCntlPts(pa, this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
+					if(flags[drawCntlRad]){this._offset.drawCntlPts(ri, this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
 	        	}				
 			} else {				
 		       	if(useDrawnVels){
@@ -333,20 +333,20 @@ public class myVariStroke extends myDrawnObject {
 	    	        	//clrInt = (int)(i/(1.0f * interpCntlPts.length) * 255.0f);
 	    	            //pa.fill(clrInt,255,(255 - clrInt),255);  
 	    	            //pa.stroke(clrInt,255,(255 - clrInt),255); 
-	    				pa.showPtAsSphere(interpCntlPts[i],trajPtRad,5,-1,-1);
-	    				if(flags[drawCntlRad]){pa.drawCircle3D(this.interpCntlPts[i], this.cntlPts[i].r,this.c_bAra[i], this.c_tAra[i],20);}
+	    				ri.showPtAsSphere(interpCntlPts[i],trajPtRad,5,-1,-1);
+	    				if(flags[drawCntlRad]){ri.drawCircle3D(this.interpCntlPts[i], this.cntlPts[i].r,this.c_bAra[i], this.c_tAra[i],20);}
 	    			}
 	        	} else {			
 					for(int i = 0; i < cntlPts.length; ++i){
-						pa.showPtAsSphere(cntlPts[i],1.0*trajPtRad,5,fillClr,strkClr);
+						ri.showPtAsSphere(cntlPts[i],1.0*trajPtRad,5,fillClr,strkClr);
 						//cntlPts[i].showMe(pa,trajPtRad,fillClr,strkClr, flat);
 					}
-					if(flags[drawCntlRad]){this._offset.drawCntlPts(pa, this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
+					if(flags[drawCntlRad]){this._offset.drawCntlPts(ri, this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
 	        	}
 			}
 			
 			
- 		pa.popMatState();		
+			ri.popMatState();		
 	}//
 	
 	//scale the points - for when the window is resized
