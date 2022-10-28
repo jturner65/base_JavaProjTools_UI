@@ -74,7 +74,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void loadBkgndSphere(String filename) {
 		int sDet = getSphereDetail();
 		setSphereDetail(100);
-		PImage bgrndTex = loadImage("bkgrndTex.jpg");
+		PImage bgrndTex = loadImage(filename);
 		bgrndSphere = createShape(PConstants.SPHERE, 10000);
 		bgrndSphere.setTexture(bgrndTex);
 		bgrndSphere.rotate(MyMathUtils.HALF_PI_F,-1,0,0);
