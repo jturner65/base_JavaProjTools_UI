@@ -3,7 +3,7 @@ package base_UI_Objects.windowUI.uiData;
 import java.util.HashMap;
 import java.util.Map;
 
-import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.base.Base_DispWindow;
 
 /**
  * structure holding UI-derived/modified data used to update execution code
@@ -14,7 +14,7 @@ public class UIDataUpdater {
 	/**
 	 * Owning UI Window
 	 */
-	protected myDispWindow win;
+	protected Base_DispWindow win;
 	
 	/**
 	 * map to hold UI-driven int values, using the UI object idx's as keys
@@ -29,8 +29,8 @@ public class UIDataUpdater {
 	 */
 	protected Map<Integer, Boolean> boolValues;	
 	
-	public UIDataUpdater(myDispWindow _win) { win=_win;	initMaps();}
-	public UIDataUpdater(myDispWindow _win, Map<Integer, Integer> _iVals, Map<Integer, Float> _fVals, Map<Integer, Boolean> _bVals) {
+	public UIDataUpdater(Base_DispWindow _win) { win=_win;	initMaps();}
+	public UIDataUpdater(Base_DispWindow _win, Map<Integer, Integer> _iVals, Map<Integer, Float> _fVals, Map<Integer, Boolean> _bVals) {
 		win=_win;
 		initMaps();
 		setAllVals(_iVals, _fVals, _bVals);

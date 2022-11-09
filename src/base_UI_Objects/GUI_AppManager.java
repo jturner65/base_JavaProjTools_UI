@@ -18,9 +18,9 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_UI_Objects.windowUI.base.myDispWindow;
-import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
-import base_UI_Objects.windowUI.sidebar.mySidebarMenuBtnConfig;
+import base_UI_Objects.windowUI.base.Base_DispWindow;
+import base_UI_Objects.windowUI.sidebar.SidebarMenu;
+import base_UI_Objects.windowUI.sidebar.SidebarMenuBtnConfig;
 import base_Utils_Objects.Java_AppManager;
 
 
@@ -37,7 +37,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * 3d interaction stuff and mouse tracking
 	 */
-	protected my3DCanvas canvas;	
+	protected Disp3DCanvas canvas;	
 	/**
 	 * Reference to GL Window underlying IRenderInterface surface
 	 */
@@ -61,7 +61,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final float maxWinRatio =  1.77777778f;	
 	
 	//individual display/HUD windows for gui/user interaction
-	protected myDispWindow[] dispWinFrames = new myDispWindow[0] ;
+	protected Base_DispWindow[] dispWinFrames = new Base_DispWindow[0] ;
 	//set in instancing class - must be > 1
 	protected int numDispWins;
 	//always idx 0 - first window is always right side menu
@@ -357,7 +357,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		hideWinWidth = width * hideWinWidthMult;				//dims for hidden windows
 		hideWinHeight = height * hideWinHeightMult;
 		//build canvas
-		canvas = new my3DCanvas(this, pa, width, height);	
+		canvas = new Disp3DCanvas(this, pa, width, height);	
 	}
 	
 	/**
@@ -456,7 +456,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		winTrajFillClrs = new int[numDispWins][4];		//set to color constants for each window
 		winTrajStrkClrs = new int[numDispWins][4];	//set to color constants for each window
 		//display window initialization
-		dispWinFrames = new myDispWindow[numDispWins];			
+		dispWinFrames = new Base_DispWindow[numDispWins];			
 	}//initWins
 	
 	//specify windows that cannot be shown simultaneously here
@@ -568,7 +568,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	}//finalDispWinInit	
 	
-	public myDispWindow getCurrentWindow() {return dispWinFrames[curFocusWin];}
+	public Base_DispWindow getCurrentWindow() {return dispWinFrames[curFocusWin];}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// side bar menu stuff
@@ -584,9 +584,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _inclMseOvValues include a row for possible mouse over values
 	 * @return
 	 */
-	public final mySideBarMenu buildSideBarMenu(int wIdx, int fIdx, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
-		mySidebarMenuBtnConfig sideBarConfig = new mySidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _inclWinNames, _inclMseOvValues);
-		return new mySideBarMenu(pa, this, wIdx, fIdx, sideBarConfig);		
+	public final SidebarMenu buildSideBarMenu(int wIdx, int fIdx, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
+		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _inclWinNames, _inclMseOvValues);
+		return new SidebarMenu(pa, this, wIdx, fIdx, sideBarConfig);		
 	}
 	
 	//set up initial colors for primary flags for display
@@ -605,7 +605,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	//isSlowProc means original calling process lasted longer than mouse click release and so button state should be forced to be off
 	public final void clearBtnState(int _type, int col, boolean isSlowProc) {
 		int row = _type;
-		mySideBarMenu win = (mySideBarMenu)dispWinFrames[dispMenuIDX];
+		SidebarMenu win = (SidebarMenu)dispWinFrames[dispMenuIDX];
 		win.getGuiBtnWaitForProc()[row][col] = false;
 		if(isSlowProc) {win.getGuiBtnSt()[row][col] = 0;}		
 	}//clearBtnState 
@@ -615,7 +615,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param btnNames
 	 */
 	public final void setAllMenuBtnNames(String[][] btnNames) {
-		for(int _type = 0;_type<btnNames.length;++_type) {((mySideBarMenu)dispWinFrames[dispMenuIDX]).setAllFuncBtnLabels(_type,btnNames[_type]);}
+		for(int _type = 0;_type<btnNames.length;++_type) {((SidebarMenu)dispWinFrames[dispMenuIDX]).setAllFuncBtnLabels(_type,btnNames[_type]);}
 	}
 	
 	
@@ -670,10 +670,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}	
 	
 	protected void setMenuBtnState(int row, int col, int val) {
-		((mySideBarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
+		((SidebarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
 		if (val == 1) {
 			//outStr2Scr("my_procApplet :: setMenuBtnState :: Note!!! Turning on button at row : " + row + "  col " + col + " without button's command.");
-			((mySideBarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
+			((SidebarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
 	}//setMenuBtnState	
 	
 	public void loadFromFile(File file){
@@ -765,7 +765,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//simulation section
 		if(isRunSim() ){
 			//run simulation
-			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getFlags(myDispWindow.isRunnable))){dispWinFrames[i].simulate(modAmtMillis);}}
+			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getFlags(Base_DispWindow.isRunnable))){dispWinFrames[i].simulate(modAmtMillis);}}
 			if(isSingleStep()){setSimIsRunning(false);}
 			++simCycles;
 			return true;
@@ -1073,7 +1073,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public final String getSidebarMenuButtonLabel(int row, int col) {
-		return ((mySideBarMenu) dispWinFrames[dispMenuIDX]).getSidebarMenuButtonLabel(row,col);
+		return ((SidebarMenu) dispWinFrames[dispMenuIDX]).getSidebarMenuButtonLabel(row,col);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1313,7 +1313,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void mouseWheel(int ticks) {
 		if(dispWinFrames.length < 1) {return;}
-		if (dispWinFrames[curFocusWin].getFlags(myDispWindow.canChgView)) {// (canMoveView[curFocusWin]){	
+		if (dispWinFrames[curFocusWin].getFlags(Base_DispWindow.canChgView)) {// (canMoveView[curFocusWin]){	
 			float mult = (getBaseFlag(shiftKeyPressed)) ? 50.0f * mouseWhlSens : 10.0f*mouseWhlSens;
 			dispWinFrames[curFocusWin].handleViewChange(true,(mult * ticks),0);
 		}
@@ -1498,9 +1498,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 	public float getMenuWidth() {return menuWidth;}
 	
-	public myDispWindow getCurFocusDispWindow() {return dispWinFrames[curFocusWin];}	
+	public Base_DispWindow getCurFocusDispWindow() {return dispWinFrames[curFocusWin];}	
 
-	public mySideBarMenu getSideBarMenuWindow() {return ((mySideBarMenu)dispWinFrames[dispMenuIDX]);}
+	public SidebarMenu getSideBarMenuWindow() {return ((SidebarMenu)dispWinFrames[dispMenuIDX]);}
 	public String getCurFocusDispWindowName() {return getDispWindowName(curFocusWin);}
 	public String getDispWindowName(int idx) { 
 		if ((idx >= 0) && (idx < dispWinFrames.length)){
