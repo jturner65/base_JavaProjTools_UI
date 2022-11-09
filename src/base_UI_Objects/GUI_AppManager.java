@@ -66,7 +66,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected int numDispWins;
 	//always idx 0 - first window is always right side menu
 	public static final int dispMenuIDX = 0;	
-	//which myDispWindow currently has focus
+	//which Base_DispWindow currently has focus
 	public int curFocusWin;		
 	//need 1 per display window
 	public String[] winTitles,winDescr;
@@ -403,7 +403,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected abstract void initMainFlags_Indiv();
 	
 	/**
-	 * this is called to build all the myDispWindows in the instancing class
+	 * this is called to build all the Base_DispWindows in the instancing class
 	 */
 	protected abstract void initAllDispWindows();
 

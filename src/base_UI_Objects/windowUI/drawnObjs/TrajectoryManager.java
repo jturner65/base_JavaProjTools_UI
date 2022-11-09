@@ -12,7 +12,7 @@ import base_Utils_Objects.io.messaging.MessageObject;
 
 
 /**
- * this class will manage the trajectories in a single myDispWindow, if the window supports drawn trajectories
+ * this class will manage the trajectories in a single Base_DispWindow, if the window supports drawn trajectories
  * @author john
  *
  */
@@ -196,16 +196,16 @@ public class TrajectoryManager {
 		if((!getFlags(canDrawTraj)) || (null==mse)){return false;}
 		boolean mod = false;
 		if(keysToDrawClicked){					//drawing curve with click+alt - drawing on canvas
-			//msgObj.dispInfoMessage("myDispWindow","handleTrajClick","Current trajectory key IDX " + curTrajAraIDX);
+			//msgObj.dispInfoMessage("Base_DispWindow","handleTrajClick","Current trajectory key IDX " + curTrajAraIDX);
 			startBuildDrawObj();	
 			mod = true;
 			//
 		} else {
-		//	msgObj.dispInfoMessage("myDispWindow","handleTrajClick","Current trajectory key IDX edit " + curTrajAraIDX);
+		//	msgObj.dispInfoMessage("Base_DispWindow","handleTrajClick","Current trajectory key IDX edit " + curTrajAraIDX);
 			this.tmpDrawnTraj = findTraj(mse);							//find closest trajectory to the mouse's click location
 			
 			if ((null != this.tmpDrawnTraj)  && (null != this.tmpDrawnTraj.drawnTraj)) {					//alt key not pressed means we're possibly editing a curve, if it exists and if we click within "sight" of it, or moving endpoints
-				//msgObj.dispInfoMessage("myDispWindow","handleTrajClick","Current trajectory ID " + tmpDrawnTraj.ID);
+				//msgObj.dispInfoMessage("Base_DispWindow","handleTrajClick","Current trajectory ID " + tmpDrawnTraj.ID);
 				mod = this.tmpDrawnTraj.startEditObj(mse);
 			}
 		}
@@ -215,13 +215,13 @@ public class TrajectoryManager {
 	public boolean handleMouseDrag_Traj(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn) {
 		boolean mod = false;
 		if(getFlags(drawingTraj)){ 		//if drawing trajectory has started, then process it
-			//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","drawing traj");
+			//msgObj.dispInfoMessage("Base_DispWindow","handleMouseDrag","drawing traj");
 			myPoint pt =  ownr.getMsePoint(mouseX, mouseY);
 			if(null==pt){return false;}
 			this.tmpDrawnTraj.addPoint(pt);
 			mod = true;
 		}else if(getFlags(editingTraj)){		//if editing trajectory has started, then process it
-			//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","edit traj");	
+			//msgObj.dispInfoMessage("Base_DispWindow","handleMouseDrag","edit traj");	
 			myPoint pt =  ownr.getMsePoint(mouseX, mouseY);
 			if(null==pt){return false;}
 			mod = this.tmpDrawnTraj.editTraj(mouseX, mouseY,pmouseX, pmouseY,pt,mseDragInWorld);
@@ -252,26 +252,26 @@ public class TrajectoryManager {
 		if(del){//delete a screen's worth of traj arrays, or a single traj array from a screen 
 			if((trajAraKey == null) || (trajAraKey == "") ){		//delete screen map				
 				TreeMap<String,ArrayList<DrawnSimpleTraj>> tmpTrajMap = drwnTrajMap.remove(scrKey);
-				if(null != tmpTrajMap){			msgObj.dispInfoMessage("myDispWindow","modTrajStructs","Screen trajectory map removed for scr : " + scrKey);				modMthd = 0;}
-				else {							msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : Screen trajectory map not found for scr : " + scrKey); 	modMthd = -1; }
+				if(null != tmpTrajMap){			msgObj.dispInfoMessage("Base_DispWindow","modTrajStructs","Screen trajectory map removed for scr : " + scrKey);				modMthd = 0;}
+				else {							msgObj.dispErrorMessage("Base_DispWindow","modTrajStructs","Error : Screen trajectory map not found for scr : " + scrKey); 	modMthd = -1; }
 			} else {												//delete a submap within a screen
 				modMthd = 2;					//modifying existing map at this location
 				TreeMap<String,ArrayList<DrawnSimpleTraj>> tmpTrajMap = drwnTrajMap.get(scrKey);
-				if(null == tmpTrajMap){			msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : Screen trajectory map not found for scr : " + scrKey + " when trying to remove arraylist : "+trajAraKey); modMthd = -1;}
+				if(null == tmpTrajMap){			msgObj.dispErrorMessage("Base_DispWindow","modTrajStructs","Error : Screen trajectory map not found for scr : " + scrKey + " when trying to remove arraylist : "+trajAraKey); modMthd = -1;}
 				else { 
 					ArrayList<DrawnSimpleTraj> tmpTrajAra = drwnTrajMap.get(scrKey).remove(trajAraKey);modMthd = 2;
-					if(null == tmpTrajAra){		msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : attempting to remove a trajectory array from a screen but trajAra not found. scr : " + scrKey + " | trajAraKey : "+trajAraKey);modMthd = -1; }
+					if(null == tmpTrajAra){		msgObj.dispErrorMessage("Base_DispWindow","modTrajStructs","Error : attempting to remove a trajectory array from a screen but trajAra not found. scr : " + scrKey + " | trajAraKey : "+trajAraKey);modMthd = -1; }
 				}
 			}			 
 		} else {													//add
 			TreeMap<String,ArrayList<DrawnSimpleTraj>> tmpTrajMap = drwnTrajMap.get(scrKey);
 			if((trajAraKey == null) || (trajAraKey == "") ){		//add map of maps - added a new screen				
-				if(null != tmpTrajMap){msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : attempting to add a new drwnTrajMap where one exists. scr : " + scrKey);modMthd = -1; }
+				if(null != tmpTrajMap){msgObj.dispErrorMessage("Base_DispWindow","modTrajStructs","Error : attempting to add a new drwnTrajMap where one exists. scr : " + scrKey);modMthd = -1; }
 				else {tmpTrajMap = new TreeMap<String,ArrayList<DrawnSimpleTraj>>();	drwnTrajMap.put(scrKey, tmpTrajMap);modMthd = 1;}
 			} else {												//add new map of trajs to existing screen's map
 				ArrayList<DrawnSimpleTraj> tmpTrajAra = drwnTrajMap.get(scrKey).get(trajAraKey);	
-				if(null == tmpTrajMap){msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : attempting to add a new trajectory array to a screen that doesn't exist. scr : " + scrKey + " | trajAraKey : "+trajAraKey); modMthd = -1; }
-				else if(null != tmpTrajAra){msgObj.dispErrorMessage("myDispWindow","modTrajStructs","Error : attempting to add a new trajectory array to a screen where one already exists. scr : " + scrKey + " | trajAraKey : "+trajAraKey);modMthd = -1; }
+				if(null == tmpTrajMap){msgObj.dispErrorMessage("Base_DispWindow","modTrajStructs","Error : attempting to add a new trajectory array to a screen that doesn't exist. scr : " + scrKey + " | trajAraKey : "+trajAraKey); modMthd = -1; }
+				else if(null != tmpTrajAra){msgObj.dispErrorMessage("Base_DispWindow","modTrajStructs","Error : attempting to add a new trajectory array to a screen where one already exists. scr : " + scrKey + " | trajAraKey : "+trajAraKey);modMthd = -1; }
 				else {	tmpTrajAra = new ArrayList<DrawnSimpleTraj>();			tmpTrajMap.put(trajAraKey, tmpTrajAra);	drwnTrajMap.put(scrKey, tmpTrajMap);modMthd = 2;}
 			}			
 		}//if del else add
@@ -320,7 +320,7 @@ public class TrajectoryManager {
 	 * have changed - passed key is value modded in drwnTrajMap,
 	 * modVal is if this is a deleted screen's map(0), a new map (new screen) 
 	 * at this location (1), or a modified map (added or deleted trajectory) (2)
-	 * may want to move back to myDispWindow if we ever use this
+	 * may want to move back to Base_DispWindow if we ever use this
 	 * @param modScrKey
 	 * @param modVal
 	 */
@@ -332,7 +332,7 @@ public class TrajectoryManager {
 		float [] tmpVsblStLoc = new float[tmpNumSubScrInWin];
 		int [] tmpSeqVisStTime = new int[tmpNumSubScrInWin];
 		if(modVal == 0){			//deleted a screen's map
-			if(tmpNumSubScrInWin != (numSubScrInWin -1)){msgObj.dispErrorMessage("myDispWindow","rbldTrnsprtAras","Error in rbldTrnsprtAras : screen traj map not removed at idx : " + modScrKey); return;}
+			if(tmpNumSubScrInWin != (numSubScrInWin -1)){msgObj.dispErrorMessage("Base_DispWindow","rbldTrnsprtAras","Error in rbldTrnsprtAras : screen traj map not removed at idx : " + modScrKey); return;}
 			for(int i =0; i< numSubScrInWin; ++i){					
 			}			
 			

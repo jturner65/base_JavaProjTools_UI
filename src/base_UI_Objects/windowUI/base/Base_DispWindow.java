@@ -424,7 +424,7 @@ public abstract class Base_DispWindow {
 	 * @param numBtns number of buttons to make
 	 */
 	private void _buildPrivBtnRects(float yDisp, int numBtns){
-		//msgObj.dispInfoMessage("myDispWindow","_buildPrivBtnRects","_buildPrivBtnRects in :"+ name + "st value for uiClkCoords[3]");
+		//msgObj.dispInfoMessage("Base_DispWindow","_buildPrivBtnRects","_buildPrivBtnRects in :"+ name + "st value for uiClkCoords[3]");
 		float maxBtnLen = maxBtnWidthMult * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
 		//pa.pr("maxBtnLen : " + maxBtnLen);
 		privFlagBtns = new float[numBtns][];
@@ -647,7 +647,7 @@ public abstract class Base_DispWindow {
 		}
 		uiClkCoords[3] = stClkY;
 		if(numListObjs != tmpListObjVals.size()) {
-			msgObj.dispWarningMessage("myDispWindow", "buildGUIObjs", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
+			msgObj.dispWarningMessage("Base_DispWindow", "buildGUIObjs", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
 		}
 		//build lists of data for all list UI objects
 		//for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
@@ -741,7 +741,7 @@ public abstract class Base_DispWindow {
 
 	public final void loadFromFile(File file){
 		if (file == null) {
-			msgObj.dispWarningMessage("myDispWindow","loadFromFile","Load was cancelled.");
+			msgObj.dispWarningMessage("Base_DispWindow","loadFromFile","Load was cancelled.");
 		    return;
 		} 
 		String[] res = fileIO.loadFileIntoStringAra(file.getAbsolutePath(), "Variable File Load successful", "Variable File Load Failed.");
@@ -761,7 +761,7 @@ public abstract class Base_DispWindow {
 	
 	public final void saveToFile(File file){
 		if (file == null) {
-			msgObj.dispWarningMessage("myDispWindow","saveToFile","Save was cancelled.");
+			msgObj.dispWarningMessage("Base_DispWindow","saveToFile","Save was cancelled.");
 		    return;
 		} 
 		ArrayList<String> res = new ArrayList<String>();
@@ -953,7 +953,7 @@ public abstract class Base_DispWindow {
 	}
 	private final void drawSmall(){
 		pa.pushMatState();
-		//msgObj.dispInfoMessage("myDispWindow","drawSmall","Hitting hint code draw small");
+		//msgObj.dispInfoMessage("Base_DispWindow","drawSmall","Hitting hint code draw small");
 		pa.setBeginNoDepthTest();
 		pa.disableLights();		
 		pa.setStroke(strkClr, strkClr[3]);
@@ -976,7 +976,7 @@ public abstract class Base_DispWindow {
 	public final void drawHeader(float modAmtMillis){
 		if(!getFlags(showIDX)){return;}
 		pa.pushMatState();		
-		//msgObj.dispInfoMessage("myDispWindow","drawHeader","Hitting hint code drawHeader");
+		//msgObj.dispInfoMessage("Base_DispWindow","drawHeader","Hitting hint code drawHeader");
 		pa.setBeginNoDepthTest();
 		pa.disableLights();		
 		pa.setStroke(strkClr, strkClr[3]);
@@ -1083,7 +1083,7 @@ public abstract class Base_DispWindow {
 	}//draw3D
 	
 	public void drawTraj3D(float animTimeMod,myPoint trans){
-		msgObj.dispWarningMessage("myDispWindow","drawTraj3D","I should be overridden in 3d instancing class");
+		msgObj.dispWarningMessage("Base_DispWindow","drawTraj3D","I should be overridden in 3d instancing class");
 //			pa.pushMatState();	
 //			if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
 //			TreeMap<String,ArrayList<myDrawnNoteTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
@@ -1100,7 +1100,7 @@ public abstract class Base_DispWindow {
 		if(!getFlags(showIDX)){drawSmall();return;}
 		float animTimeMod = (modAmtMillis/1000.0f);
 		pa.pushMatState();
-		//msgObj.dispInfoMessage("myDispWindow","draw2D","Hitting hint code draw2D");
+		//msgObj.dispInfoMessage("Base_DispWindow","draw2D","Hitting hint code draw2D");
 		pa.setBeginNoDepthTest();
 		pa.disableLights();
 		pa.setStroke(strkClr,strkClr[3]);
@@ -1198,7 +1198,7 @@ public abstract class Base_DispWindow {
 	}
 	
 	protected final void toggleWindowState(){
-		//msgObj.dispInfoMessage("myDispWindow","toggleWindowState","Attempting to close window : " + this.name);
+		//msgObj.dispInfoMessage("Base_DispWindow","toggleWindowState","Attempting to close window : " + this.name);
 		setFlags(showIDX,!getFlags(showIDX));
 		AppMgr.setVisFlag(pFlagIdx, getFlags(showIDX));		//value has been changed above by close box
 	}
@@ -1228,7 +1228,7 @@ public abstract class Base_DispWindow {
 		for(int i = 0;i<privFlagBtns.length;++i){
 			mx = (int)(mouseX - mseClickCrnr[0]); my = (int)(mouseY - mseClickCrnr[1]);
 			mod = msePtInRect(mx, my, privFlagBtns[i]); 
-			//msgObj.dispInfoMessage("myDispWindow","checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
+			//msgObj.dispInfoMessage("Base_DispWindow","checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
 			if (mod){ 
 				setPrivFlags(privModFlgIdxs[i],!getPrivFlags(privModFlgIdxs[i])); 
 				return mod;
@@ -1362,7 +1362,7 @@ public abstract class Base_DispWindow {
 			if(null!=trajMgr) {	mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn);		}
 			if(!mod) {
 				if((!MyMathUtils.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle
-				//msgObj.dispInfoMessage("myDispWindow","handleMouseDrag","before handle indiv drag traj for window : " + this.name);
+				//msgObj.dispInfoMessage("Base_DispWindow","handleMouseDrag","before handle indiv drag traj for window : " + this.name);
 				myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneCtrVal);
 				mod = hndlMouseDragIndiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);		//handle specific, non-trajectory functionality for implementation of window
 			}
@@ -1377,7 +1377,7 @@ public abstract class Base_DispWindow {
 	//set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	private void setUIObjValFromClickAlone(int j) {
 		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
-		//msgObj.dispInfoMessage("myDispWindow","setUIObjValFromClickAlone","Mult : " + (mult *pa.clickValModMult()));
+		//msgObj.dispInfoMessage("Base_DispWindow","setUIObjValFromClickAlone","Mult : " + (mult *pa.clickValModMult()));
 		guiObjs[j].modVal(mult * AppMgr.clickValModMult());
 	}//setUIObjValFromClickAlone
 	
@@ -1623,7 +1623,7 @@ public abstract class Base_DispWindow {
 				String.format("%.2f",rectDim[0])+","+String.format("%.2f",rectDim[1])+","+String.format("%.2f",rectDim[2])+","+String.format("%.2f",rectDim[3])+")\n";	
 		return res;
 	}
-}//myDispWindow
+}//Base_DispWindow
 
 
 

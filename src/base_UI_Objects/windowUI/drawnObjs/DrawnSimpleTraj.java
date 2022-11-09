@@ -200,7 +200,7 @@ public class DrawnSimpleTraj {
 			drawnTraj.remakeDrawnTraj(false);
 			rebuildDrawnTraj();		
 		}
-//		else if( win.getFlags(myDispWindow.smoothTraj)){		
+//		else if( win.getFlags(Base_DispWindow.smoothTraj)){		
 //			drawnTraj.remakeDrawnTraj(false);	
 //			rebuildDrawnTraj();	
 //		}
