@@ -183,8 +183,10 @@ public abstract class myDispWindow {
 		msgObj = MessageObject.buildMe(pa != null);
 		fileIO = new FileIOManager(msgObj, name);
 		//base screenshot path based on launch time
-		String tmpNow = AppMgr.now.toInstant().toString();
+		String tmpNow = msgObj.getCurrWallTime();
 		tmpNow = tmpNow.replace(':','_');
+		tmpNow = tmpNow.replace('-','_');
+		tmpNow = tmpNow.replace('|','_');
 		ssPathBase = AppMgr.getApplicationPath() +File.separatorChar +name+"_"+tmpNow + File.separatorChar;
 		initClrDims( fc, sc, rd, rdClosed);
 		winText = _winTxt;

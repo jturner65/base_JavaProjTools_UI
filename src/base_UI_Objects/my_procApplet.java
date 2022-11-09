@@ -40,8 +40,12 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	/// inits
 	///////////////////////////////////
 
-	//needs main to run project - do not modify this code in any way 
-	//needs to be called by instancing class
+	/**
+	 * needs main to run project - do not modify this code in any way
+	 * needs to be called by instancing GUI_AppManager class
+	 * @param _appMgr
+	 * @param passedArgs
+	 */
 	public final static void _invokedMain(GUI_AppManager _appMgr, String[] passedArgs) {	
 		String[] appletArgs = new String[] { "base_UI_Objects.my_procApplet" };
 		AppMgr = _appMgr;

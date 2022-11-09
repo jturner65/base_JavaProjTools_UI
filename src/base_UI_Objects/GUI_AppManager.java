@@ -6,7 +6,6 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -22,13 +21,15 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
 import base_UI_Objects.windowUI.sidebar.mySidebarMenuBtnConfig;
+import base_Utils_Objects.Java_AppManager;
+
 
 /**
  * this class manages all common functionality for a gui application, independent of renderer
  * @author john
  *
  */
-public abstract class GUI_AppManager {
+public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * rendering engine interface, providing expected methods.
 	 */
@@ -42,19 +43,6 @@ public abstract class GUI_AppManager {
 	 */
 	public GLWindow window;
 	
-	////////////////////////////////////////////////////////////////////////////////////////////////////	
-	//platform independent path separator
-	public final String dirSep = File.separator;
-	
-	/**
-	 * runtime arguments key-value pair
-	 */
-	private TreeMap<String, Object> argsMap;
-	
-	/**
-	 * max ratio of width to height to use for application window initialization
-	 */
-	public float maxWinRatio =  1.77777778f;
 	/**
 	 * physical display width and height this project is running on
 	 */
@@ -62,14 +50,15 @@ public abstract class GUI_AppManager {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time and date
 	
-	//used to manage current time
-	public final Calendar now;
 	//time that this application started
-	private long appStartTimeMillis;
 	protected int glblStartSimFrameTime,			//begin of draw
 			glblLastSimFrameTime,					//begin of last draw
 			glblStartProgTime;					//start of program	
 	
+	/**
+	 * max ratio of width to height to use for application window initialization
+	 */
+	public final float maxWinRatio =  1.77777778f;	
 	
 	//individual display/HUD windows for gui/user interaction
 	protected myDispWindow[] dispWinFrames = new myDispWindow[0] ;
@@ -277,14 +266,15 @@ public abstract class GUI_AppManager {
 	// code
 	
 	public GUI_AppManager() {
+		super();
 		//get primary monitor size
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		_displayWidth = gd.getDisplayMode().getWidth();
-		_displayHeight = gd.getDisplayMode().getHeight();			
-
-		now = Calendar.getInstance();
-		//absolute start time of application
-		appStartTimeMillis = now.getTimeInMillis();	
+		_displayHeight = gd.getDisplayMode().getHeight();	
+		
+//		now = Calendar.getInstance();
+//		//absolute start time of application
+//		appStartTimeMillis = now.getTimeInMillis();	
 		//precalc cylinder cosine and sine vals
 		cylCosVals = new double[38];
 		cylSinVals = new double[38];
@@ -293,21 +283,19 @@ public abstract class GUI_AppManager {
 			cylCosVals[i] = Math.cos(a);
 			cylSinVals[i++] = Math.sin(a);
 		}
-		//project arguments
-		argsMap = new TreeMap<String,Object>();
+
 	}//	
 		
-	//invoke the renderer main function
+	/**
+	 * invoke the renderer main function - this is called from instancing GUI_AppManager class
+	 * @param <T>
+	 * @param _appMgr
+	 * @param passedArgs
+	 */
 	public static <T extends GUI_AppManager> void invokeProcessingMain(T _appMgr, String[] passedArgs) {
-		_appMgr.setRuntimeArgsVals(passedArgs);
+		Java_AppManager.processArgs(_appMgr,passedArgs);
 		my_procApplet._invokedMain(_appMgr, passedArgs);
 	}
-	
-	/**
-	 * Returns milliseconds that have passed since application began
-	 * @return
-	 */
-	public int timeSinceStart() {return (int)(Calendar.getInstance().getTimeInMillis() - appStartTimeMillis);}
 	
 	public void setIRenderInterface(IRenderInterface _pa) {
 		if (null == pa) {pa=_pa;}
@@ -336,25 +324,7 @@ public abstract class GUI_AppManager {
 			}			
 		}
 	}//getIdealAppWindowDims
-	
-	/**
-	 * Set various relevant runtime arguments in argsMap
-	 * @param _passedArgs command-line arguments
-	 */
-	protected abstract void setRuntimeArgsVals(String[] _passedArgs);
-	
-	protected void setArgsMap(TreeMap<String, Object> _argsMap) {
-		argsMap = _argsMap;
-	}
-	
-	/**
-	 * Returns a copy of the arguments used to launch the program (intended to be read-only)
-	 * @return
-	 */
-	public TreeMap<String, Object> getArgsMap(){
-		return new TreeMap<String, Object>(argsMap);
-	}
-	
+		
 	/**
 	 * set level of smoothing to use for rendering (depending on rendering used, this may be ignored)
 	 */
@@ -1189,42 +1159,6 @@ public abstract class GUI_AppManager {
 	
 	///////////////////////////////
 	// end draw/display functions
-	//build a date with each component separated by token
-	public String getDateTimeString(){return getDateTimeString(true, false,".");}
-	public String getDateTimeString(boolean useYear, boolean toSecond, String token){
-		String result = "";
-		int val;
-		if(useYear){val = now.get(Calendar.YEAR);		result += ""+val+token;}
-		val = now.get(Calendar.MONTH)+1;				result += (val < 10 ? "0"+val : ""+val)+ token;
-		val = now.get(Calendar.DAY_OF_MONTH);			result += (val < 10 ? "0"+val : ""+val)+ token;
-		val = now.get(Calendar.HOUR_OF_DAY);					result += (val < 10 ? "0"+val : ""+val)+ token;
-		val = now.get(Calendar.MINUTE);					result += (val < 10 ? "0"+val : ""+val);
-		if(toSecond){val = now.get(Calendar.SECOND);	result += token + (val < 10 ? "0"+val : ""+val);}
-		return result;
-	}
-	//utilities
-	public String getDateString(){return getDateString(true, "-");}
-	public String getDateString(boolean useYear, String token){
-		String result = "";
-		int val;
-		if(useYear){val = now.get(Calendar.YEAR);		result += ""+val+token;}
-		val = now.get(Calendar.MONTH)+1;				result += (val < 10 ? "0"+val : ""+val)+ token;
-		val = now.get(Calendar.DAY_OF_MONTH);			result += (val < 10 ? "0"+val : ""+val)+ token;
-		return result;
-	}//getDateString
-	
-	public String getTimeString(){return getTimeString(true, "-");}
-	public String getTimeString(boolean toSecond, String token){
-		String result = "";
-		int val;
-		val = now.get(Calendar.HOUR_OF_DAY);					result += (val < 10 ? "0"+val : ""+val)+ token;
-		val = now.get(Calendar.MINUTE);					result += (val < 10 ? "0"+val : ""+val);
-		if(toSecond){val = now.get(Calendar.SECOND);	result += token + (val < 10 ? "0"+val : ""+val);}
-		return result;
-	}//getDateString
-	
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	//
 	
 	/**
 	 * returns the width of the visible display in pxls
