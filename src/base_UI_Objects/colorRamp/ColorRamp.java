@@ -53,7 +53,7 @@ public class ColorRamp {
 		scaleVals = new float[]{AppMgr.gridDimX/255.0f,AppMgr.gridDimY/255.0f,AppMgr.gridDimZ/255.0f};
 		
 		float y = pa.getHeight() *.15f;
-		grads = new ColorGradient(AppMgr, pa, this, pa.getWidth() *.85f, y, "Modified LCH");//(CAProject3 _pa, float _x, float _y){			
+		grads = new ColorGradient(pa, this, pa.getWidth() *.85f, y, "Modified LCH");//(CAProject3 _pa, float _x, float _y){			
 
 		usrPts = new ArrayList<ColorPoint>();		
 		myPoint ptA =new myPoint(R0,G0,B0),

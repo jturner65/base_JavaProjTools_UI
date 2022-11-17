@@ -776,7 +776,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * setup 
 	 */
 	protected void drawSetup(){
-		pa.setPerspective(MyMathUtils.PI_F/3.0f, (1.0f*pa.getWidth())/(1.0f*pa.getHeight()), .5f, camVals[2]*100.0f);
+		pa.setPerspective(MyMathUtils.THIRD_PI_F, (1.0f*pa.getWidth())/(1.0f*pa.getHeight()), .5f, camVals[2]*100.0f);
 		pa.enableLights(); 	
 		dispWinFrames[curFocusWin].drawSetupWin(camVals);
 	}//drawSetup
@@ -1771,7 +1771,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}//
 	
 	
-	private static final double twoPi = 2.0*MyMathUtils.PI;
 	/** 
 	 * builds a list of N regularly placed vertices and normals for a sphere of radius rad centered at ctr
 	 * @param rad radius of sphere
@@ -1784,12 +1783,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//choose 1 point per dArea, where dArea is area of sphere parsed into N equal portions
 		double lclA = 4*MyMathUtils.PI/N, lclD = Math.sqrt(lclA);
 		int Mthet = (int) Math.round(MyMathUtils.PI/lclD), Mphi;
-		double dThet = MyMathUtils.PI/Mthet, dPhi = lclA/dThet, thet, phi, twoPiOvDPhi = twoPi/dPhi;
+		double dThet = MyMathUtils.PI/Mthet, dPhi = lclA/dThet, thet, phi, twoPiOvDPhi = MyMathUtils.TWO_PI/dPhi;
 		for(int i=0;i<Mthet;++i) {
 			thet = dThet * (i + 0.5f);
 			Mphi = (int) Math.round(twoPiOvDPhi * Math.sin(thet));
 			for (int j=0;j<Mphi; ++j) { 
-				phi = (twoPi*j)/Mphi;		
+				phi = (MyMathUtils.TWO_PI*j)/Mphi;		
 				res.add(getXYZFromRThetPhi(rad, thet, phi, scaleZ));
 			}
 		}
