@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI.drawnObjs.base;
+package base_UI_Objects.windowUI.drawnTrajectories.base;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,15 +10,15 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 
-public abstract class Base_DrawnObject {
+public abstract class Base_DrawnTrajectory {
 	public Base_DispWindow win;
-	public final float trajDragScaleAmt = 100.0f;					//amt of displacement when dragging drawn trajectory to edit
+	public final double trajDragScaleAmt = 100.0;					//amt of displacement when dragging drawn trajectory to edit
 	public final int drawnTrajEditWidth = 10; //TODO make ui component			//width in cntl points of the amount of the drawn trajectory deformed by dragging
 
-	public static float wScale = -1;
+	public static double wScale = -1;
 	
 	public int[] fillClr, strkClr;
-	public float len;								//length of object
+	public double len;								//length of object
 	protected static final int numReps = 4;				//default number of repetitions of subdivid/tuck/untuck
 	
 	public static final int trajPtRad = 2;			//radius of points
@@ -26,38 +26,40 @@ public abstract class Base_DrawnObject {
 	public myVector canvasNorm;							//normal to drawing canvas == normal to plane of poly
 	protected myPoint[] origpts;							//originally drawn points making up this curve
 	protected myPoint[] pts;								//points making up this curve
-	protected float[] dpts;						//array holding distance to each point from beginning
+	protected double[] dpts;						//array holding distance to each point from beginning
 	
 	//beautiful pts
 	public myCntlPt[] cntlPts;						//control points describing object, if used	
 	
-	protected float[] d_cntlPts;
-	protected float cntl_len;
+	protected double[] d_cntlPts;
+	protected double cntl_len;
 	
 	public myPoint COV,									//center of verts
 			COM;
 	//boolean flags about object
-	public boolean[] flags;							//init'ed to all false, then set specifically when appropriate
+	private int[] flags;							//init'ed to all false, then set specifically when appropriate
 	//flag idxs
-	public final int 
+	public static final int 
 		//construction
-			isClosed 		= 0,					//object is a closed poly
-			isMade 			= 1,					//whether or not the object is finished being drawn
-			isFlipped		= 2,					//points being displayed are flipped (reflected)
-			usesCntlPts 	= 3,					//if this curve is governed by control points (as opposed to just drawn freehand)
+			isClosedIDX 		= 0,					//object is a closed poly
+			isMadeIDX 			= 1,					//whether or not the object is finished being drawn
+			isFlippedIDX		= 2,					//points being displayed are flipped (reflected)
+			usesCntlPtsIDX  	= 3,					//if this curve is governed by control points (as opposed to just drawn freehand)
 	    //calculation
-			reCalcPoints	= 4,					//recalculate points from cntl point radii - use if radius is changed on stroke from user input
-			cntlWInvRad		= 5,					//whether the weight impact on cntl radius is inverse or direct - inverse has slow drawing be wider, direct has slow drawing be narrower
-			interpStroke	= 6,					//whether or not control-point based strokes are interpolating or not
+			reCalcPointsIDX 	= 4,					//recalculate points from cntl point radii - use if radius is changed on stroke from user input
+			cntlWInvRadIDX		= 5,					//whether the weight impact on cntl radius is inverse or direct - inverse has slow drawing be wider, direct has slow drawing be narrower
+			interpStrokeIDX 	= 6,					//whether or not control-point based strokes are interpolating or not
 		//display			 
-			showCntlPnts 	= 7,					//show this object's cntl points
-			vertNorms 		= 8,					//use vertex normals to shade curve
-			drawNorms 		= 9,					//display normals for this object as small arrows
-			drawCntlRad 	= 10,	
-			useProcCurve	= 11;					//toggles whether we use straight lines in vertex building or processing's curve vertex			
+			showCntlPntsIDX 	= 7,					//show this object's cntl points
+			useVertNormsIDX		= 8,					//use vertex normals to shade curve
+			drawNormsIDX 		= 9,					//display normals for this object as small arrows
+			drawCntlRadIDX  	= 10,	
+			useProcCurveIDX 	= 11;					//toggles whether we use straight lines in vertex building or processing's curve vertex			
 	public final int numFlags = 12;					//always 1 more than last flag const
 	
-	//flags about type of operation that uses interpolation being done
+	/**
+	 * flags about type of operation that uses interpolation being done
+	 */
 	public int lnI_Typ,								//what interpolation type will this curve use for line operations (tuck, find myPoint at ratio of length, etc) 
 				sbI_Typ,							//interp type for subdivision
 				swI_Typ;							//what kind of interpolation will be used for this curve as it is swemyPoint around axis (if this is a closed sweep-poly)
@@ -77,7 +79,7 @@ public abstract class Base_DrawnObject {
 	protected myVector[] c_nAra, c_tAra, c_bAra;
 	
 	
-	protected float[][] distFromIntAxis;			//keeps the distance to internal axis of stroke			
+	protected double[][] distFromIntAxis;			//keeps the distance to internal axis of stroke			
 	protected static final int 
 	//idxs in distFromAxis array
 			_d = 0,									//index for dist from axis
@@ -86,7 +88,7 @@ public abstract class Base_DrawnObject {
 			_b = 3;									//idx2 for myPoint in ara for rotational axis
 	protected final int nAxisVals = 4;
 	
-	public Base_DrawnObject(Base_DispWindow _win, myVector _canvNorm) {
+	public Base_DrawnTrajectory(Base_DispWindow _win, myVector _canvNorm) {
 		win =_win;
 		if(wScale == -1) {			wScale = GUI_AppManager.pa.getFrameRate()/5.0f;		}
 		canvasNorm = _canvNorm;		//c.drawSNorm  draw surface normal
@@ -100,16 +102,20 @@ public abstract class Base_DrawnObject {
 	}
 	
 	//initialize point referencing structs - using both for speed concerns.
-	public void startDrawing(){	pts = new myPoint[0];len = 0; dpts = new float[0]; flags[drawCntlRad] = false;}	
+	public void startDrawing(){	pts = new myPoint[0];len = 0; dpts = new double[0]; setFlags(drawCntlRadIDX,false);}	
 	public void addPt(myPoint p){
 		ArrayList<myPoint> tmp = new ArrayList<myPoint>(Arrays.asList(pts));
 		tmp.add(p);
 		setPts(tmp);
 	}//setPt
 	
-	//subdivide, tuck, respace, etc, cntlpts of this curve
-	public void processCntlPts(int numPts, int numReps){
-		float origLen = cntl_len;
+	/**
+	 * subdivide, tuck, respace, etc, cntlpts of this curve
+	 * @param numPts
+	 * @param numReps
+	 */
+	public final void processCntlPts(int numPts, int numReps){
+		double origLen = cntl_len;
 		setCPts(procCntlPt(_subdivide, cntlPts, 2, origLen));										//makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
 		for(int i = 0; i < numReps; ++i){
 			//setCPts(procCntlPt(_subdivide, cntlPts, 2, origLen));
@@ -125,32 +131,42 @@ public abstract class Base_DrawnObject {
 		setCPts(procCntlPt(_resample, cntlPts, numPts, origLen));
 	}			
 
-	//subdivide, tuck, respace, resample, etc. pts of this curve
-	public void processPts(myPoint[] pts, int numPts, int numReps){
-		setPts(procPts(_subdivide, pts, 2, len, flags[isClosed]));										//makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
+	/**
+	 * subdivide, tuck, respace, resample, etc. pts of this curve
+	 * @param pts
+	 * @param numPts
+	 * @param numReps
+	 */
+	public final void processPts(myPoint[] pts, int numPts, int numReps){
+		boolean isClosed = getFlags(isClosedIDX);
+		setPts(procPts(_subdivide, pts, 2, len, isClosed));										//makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
 		for(int i = 0; i < numReps; ++i){
-			setPts(procPts(_subdivide, pts, 2, len, flags[isClosed]));
-			setPts(procPts(_tuck, pts, .5f, len, flags[isClosed]));
-			setPts(procPts(_tuck, pts, -.5f, len, flags[isClosed]));
+			setPts(procPts(_subdivide, pts, 2, len, isClosed));
+			setPts(procPts(_tuck, pts, .5f, len, isClosed));
+			setPts(procPts(_tuck, pts, -.5f, len, isClosed));
 		}		//smooth curve - J4
-		setPts(procPts(_equaldist, pts, .5f, len, flags[isClosed]));
+		setPts(procPts(_equaldist, pts, .5f, len, isClosed));
 		for(int i = 0; i < numReps; ++i){
-			setPts(procPts(_subdivide, pts, 2, len, flags[isClosed]));
-			setPts(procPts(_tuck, pts, .5f, len, flags[isClosed]));
-			setPts(procPts(_tuck, pts, -.5f, len, flags[isClosed]));
+			setPts(procPts(_subdivide, pts, 2, len, isClosed));
+			setPts(procPts(_tuck, pts, .5f, len, isClosed));
+			setPts(procPts(_tuck, pts, -.5f, len, isClosed));
 		}		//smooth curve - J4
-		setPts(procPts(_resample, pts, numPts, len, flags[isClosed]));		
+		setPts(procPts(_resample, pts, numPts, len, isClosed));		
 	}	
 	
 	
-	//sets required info for points array - points and dist between pts, length, etc
-	protected void setPts(ArrayList<myPoint> tmp){
+	/**
+	 * sets required info for points array - points and dist between pts, length, etc
+	 * @param tmp
+	 */
+	protected final void setPts(ArrayList<myPoint> tmp){
 		pts = tmp.toArray(new myPoint[0]);
-		dpts = getPtDist(pts, flags[isClosed]);	
-		len=length(pts, flags[isClosed]);
+		boolean isClosed = getFlags(isClosedIDX);
+		dpts = getPtDist(pts, isClosed);	
+		len=length(pts, isClosed);
 	}//setPts	
 	//make a new point interpolated between either 2 or 3 points in pts ara, described by # of idxs
-	public myPoint makeNewPoint(myPoint[] pts, int[] idxs, float s){	return _Interp(pts[idxs[0]], s, (idxs.length == 2 ? pts[idxs[1]] : _Interp(pts[idxs[1]],.5f,pts[idxs[2]], lnI_Typ)),lnI_Typ );	}
+	public final myPoint makeNewPoint(myPoint[] pts, int[] idxs, double s){	return _Interp(pts[idxs[0]], s, (idxs.length == 2 ? pts[idxs[1]] : _Interp(pts[idxs[1]],.5f,pts[idxs[2]], lnI_Typ)),lnI_Typ );	}
 	
 	/**
 	 * process all points using passed algorithm on passed array of points - not all args are used by all algs.
@@ -161,30 +177,30 @@ public abstract class Base_DrawnObject {
 	 * @param wrap whether the point list wraps around or not
 	 * @return arraylist of processed points
 	 */
-	public ArrayList<myPoint> procPts(int _typ, myPoint[] pts, float val, float _len, boolean wrap){
+	public final ArrayList<myPoint> procPts(int _typ, myPoint[] _pts, double val, double _len, boolean wrap){
 		ArrayList<myPoint> tmp = new ArrayList<myPoint>(); // temporary array
 		switch(_typ){
 			case _subdivide	:{
-			    for(int i = 0; i < pts.length-1; ++i){tmp.add(pts[i]); for(int j=1;j<val;++j){tmp.add(makeNewPoint(pts,new int[]{i,i+1}, (j/(val))));}}
-			    tmp.add(pts[pts.length-1]);				
+			    for(int i = 0; i < _pts.length-1; ++i){tmp.add(_pts[i]); for(int j=1;j<val;++j){tmp.add(makeNewPoint(_pts,new int[]{i,i+1}, (j/(val))));}}
+			    tmp.add(_pts[_pts.length-1]);				
 			    return tmp;}
 			case _tuck		:{
-				if(wrap){tmp.add(makeNewPoint(pts,new int[]{0,pts.length-1,1}, val));} else {tmp.add(0,pts[0]);}
-			    for(int i = 1; i < pts.length-1; ++i){	tmp.add(i,makeNewPoint(pts,new int[]{i,i-1,i+1}, val));   }
-		    	if(wrap){tmp.add(makeNewPoint(pts,new int[]{pts.length-1,pts.length-2,0}, val));} else {tmp.add(pts[pts.length-1]);}			
+				if(wrap){tmp.add(makeNewPoint(_pts,new int[]{0,_pts.length-1,1}, val));} else {tmp.add(0,_pts[0]);}
+			    for(int i = 1; i < _pts.length-1; ++i){	tmp.add(i,makeNewPoint(_pts,new int[]{i,i-1,i+1}, val));   }
+		    	if(wrap){tmp.add(makeNewPoint(_pts,new int[]{_pts.length-1,_pts.length-2,0}, val));} else {tmp.add(_pts[_pts.length-1]);}			
 		    	return tmp;}
 			case _equaldist	:{
-				float ratio = _len/(1.0f * pts.length),curDist = 0;					 //new distance between each vertex, iterative dist travelled so far			 
-				for(int i =0; i<pts.length; ++i){tmp.add(at(curDist/_len));curDist+=ratio;}	
-				tmp.add(pts[pts.length-1]);				
+				double ratio = _len/(1.0f * _pts.length),curDist = 0;					 //new distance between each vertex, iterative dist travelled so far			 
+				for(int i =0; i<_pts.length; ++i){tmp.add(at(curDist/_len));curDist+=ratio;}	
+				tmp.add(_pts[_pts.length-1]);				
 				return tmp;}	
 			case _resample	:{
-				float ratio = pts.length/(1.0f * (val-1)),f;					//distance between each vertex		 
+				double ratio = _pts.length/(1.0f * (val-1)),f;					//distance between each vertex		 
 				int idx, newIdx=0;		
-				for(float i = 0; i<pts.length-1; i+=ratio){idx = (int)i;	f = i-idx;tmp.add(newIdx++,makeNewPoint(pts,new int[]{idx,idx+1},f));}
+				for(double i = 0; i<_pts.length-1; i+=ratio){idx = (int)i;	f = i-idx;tmp.add(newIdx++,makeNewPoint(_pts,new int[]{idx,idx+1},f));}
 				if(wrap) {
 					if(myPoint._dist(tmp.get(newIdx-1), tmp.get(0)) > ratio){	tmp.add(makeNewPoint(new myPoint[]{tmp.get(newIdx-1), tmp.get(0)},new int[]{0,1},.5f));}		//want to only add another point if last 2 points are further than ratio appart
-				} else {		tmp.add(pts[pts.length-1]);}			//always add another point if open line/loop - want to preserve end point
+				} else {		tmp.add(_pts[_pts.length-1]);}			//always add another point if open line/loop - want to preserve end point
 				break;}	
 			default :
 		}
@@ -207,7 +223,7 @@ public abstract class Base_DrawnObject {
 		cntl_len=length(cntlPts, false);
 	}//setPts	
 	//make a new point interpolated between either 2 or 3 points in pts ara, described by # of idxs
-	public myCntlPt makeNewPoint(myCntlPt[] pts, int[] idxs, float s){	return _Interp(pts[idxs[0]], s, (idxs.length == 2 ? pts[idxs[1]] : _Interp(pts[idxs[1]],.5f,pts[idxs[2]], lnI_Typ)),lnI_Typ );	}
+	public myCntlPt makeNewPoint(myCntlPt[] pts, int[] idxs, double s){	return _Interp(pts[idxs[0]], s, (idxs.length == 2 ? pts[idxs[1]] : _Interp(pts[idxs[1]],.5f,pts[idxs[2]], lnI_Typ)),lnI_Typ );	}
 	/**
 	 * process all points using passed algorithm on passed array of points - not all args are used by all algs.
 	 * @param _typ type of point processing
@@ -217,7 +233,7 @@ public abstract class Base_DrawnObject {
 	 * @param wrap whether the point list wraps around or not
 	 * @return arraylist of processed points
 	 */	
-	public ArrayList<myCntlPt> procCntlPt(int _typ, myCntlPt[] pts, float val, float _len){
+	public ArrayList<myCntlPt> procCntlPt(int _typ, myCntlPt[] pts, double val, double _len){
 		ArrayList<myCntlPt> tmp = new ArrayList<myCntlPt>(); // temporary array
 		switch(_typ){
 			case _subdivide	:{
@@ -230,12 +246,12 @@ public abstract class Base_DrawnObject {
 		    	tmp.add(pts[pts.length-1]);			
 		    	return tmp;}
 			case _equaldist	:{
-				float ratio = _len/(1.0f * pts.length),curDist = 0;					 //new distance between each vertex, iterative dist travelled so far			 
+				double ratio = _len/(1.0f * pts.length),curDist = 0;					 //new distance between each vertex, iterative dist travelled so far			 
 				for(int i =0; i<pts.length; ++i){tmp.add(at_C(curDist/_len, pts));curDist+=ratio;}	
 				tmp.add(pts[pts.length-1]);				
 				return tmp;}	
 			case _resample	:{
-				float ratio = pts.length/(1.0f * (val-1)),f;					//distance between each vertex		 
+				double ratio = pts.length/(1.0f * (val-1)),f;					//distance between each vertex		 
 				int idx, newIdx=0;		
 				for(float i = 0; i<pts.length-1; i+=ratio){idx = (int)i;	f = i-idx;tmp.add(newIdx++,makeNewPoint(pts,new int[]{idx,idx+1},f));}			
 				tmp.add(pts[pts.length-1]);
@@ -290,11 +306,11 @@ public abstract class Base_DrawnObject {
 	 * @param t fraction of curve length we are interested in returning a point - should be 0-1
 	 * @return point @t along curve
 	 */
-	public myPoint at(float t){return at(t,new float[1], len, pts, dpts);}//put interpolant between adjacent axis points in s ara if needed
-	public myPoint at(float t, float[] s){return at(t,s, len, pts, dpts);}//put interpolant between adjacent axis points in s ara if needed
-	public myPoint at(float t, float[] s, float _len, myPoint[] pts, float[] _dpts){//call directly if wanting interpolant between adj axis points too
+	public myPoint at(double t){return at(t,new double[1], len, pts, dpts);}//put interpolant between adjacent axis points in s ara if needed
+	public myPoint at(double t, double[] s){return at(t,s, len, pts, dpts);}//put interpolant between adjacent axis points in s ara if needed
+	public myPoint at(double t, double[] s, double _len, myPoint[] pts, double[] _dpts){//call directly if wanting interpolant between adj axis points too
 		if(t<0){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[0];} else if (t>1){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[pts.length-1];}
-		float dist = t * _len;
+		double dist = t * _len;
 		for(int i=0; i<_dpts.length-1; ++i){										//built off dpts so that it will get wrap for closed curve
 			if(_dpts[i+1] >= dist){
 				s[0] = ((dist-_dpts[i])/(_dpts[i+1]-_dpts[i]));					//needs to stay between 0 and 1 (since interpolation functions between pts will be 0-1 based), so normalize by distance dpts[i]
@@ -304,10 +320,10 @@ public abstract class Base_DrawnObject {
 		return pts[0];
 	}//at	
 	
-	public myCntlPt at_C(float t, myCntlPt[] pts){float[] _dpts = this.getPtDist(pts, false);float _len = this.length(pts, false);return at_C(t,new float[1], _len, pts, _dpts);}//put interpolant between adjacent axis points in s ara if needed
-	public myCntlPt at_C(float t, float[] s, float _len, myCntlPt[] pts, float[] _dpts){//call directly if wanting interpolant between adj axis points too
+	public myCntlPt at_C(double t, myCntlPt[] pts){double[] _dpts = this.getPtDist(pts, false);double _len = this.length(pts, false);return at_C(t,new double[1], _len, pts, _dpts);}//put interpolant between adjacent axis points in s ara if needed
+	public myCntlPt at_C(double t, double[] s, double _len, myCntlPt[] pts, double[] _dpts){//call directly if wanting interpolant between adj axis points too
 		if(t<0){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[0];} else if (t>1){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[pts.length-1];}
-		float dist = t * _len;
+		double dist = t * _len;
 		for(int i=0; i<_dpts.length-1; ++i){										//built off dpts so that it will get wrap for closed curve
 			if(_dpts[i+1] >= dist){
 				s[0] = ((dist-_dpts[i])/(_dpts[i+1]-_dpts[i]));					//needs to stay between 0 and 1 (since interpolation functions between pts will be 0-1 based), so normalize by distance dpts[i]
@@ -325,30 +341,54 @@ public abstract class Base_DrawnObject {
 	 * @param _typ : what is being interpolated - smoothing a line, sweeping the curve around the axis, etc.  for each _typ, a value should be set for this curve (i.e.smInterpTyp)
 	 * @return : resultant point
 	 */
-	protected myPoint _Interp(myPoint A, float s, myPoint B, int _typ){
+	protected myPoint _Interp(myPoint A, double s, myPoint B, int _typ){
 		switch (_typ){
 			case linear_int : {	return new myPoint(A, s, B);}
 			//add more cases for different interpolation		
 			default : {	return new myPoint(A, s, B);}			//defaults to linear
 		}	
 	}//_Interp
-	//same as above, but with myVectortors
-	protected myVector _Interp(myVector A, float s, myVector B, int _typ){
+	/**
+	 * same as above, but with myVectors
+	 * @param A
+	 * @param s
+	 * @param B
+	 * @param _typ
+	 * @return
+	 */
+	protected myVector _Interp(myVector A, double s, myVector B, int _typ){
 		switch (_typ){
 			case linear_int : {	return new myVector(A, s, B);}
 			//add more cases for different interpolation		
 			default : {	return new myVector(A, s, B);}			//defaults to linear
 		}	
 	}//_Interp
-	//same as above but with doubles
-	protected float _Interp(float A, float s, float B, int _typ){
+	
+	/**
+	 * same as above but with doubles
+	 * @param A
+	 * @param s
+	 * @param B
+	 * @param _typ
+	 * @return
+	 */
+	protected double _Interp(double A, double s, double B, int _typ){
 		switch (_typ){
 			case linear_int : {	return (1-s)*A + (s*B);}
 			//add more cases for different interpolation		
 			default : {	return (1-s)*A + (s*B);}			//defaults to linear
 		}	
 	}//_Interp
-	protected myCntlPt _Interp(myCntlPt A, float s, myCntlPt B, int _typ){
+
+	/**
+	 * same as above but with myCntlPts
+	 * @param A
+	 * @param s
+	 * @param B
+	 * @param _typ
+	 * @return
+	 */
+	protected myCntlPt _Interp(myCntlPt A, double s, myCntlPt B, int _typ){
 		switch (_typ){
 			case linear_int : {	return myCntlPt.L(A, s, B);}
 			//add more cases for different interpolation		
@@ -356,20 +396,41 @@ public abstract class Base_DrawnObject {
 		}	
 	}//_Interp	
 
-	//draw currently selected point
-	public void drawSelPoint(IRenderInterface pa,int i ){
+	/**
+	 * draw currently selected control point
+	 * @param pa
+	 * @param i
+	 */
+	public void drawSelPoint(IRenderInterface pa, int i){
+		drawSelPoint(pa, i, new int[] {255,255,0});
+	}
+	/**
+	 * draw currently selected control point with given highlight color
+	 * @param pa
+	 * @param i
+	 * @param clr highlight color (first 3 idxs)
+	 */
+	public void drawSelPoint(IRenderInterface pa, int i, int[] clr){
 		pa.pushMatState();
-		pa.setStroke(255,255,0,255);
-		if(flags[usesCntlPts]){pa.showPtAsSphere(cntlPts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);} else {pa.showPtAsSphere(pts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);}
+		pa.setStroke(clr,255);
+		if(getFlags(usesCntlPtsIDX)){pa.showPtAsSphere(cntlPts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);} else {pa.showPtAsSphere(pts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);}
 		pa.popMatState();
 	}
 	
 
 	public abstract void rebuildPolyPts();
 
-	//makes a copy of the points in order
+	/**
+	 * makes a copy of the points in order
+	 * @param pts
+	 * @return
+	 */
 	public myPoint[] cpyPoints(myPoint[] pts){myPoint[] tmp = new myPoint[pts.length]; for(int i=0; i<pts.length; ++i){	tmp[i]=new myPoint(pts[i]);}	return tmp;}//cpyPoints
-	//makes a copy of the points in order
+	/**
+	 * makes a copy of the points in order
+	 * @param pts
+	 * @return
+	 */
 	public myCntlPt[] cpyPoints(myCntlPt[] pts){myCntlPt[] tmp = new myCntlPt[pts.length]; for(int i=0; i<pts.length; ++i){	tmp[i]=new myCntlPt(pts[i]);}	return tmp;}//cpyPoints
 
 	//move points by the passed myVectortor 
@@ -471,23 +532,28 @@ public abstract class Base_DrawnObject {
 	public abstract void dragPicked(myVector disp, int idx);
 	public abstract void dragAll(myVector disp);			//move COV to location pointed at by mouse, and move all points by same displacement
 	//drag point represented by passed idx in passed array - either point or cntl point
-	protected void dragPicked(myVector dispVec, int idx, myPoint[] pts) {if((-1 != idx) && (pts[idx] != null)){pts[idx]._add(dispVec);flags[reCalcPoints]=true;}}
-	protected void dragAll(myVector dispVec, myPoint[] pts){if((pts == null)||(pts.length == 0)){return;}for(int i=0;i<pts.length;++i){pts[i]._add(dispVec);}flags[reCalcPoints]=true;}
+	protected void dragPicked(myVector dispVec, int idx, myPoint[] pts) {if((-1 != idx) && (pts[idx] != null)){pts[idx]._add(dispVec);setFlags(reCalcPointsIDX,true);}}
+	protected void dragAll(myVector dispVec, myPoint[] pts){if((pts == null)||(pts.length == 0)){return;}for(int i=0;i<pts.length;++i){pts[i]._add(dispVec);}setFlags(reCalcPointsIDX,true);}
 	
 	//returns array of distances to each point from beginning - needs to retain dist from last vert to first if closed
 	//public final float[] getPtDist(){float[] res = new float[pts.length+1];res[0]=0;for(int i=1; i<pts.length; ++i){res[i] = res[i-1] + pa.d(pts[i-1],pts[i]);}if(flags[isClosed]){res[pts.length] = res[pts.length-1] +  pa.d(pts[pts.length-1],pts[0]);}return res;}
 	//public final float[] getPtDist(){return getPtDist(pts, flags[isClosed]);}
-	//returns array of distances to each point from beginning - needs to retain dist from last vert to first if closed
-	public final float[] getPtDist(myPoint[] pts, boolean wrap){
-		float[] res = new float[pts.length+1];
+	/**
+	 * returns array of distances to each point from beginning - needs to retain dist from last vert to first if closed
+	 * @param pts
+	 * @param wrap
+	 * @return
+	 */
+	public final double[] getPtDist(myPoint[] pts, boolean wrap){
+		double[] res = new double[pts.length+1];
 		res[0]=0;
 		for(int i=1; i<pts.length; ++i){
 			//System.out.println("i : "+i);
-			res[i] = res[i-1] + (float)myPoint._dist(pts[i-1],pts[i]);
+			res[i] = res[i-1] + myPoint._dist(pts[i-1],pts[i]);
 			}
 		if(wrap){
 			//System.out.println("wrap");
-			res[pts.length] = res[pts.length-1] +  (float)myPoint._dist(pts[pts.length-1],pts[0]);
+			res[pts.length] = res[pts.length-1] + myPoint._dist(pts[pts.length-1],pts[0]);
 		} else {
 			//System.out.println("no wrap");
 			
@@ -497,7 +563,7 @@ public abstract class Base_DrawnObject {
 		return res;}
 	//returns length of curve, including endpoint if closed
 	//public final float length(){return length(pts, flags[isClosed]);}//{float res = 0;for(int i =0; i<pts.length-1; ++i){res += pa.d(pts[i],pts[i+1]);}if(flags[isClosed]){res+=pa.d(pts[pts.length-1],pts[0]);}return res;}
-	public final float length(myPoint[] pts, boolean closed){float res = 0;for(int i =0; i<pts.length-1; ++i){res += (float)myPoint._dist(pts[i],pts[i+1]);}if(closed){res+=(float)myPoint._dist(pts[pts.length-1],pts[0]);}return res;}
+	public final double length(myPoint[] pts, boolean closed){double res = 0;for(int i =0; i<pts.length-1; ++i){res += myPoint._dist(pts[i],pts[i+1]);}if(closed){res+=myPoint._dist(pts[pts.length-1],pts[0]);}return res;}
 
 
 	public void drawCOV(IRenderInterface pa){		
@@ -509,8 +575,52 @@ public abstract class Base_DrawnObject {
 	}
 	//drawCntlRad
 	public myPoint getPt(int i){return pts[i];}
+
+	/**
+	 * Initialize flag bit array
+	 */
+	public final void initFlags(){flags = new int[1 + numFlags/32];for(int i =0; i<numFlags;++i){setFlags(i,false);}}		
+
+	/**
+	 * set baseclass flags  //setFlags(showIDX, 
+	 * @param idx
+	 * @param val
+	 */
+	public final void setFlags(int idx, boolean val){
+		int flIDX = idx/32, mask = 1<<(idx%32);
+		flags[flIDX] = (val ?  flags[flIDX] | mask : flags[flIDX] & ~mask);
+		switch(idx){
+			case isClosedIDX 		: {break;}			//object is a closed poly
+			case isMadeIDX 			: {break;}			//whether or not the object is finished being drawn
+			case isFlippedIDX		: {break;}			//points being displayed are flipped (reflected)
+			case usesCntlPtsIDX 	: {break;}			//if this curve is governed by control points (as opposed to just drawn freehand)
+			case reCalcPointsIDX	: {break;}			//recalculate points from cntl point radii - use if radius is changed on stroke from user input
+			case cntlWInvRadIDX		: {break;}			//whether the weight impact on cntl radius is inverse or direct - inverse has slow drawing be wider, direct has slow drawing be narrower
+			case interpStrokeIDX	: {break;}			//whether or not control-point based strokes are interpolating or not
+			case showCntlPntsIDX 	: {break;}			//show this object's cntl points
+			case useVertNormsIDX 	: {break;}			//use vertex normals to shade curve
+			case drawNormsIDX 		: {break;}			//display normals for this object as small arrows
+			case drawCntlRadIDX 	: {break;}
+			case useProcCurveIDX	: {break;}			//toggles whether we use straight lines in vertex building or processing's curve vertex			
+		}			
+	}//setFlags
+	/**
+	 * get baseclass flag
+	 * @param idx
+	 * @return
+	 */
+	public final boolean getFlags(int idx){int bitLoc = 1<<(idx%32);return (flags[idx/32] & bitLoc) == bitLoc;}	
 	
-	public void initFlags(){flags = new boolean[numFlags]; for(int i=0;i<numFlags;++i){flags[i]=false;}}
+	/**
+	 * check list of flags
+	 * @param idxs
+	 * @return
+	 */
+	public final boolean getAllFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((flags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
+	public final boolean getAnyFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((flags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
+	
+	public final boolean getIsMade() {return getFlags(isMadeIDX);}
+	
 	public String toString(){
 		String res = "#pts : "+pts.length+" len : "+ len ;
 		return res;

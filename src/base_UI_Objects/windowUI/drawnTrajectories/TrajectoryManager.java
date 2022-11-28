@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI.drawnObjs;
+package base_UI_Objects.windowUI.drawnTrajectories;
 
 import java.util.ArrayList;
 import java.util.TreeMap;

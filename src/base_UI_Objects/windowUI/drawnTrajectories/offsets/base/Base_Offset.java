@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI.drawnObjs.offsets.base;
+package base_UI_Objects.windowUI.drawnTrajectories.offsets.base;
 
 import java.util.ArrayList;
 

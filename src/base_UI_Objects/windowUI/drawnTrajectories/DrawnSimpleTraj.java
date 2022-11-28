@@ -1,11 +1,11 @@
-package base_UI_Objects.windowUI.drawnObjs;
+package base_UI_Objects.windowUI.drawnTrajectories;
 
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
-import base_UI_Objects.windowUI.drawnObjs.base.Base_DrawnObject;
+import base_UI_Objects.windowUI.drawnTrajectories.base.Base_DrawnTrajectory;
 
 
 /**
@@ -20,7 +20,7 @@ public class DrawnSimpleTraj {
 	public static int trjCnt = 0;
 	public int ID;
 
-	public Base_DrawnObject drawnTraj;						//a drawable curve
+	public Base_DrawnTrajectory drawnTraj;						//a drawable curve
 	public static float topOffY;
 	public int drawnTrajPickedIdx;						//idx of mouse-chosen point	in editable drawn trajectory		
 	public static final int drawnTrajEditWidth = 10;			//width in cntl points of the amount of the drawn trajectory deformed by dragging
@@ -59,7 +59,7 @@ public class DrawnSimpleTraj {
 		trajFlags[flatPtIDX] = _flat;
 		trajFlags[smCntlPtsIDX] = _smCntl;
 		trajFlags[ownrWinIs3dIDX] = win.getIs3DWindow();
-		ctlRad = (trajFlags[smCntlPtsIDX] ? Base_DrawnObject.trajPtRad : 5 );
+		ctlRad = (trajFlags[smCntlPtsIDX] ? Base_DrawnTrajectory.trajPtRad : 5 );
 	}
 	protected void initTrajFlags(){trajFlags = new boolean[numTrajFlags];for(int i=0;i<numTrajFlags;++i){trajFlags[i]=false;}}
 	public void initTrajStuff(){
@@ -261,7 +261,7 @@ public class DrawnSimpleTraj {
 		//Once edge is drawn
 		calcPerpPoints();
 		if(drawnTraj != null){
-			if(drawnTraj.flags[drawnTraj.isMade]){				  
+			if(drawnTraj.getIsMade()){				  
 				//Initialize the array that stores the path
 				int a= 0, b= 1;
 				boolean flipTraj = Base_DispWindow.AppMgr.doFlipTraj();

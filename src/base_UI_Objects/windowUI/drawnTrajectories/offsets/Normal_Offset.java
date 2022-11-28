@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI.drawnObjs.offsets;
+package base_UI_Objects.windowUI.drawnTrajectories.offsets;
 
 import java.util.ArrayList;
 
@@ -6,7 +6,7 @@ import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_UI_Objects.windowUI.drawnObjs.offsets.base.Base_Offset;
+import base_UI_Objects.windowUI.drawnTrajectories.offsets.base.Base_Offset;
 
 /**
 * calculates normal offset - distance r, normal from stroke line

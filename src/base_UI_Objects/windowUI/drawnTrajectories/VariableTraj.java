@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI.drawnObjs;
+package base_UI_Objects.windowUI.drawnTrajectories;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,12 +9,12 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.MyMathUtils;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
-import base_UI_Objects.windowUI.drawnObjs.base.Base_DrawnObject;
-import base_UI_Objects.windowUI.drawnObjs.offsets.Normal_Offset;
-import base_UI_Objects.windowUI.drawnObjs.offsets.base.Base_Offset;
+import base_UI_Objects.windowUI.drawnTrajectories.base.Base_DrawnTrajectory;
+import base_UI_Objects.windowUI.drawnTrajectories.offsets.Normal_Offset;
+import base_UI_Objects.windowUI.drawnTrajectories.offsets.base.Base_Offset;
 
 
-public class VariableTraj extends Base_DrawnObject {
+public class VariableTraj extends Base_DrawnTrajectory {
  
 	protected final int numVerts = 200;							
 
@@ -25,29 +25,29 @@ public class VariableTraj extends Base_DrawnObject {
 
 	
 	public myPoint[] drawnCntlPts;						//control point locations - start point +  vel myVectortor (scaled tangent), repeat
-	public float[] d_drwnCntlPts;					//distance between each drawnCntlPts points
-	public float drwnCntlLen;						//len of arc of drawnCntlPts pts
+	public double[] d_drwnCntlPts;					//distance between each drawnCntlPts points
+	public double drwnCntlLen;						//len of arc of drawnCntlPts pts
 
-	public float[] cntlPtIntrps;				//interpolants for each control point as part of total, based upon radius of controlpoint - larger will be bigger. 
+	public double[] cntlPtIntrps;				//interpolants for each control point as part of total, based upon radius of controlpoint - larger will be bigger. 
 												//for each cntl myPoint, this value will be cntl point rad / total control point rads.
 	//interpolated drawn curve, weighted by drawn speed
 	public myPoint[] interpCntlPts;					//interpolated control point locations - start point +  vel myVectortor (scaled tangent), repeat
-	public float[] d_interpPts;					//distance between interpolated points
-	public float interpLen;						//len of interp pts
+	public double[] d_interpPts;					//distance between interpolated points
+	public double interpLen;						//len of interp pts
 	
 	public VariableTraj(Base_DispWindow _win, myVector _canvNorm, int[] _fillClr, int[] _strkClr) {
 		super(_win, _canvNorm);
-		flags[isClosed] = false;	
+		setFlags(isClosedIDX, false);	
 		fillClr = _fillClr;
 		strkClr= _strkClr;
-		flags[drawCntlRad] = true;
+		setFlags(drawCntlRadIDX, true);
 	    cntlPts = new myCntlPt[0];
 	    interpCntlPts = new myPoint[0];
 		_offset = new Normal_Offset();
-		flags[usesCntlPts] = true;
-		flags[interpStroke] = true;
+		setFlags(usesCntlPtsIDX, true);
+		setFlags(interpStrokeIDX, true);
 		ptsDerived = false;
-		flags[cntlWInvRad] = false;			//whether slow drawing makes rad larger or smaller
+		setFlags(cntlWInvRadIDX, false);			//whether slow drawing makes rad larger or smaller
 	}
 
 	//as drawing, add points to -cntlPoints-, not pts array.
@@ -66,8 +66,8 @@ public class VariableTraj extends Base_DrawnObject {
 		buildPointsUsingOffset(procPts, numReps);
 		//calculate line points from control points
 		//find loop around stroke line by cntl points' radii once loop is built, treat as poly loop
-		flags[isMade] = true;
-		flags[drawCntlRad] = false;
+		setFlags(isMadeIDX, true);
+		setFlags(drawCntlRadIDX, false);
 		//build array of weights from 
 		buildInterpAra();
 	}//finalize
@@ -76,8 +76,8 @@ public class VariableTraj extends Base_DrawnObject {
 	public void buildPointsUsingOffset(boolean procPts, int repCnt){
 		if(procPts){
 		    finalizeCntlW();
-		    for(int i=0;i<cntlPts.length;++i){cntlPts[i].calcRadFromWeight(cntl_len/cntlPts.length, flags[cntlWInvRad], wScale);}           //sets all radii based on weights
-		    processCntlPts(flags[interpStroke] ? numIntCntlPts : numCntlPts, repCnt);
+		    for(int i=0;i<cntlPts.length;++i){cntlPts[i].calcRadFromWeight(cntl_len/cntlPts.length, getFlags(cntlWInvRadIDX), wScale);}           //sets all radii based on weights
+		    processCntlPts(getFlags(interpStrokeIDX) ? numIntCntlPts : numCntlPts, repCnt);
 	    }
 		buildCntlFrameVecAras();
 		buildPtsFromCntlPts();
@@ -85,9 +85,9 @@ public class VariableTraj extends Base_DrawnObject {
 	//build interpolants based upon weight of each cntl point.  these can be used to determine how far the edge moves (velocity) and how much it rotates per frame
 	//when this is done, we have multipliers to apply to each tangent myVectortor to determine displacement for each of the frames
 	public void buildInterpAra(){
-		cntlPtIntrps = new float[numIntCntlPts];			//interpolant from each control point - weights
+		cntlPtIntrps = new double[numIntCntlPts];			//interpolant from each control point - weights
 		
-		float[] cmyPointInterps = new float[numIntCntlPts];
+		double[] cmyPointInterps = new double[numIntCntlPts];
 		interpCntlPts = new myPoint[numIntCntlPts];
 		drawnCntlPts = new myPoint[numIntCntlPts];
 		float sumWts = 0;
@@ -96,8 +96,8 @@ public class VariableTraj extends Base_DrawnObject {
 		//System.out.println("total weight = " + sumWts);
 		for(int i=0;i<cntlPts.length;++i){cntlPtIntrps[i]/=sumWts;cmyPointInterps[i]/=sumWts;}
 		//smooth interpolants now
-		cntlPtIntrps = dualFloats(cntlPtIntrps);
-		cmyPointInterps = dualFloats(cmyPointInterps);
+		cntlPtIntrps = dualDoubles(cntlPtIntrps);
+		cmyPointInterps = dualDoubles(cmyPointInterps);
 		
 		interpCntlPts[0] = new myPoint(cntlPts[0]);			//set first point
 		drawnCntlPts[0] = new myPoint(cntlPts[0]);
@@ -123,17 +123,17 @@ public class VariableTraj extends Base_DrawnObject {
 	public void processInterpPts(int numPts, int numReps){
 		//setInterpPts(procInterpPts(_subdivide, interpCntlPts, 2, interpLen));										//makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
 		for(int i = 0; i < numReps; ++i){
-			if(i % 2 == 0){setInterpPts(procInterpPts(_subdivide, interpCntlPts, 2, interpLen));}
-			setInterpPts(procInterpPts(_tuck, interpCntlPts, .5f, interpLen));
-			setInterpPts(procInterpPts(_tuck, interpCntlPts, -.5f, interpLen));
+			if(i % 2 == 0){setInterpPts(procPts(_subdivide, interpCntlPts, 2, interpLen, false));}
+			setInterpPts(procPts(_tuck, interpCntlPts, .5f, interpLen, false));
+			setInterpPts(procPts(_tuck, interpCntlPts, -.5f, interpLen, false));
 		}		//smooth curve - J4
-		setInterpPts(procInterpPts(_equaldist, interpCntlPts, .5f, interpLen));
+		setInterpPts(procPts(_equaldist, interpCntlPts, .5f, interpLen, false));
 		for(int i = 0; i < numReps; ++i){
 			//if(i % 2 == 0){setInterpPts(procInterpPts(_subdivide, interpCntlPts, 2, interpLen));}
-			setInterpPts(procInterpPts(_tuck, interpCntlPts, .5f, interpLen));
-			setInterpPts(procInterpPts(_tuck, interpCntlPts, -.5f, interpLen));
+			setInterpPts(procPts(_tuck, interpCntlPts, .5f, interpLen, false));
+			setInterpPts(procPts(_tuck, interpCntlPts, -.5f, interpLen, false));
 		}		//smooth curve - J4
-		setInterpPts(procInterpPts(_resample, interpCntlPts, numPts, interpLen));	
+		setInterpPts(procPts(_resample, interpCntlPts, numPts, interpLen, false));	
 	}	
 	
 	//return appropriate ara of points based on using velocities or not
@@ -143,12 +143,12 @@ public class VariableTraj extends Base_DrawnObject {
 	public void remakeDrawnTraj(boolean useVels){
 		if(useVels){
 			for(int i = 0; i < 10; ++i){
-				if(i % 2 == 0){setInterpPts(procInterpPts(_subdivide, interpCntlPts, 2, interpLen));}
-				setInterpPts(procInterpPts(_tuck, interpCntlPts, .5f, interpLen));
-				setInterpPts(procInterpPts(_tuck, interpCntlPts, -.49f, interpLen));
+				if(i % 2 == 0){setInterpPts(procPts(_subdivide, interpCntlPts, 2, interpLen, false));}
+				setInterpPts(procPts(_tuck, interpCntlPts, .5f, interpLen, false));
+				setInterpPts(procPts(_tuck, interpCntlPts, -.49f, interpLen, false));
 			}		//smooth curve - J4
-			setInterpPts(procInterpPts(_equaldist, interpCntlPts, .5f, interpLen));
-			setInterpPts(procInterpPts(_resample, interpCntlPts, numIntCntlPts, interpLen));	
+			setInterpPts(procPts(_equaldist, interpCntlPts, .5f, interpLen, false));
+			setInterpPts(procPts(_resample, interpCntlPts, numIntCntlPts, interpLen, false));	
 		} else {
 			for(int i = 0; i < 10; ++i){
 				//setInterpPts(procInterpPts(_subdivide, interpCntlPts, 2, interpLen));
@@ -160,7 +160,11 @@ public class VariableTraj extends Base_DrawnObject {
 		}	
 	}//remakeDrawnTraj
 	
-	//modify curve via editing
+	/**
+	 * modify curve via editing
+	 * @param dispVec
+	 * @param drawnTrajPickedIdx
+	 */
 	public void handleMouseDrag(myVector dispVec, int drawnTrajPickedIdx){		
 		if((drawnTrajPickedIdx == 0) || (drawnTrajPickedIdx == pts.length-1)) {return;}	//rough bounds checking
 		myPoint[] pts = getDrawnPtAra(false);
@@ -177,7 +181,13 @@ public class VariableTraj extends Base_DrawnObject {
 	}
 
 	
-	//scale points to be a scaleAmt * current distance from line of myPoint a -> myPoint b
+	/**
+	 * scale points to be a scaleAmt * current distance from line of myPoint a -> myPoint b
+	 * @param a
+	 * @param b
+	 * @param perpVec
+	 * @param scaleAmt
+	 */
 	public void scalePointsAboveAxis(myPoint a, myPoint b, myVector perpVec, double scaleAmt){
 		myPoint[] pts = getDrawnPtAra(false);//, newPts = new myPoint[pts.length];\
 		int numPoints = pts.length;
@@ -204,67 +214,38 @@ public class VariableTraj extends Base_DrawnObject {
 //		}
 	}
 	
-	//sets required info for points array - points and dist between pts, length, etc
+	/**
+	 * sets required info for points array - points and dist between pts, length, etc
+	 * @param tmp
+	 */
 	protected void setInterpPts(ArrayList<myPoint> tmp){
 		interpCntlPts = tmp.toArray(new myPoint[0]);
 		d_interpPts = getPtDist(interpCntlPts, false);	
 		interpLen=length(interpCntlPts, false);
 	}//setPts	
-	//tuck untuck float values
-	public float[] dualFloats(float[] src){
-		float[] res = new float[src.length],res1 = new float[src.length];
+
+	/**
+	 * tuck untuck double values
+	 * @param src
+	 * @return
+	 */
+	public double[] dualDoubles(double[] src){
+		double[] res = new double[src.length],res1 = new double[src.length];
 		res1[0]=src[0];
 		res1[src.length-1]=src[src.length-1];
 		for(int i=1; i<src.length-1;++i){
-			res1[i]=_Interp(src[i],.5f,_Interp(src[i-1],.5f,src[i+1],lnI_Typ),lnI_Typ);
+			res1[i]=_Interp(src[i],.5,_Interp(src[i-1],.5,src[i+1],lnI_Typ),lnI_Typ);
 		}
 		res[0]=res1[0];
 		res[src.length-1]=res1[src.length-1];
 		for(int i=1; i<res1.length-1;++i){
-			res[i]=_Interp(res1[i],-.5f,_Interp(res1[i-1],.5f,res1[i+1],lnI_Typ),lnI_Typ);
+			res[i]=_Interp(res1[i],-.5,_Interp(res1[i-1],.5,res1[i+1],lnI_Typ),lnI_Typ);
 		}			
 		return res;		
 	}
-	
-	/**
-	 * process all points using passed algorithm on passed array of points - not all args are used by all algs.
-	 * @param _typ type of point processing
-	 * @param _pts array to be processed
-	 * @param val quantity used by variou processing : subdivision-> # of new pts +1, tuck-> amt to be tucked,  resample-> # of new verts
-	 * @param len length of segment described by points, including ends if closed
-	 * @return arraylist of processed points
-	 */
-	public ArrayList<myPoint> procInterpPts(int _typ, myPoint[] _pts, float val, float _len){
-		ArrayList<myPoint> tmp = new ArrayList<myPoint>(); // temporary array
-		switch(_typ){
-			case _subdivide	:{
-			    for(int i = 0; i < _pts.length-1; ++i){tmp.add(_pts[i]); for(int j=1;j<val;++j){tmp.add(makeNewPoint(_pts,new int[]{i,i+1}, (j/(val))));}}
-			    tmp.add(_pts[_pts.length-1]);				
-			    return tmp;}
-			case _tuck		:{
-				tmp.add(0,_pts[0]);
-			    for(int i = 1; i < _pts.length-1; ++i){	tmp.add(i,makeNewPoint(_pts,new int[]{i,i-1,i+1}, val));   }
-		    	tmp.add(_pts[_pts.length-1]);		
-		    	return tmp;}
-			case _equaldist	:{
-				float ratio = _len/(1.0f * _pts.length),curDist = 0;					 //new distance between each vertex, iterative dist travelled so far			 
-				for(int i =0; i<_pts.length; ++i){tmp.add(at_I(curDist/_len));curDist+=ratio;}	
-				tmp.add(_pts[_pts.length-1]);				
-				return tmp;}	
-			case _resample	:{
-				float ratio = _pts.length/(1.0f * (val-1)),f;					//distance between each vertex		 
-				int idx, newIdx=0;		
-				for(float i = 0; i<_pts.length-1; i+=ratio){idx = (int)i;	f = i-idx;tmp.add(newIdx++,makeNewPoint(_pts,new int[]{idx,idx+1},f));}
-				tmp.add(_pts[_pts.length-1]);			//always add another point if open line/loop - want to preserve end point
-				break;}	
-			default :
-		}
-		
-		return tmp;
-	}
 
-	public myPoint at_I(float t){return at(t,new float[1], interpLen, interpCntlPts, d_interpPts);}//put interpolant between adjacent points in s ara if needed
-	public myPoint at_I(float t, float[] s){	return at(t,s, interpLen, interpCntlPts, d_interpPts);}//put interpolant between adjacent points in s ara if needed	
+	public myPoint at_I(double t){return at(t,new double[1], interpLen, interpCntlPts, d_interpPts);}//put interpolant between adjacent points in s ara if needed
+	public myPoint at_I(double t, double[] s){	return at(t,s, interpLen, interpCntlPts, d_interpPts);}//put interpolant between adjacent points in s ara if needed	
 	
 	private void buildPtsFromCntlPts(){
 		ArrayList<myPoint> tmp =  _offset.calcOffset(cntlPts, c_bAra, c_tAra) ;
@@ -283,10 +264,10 @@ public class VariableTraj extends Base_DrawnObject {
 	
 	//build poly loop points using offsets from control points radii
 	public void rebuildPolyPts(){
-		flags[reCalcPoints]=false;
+		setFlags(reCalcPointsIDX, false);
 		//buildPointsUsingOffset(true,1);
 		buildPtsFromCntlPts();
-		flags[isMade] = true;
+		setFlags(isMadeIDX, true);
 	}
 	
 	//print out all trajectory point locations for debugging
@@ -317,14 +298,14 @@ public class VariableTraj extends Base_DrawnObject {
 	    	            //pa.fill(clrInt,255,(255 - clrInt),255);  
 	    	            //pa.stroke(clrInt,255,(255 - clrInt),255); 
 	    				ri.showPtAsCircle(interpCntlPts[i],trajPtRad,-1,-1);
-	    				if(flags[drawCntlRad]){ri.drawCircle3D(this.interpCntlPts[i], this.cntlPts[i].r,this.c_bAra[i], this.c_tAra[i],20);}
+	    				if(getFlags(drawCntlRadIDX)){ri.drawCircle3D(this.interpCntlPts[i], this.cntlPts[i].r,this.c_bAra[i], this.c_tAra[i],20);}
 	    			}
 	        	} else {			
 					for(int i = 0; i < cntlPts.length; ++i){
 						ri.showPtAsCircle(cntlPts[i],1.0*trajPtRad,fillClr,strkClr);
 						//cntlPts[i].showMe(pa,trajPtRad,fillClr,strkClr, flat);
 					}
-					if(flags[drawCntlRad]){this._offset.drawCntlPts(ri, this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
+					if(getFlags(drawCntlRadIDX)){this._offset.drawCntlPts(ri, this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
 	        	}				
 			} else {				
 		       	if(useDrawnVels){
@@ -334,14 +315,14 @@ public class VariableTraj extends Base_DrawnObject {
 	    	            //pa.fill(clrInt,255,(255 - clrInt),255);  
 	    	            //pa.stroke(clrInt,255,(255 - clrInt),255); 
 	    				ri.showPtAsSphere(interpCntlPts[i],trajPtRad,5,-1,-1);
-	    				if(flags[drawCntlRad]){ri.drawCircle3D(this.interpCntlPts[i], this.cntlPts[i].r,this.c_bAra[i], this.c_tAra[i],20);}
+	    				if(getFlags(drawCntlRadIDX)){ri.drawCircle3D(this.interpCntlPts[i], this.cntlPts[i].r,this.c_bAra[i], this.c_tAra[i],20);}
 	    			}
 	        	} else {			
 					for(int i = 0; i < cntlPts.length; ++i){
 						ri.showPtAsSphere(cntlPts[i],1.0*trajPtRad,5,fillClr,strkClr);
 						//cntlPts[i].showMe(pa,trajPtRad,fillClr,strkClr, flat);
 					}
-					if(flags[drawCntlRad]){this._offset.drawCntlPts(ri, this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
+					if(getFlags(drawCntlRadIDX)){this._offset.drawCntlPts(ri, this.cntlPts, this.c_bAra, this.c_tAra, ptsDerived);}
 	        	}
 			}
 			
@@ -387,7 +368,7 @@ public class VariableTraj extends Base_DrawnObject {
 		for(int myPointItr = 1; myPointItr < numPoints ; ++myPointItr){
 			dispVecAra[myPointItr] = new myVector(destCurve[0],destCurve[myPointItr]);
 		}			
-		if((flip) || flags[isFlipped]){
+		if((flip) || getFlags(isFlippedIDX)){
 			myVector udAxis = myVector._unit(drawnAxis);
 			myVector normPt, tanPt;
 			for(int myPointItr = 1; myPointItr < numPoints ; ++myPointItr){
@@ -396,7 +377,7 @@ public class VariableTraj extends Base_DrawnObject {
 				normPt._mult(2);
 				dispVecAra[myPointItr]._sub(normPt);
 			}
-			flags[isFlipped] = flip;
+			setFlags(isFlippedIDX, flip);
 		}
 
 		//displace every point to be scaled distance from start of curve equivalent to scale of edge distances to drawn curve
@@ -446,7 +427,7 @@ public class VariableTraj extends Base_DrawnObject {
 		for(int myPointItr = 1; myPointItr < numPoints ; ++myPointItr){
 			dispVecAra[myPointItr] = new myVector(destCurve[0],destCurve[myPointItr]);
 		}			
-		if((flip) || flags[isFlipped]){
+		if((flip) || getFlags(isFlippedIDX)){
 			myVector udAxis = myVector._unit(drawnAxis);
 			myVector normPt, tanPt;
 			for(int myPointItr = 1; myPointItr < numPoints ; ++myPointItr){
@@ -455,7 +436,7 @@ public class VariableTraj extends Base_DrawnObject {
 				normPt._mult(2);
 				dispVecAra[myPointItr]._sub(normPt);
 			}
-			flags[isFlipped] = flip;
+			setFlags(isFlippedIDX, flip);
 		}
 
 		//displace every point to be scaled distance from start of curve equivalent to scale of edge distances to drawn curve
