@@ -1546,7 +1546,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param r desired radius of cylinder
 	 * @return array of points for cylinder
 	 */
-	public myPoint[] buildCylVerts(myPoint A, myPoint B, float r) {
+	public myPoint[] buildCylVerts(myPoint A, myPoint B, double r) {
 		myVector[] frame = buildViewBasedFrame(A, B);
 		myPoint[] resList = new myPoint[2 * cylCosVals.length];
 		double rca, rsa;
@@ -1587,10 +1587,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param n # of points
 	 * @return array of n equal-arc-length points centered around p
 	 */
-	public synchronized myPoint[] buildCircleInscribedPoints(myPoint p, float r, myVector I, myVector J,int n) {
+	public synchronized myPoint[] buildCircleInscribedPoints(myPoint p, double r, myVector I, myVector J,int n) {
 		myPoint[] pts = new myPoint[n];
 		pts[0] = new myPoint(p,r,myVector._unit(I));
-		float a = (MyMathUtils.TWO_PI_F)/(1.0f*n); 
+		double a = (MyMathUtils.TWO_PI)/(1.0*n); 
 		for(int i=1;i<n;++i){pts[i] = pts[i-1].rotMeAroundPt(a,J,I,p);}
 		return pts;
 	}
@@ -1614,7 +1614,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final myPoint PtOnSpiral(myPoint A, myPoint B, myPoint C, double t) {
 		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
 		//so center will be coplanar to mp(A,B) and mp(B,C) - use mpCA midpoint to determine plane mpAB-mpBC plane?
-		myPoint mAB = new myPoint(A,.5f, B), mBC = new myPoint(B,.5f, C), mCA = new myPoint(C,.5f, A);
+		myPoint mAB = new myPoint(A,.5, B), mBC = new myPoint(B,.5, C), mCA = new myPoint(C,.5, A);
 		myVector mI = myVector._unit(mCA,mAB), mTmp = myVector._cross(mI,myVector._unit(mCA,mBC)), mJ = myVector._unit(mTmp._cross(mI));	//I and J are orthonormal
 		double a =spiralAngle(A,B,B,C), s =spiralScale(A,B,B,C);
 		

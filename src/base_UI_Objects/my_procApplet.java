@@ -266,7 +266,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @param alpha 
 	 */
 	@Override
-	public void gl_SetFill(int r, int g, int b, int alpha) {super.fill(r,g,b,alpha);}
+	public void gl_setFill(int r, int g, int b, int alpha) {super.fill(r,g,b,alpha);}
 
 	/**
 	 * set stroke color by value during shape building
@@ -274,7 +274,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @param alpha 
 	 */
 	@Override
-	public void gl_SetStroke(int r, int g, int b, int alpha) {super.stroke(r,g,b,alpha);}	
+	public void gl_setStroke(int r, int g, int b, int alpha) {super.stroke(r,g,b,alpha);}	
 	
 	
 	/**
@@ -445,7 +445,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @param n # of points to use
 	 */
 	@Override
-	public void drawCircle3D(myPoint P, float r, myVector I, myVector J, int n) {
+	public void drawCircle3D(myPoint P, double r, myVector I, myVector J, int n) {
 		myPoint[] pts = AppMgr.buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatState();noFill(); show(pts);popMatState();
 	}
@@ -483,16 +483,16 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	
 	@Override
-	public void drawCylinder_NoFill(myPoint A, myPoint B, float r, int clr1, int clr2) {
+	public void drawCylinder_NoFill(myPoint A, myPoint B, double r, int clr1, int clr2) {
 		myPoint[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
 		noFill();
 		beginShape(QUAD_STRIP);
 			for(int i=0; i<vertList.length; i+=2) {
-				gl_SetStroke(c1[0],c1[1],c1[2],255);
+				gl_setStroke(c1[0],c1[1],c1[2],255);
 				gl_vertex(vertList[i]);
-				gl_SetStroke(c2[0],c2[1],c2[2],255);
+				gl_setStroke(c2[0],c2[1],c2[2],255);
 				gl_vertex(vertList[i+1]);}
 		gl_endShape();
 	}
@@ -504,23 +504,23 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		noFill();
 		beginShape(QUAD_STRIP);
 			for(int i=0; i<vertList.length; i+=2) {
-				gl_SetStroke(c1[0],c1[1],c1[2],255);
+				gl_setStroke(c1[0],c1[1],c1[2],255);
 				gl_vertex(vertList[i]); 
-				gl_SetStroke(c2[0],c2[1],c2[2],255);
+				gl_setStroke(c2[0],c2[1],c2[2],255);
 				gl_vertex(vertList[i+1]);}
 		gl_endShape();
 	}
 
 	@Override
-	public void drawCylinder(myPoint A, myPoint B, float r, int clr1, int clr2) {
+	public void drawCylinder(myPoint A, myPoint B, double r, int clr1, int clr2) {
 		myPoint[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
 		beginShape(QUAD_STRIP);
 			for(int i=0; i<vertList.length; i+=2) {
-				gl_SetFill(c1[0],c1[1],c1[2],255);		
+				gl_setFill(c1[0],c1[1],c1[2],255);		
 				gl_vertex(vertList[i]); 
-				gl_SetFill(c2[0],c2[1],c2[2],255);	
+				gl_setFill(c2[0],c2[1],c2[2],255);	
 				gl_vertex(vertList[i+1]);}
 		gl_endShape();
 	}
@@ -532,9 +532,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		int[] c2 = getClr(clr2, 255);
 		beginShape(QUAD_STRIP);
 		for(int i=0; i<vertList.length; i+=2) {
-			gl_SetFill(c1[0],c1[1],c1[2],255);		
+			gl_setFill(c1[0],c1[1],c1[2],255);		
 			gl_vertex(vertList[i]); 
-			gl_SetFill(c2[0],c2[1],c2[2],255);		
+			gl_setFill(c2[0],c2[1],c2[2],255);		
 			gl_vertex(vertList[i+1]);}
 	gl_endShape();
 	}
