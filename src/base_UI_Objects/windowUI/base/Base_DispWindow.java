@@ -369,8 +369,6 @@ public abstract class Base_DispWindow {
 	protected final void initUIClickCoords(float x1, float y1, float x2, float y2){uiClkCoords[0] = x1;uiClkCoords[1] = y1;uiClkCoords[2] = x2; uiClkCoords[3] = y2;}
 	protected final void initUIClickCoords(float[] cpy){	uiClkCoords[0] = cpy[0];uiClkCoords[1] = cpy[1];uiClkCoords[2] = cpy[2]; uiClkCoords[3] = cpy[3];}
 	//public void initFlags(){dispFlags = new boolean[numDispFlags];for(int i =0; i<numDispFlags;++i){dispFlags[i]=false;}}		
-	//base class flags init
-	public final void initFlags(){dispFlags = new int[1 + numDispFlags/32];for(int i =0; i<numDispFlags;++i){setFlags(i,false);}}		
 	//child-class flag init
 	//private void initPrivFlags(int numPrivFlags){privFlags = new int[1 + numPrivFlags/32]; for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,false);}}
 	private void initPrivFlags(int numPrivFlags){privFlags = new int[1 + numPrivFlags/32]; }//for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,false);}}
@@ -477,6 +475,32 @@ public abstract class Base_DispWindow {
 		for(int i=0;i<privModFlgIdxs.length;++i) {if(idx == privModFlgIdxs[i]) {return i;}	}		
 		return -1;//not found
 	}	
+
+	/**
+	 * set the right side menu state for this window - if it is actually present, show it
+	 * @param visible
+	 */
+	public final void setRtSideInfoWinSt(boolean visible) {if(getFlags(drawRightSideMenu)) {setFlags(showRightSideMenu,visible);}}
+	
+	/**
+	 * base class flags init
+	 */
+	public final void initFlags(){dispFlags = new int[1 + numDispFlags/32];for(int i =0; i<numDispFlags;++i){setFlags(i,false);}}			
+	/**
+	 * get baseclass flag
+	 * @param idx
+	 * @return
+	 */
+	public final boolean getFlags(int idx){int bitLoc = 1<<(idx%32);return (dispFlags[idx/32] & bitLoc) == bitLoc;}	
+	
+	/**
+	 * check list of flags
+	 * @param idxs
+	 * @return
+	 */
+	public final boolean getAllFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
+	public final boolean getAnyFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
+		
 	/**
 	 * set baseclass flags  //setFlags(showIDX, 
 	 * @param idx
@@ -511,26 +535,6 @@ public abstract class Base_DispWindow {
 		}				
 	}//setFlags
 
-	/**
-	 * set the right side menu state for this window - if it is actually present, show it
-	 * @param visible
-	 */
-	public final void setRtSideInfoWinSt(boolean visible) {if(getFlags(drawRightSideMenu)) {setFlags(showRightSideMenu,visible);}}		
-	/**
-	 * get baseclass flag
-	 * @param idx
-	 * @return
-	 */
-	public final boolean getFlags(int idx){int bitLoc = 1<<(idx%32);return (dispFlags[idx/32] & bitLoc) == bitLoc;}	
-	
-	/**
-	 * check list of flags
-	 * @param idxs
-	 * @return
-	 */
-	public final boolean getAllFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
-	public final boolean getAnyFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((dispFlags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
-	
 	/**
 	 * set/get child class flags
 	 * @param idx
