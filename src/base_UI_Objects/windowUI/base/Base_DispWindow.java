@@ -161,6 +161,8 @@ public abstract class Base_DispWindow {
 	
 	private final int[] trueBtnClr = new int[]{220,255,220,255}, falseBtnClr = new int[]{255,215,215,255};
 	
+	//directory with proper timestamp from when window was made
+	protected final String ssFolderDir;
 	//path to save screenshots for this dispwindow
 	protected final String ssPathBase;
 	
@@ -183,11 +185,8 @@ public abstract class Base_DispWindow {
 		msgObj = MessageObject.buildMe(pa != null);
 		fileIO = new FileIOManager(msgObj, name);
 		//base screenshot path based on launch time
-		String tmpNow = msgObj.getCurrWallTime();
-		tmpNow = tmpNow.replace(':','_');
-		tmpNow = tmpNow.replace('-','_');
-		tmpNow = tmpNow.replace('|','_');
-		ssPathBase = AppMgr.getApplicationPath() +File.separatorChar +name+"_"+tmpNow + File.separatorChar;
+		ssFolderDir = name+"_"+getNowDateTimeString();
+		ssPathBase = AppMgr.getApplicationPath() +File.separatorChar + ssFolderDir + File.separatorChar;
 		initClrDims( fc, sc, rd, rdClosed);
 		winText = _winTxt;
 		msClkObj = -1;
@@ -657,6 +656,26 @@ public abstract class Base_DispWindow {
 		//for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
 	}//_buildGUIObjsFromMaps
 
+	/**
+	 * Returns string holding reasonable string name for a subdir for this application. Includes name of window and timestamp when window was instanced
+	 * @return
+	 */
+	public final String getAppFileSubdirName() {
+		return ssFolderDir;
+	}
+	
+	/**
+	 * This returns a date-time string properly formatted to be used in file names or file paths.  Time is when called
+	 * @return
+	 */
+	public final String getNowDateTimeString() {
+		String tmpNow = msgObj.getCurrWallTime();
+		tmpNow = tmpNow.replace(':','_');
+		tmpNow = tmpNow.replace('-','_');
+		tmpNow = tmpNow.replace('|','_');
+		return tmpNow;
+	}
+	
 	/**
 	 * Set UI values by object type, sending value to 
 	 * @param UIidx
