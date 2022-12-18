@@ -1681,7 +1681,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				radical = (b*b) - 4 *(VdV) * c;
 		if(radical < 0) return -1;
 		double t1 = (b + Math.sqrt(radical))/(2*VdV), t2 = (b - Math.sqrt(radical))/(2*VdV);			
-		return ((t1 > 0) && (t2 > 0) ? Math.min(t1, t2) : ((t1 < 0 ) ? ((t2 < 0 ) ? -1 : t2) : t1) );
+		return ((t1 > 0) && (t2 > 0) ? MyMathUtils.min(t1, t2) : ((t1 < 0 ) ? ((t2 < 0 ) ? -1 : t2) : t1) );
 	}	
 	
 	/**
@@ -1718,7 +1718,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			cosTheta = ThreadLocalRandom.current().nextDouble(-1,1),
 			phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F),
 			r = rad * Math.pow(u, third),
-			rSinTheta = r * Math.sin(Math.acos(cosTheta));			
+			rSinTheta = r * (Math.sqrt(1.0 - (cosTheta * cosTheta)));			
 		pos.set(rSinTheta * Math.cos(phi), rSinTheta * Math.sin(phi),cosTheta*r);
 		pos._add(ctr);
 		return pos;
@@ -1734,7 +1734,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		myPointf pos = new myPointf();
 		double 	cosTheta = ThreadLocalRandom.current().nextDouble(-1,1),
 				phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F), 
-				rSinTheta = rad* Math.sin(Math.acos(cosTheta));
+				rSinTheta = rad* (Math.sqrt(1.0 - (cosTheta * cosTheta)));
 		pos.set(rSinTheta * Math.cos(phi), rSinTheta * Math.sin(phi),cosTheta * rad);
 		pos._add(ctr);
 		return pos;
@@ -1796,12 +1796,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}//getRegularSphereList	
 	
 	
-	public final myPoint bndChkInBox2D(myPoint p){p.set(Math.max(0,Math.min(p.x,grid2D_X)),Math.max(0,Math.min(p.y,grid2D_Y)),0);return p;}
-	public final myPoint bndChkInBox3D(myPoint p){p.set(Math.max(0,Math.min(p.x,gridDimX)), Math.max(0,Math.min(p.y,gridDimY)),Math.max(0,Math.min(p.z,gridDimZ)));return p;}	
+	public final myPoint bndChkInBox2D(myPoint p){p.set(MyMathUtils.max(0,MyMathUtils.min(p.x,grid2D_X)),MyMathUtils.max(0,MyMathUtils.min(p.y,grid2D_Y)),0);return p;}
+	public final myPoint bndChkInBox3D(myPoint p){p.set(MyMathUtils.max(0,MyMathUtils.min(p.x,gridDimX)), MyMathUtils.max(0,MyMathUtils.min(p.y,gridDimY)),MyMathUtils.max(0,MyMathUtils.min(p.z,gridDimZ)));return p;}	
 	public final myPoint bndChkInCntrdBox3D(myPoint p){
-		p.set(Math.max(-hGDimX,Math.min(p.x,hGDimX)), 
-				Math.max(-hGDimY,Math.min(p.y,hGDimY)),
-				Math.max(-hGDimZ,Math.min(p.z,hGDimZ)));return p;}	
+		p.set(MyMathUtils.max(-hGDimX,MyMathUtils.min(p.x,hGDimX)), 
+				MyMathUtils.max(-hGDimY,MyMathUtils.min(p.y,hGDimY)),
+				MyMathUtils.max(-hGDimZ,MyMathUtils.min(p.z,hGDimZ)));return p;}	
 	
 	
 	//very fast mechanism for setting an array of doubles to a specific val - takes advantage of caching

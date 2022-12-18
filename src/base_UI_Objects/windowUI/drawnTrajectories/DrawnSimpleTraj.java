@@ -10,7 +10,7 @@ import base_UI_Objects.windowUI.drawnTrajectories.base.Base_DrawnTrajectory;
 
 /**
  * class holds trajectory and 4 macro cntl points, and the handling for them
- * @author 7strb
+ * @author John Turner
  *
  */
 public class DrawnSimpleTraj {
