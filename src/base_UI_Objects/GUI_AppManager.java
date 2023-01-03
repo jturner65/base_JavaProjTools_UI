@@ -47,6 +47,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * physical display width and height this project is running on
 	 */
 	protected static int _displayWidth, _displayHeight;
+	
+	/**
+	 * Width and height of application window
+	 */
+	private int viewWidth, viewHeight, viewWidthHalf, viewHeightHalf;
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time and date
 	
@@ -141,8 +146,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			"Stop Simulation",
 			"Single Step",
 			"Displaying Side Menu",
-			"Displaying UI Menu",
-			"Reverse Drawn Trajectory"
+			"Reverse Drawn Trajectory",
+			"Clearing Background"
 			};
 	
 	private final String[] falsePFlagNames = {//needs to be in order of flags
@@ -159,8 +164,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			"Run Simulation",
 			"Single Step",
 			"Displaying Side Menu",
-			"Displaying UI Menu",
-			"Reverse Drawn Trajectory"
+			"Reverse Drawn Trajectory",
+			"Clear Background"
 			};
 	private int[][] pFlagColors;
 	
@@ -248,19 +253,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final int[][] triColors = new int[][] {
 		{IRenderInterface.gui_DarkMagenta,IRenderInterface.gui_DarkBlue,IRenderInterface.gui_DarkGreen,IRenderInterface.gui_DarkCyan}, 
 		{IRenderInterface.gui_LightMagenta,IRenderInterface.gui_LightBlue,IRenderInterface.gui_LightGreen,IRenderInterface.gui_TransCyan}};
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	// pre-calc sin/cos for building cylinders
-	
-	//constant values defined for cylinder wall angles
-	private final float deltaThet = MyMathUtils.TWO_PI_F/36.0f, 
-		finalThet = MyMathUtils.TWO_PI_F+deltaThet;
-	
-	/**
-	 * Precalculated cosine and sine values
-	 */
-	private double[] cylCosVals, cylSinVals;
-		
 		
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// code
@@ -271,18 +263,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		_displayWidth = gd.getDisplayMode().getWidth();
 		_displayHeight = gd.getDisplayMode().getHeight();	
-		
-//		now = Calendar.getInstance();
-//		//absolute start time of application
-//		appStartTimeMillis = now.getTimeInMillis();	
-		//precalc cylinder cosine and sine vals
-		cylCosVals = new double[38];
-		cylSinVals = new double[38];
-		int i=0;
-		for(float a=0; a<=finalThet; a+=deltaThet) {
-			cylCosVals[i] = Math.cos(a);
-			cylSinVals[i++] = Math.sin(a);
-		}
 
 	}//	
 		
@@ -348,16 +328,20 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public void firstInit(int width, int height) {
 		window = pa.getGLWindow();
-		msSclX = MyMathUtils.PI_F/width;
-		msSclY = MyMathUtils.PI_F/height;
+		viewWidth = width;
+		viewHeight = height;
+		viewWidthHalf = viewWidth/2; 
+		viewHeightHalf = viewHeight/2;
+		msSclX = MyMathUtils.PI_F/viewWidth;
+		msSclY = MyMathUtils.PI_F/viewHeight;
 		//init internal state flags structure
 		initBaseFlags();
 		
-		menuWidth = width * menuWidthMult;						//grid2D_X of menu region	
-		hideWinWidth = width * hideWinWidthMult;				//dims for hidden windows
-		hideWinHeight = height * hideWinHeightMult;
+		menuWidth = viewWidth * menuWidthMult;						//grid2D_X of menu region	
+		hideWinWidth = viewWidth * hideWinWidthMult;				//dims for hidden windows
+		hideWinHeight = viewHeight * hideWinHeightMult;
 		//build canvas
-		canvas = new Disp3DCanvas(this, pa, width, height);	
+		canvas = new Disp3DCanvas(this, pa, viewWidth, viewHeight);	
 	}
 	
 	/**
@@ -792,12 +776,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			//if refreshing screen, this clears screen, sets background
 			if(getShouldClearBKG()) {
 				setBkgrnd();				
-				draw3D_solve3D(modAmtMillis, -canvas.getViewDimW()/2.0f+40);
+				draw3D_solve3D(modAmtMillis);
 				canvas.buildCanvas();
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}
 				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);	}		
 			} else {
-				draw3D_solve3D(modAmtMillis, -canvas.getViewDimW()/2.0f+40);
+				draw3D_solve3D(modAmtMillis);
 				canvas.buildCanvas();
 			}
 			pa.popMatState(); 
@@ -811,6 +795,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		drawMePost_Indiv(modAmtMillis, is3DDraw);
 	}//draw	
 	
+	
 	/**
 	 * Individual extending Application Manager post-drawMe functions
 	 * @param modAmtMillis
@@ -821,16 +806,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * Draw 3d windows that are currently displayed
 	 * @param modAmtMillis
-	 * @param viewDimW
 	 */
-	public final void draw3D_solve3D(float modAmtMillis, float viewDimW){
+	private final void draw3D_solve3D(float modAmtMillis){
 		pa.pushMatState();
 		for(int i =1; i<numDispWins; ++i){
 			if((isShowingWindow(i)) && (dispWinFrames[i].getIs3DWindow())){	dispWinFrames[i].draw3D(modAmtMillis);}
 		}
 		pa.popMatState();
 		//fixed xyz rgb axes for visualisation purposes and to show movement and location in otherwise empty scene
-		drawAxes(100,3, new myPoint(viewDimW,0.0f,0.0f), 200, false); 		
+		drawAxes(100,3, new myPoint(-viewWidth/2.0f+40,0.0f,0.0f), 200, false); 		
 	}//draw3D_solve3D
 	
 	/**
@@ -1021,17 +1005,27 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final myVectorf getDrawSNorm_f() {return canvas.getDrawSNorm_f();}
 	public final myVector getEyeToMse() {return canvas.getEyeToMse();}
 	public final myVectorf getEyeToMse_f() {return canvas.getEyeToMse_f();}
-	public myVector getUScrUpInWorld(){		return canvas.getUScrUpInWorld();}	
-	public myVector getUScrRightInWorld(){		return canvas.getUScrRightInWorld();}
-	public myVectorf getUScrUpInWorldf(){		return canvas.getUScrUpInWorldf();}	
-	public myVectorf getUScrRightInWorldf(){	return canvas.getUScrRightInWorldf();}
+
+	public myVector getUScrUpInWorld(){			myVector res = new myVector(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidthHalf, viewHeight,-.00001f));		return res._normalize();}	
+	public myVector getUScrRightInWorld(){		myVector res = new myVector(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));		return res._normalize();}
+	public myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidthHalf,viewHeight,-.00001f));	return res._normalize();}	
+	public myVectorf getUScrRightInWorldf(){	myVectorf res = new myVectorf(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));	return res._normalize();}
+	public myPoint getEyeLoc(){return pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f);	}
 	
 	public myPoint getMseLoc(){			return canvas.getMseLoc();}
-	public myPointf getMseLoc_f(){		return canvas.getMseLoc_f();	}
-	public myPoint getEyeLoc(){			return canvas.getEyeLoc();	}
-	public myPoint getOldMseLoc(){		return canvas.getOldMseLoc();	}	
+	public myPointf getMseLoc_f(){		return canvas.getMseLoc_f();}
+	public myPoint getOldMseLoc(){		return canvas.getOldMseLoc();}	
 	public myVector getMseDragVec(){	return canvas.getMseDragVec();}
-	
+	/**
+	 * return a unit vector from the screen location of the mouse pointer in the world to the reticle location in the world - for ray casting onto objects the mouse is over
+	 * @param glbTrans
+	 * @return
+	 */
+	public myVector getMse2DtoMse3DinWorld(myPoint glbTrans){
+		int[] mse = pa.getMouse_Raw_Int();
+		myVector res = new myVector(pa.getWorldLoc(mse[0], mse[1],-.00001f),getMseLoc(glbTrans) );		
+		return res._normalize();
+	}
 	/**
 	 * relative to passed origin
 	 * @param glbTrans
@@ -1508,9 +1502,55 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		}
 		return "None";
 	}
+	/**
+	 * performs shuffle on list of strings. Moves from end of list, picks string i, finds random string j [0,i] and swaps if i!=j
+	 * @param _list
+	 * @param type
+	 * @return
+	 */
+	public String[] shuffleStrList(String[] _list, String type){
+		String tmp = "";
+		ThreadLocalRandom tr = ThreadLocalRandom.current();
+		for(int i=(_list.length-1);i>0;--i){
+			int j = (int)(tr.nextDouble(0,(i+1)));
+			if (i==j) {continue;}
+			tmp = _list[i];
+			_list[i] = _list[j];
+			_list[j] = tmp;
+		}
+		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "shuffleStrList","String list of object " + type + " shuffled");
+		return _list;
+	}//shuffleStrList
+	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// calculations
+	
+	/**
+	 * build a frame based on passed normal given two passed points
+	 * @param A
+	 * @param B
+	 * @param I normal to build frame around
+	 * @return vec array of {AB, Normal, Tangent}
+	 */
+	public myVector[] buildFrameAroundNormal(myPoint A, myPoint B, myVector norm) {
+		myVector V = new myVector(A,B);
+		myVector tan = norm._cross(V)._normalize(); 
+		return new myVector[] {V,norm,tan};		
+	}
+	
+	/**
+	 * build a frame based on passed normal given two passed points
+	 * @param A
+	 * @param B
+	 * @param I normal to build frame around
+	 * @return vec array of {AB, Normal, Tangent}
+	 */
+	public myVectorf[] buildFrameAroundNormal(myPointf A, myPointf B, myVectorf norm) {
+		myVectorf V = new myVectorf(A,B);
+		myVectorf tan = norm._cross(V)._normalize(); 
+		return new myVectorf[] {V,norm,tan};		
+	}
 	
 	/**
 	 * build a frame based on world orientation given two passed points
@@ -1519,26 +1559,20 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return vec array of {AB, ScreenNorm, ScreenTan}
 	 */
 	public myVector[] buildViewBasedFrame(myPoint A, myPoint B) {
-		myVector V = new myVector(A,B);
-		myVector I = canvas.getDrawSNorm();//U(Normal(V));
-		myVector J = I._cross(V)._normalize(); 
-		return new myVector[] {V,I,J};		
+		return buildFrameAroundNormal(A, B, getDrawSNorm());		
 	}
 	
 	/**
 	 * build a frame based on world orientation given two passed points
 	 * @param A
 	 * @param B
+	 * @param I Screen normal
 	 * @return float vec array of {AB, ScreenNorm, ScreenTan}
 	 */
-	public myVectorf[] buildViewBasedFrame_f(myPointf A, myPointf B) {
-		myVectorf V = new myVectorf(A,B);
-		myVectorf I = canvas.getDrawSNorm_f();//U(Normal(V));
-		myVectorf J = I._cross(V)._normalize(); 
-		return new myVectorf[] {V,I,J};		
+	public myVectorf[] buildViewBasedFrame(myPointf A, myPointf B) {
+		return buildFrameAroundNormal(A, B, getDrawSNorm_f());
 	}
-	
-	
+		
 	/**
 	 * Derive the points of a cylinder of radius r around axis through A and B
 	 * @param A center point of endcap
@@ -1547,12 +1581,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return array of points for cylinder
 	 */
 	public myPoint[] buildCylVerts(myPoint A, myPoint B, double r) {
-		myVector[] frame = buildViewBasedFrame(A, B);
-		myPoint[] resList = new myPoint[2 * cylCosVals.length];
+		myVector[] frame = buildFrameAroundNormal(A, B, getDrawSNorm());
+		myPoint[] resList = new myPoint[2 * MyMathUtils.preCalcCosVals.length];
 		double rca, rsa;
 		int idx = 0;
-		for(int i = 0; i<cylCosVals.length; ++i) {
-			rca = r*cylCosVals[i];rsa=r*cylSinVals[i];
+		for(int i = 0; i<MyMathUtils.preCalcCosVals.length; ++i) {
+			rca = r*MyMathUtils.preCalcCosVals[i];
+			rsa = r*MyMathUtils.preCalcCosVals[i];
 			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2]); 
 			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
 		}
@@ -1567,12 +1602,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return array of points for cylinder
 	 */
 	public myPointf[] buildCylVerts(myPointf A, myPointf B, float r) {
-		myVectorf[] frame = buildViewBasedFrame_f(A, B);
-		myPointf[] resList = new myPointf[2 * cylCosVals.length];
+		myVectorf[] frame = buildFrameAroundNormal(A, B, getDrawSNorm_f());
+		myPointf[] resList = new myPointf[2 * MyMathUtils.preCalcCosVals.length];
 		float rca, rsa;
 		int idx = 0;
-		for(int i = 0; i<cylCosVals.length; ++i) {
-			rca = (float) (r*cylCosVals[i]);rsa=(float) (r*cylSinVals[i]);
+		for(int i = 0; i<MyMathUtils.preCalcCosVals.length; ++i) {
+			rca = r*MyMathUtils.preCalcCosVals_f[i];
+			rsa = r*MyMathUtils.preCalcSinVals_f[i];
 			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2]); 
 			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
 		}	
@@ -1587,7 +1623,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param n # of points
 	 * @return array of n equal-arc-length points centered around p
 	 */
-	public synchronized myPoint[] buildCircleInscribedPoints(myPoint p, double r, myVector I, myVector J,int n) {
+	public synchronized myPoint[] buildCircleInscribedPoints(myPoint p, double r, myVector I, myVector J, int n) {
 		myPoint[] pts = new myPoint[n];
 		pts[0] = new myPoint(p,r,myVector._unit(I));
 		double a = (MyMathUtils.TWO_PI)/(1.0*n); 
@@ -1602,7 +1638,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param n # of points
 	 * @return array of n equal-arc-length points centered around p
 	 */
-	public synchronized myPointf[] buildCircleInscribedPoints(myPointf p, float r, myVectorf I, myVectorf J,int n) {
+	public synchronized myPointf[] buildCircleInscribedPoints(myPointf p, float r, myVectorf I, myVectorf J, int n) {
 		myPointf[] pts = new myPointf[n];
 		pts[0] = new myPointf(p,r,myVectorf._unit(I));
 		float a = (MyMathUtils.TWO_PI_F)/(1.0f*n);
@@ -1664,54 +1700,62 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		return new myPointf(new myPointf(A,x,AB),y,rAB);
 	}
 
-	
-	
-	public boolean intersectPl(myPoint E, myVector T, myPoint A, myPoint B, myPoint C, myPoint X) { // if ray from E along T intersects triangle (A,B,C), return true and set proposal to the intersection point
-		myVector EA=new myVector(E,A), AB=new myVector(A,B), AC=new myVector(A,C); 		double t = (float)(myVector._mixProd(EA,AC,AB) / myVector._mixProd(T,AC,AB));		X.set(myPoint._add(E,t,T));		return true;
-	}	
-	public final myPoint intersectPl(myPoint E, myVector T, myPoint A, myPoint B, myPoint C) { // if ray from E along T intersects triangle (A,B,C), return true and set proposal to the intersection point
-		myVector EA=new myVector(E,A), AB=new myVector(A,B), AC=new myVector(A,C); 		
-		double t = (float)(myVector._mixProd(EA,AC,AB) / myVector._mixProd(T,AC,AB));		
-		return (myPoint._add(E,t,T));		
-	}	
-	// if ray from E along V intersects sphere at C with radius r, return t when intersection occurs
-	public double intersectPt(myPoint E, myVector V, myPoint C, double r) { 
-		myVector Vce = new myVector(C,E);
-		double CEdCE = Vce._dot(Vce), VdV = V._dot(V), VdVce = V._dot(Vce), b = 2 * VdVce, c = CEdCE - (r*r),
-				radical = (b*b) - 4 *(VdV) * c;
-		if(radical < 0) return -1;
-		double t1 = (b + Math.sqrt(radical))/(2*VdV), t2 = (b - Math.sqrt(radical))/(2*VdV);			
-		return ((t1 > 0) && (t2 > 0) ? MyMathUtils.min(t1, t2) : ((t1 < 0 ) ? ((t2 < 0 ) ? -1 : t2) : t1) );
-	}	
-	
 	/**
-	 * performs shuffle on list of strings. Moves from end of list, picks string i, finds random string j [0,i] and swaps if i!=j
-	 * @param _list
-	 * @param type
+	 * Return intersection point of vector T through point E in plane described by ABC
+	 * @param E point within cast vector/ray
+	 * @param T directional vector/ray
+	 * @param A point describing plane
+	 * @param B point describing plane
+	 * @param C point describing plane
 	 * @return
 	 */
-	public String[] shuffleStrList(String[] _list, String type){
-		String tmp = "";
-		ThreadLocalRandom tr = ThreadLocalRandom.current();
-		for(int i=(_list.length-1);i>0;--i){
-			int j = (int)(tr.nextDouble(0,(i+1)));
-			if (i==j) {continue;}
-			tmp = _list[i];
-			_list[i] = _list[j];
-			_list[j] = tmp;
-		}
-		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "shuffleStrList","String list of object " + type + " shuffled");
-		return _list;
-	}//shuffleStrList
+	public final myPoint intersectPl(myPoint E, myVector T, myPoint A, myPoint B, myPoint C) {
+		//vector through point and planar point
+		myVector EA=new myVector(E,A); 
+		//planar vectors
+		myVector AB=new myVector(A,B), AC=new myVector(A,C);
+		//find planar norm
+		myVector ACB = AC._cross(AB);
+		//project 
+		double t = (float)(EA._dot(ACB) / T._dot(ACB));		
+		return (myPoint._add(E,t,T));		
+	}//intersectPl
+	
+	/**
+	 * if ray from E along V intersects sphere at C with radius r, return t when intersection occurs
+	 * @param E
+	 * @param V
+	 * @param C
+	 * @param r
+	 * @return t value along vector V where first intersection occurs
+	 */
+	public double intersectPt(myPoint E, myVector V, myPoint C, double r) { 
+		myVector Vce = new myVector(C,E);
+		double ta = 2 * V._dot(V),
+				b = 2 * V._dot(Vce), 
+				c = Vce._dot(Vce) - (r*r),
+				radical = (b*b) - 2 *(ta) * c;		//b^2 - 4ac
+		if(radical < 0) return -1;
+		double sqrtRad = Math.sqrt(radical);
+		double t1 = (b + sqrtRad)/ta, t2 = (b - sqrtRad)/ta;
+		if (t1 < t2) {return t1 > 0 ? t1 : t2;}	
+		return t2 > 0 ? t2 : t1;	
+		//return ((t1 > 0) && (t2 > 0) ? MyMathUtils.min(t1, t2) : ((t1 < 0 ) ? ((t2 < 0 ) ?-1 : t2) : t1) );
+	}	
 	
 	private static final double third = 1.0/3.0;
+	/**
+	 * Find a random position in a sphere centered at 0 of radius rad, using spherical coords as rand axes
+	 * @param rad
+	 * @return
+	 */
+	public final myPointf getRandPosInSphere(double rad){ return getRandPosInSphere(rad, new myPointf());}
 	/**
 	 * Find a random position in a sphere centered at ctr of radius rad, using spherical coords as rand axes
 	 * @param rad
 	 * @param ctr
 	 * @return
 	 */
-	public final myPointf getRandPosInSphere(double rad){ return getRandPosInSphere(rad, new myPointf());}
 	public final myPointf getRandPosInSphere(double rad, myPointf ctr){
 		myPointf pos = new myPointf();
 		double u = ThreadLocalRandom.current().nextDouble(0,1),	
@@ -1724,12 +1768,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		return pos;
 	}
 	/**
+	 * Find a random position on a sphere's surface centered at 0 of radius rad, using spherical coords as rand axes
+	 * @param rad
+	 * @return
+	 */
+	public final myPointf getRandPosOnSphere(double rad){ return getRandPosOnSphere(rad, new myPointf());}
+	/**
 	 * Find a random position on a sphere's surface centered at ctr of radius rad, using spherical coords as rand axes
 	 * @param rad
 	 * @param ctr
 	 * @return
 	 */
-	public final myPointf getRandPosOnSphere(double rad){ return getRandPosOnSphere(rad, new myPointf());}
 	public final myPointf getRandPosOnSphere(double rad, myPointf ctr){
 		myPointf pos = new myPointf();
 		double 	cosTheta = ThreadLocalRandom.current().nextDouble(-1,1),

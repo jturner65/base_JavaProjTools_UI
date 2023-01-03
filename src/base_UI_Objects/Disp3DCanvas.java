@@ -7,27 +7,24 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 import base_UI_Objects.windowUI.base.Base_DispWindow;
-import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IRenderInterface;
 
 
 public class Disp3DCanvas {
 	public IRenderInterface p;
 	
 	public myPoint drawEyeLoc,													//rx,ry,dz coords where eye was when drawing - set when first drawing and return eye to this location whenever trying to draw again - rx,ry,dz
-		scrCtrInWorld,mseLoc, eyeInWorld, oldMseLoc, distMsePt;//mseIn3DBox;
-	private myPoint dfCtr;											//mouse location projected onto current drawing canvas
+		scrCtrInWorld,mseLoc, eyeInWorld, oldMseLoc, distMsePt;					//mseIn3DBox;
+	private myPoint dfCtr;														//mouse location projected onto current drawing canvas
 
-	private myEdge camEdge;												//denotes line perp to cam eye, to use for intersections for mouse selection
 	private final float canvasDim = 15000,
-			canvasDimOvSqrt2 = MyMathUtils.INV_SQRT_2_F * canvasDim; 									//canvas dimension for "virtual" 3d		
-	private myPoint[] canvas3D;											//3d plane, normal to camera eye, to be used for drawing - need to be in "view space" not in "world space", so that if camera moves they don't change
-	private myVector eyeToMse,											//eye to 2d mouse location 
+			canvasDimOvSqrt2 = MyMathUtils.INV_SQRT_2_F * canvasDim; 			//canvas dimension for "virtual" 3d		
+	private myPoint[] canvas3D;													//3d plane, normal to camera eye, to be used for drawing - need to be in "view space" not in "world space", so that if camera moves they don't change
+	private myVector eyeToMse,													//eye to 2d mouse location 
 					eyeToCtr,													//vector from eye to center of cube, to be used to determine which panels of bounding box to show or hide
 					drawSNorm;													//current normal of viewport/screen
 		
-	private int viewDimW2, viewDimH2;
-	private int viewDimW, viewDimH;
-	//private float curDepth;
+	private final int viewDimW, viewDimH,viewDimW2, viewDimH2;
 	
 	private int[] mseFillClr;
 	
@@ -37,12 +34,10 @@ public class Disp3DCanvas {
 		p = (my_procApplet)_p;
 		AppMgr = _AppMgr;
 		viewDimW = w; viewDimH = h;
-		//curDepth = -1;		
+		viewDimW2 = viewDimW/2; viewDimH2 = viewDimH/2;
 		mseFillClr = new int[] {0,0,0,255};
 		initCanvas();
 	}
-	
-	public void setDims(int w, int h) {		viewDimW = w; viewDimH = h;	}
 	
 	private void initCanvas(){
 		canvas3D = new myPoint[4];		//3 points to define canvas
@@ -55,19 +50,20 @@ public class Disp3DCanvas {
 		oldMseLoc  = new myPoint();
 		distMsePt = new myPoint();
 		dfCtr = new myPoint();											//mouse location projected onto current drawing canvas
-		camEdge = new myEdge();	
 		eyeToMse = new myVector();		
 		eyeToCtr = new myVector();	
-		//eyeTodfCtr = new myVector();
 		drawSNorm = new myVector();	
 		buildCanvas();
 	}
 
-	//find points to define plane normal to camera eye, at set distance from camera, to use drawing canvas 	
+	/**
+	 * find points to define plane normal to camera eye, at set distance from camera, to use drawing canvas 	
+	 */
 	public void buildCanvas(){	
 		float rawCtrDepth = p.getDepth(viewDimW2, viewDimH2);
 		myPoint rawScrCtrInWorld = p.getWorldLoc(viewDimW2, viewDimH2,rawCtrDepth);		
-		myVector A = new myVector(rawScrCtrInWorld,  p.getWorldLoc(viewDimW-10, 10,rawCtrDepth)),	B = new myVector(rawScrCtrInWorld,  p.getWorldLoc(viewDimW-10, viewDimH-10,rawCtrDepth));	//ctr to upper right, ctr to lower right		
+		myVector A = new myVector(rawScrCtrInWorld,  p.getWorldLoc(viewDimW-10, 10,rawCtrDepth)),	
+				B = new myVector(rawScrCtrInWorld,  p.getWorldLoc(viewDimW-10, viewDimH-10,rawCtrDepth));	//ctr to upper right, ctr to lower right		
 		drawSNorm = myVector._cross(A,B)._normalize();
 		//build plane using norm - have canvas go through canvas ctr in 3d
 		myVector planeTan = myVector._cross(drawSNorm, myVector._normalize(new myVector(drawSNorm.x+10000,drawSNorm.y+10,drawSNorm.z+10)))._normalize();			//result of vector crossed with normal will be in plane described by normal
@@ -75,7 +71,8 @@ public class Disp3DCanvas {
      	//myPoint lastPt = p.P(myPoint._add(new myPoint(), canvasDimOvSqrt2, planeTan));
      	myPoint lastPt = new myPoint(new myPoint(), canvasDimOvSqrt2, planeTan);
      	planeTan = myVector._rotAroundAxis(planeTan, drawSNorm, MyMathUtils.THREE_QTR_PI);
-		for(int i =0;i<canvas3D.length;++i){		//build invisible canvas to draw upon
+		for(int i =0;i<canvas3D.length;++i){		
+			//build invisible canvas to draw upon
      		canvas3D[i].set(myPoint._add(lastPt, canvasDim, planeTan));
      		//planeTan = myVector._cross(planeTan, drawSNorm)._normalize();												//this effectively rotates around center point by 90 degrees -builds a square
      		planeTan = myVector._rotAroundAxis(planeTan, drawSNorm);
@@ -84,13 +81,13 @@ public class Disp3DCanvas {
      	}
 
 		//normal to canvas through eye moved far behind viewer
-		eyeInWorld =p.getWorldLoc(viewDimW2, viewDimH2,-.00001f);
+		eyeInWorld = p.getWorldLoc(viewDimW2, viewDimH2,-.00001f);
 		//eyeInWorld =myPoint._add(rawScrCtrInWorld, myPoint._dist( p.pick(0,0,-1), rawScrCtrInWorld), drawSNorm);								//location of "eye" in world space
 		eyeToCtr.set(eyeInWorld, rawScrCtrInWorld);
 		scrCtrInWorld = getPlInterSect(rawScrCtrInWorld, myVector._normalize(eyeToCtr));
 		
 		float ctrDepth = p.getSceenZ((float)scrCtrInWorld.x, (float)scrCtrInWorld.y, (float)scrCtrInWorld.z);
-		mseLoc = MouseScr(ctrDepth);	
+		mseLoc = mseScr(ctrDepth);	
 		eyeToMse.set(eyeInWorld, mseLoc);		//unit vector in world coords of "eye" to mouse location
 		eyeToMse._normalize();
 		oldMseLoc.set(dfCtr);
@@ -101,36 +98,34 @@ public class Disp3DCanvas {
 	
 	public myVector getDrawSNorm() {return drawSNorm;}
 	public myVectorf getDrawSNorm_f() {return new myVectorf(drawSNorm);}
-	public int getViewDimW() {return viewDimW;}
-	public int getViewDimH() {return viewDimH;}
 	public myPoint[] getCanvasCorners() {return canvas3D;}
 	
 	public myVector getEyeToMse() {return eyeToMse;}
 	public myVectorf getEyeToMse_f() {return new myVectorf(eyeToMse.x,eyeToMse.y,eyeToMse.z);}
-	
-	//return a unit vector from the screen location of the mouse pointer in the world to the reticle location in the world - for ray casting onto objects the mouse is over
-	public myVector getMse2DtoMse3DinWorld(myPoint glbTrans){
-		int[] mse = p.getMouse_Raw_Int();
-		myVector res = new myVector(p.getWorldLoc(mse[0], mse[1],-.00001f),getMseLoc(glbTrans) );		
-		return res._normalize();
-	}
-	//gets a unit vector that is up in the world relative to eye position and view direction
-	public myVector getUScrUpInWorld(){			myVector res = new myVector(p.getWorldLoc(viewDimW2, viewDimH2,-.00001f),p.getWorldLoc(viewDimW2, viewDimH,-.00001f));			return res._normalize();}	
-	public myVector getUScrRightInWorld(){		myVector res = new myVector(p.getWorldLoc(viewDimW2, viewDimH2,-.00001f),p.getWorldLoc(viewDimW, viewDimH2,-.00001f));	return res._normalize();	}
-	public myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(p.getWorldLoc(viewDimW2, viewDimH2,-.00001f),p.getWorldLoc(viewDimW2,viewDimH,-.00001f));			return res._normalize();}	
-	public myVectorf getUScrRightInWorldf(){	myVectorf res = new myVectorf(p.getWorldLoc(viewDimW2, viewDimH2,-.00001f),p.getWorldLoc(viewDimW, viewDimH2,-.00001f));	return res._normalize();}
-	
-	//find pt in drawing plane that corresponds with point and camera eye normal
+
+	/**
+	 * find pt in canvas drawing plane that corresponds with point and camera eye normal
+	 * @param pt point to find intersection of
+	 * @param unitT camera eye normal
+	 * @return
+	 */
 	public myPoint getPlInterSect(myPoint pt, myVector unitT){
-		myPoint dctr = new myPoint(0,0,0);	//actual click location on visible plane
-		 // if ray from E along T intersects triangle (A,B,C), return true and set proposal to the intersection point
-		AppMgr.intersectPl(pt, unitT, canvas3D[0],canvas3D[1],canvas3D[2],  dctr);//find point where mouse ray intersects canvas
-		return dctr;		
+		 // return intersection point in canvas plane
+		return AppMgr.intersectPl(pt, unitT, canvas3D[0],canvas3D[1],canvas3D[2]);		
 	}//getPlInterSect	
+
+	/**
+	 * Mouse location in world at given depth
+	 * @param depth
+	 * @return
+	 */
+	private myPoint mseScr(float depth) {
+		int[] mse = p.getMouse_Raw_Int();
+		return p.getWorldLoc(mse[0],mse[1],depth);
+	} 
 	
 	public myPoint getMseLoc(){return new myPoint(dfCtr);	}
 	public myPointf getMseLoc_f(){return new myPointf(dfCtr.x,dfCtr.y,dfCtr.z);	}
-	public myPoint getEyeLoc(){return p.getWorldLoc(viewDimW2, viewDimH2,-.00001f);	}
 	public myPoint getOldMseLoc(){return new myPoint(oldMseLoc);	}	
 	public myVector getMseDragVec(){return new myVector(oldMseLoc,dfCtr);}
 	
@@ -140,7 +135,6 @@ public class Disp3DCanvas {
 	public myPointf getTransMseLoc(myPointf glbTrans){return myPointf._add(dfCtr, glbTrans);	}
 	//dist from mouse to passed location
 	public float getMseDist(myPointf glbTrans){return new myVectorf(dfCtr, glbTrans).magn;	}
-	//public myPoint getEyeLoc(myPoint glbTrans){return myPoint._sub(getEyeLoc(), glbTrans);	}
 	public myPoint getOldMseLoc(myPoint glbTrans){return myPoint._sub(oldMseLoc, glbTrans);	}
 	
 	//get normalized ray from eye loc to mouse loc
@@ -179,10 +173,7 @@ public class Disp3DCanvas {
 //		//p.outStr2Scr("Depth Buffer val : "+String.format("%.4f",depthValue)+ " for mx,my : ("+mX+","+mY+") and world loc : " + pickLoc.toStrBrf());
 //		return pickLoc;
 //	}		
-	//hold depth when clicked
-	public myPoint MouseScr(float depth) {
-		int[] mse = p.getMouse_Raw_Int();
-		return p.getWorldLoc(mse[0],mse[1],depth);} 	
+	
 
 	private final void drawText(Base_DispWindow win, String str, float x, float y, float z){
 		p.pushMatState();
@@ -198,36 +189,19 @@ public class Disp3DCanvas {
 		p.pushMatState();
 			p.setStrokeWt(1f);
 			p.setStroke(255, 0,255, 255);
-			//camEdge.set(1000, eyeToMse, dfCtr);		//build edge through mouse point normal to camera eye	
-			camEdge.set(eyeInWorld, dfCtr);		//build edge through mouse point and eye location in world	
-			//p.line(camEdge.a,camEdge.b);
-			camEdge.drawMe(p);
+			//draw line through mouse point and eye location in world	
+			p.drawLine(eyeInWorld, dfCtr);
 			p.translate(dfCtr);
 			//project mouse point on bounding box walls if appropriate
 			if(projOnBox){AppMgr.drawProjOnBox(dfCtr);}
 			Base_DispWindow.AppMgr.drawAxes(10000,1f, myPoint.ZEROPT, 100, true);//
-			//draw intercept with box
+			//draw center point
 			p.showPtAsSphere(myPointf.ZEROPT,3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
 			drawText(win, ""+dfCtr+ "|fr:"+p.getFrameRate(),4.0f, 15.0f, 4.0f);
-			p.scale(1.5f,1.5f,1.5f);
+			//p.scale(1.5f,1.5f,1.5f);
 			//drawText(""+text_value_at_Cursor,4, -8, 4,0);getMseLoc(sceneCtrVals[sceneIDX])
 			p.popMatState();			
 	}//drawMseEdge		
-}
+}//class Disp3DCanvas
 
 
-class myEdge {
-	public myPoint a, b;
-
-	public myEdge(){this(new myPoint(0,0,0),new myPoint(0,0,0));}
-	public myEdge(myPoint _a, myPoint _b){a=new myPoint(_a); b=new myPoint(_b);}
-	public void set(float d, myVector dir, myPoint _p){	set( myPoint._add(_p,-d,new myVector(dir)), myPoint._add(_p,d,new myVector(dir)));} 
-	public void set(myPoint _a, myPoint _b){a=new myPoint(_a); b=new myPoint(_b);}
-	public myVector v(){return new myVector(b.x-a.x, b.y-a.y, b.z-a.z);}			//vector from a to b
-	public myVector dir(){return v()._normalize();}
-	public double len(){return  myPoint._dist(a,b);}
-	public double distFromPt(myPoint P) {return myVector._det3(dir(),new myVector(a,P)); };
-	public void drawMe(IRenderInterface p){p.drawLine(a,b); }
-	public String toString(){return "a:"+a+" to b:"+b+" len:"+len();}
-
-}//myEdge
