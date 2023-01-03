@@ -3,7 +3,7 @@ package base_UI_Objects.windowUI.drawnTrajectories.base;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;

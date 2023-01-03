@@ -1,7 +1,7 @@
 package base_UI_Objects.colorRamp;
 
-import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Render_Interface.IRenderInterface;
 
 public class ColorGradient{
 	public IRenderInterface pa;

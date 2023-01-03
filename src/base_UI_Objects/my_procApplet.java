@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -25,7 +25,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	public static GUI_AppManager AppMgr;
 		
-	public final float frate = 120;			//frame rate - # of playback updates per second
+	public final float frate = 120;			//target frame rate - # of playback updates per second
 	
 	//animation control variables	
 	public final float maxAnimCntr = MyMathUtils.PI_F*1000.0f, baseAnimSpd = 1.0f;
