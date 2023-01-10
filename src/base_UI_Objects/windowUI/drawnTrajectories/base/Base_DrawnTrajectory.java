@@ -7,7 +7,6 @@ import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 
 public abstract class Base_DrawnTrajectory {
@@ -90,7 +89,7 @@ public abstract class Base_DrawnTrajectory {
 	
 	public Base_DrawnTrajectory(Base_DispWindow _win, myVector _canvNorm) {
 		win =_win;
-		if(wScale == -1) {			wScale = GUI_AppManager.pa.getFrameRate()/5.0f;		}
+		if(wScale == -1) {			wScale = Base_DispWindow.pa.getFrameRate()/5.0f;		}
 		canvasNorm = _canvNorm;		//c.drawSNorm  draw surface normal
 		initFlags();
 		lnI_Typ = linear_int;

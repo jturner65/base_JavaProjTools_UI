@@ -21,7 +21,7 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.sidebar.SidebarMenu;
 import base_UI_Objects.windowUI.sidebar.SidebarMenuBtnConfig;
-import base_Utils_Objects.Java_AppManager;
+import base_Utils_Objects.AppManager.Java_AppManager;
 
 
 /**
@@ -33,7 +33,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * rendering engine interface, providing expected methods.
 	 */
-	public static IRenderInterface pa = null;
+	protected static IRenderInterface pa = null;
 	/**
 	 * 3d interaction stuff and mouse tracking
 	 */

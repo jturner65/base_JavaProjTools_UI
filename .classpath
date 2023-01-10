@@ -7,7 +7,7 @@
 	<classpathentry kind="lib" path="base_JavaProjTools_Utils.jar"/>
 	<classpathentry kind="lib" path="argparse4j-0.8.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="argparse4j-0.8.1.jar"/>
-	<classpathentry kind="lib" path="processing/core.jar"/>
+	<classpathentry kind="lib" path="processing/core.jar" sourcepath="E:/Eclipse Workspace/eclipse workspace/processing4/core"/>
 	<classpathentry kind="lib" path="processing/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="processing/gluegen-rt-natives-linux-aarch64.jar"/>
 	<classpathentry kind="lib" path="processing/gluegen-rt-natives-linux-amd64.jar"/>
