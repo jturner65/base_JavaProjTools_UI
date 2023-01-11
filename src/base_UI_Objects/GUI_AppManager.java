@@ -708,10 +708,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		String res = System.getProperty("user.dir");
 		return res;
 	}
-	
-	protected abstract String getPrjNmLong();
-	protected abstract String getPrjNmShrt();
-	
+
 	/**
 	 * get difference between frames and set both glbl times
 	 * @return
