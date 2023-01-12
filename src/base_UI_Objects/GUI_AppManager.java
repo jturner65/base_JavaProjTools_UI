@@ -272,10 +272,24 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _appMgr
 	 * @param passedArgs
 	 */
-	public static <T extends GUI_AppManager> void invokeProcessingMain(T _appMgr, String[] passedArgs) {
-		Java_AppManager.processArgs(_appMgr,passedArgs);
-		my_procApplet._invokedMain(_appMgr, passedArgs);
+	public static <T extends GUI_AppManager> void invokeProcessingMain(T _appMgr, String[] _passedArgs) {
+		_appMgr.handleRuntimeArgs(_passedArgs);
+		my_procApplet._invokedMain(_appMgr, _passedArgs);
 	}
+	
+	/**
+	 * Build runtime argument map, either from command-line arguments (for console applications) or from specifications in UI-based instancing AppManager
+	 * @param passedArgs
+	 */	
+	@Override
+	protected final void handleRuntimeArgs(String[] passedArgs) {
+		TreeMap<String, Object> rawArgsMap = new TreeMap<String, Object>();
+		//just populate argsMap with values from passed args
+		int argCount = 0;
+		for(String arg : passedArgs) {	rawArgsMap.put("Arg_"+argCount++, arg);	}
+		//possibly override arguments from arg parser within application
+        argsMap = setRuntimeArgsVals(rawArgsMap);
+    }//handleRuntimeArgs
 	
 	public void setIRenderInterface(IRenderInterface _pa) {
 		if (null == pa) {pa=_pa;}
