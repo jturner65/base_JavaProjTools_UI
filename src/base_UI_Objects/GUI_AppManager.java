@@ -21,7 +21,7 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.sidebar.SidebarMenu;
 import base_UI_Objects.windowUI.sidebar.SidebarMenuBtnConfig;
-import base_Utils_Objects.AppManager.Java_AppManager;
+import base_Utils_Objects.appManager.Java_AppManager;
 
 
 /**
@@ -30,6 +30,8 @@ import base_Utils_Objects.AppManager.Java_AppManager;
  *
  */
 public abstract class GUI_AppManager extends Java_AppManager {
+	//////////////////////////////////
+	// Rendering and viewing-based values
 	/**
 	 * rendering engine interface, providing expected methods.
 	 */
@@ -52,28 +54,56 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * Width and height of application window
 	 */
 	private int viewWidth, viewHeight, viewWidthHalf, viewHeightHalf;
+	
+	/**
+	 * Aspect ratio for perspective display
+	 */
+	protected float aspectRatio;
+	
+	/**
+	 * counter for simulation cycles	
+	 */
+	protected int simCycles;
+	
+	/**
+	 * 9 element array holding camera loc, target, and orientation
+	 */
+	public float[] camVals;	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time and date
 	
-	//time that this application started
-	protected int glblStartSimFrameTime,			//begin of draw
-			glblLastSimFrameTime,					//begin of last draw
-			glblStartProgTime;					//start of program	
+	/**
+	 * time that this application started
+	 */
+	protected int glblStartSimFrameTime,			//begin of draw(sim)
+			glblLastSimFrameTime;					//begin of last draw(sim)
 	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Display Window-based values
 	/**
 	 * max ratio of width to height to use for application window initialization
 	 */
 	public final float maxWinRatio =  1.77777778f;	
 	
-	//individual display/HUD windows for gui/user interaction
-	protected Base_DispWindow[] dispWinFrames = new Base_DispWindow[0] ;
-	//set in instancing class - must be > 1
+	/**
+	 * individual display/HUD windows for gui/user interaction
+	 */
+	protected Base_DispWindow[] dispWinFrames = new Base_DispWindow[0];
+	/**
+	 * set in instancing class - must be > 1
+	 */
 	protected int numDispWins;
-	//always idx 0 - first window is always right side menu
+	/**
+	 * always idx 0 - first window is always right side menu
+	 */
 	public static final int dispMenuIDX = 0;	
-	//which Base_DispWindow currently has focus
+	/**
+	 * which Base_DispWindow currently has focus
+	 */
 	public int curFocusWin;		
-	//need 1 per display window
+	/**
+	 * need 1 per display window
+	 */
 	public String[] winTitles,winDescr;
 
 	//whether or not the display windows will accept a drawn trajectory
@@ -92,24 +122,36 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public int[][] winTrajStrkClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window
 	
 
-	//specify windows that cannot be shown simultaneously here and their flags
+	protected float menuWidth;			
+	//side menu is 15% of screen grid2D_X, 
+	protected final float menuWidthMult = .15f;
+	protected float hideWinWidth;
+	protected final float hideWinWidthMult = .03f;
+	protected float hideWinHeight;
+	protected final float hideWinHeightMult = .05f;
+
+	/**
+	 * specify windows that cannot be shown simultaneously here and their flags
+	 */
 	public int[] winFlagsXOR, winDispIdxXOR;
 	
-	//unblocked window dimensions - location and dim of window if window is open\closed
+	/**
+	 * unblocked window dimensions - location and dim of window if window is open\closed
+	 */
 	public float[][] winRectDimOpen, winRectDimClose;
 
-	//9 element array holding camera loc, target, and orientation
-	public float[] camVals;		
-		
-	// counter for simulation cycles	
-	protected int simCycles;													
+	/**
+	 * flags explicitly pertaining to window visibility.  1 flag per window in application - flags defined in child class
+	 */
+	private int[] _visFlags;		
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	//visualization variables
-	//flags explicitly pertaining to window visibility
-	private int[] _visFlags;		
-	// boolean flags used to control various elements of the program 
-	private int[] baseFlags;
+	// program control variables
+
+	/**
+	 * flags used to control various elements of the entire application.
+	 */
+	private int[] _baseFlags;
 	//dev/debug flags
 	private static final int 
 			debugMode 			= 0,			//whether we are in debug mode or not	
@@ -127,7 +169,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			runSim				= 10,			//run simulation
 			singleStep			= 11,			//run single sim step
 			showRtSideMenu		= 12,			//display the right side info menu for the current window, if it supports that display
-			flipDrawnTraj  		= 13,			//whether or not to flip the direction of the drawn trajectory
+			flipDrawnTraj  		= 13,			//whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
 			clearBKG 			= 14;			//whether or not background should be cleared for every draw.  defaults to true
 	public final int numBaseFlags = 15;
 	
@@ -167,9 +209,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			"Reverse Drawn Trajectory",
 			"Clear Background"
 			};
+	/**
+	 * Colors to use to display flags
+	 */
 	private int[][] pFlagColors;
 	
-	//flags to actually display in menu as clickable text labels - order does matter
+	/**
+	 * flags to actually display in menu as clickable text labels - order does matter
+	 */
 	private List<Integer> flagsToShow = Arrays.asList( 
 		debugMode, 			
 		saveAnim,
@@ -180,6 +227,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	private int numFlagsToShow = flagsToShow.size();
 	
+	/**
+	 * Display UI indicator that varius mod keys are pressed
+	 */
 	private final List<Integer> stateFlagsToShow = Arrays.asList( 
 		shiftKeyPressed,			//shift pressed
 		altKeyPressed,				//alt pressed
@@ -188,7 +238,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		drawing, 					//currently drawing
 		modView	 					//shift+mouse click+mouse move being used to modify the view					
 			);
-	public final int numStFlagsToShow = stateFlagsToShow.size();	
+	public final int numStFlagsToShow = stateFlagsToShow.size();
+	
+	
 	private final String[] StateBoolNames = {"Shift","Alt","Cntl","Click", "Draw","View"};
 	//multiplier for displacement to display text label for stateboolnames
 	private final float[] StrWdMult = new float[]{-3.0f,-3.0f,-3.0f,-3.2f,-3.5f,-2.5f};
@@ -232,17 +284,16 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }
 	};
 
-	protected float menuWidth;			
-	//side menu is 15% of screen grid2D_X, 
-	protected final float menuWidthMult = .15f;
-	protected float hideWinWidth;
-	protected final float hideWinWidthMult = .03f;
-	protected float hideWinHeight;
-	protected final float hideWinHeightMult = .05f;
-
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// file IO variables
 	protected final String exeDir = Paths.get(".").toAbsolutePath().toString();
 	//file location of current executable
 	protected File currFileIOLoc = Paths.get(".").toAbsolutePath().toFile();
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// mouse control variables
+
 	//mouse wheel sensitivity
 	public static final float mouseWhlSens = 1.0f;
 	// distance within which to check if clicked from a point
@@ -291,7 +342,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         argsMap = setRuntimeArgsVals(rawArgsMap);
     }//handleRuntimeArgs
 	
-	public void setIRenderInterface(IRenderInterface _pa) {
+	public final void setIRenderInterface(IRenderInterface _pa) {
 		if (null == pa) {pa=_pa;}
 		pa.initRenderInterface();
 	}	
@@ -340,29 +391,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param width
 	 * @param height
 	 */
-	public void firstInit(int width, int height) {
+	public final void setupAppInit(int width, int height) {
 		window = pa.getGLWindow();
-		viewWidth = width;
-		viewHeight = height;
-		viewWidthHalf = viewWidth/2; 
-		viewHeightHalf = viewHeight/2;
-		msSclX = MyMathUtils.PI_F/viewWidth;
-		msSclY = MyMathUtils.PI_F/viewHeight;
 		//init internal state flags structure
 		initBaseFlags();
 		
-		menuWidth = viewWidth * menuWidthMult;						//grid2D_X of menu region	
-		hideWinWidth = viewWidth * hideWinWidthMult;				//dims for hidden windows
-		hideWinHeight = viewHeight * hideWinHeightMult;
+		setAppWindowDims(width, height);
 		//build canvas
 		canvas = new Disp3DCanvas(this, pa, viewWidth, viewHeight);	
-	}
-	
-	/**
-	 * called once, after windows are built from IRenderInteface object initVisOnce()
-	 */
-	public void endInit() {		
-		initMainFlags_Indiv();
+		
+		//called after windows are built
+		initBaseFlags_Indiv();
 		//instancing class version
 		initAllDispWindows();
 
@@ -376,13 +415,49 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//visibility flags corresponding to windows
 		initVisFlags();
 		
-		// set cam vals
-		camVals = new float[]{0, 0, (float) ((pa.getHeight()/2.0) / Math.tan(MyMathUtils.PI/6.0)), 0, 0, 0, 0,1,0};		
 		// set milli time tracking
-		glblStartProgTime = timeSinceStart();
-		glblStartSimFrameTime = glblStartProgTime;
-		glblLastSimFrameTime =  glblStartProgTime;	
-	}
+		glblStartSimFrameTime = timeSinceStart();
+		glblLastSimFrameTime =  glblStartSimFrameTime;			
+	}//setupAppInit
+	
+	/**
+	 * Set the application window width and height, on init or resize (TODO)
+	 * @param width
+	 * @param height
+	 */
+	public final void setAppWindowDims(int width, int height) {
+		viewWidth = width;
+		viewHeight = height;
+		
+		System.out.println("Base applet width : " + viewWidth + " | height : " +  viewHeight);
+		
+		viewWidthHalf = viewWidth/2; 
+		viewHeightHalf = viewHeight/2;
+		
+		aspectRatio = viewWidth/(1.0f*viewHeight);
+		msSclX = MyMathUtils.PI_F/viewWidth;
+		msSclY = MyMathUtils.PI_F/viewHeight;
+
+		menuWidth = viewWidth * menuWidthMult;						//grid2D_X of menu region	
+		hideWinWidth = viewWidth * hideWinWidthMult;				//dims for hidden windows
+		hideWinHeight = viewHeight * hideWinHeightMult;
+
+		// set cam vals
+		camVals = new float[]{0, 0, (float) (viewHeightHalf / Math.tan(MyMathUtils.PI/6.0)), 0, 0, 0, 0,1,0};		
+
+	}//setAppWindowWidth
+	
+	/**
+	 * Retrieves reasonable default window open dims
+	 * @return
+	 */
+	public float[] getDefaultWinDimOpen() {return new float[]{menuWidth, 0, viewWidth-menuWidth,  viewHeight};}
+	
+	/**
+	 * Retrieves reasonable default window closed dims
+	 * @return
+	 */
+	public float[] getDefaultWinDimClosed() {return new float[]{menuWidth, 0, hideWinWidth,  viewHeight};}
 	
 	/**
 	 * Called in pre-draw initial setup, before first init
@@ -398,14 +473,16 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * this is called to determine which main flags to display in the window
 	 */
-	protected abstract void initMainFlags_Indiv();
+	protected abstract void initBaseFlags_Indiv();
 	
 	/**
 	 * this is called to build all the Base_DispWindows in the instancing class
 	 */
 	protected abstract void initAllDispWindows();
 
-	//1 time initialization of programmatic things that won't change
+	/**
+	 * 1 time initialization of programmatic things that won't change
+	 */
 	public final void initOnce() {
 		//1-time init for program and windows
 		initOnce_Indiv();
@@ -418,14 +495,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 	protected abstract void initOnce_Indiv();	
 	
-		//called every time re-initialized
-	public final void initVisProg(){	
+	//called every time re-initialized
+	private final void initVisProg(){	
 		for (int i=1; i<dispWinFrames.length;++i) {
 			dispWinFrames[i].reInitInfoStr();
 		}
-		initVisProg_Indiv();
 	}
-	protected abstract void initVisProg_Indiv();
 		//called every time re-initialized
 	public final void initProgram() {
 		initVisProg();				//always first
@@ -440,7 +515,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _winTtls
 	 * @param _winDescs
 	 */
-	public void initWins(int _numWins, String[] _winTtls, String[] _winDescs) {
+	public final void initWins(int _numWins, String[] _winTtls, String[] _winDescs) {
 		numDispWins = _numWins;	//must be set here!
 		winRectDimOpen = new float[numDispWins][];
 		winRectDimClose = new float[numDispWins][];
@@ -509,13 +584,16 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
 	}
 	
-	//initialize menu window
-	public void buildInitMenuWin(int _showUIMenuIDX) {
+	/**
+	 * initialize menu window
+	 * @param _showUIMenuIDX
+	 */
+	public final void buildInitMenuWin() {
 		//init sidebar menu vals
 		for(int i=0;i<dispWinFlags[dispMenuIDX].length;++i) {dispWinFlags[dispMenuIDX][i] = false;}
 		//set up dims for menu
-		winRectDimOpen[dispMenuIDX] =  new float[]{0,0, menuWidth, pa.getHeight()};
-		winRectDimClose[dispMenuIDX] =  new float[]{0,0, hideWinWidth, pa.getHeight()};
+		winRectDimOpen[dispMenuIDX] =  new float[]{0,0, menuWidth, viewHeight};
+		winRectDimClose[dispMenuIDX] =  new float[]{0,0, hideWinWidth, viewHeight};
 		
 		winFillClrs[dispMenuIDX] = new int[]{255,255,255,255};
 		winStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};
@@ -538,7 +616,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _trajFill Trajetory's fill color to use for dispWindow
 	 * @param _trajStrk Trajetory's stroke color to use for dispWindow
 	 */
-	public void setInitDispWinVals(int _winIDX, float[] _dimOpen, float[] _dimClosed, boolean[] _dispFlags, int[] _fill, int[] _strk, int[] _trajFill, int[] _trajStrk) {
+	public final void setInitDispWinVals(int _winIDX, float[] _dimOpen, float[] _dimClosed, boolean[] _dispFlags, int[] _fill, int[] _strk, int[] _trajFill, int[] _trajStrk) {
 		winRectDimOpen[_winIDX] = new float[_dimOpen.length];
 		System.arraycopy(_dimOpen, 0, winRectDimOpen[_winIDX], 0, _dimOpen.length);
 		winRectDimClose[_winIDX] = new float[_dimClosed.length];
@@ -674,7 +752,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			((SidebarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
 	}//setMenuBtnState	
 	
-	public void loadFromFile(File file){
+	public final void loadFromFile(File file){
 		if (file == null) {
 			System.out.println("AppMgr :: loadFromFile ::Load was cancelled.");
 		    return;
@@ -685,7 +763,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	}//loadFromFile
 	
-	public void saveToFile(File file){
+	public final void saveToFile(File file){
 		if (file == null) {
 			System.out.println("AppMgr :: saveToFile ::Save was cancelled.");
 		    return;
@@ -771,7 +849,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * setup 
 	 */
 	protected void drawSetup(){
-		pa.setPerspective(MyMathUtils.THIRD_PI_F, (1.0f*pa.getWidth())/(1.0f*pa.getHeight()), .5f, camVals[2]*100.0f);
+		pa.setPerspective(MyMathUtils.THIRD_PI_F, aspectRatio, .5f, camVals[2]*100.0f);
 		pa.enableLights(); 	
 		dispWinFrames[curFocusWin].drawSetupWin(camVals);
 	}//drawSetup
@@ -871,7 +949,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param xOffHalf
 	 * @param yOffHalf
 	 */
-	public void dispMenuText(float xOffHalf, float yOffHalf) {
+	public final void dispMenuText(float xOffHalf, float yOffHalf) {
 		for(int idx =0; idx<numFlagsToShow; ++idx){
 		int i = flagsToShow.get(idx);
 			if(getBaseFlag(i) ){											dispMenuTxtLat(truePFlagNames[i],pFlagColors[i], true, xOffHalf,yOffHalf);			}
@@ -889,7 +967,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param xOff x-dim offset
 	 * @param yOff y-dim offset
 	 */
-	public void dispMenuTxtLat(String txt, int[] clrAra, boolean showSphere, float xOff, float yOff){
+	public final void dispMenuTxtLat(String txt, int[] clrAra, boolean showSphere, float xOff, float yOff){
 		pa.setFill(clrAra, 255); 
 		pa.translate(xOff,yOff);
 		if(showSphere){pa.setStroke(clrAra, 255);		pa.drawSphere(5);	} 
@@ -922,7 +1000,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * draw state booleans at top of screen and their state
 	 */
-	public void drawSideBarStateBools(float yOff){ //numStFlagsToShow
+	public final void drawSideBarStateBools(float yOff){ //numStFlagsToShow
 		pa.translate(110,10);
 		float xTrans = (int)((getMenuWidth()-100) / (1.0f*numStFlagsToShow));
 		for(int idx =0; idx<numStFlagsToShow; ++idx){
@@ -965,7 +1043,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param alpha alpha value for how dark/faint axes should be
 	 * @param centered whether axis should be centered at ctr or just in positive direction at ctr
 	 */
-	public void drawAxes(double len, float stW, myPoint ctr, int alpha, boolean centered){//axes using current global orientation
+	public final void drawAxes(double len, float stW, myPoint ctr, int alpha, boolean centered){//axes using current global orientation
 		pa.pushMatState();
 			pa.setStrokeWt(stW);
 			pa.setStroke(255,0,0,alpha);
@@ -975,17 +1053,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			else {		pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+len,ctr.y,ctr.z);pa.setStroke(0,255,0,alpha);pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y+len,ctr.z);pa.setStroke(0,0,255,alpha);pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y,ctr.z+len);}
 		pa.popMatState();	
 	}//	drawAxes
-	public void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int alpha, boolean drawVerts){//RGB -> XYZ axes
+	public final void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int alpha, boolean drawVerts){//RGB -> XYZ axes
 		pa.pushMatState();
 		if(drawVerts){
 			pa.showPtAsSphere(ctr,3,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
 			for(int i=0;i<_axis.length;++i){pa.showPtAsSphere(myPoint._add(ctr, myVector._mult(_axis[i],len)),3,5,IRenderInterface.rgbClrs[i],IRenderInterface.rgbClrs[i]);}
 		}
-		pa.setStrokeWt((float)stW);
+		pa.setStrokeWt(stW);
 		for(int i =0; i<3;++i){	pa.setColorValStroke(IRenderInterface.rgbClrs[i],255);	pa.showVec(ctr,len, _axis[i]);	}
 		pa.popMatState();	
 	}//	drawAxes
-	public void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int[] clr, boolean drawVerts){//all axes same color
+	public final void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int[] clr, boolean drawVerts){//all axes same color
 		pa.pushMatState();
 			if(drawVerts){
 				pa.showPtAsSphere(ctr,2,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
@@ -996,7 +1074,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		pa.popMatState();	
 	}//	drawAxes
 	
-	public void drawAxes(double len, double stW, myPoint ctr, myVectorf[] _axis, int alpha){
+	public final void drawAxes(double len, double stW, myPoint ctr, myVectorf[] _axis, int alpha){
 		pa.pushMatState();
 			pa.setStrokeWt((float)stW);
 			pa.setStroke(255,0,0,alpha);
@@ -1017,16 +1095,16 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final myVector getEyeToMse() {return canvas.getEyeToMse();}
 	public final myVectorf getEyeToMse_f() {return canvas.getEyeToMse_f();}
 
-	public myVector getUScrUpInWorld(){			myVector res = new myVector(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidthHalf, viewHeight,-.00001f));		return res._normalize();}	
-	public myVector getUScrRightInWorld(){		myVector res = new myVector(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));		return res._normalize();}
-	public myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidthHalf,viewHeight,-.00001f));	return res._normalize();}	
-	public myVectorf getUScrRightInWorldf(){	myVectorf res = new myVectorf(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));	return res._normalize();}
-	public myPoint getEyeLoc(){return pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f);	}
+	public final myVector getUScrUpInWorld(){			myVector res = new myVector(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidthHalf, viewHeight,-.00001f));		return res._normalize();}	
+	public final myVector getUScrRightInWorld(){		myVector res = new myVector(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));		return res._normalize();}
+	public final myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidthHalf,viewHeight,-.00001f));	return res._normalize();}	
+	public final myVectorf getUScrRightInWorldf(){	myVectorf res = new myVectorf(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));	return res._normalize();}
+	public final myPoint getEyeLoc(){return pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f);	}
 	
-	public myPoint getMseLoc(){			return canvas.getMseLoc();}
-	public myPointf getMseLoc_f(){		return canvas.getMseLoc_f();}
-	public myPoint getOldMseLoc(){		return canvas.getOldMseLoc();}	
-	public myVector getMseDragVec(){	return canvas.getMseDragVec();}
+	public final myPoint getMseLoc(){			return canvas.getMseLoc();}
+	public final myPointf getMseLoc_f(){		return canvas.getMseLoc_f();}
+	public final myPoint getOldMseLoc(){		return canvas.getOldMseLoc();}	
+	public final myVector getMseDragVec(){	return canvas.getMseDragVec();}
 	/**
 	 * return a unit vector from the screen location of the mouse pointer in the world to the reticle location in the world - for ray casting onto objects the mouse is over
 	 * @param glbTrans
@@ -1183,7 +1261,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		return new int[] {window.getX(),window.getY(), window.getWidth(), window.getHeight()};
 	}
 	
-	//set the height of each window that is above the popup window, to move up or down when it changes size
+	/**
+	 * set the height of each window that is above the popup window, to move up or down when it changes size
+	 * @param popUpWinIDX
+	 */
 	public final void setWinsHeight(int popUpWinIDX){
 		//skip first window - ui menu
 		for(int i =0;i<winDispIdxXOR.length;++i){		dispWinFrames[winDispIdxXOR[i]].setRectDimsY( dispWinFrames[popUpWinIDX].getRectDim(1));	}						
@@ -1255,7 +1336,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param key
 	 * @param keyCode
 	 */
-	public void sendKeyPressToWindows(char key, int keyCode) {
+	public final void sendKeyPressToWindows(char key, int keyCode) {
 		handleKeyPress(key,keyCode);	//handle all other (non-numeric) keys in instancing class
 		for(int i =0; i<numDispWins; ++i){dispWinFrames[i].setValueKeyPress(key, keyCode);}
 		setValueKeyPressed(true);
@@ -1331,14 +1412,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//c.clearMsDepth();
 	}//mouseReleased
 
-		
-	private void _setMainFlagToShow(int idx, boolean val) {
+	//determine primary application flags that are actually being displayed or not displayed
+	private final void _setBaseFlagToShow(int idx, boolean val) {
 		TreeMap<Integer, Integer> tmpMapOfFlags = new TreeMap<Integer, Integer>();
 		for(Integer flag : flagsToShow) {			tmpMapOfFlags.put(flag, 0);		}
 		if(val) {tmpMapOfFlags.put(idx, 0);	} else {tmpMapOfFlags.remove(idx);}
 		flagsToShow = new ArrayList<Integer>(tmpMapOfFlags.keySet());
 		numFlagsToShow = flagsToShow.size();
-	}
+	}//_setBaseFlagToShow
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// state and control flag handling
@@ -1399,11 +1480,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final boolean isShowingWindow(int i){return getVisFlag(i);}//showUIMenu is first flag of window showing flags, visFlags are defined in instancing class
 
 	//base class flags init
-	protected void initBaseFlags(){baseFlags = new int[1 + numBaseFlags/32];for(int i =0; i<numBaseFlags;++i){forceBaseFlag(i,false);}}		
+	protected final void initBaseFlags(){_baseFlags = new int[1 + numBaseFlags/32];for(int i =0; i<numBaseFlags;++i){forceBaseFlag(i,false);}}		
 	//set baseclass flags  //setBaseFlag(showIDX, 
 	protected final void setBaseFlag(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
-		baseFlags[flIDX] = (val ?  baseFlags[flIDX] | mask : baseFlags[flIDX] & ~mask);
+		_baseFlags[flIDX] = (val ?  _baseFlags[flIDX] | mask : _baseFlags[flIDX] & ~mask);
 		switch(idx){
 			case debugMode 			: { break;}//anything special for debugMode 	
 			case finalInitDone		: { break;}//flag to handle long setup - processing seems to time out if setup takes too long, so this will continue setup in the first draw loop
@@ -1424,17 +1505,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	//force base flag - bypass any window setting
 	private void forceBaseFlag(int idx, boolean val) {		
 		int flIDX = idx/32, mask = 1<<(idx%32);
-		baseFlags[flIDX] = (val ?  baseFlags[flIDX] | mask : baseFlags[flIDX] & ~mask);
+		_baseFlags[flIDX] = (val ?  _baseFlags[flIDX] | mask : _baseFlags[flIDX] & ~mask);
 	}
 	//get baseclass flag
-	protected final boolean getBaseFlag(int idx){int bitLoc = 1<<(idx%32);return (baseFlags[idx/32] & bitLoc) == bitLoc;}	
+	protected final boolean getBaseFlag(int idx){int bitLoc = 1<<(idx%32);return (_baseFlags[idx/32] & bitLoc) == bitLoc;}	
 	protected final void clearBaseFlags(int[] idxs){		for(int idx : idxs){setBaseFlag(idx,false);}	}	
 
 	/**
 	 * used to toggle the value of a flag
 	 * @param idx
 	 */
-	public void flipMainFlag(int i) {
+	public final void flipMainFlag(int i) {
 		int flagIDX = flagsToShow.get(i);
 		setBaseFlag(flagIDX,!getBaseFlag(flagIDX));
 	}	
@@ -1448,7 +1529,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * get number of main flags to display in right side menu
 	 * @return
 	 */
-	public int getNumFlagsToShow() {return numFlagsToShow;}
+	public final int getNumFlagsToShow() {return numFlagsToShow;}
 	
 	public final boolean isDebugMode() {return getBaseFlag(debugMode);}
 	
@@ -1491,11 +1572,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void toggleSaveAnim() {setBaseFlag(saveAnim, !getBaseFlag(saveAnim));}
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// flags to show
-	protected void setMainFlagToShow_debugMode(boolean val) {_setMainFlagToShow(debugMode, val);}
-	protected void setMainFlagToShow_saveAnim(boolean val) {_setMainFlagToShow(saveAnim, val);}
-	protected void setMainFlagToShow_runSim(boolean val) {_setMainFlagToShow(runSim, val);}
-	protected void setMainFlagToShow_singleStep(boolean val) {_setMainFlagToShow(singleStep, val);}
-	protected void setMainFlagToShow_showRtSideMenu(boolean val) {_setMainFlagToShow(showRtSideMenu, val);}	
+	protected final void setBaseFlagToShow_debugMode(boolean val) {_setBaseFlagToShow(debugMode, val);}
+	protected final void setBaseFlagToShow_saveAnim(boolean val) {_setBaseFlagToShow(saveAnim, val);}
+	protected final void setBaseFlagToShow_runSim(boolean val) {_setBaseFlagToShow(runSim, val);}
+	protected final void setBaseFlagToShow_singleStep(boolean val) {_setBaseFlagToShow(singleStep, val);}
+	protected final void setBaseFlagToShow_showRtSideMenu(boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}	
 	
 		
 	public abstract double clickValModMult();
@@ -1893,7 +1974,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * display the current memory setup
 	 */
-	public void checkMemorySetup() {
+	public final void checkMemorySetup() {
 		Runtime runtime = Runtime.getRuntime();  
 		long maxMem = runtime.maxMemory(), allocMem = runtime.totalMemory(), freeMem = runtime.freeMemory();
 		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Free memory: " + freeMem / 1024.0f);  
@@ -1919,7 +2000,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	//		  metal=0xffB5CCDE, 
 	//		  dgreen=0xff157901;
 	//set color based on passed point r= x, g = z, b=y
-	public void fillAndShowLineByRBGPt(myPoint p, float x,  float y, float w, float h){
+	public final void fillAndShowLineByRBGPt(myPoint p, float x,  float y, float w, float h){
 		pa.setFill((int)p.x,(int)p.y,(int)p.z, 255);
 		pa.setStroke((int)p.x,(int)p.y,(int)p.z, 255);
 		pa.drawRect(x,y,w,h);

@@ -107,13 +107,11 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		sphereDetail(4);
 		//potentially override setup variables on per-project basis
 		AppMgr.setup_Indiv();
-
-		//mouse scrolling scale
-		AppMgr.firstInit(width, height);
 		
 		System.out.println("Current sketchPath " + sketchPath());
-		//finalize windows
-		AppMgr.endInit();
+		
+		//Initialize application
+		AppMgr.setupAppInit(width, height);
 		
 		//call this in first draw loop?
 		AppMgr.initOnce();		

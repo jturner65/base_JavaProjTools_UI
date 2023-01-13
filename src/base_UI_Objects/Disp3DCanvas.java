@@ -24,7 +24,7 @@ public class Disp3DCanvas {
 					eyeToCtr,													//vector from eye to center of cube, to be used to determine which panels of bounding box to show or hide
 					drawSNorm;													//current normal of viewport/screen
 		
-	private final int viewDimW, viewDimH,viewDimW2, viewDimH2;
+	private int viewDimW, viewDimH,viewDimW2, viewDimH2;
 	
 	private int[] mseFillClr;
 	
@@ -33,13 +33,12 @@ public class Disp3DCanvas {
 	public Disp3DCanvas(GUI_AppManager _AppMgr, IRenderInterface _p, int w, int h) {
 		p = (my_procApplet)_p;
 		AppMgr = _AppMgr;
-		viewDimW = w; viewDimH = h;
-		viewDimW2 = viewDimW/2; viewDimH2 = viewDimH/2;
 		mseFillClr = new int[] {0,0,0,255};
-		initCanvas();
+		initCanvasVars();
+		setViewDim(w,h);
 	}
 	
-	private void initCanvas(){
+	private void initCanvasVars(){
 		canvas3D = new myPoint[4];		//3 points to define canvas
 		canvas3D[0]=new myPoint();canvas3D[1]=new myPoint();canvas3D[2]=new myPoint();canvas3D[3]=new myPoint();
 		drawEyeLoc = new myPoint(-1, -1, -1000);
@@ -53,6 +52,16 @@ public class Disp3DCanvas {
 		eyeToMse = new myVector();		
 		eyeToCtr = new myVector();	
 		drawSNorm = new myVector();	
+	}//initCanvasVars
+	
+	/**
+	 * Set the view dimensions and (re)build the canvas
+	 * @param w
+	 * @param h
+	 */
+	public void setViewDim(int w, int h) {
+		viewDimW = w; viewDimH = h;
+		viewDimW2 = viewDimW/2; viewDimH2 = viewDimH/2;		
 		buildCanvas();
 	}
 

@@ -282,13 +282,25 @@ public abstract class Base_DispWindow {
 	}//buildUIUpdateStruct
 
 	/**
-	 * This will check if value is different than previous value, and if so will change it
-	 * @param idx
-	 * @param val
-	 * @return whether new value was set
+	 * This will check if boolean value is different than previous value, and if so will change it
+	 * @param idx of value
+	 * @param val value to verify
+	 * @return whether new value was modified
 	 */
 	protected final boolean checkAndSetBoolValue(int idx, boolean value) {return uiUpdateData.checkAndSetBoolValue(idx, value);}
+	/**
+	 * This will check if Integer value is different than previous value, and if so will change it
+	 * @param idx of value
+	 * @param val value to verify
+	 * @return whether new value was modified
+	 */
 	protected final boolean checkAndSetIntVal(int idx, int value) {return uiUpdateData.checkAndSetIntVal(idx, value);}
+	/**
+	 * This will check if float value is different than previous value, and if so will change it
+	 * @param idx of value
+	 * @param val value to verify
+	 * @return whether new value was modified
+	 */
 	protected final boolean checkAndSetFloatVal(int idx, float value) {return uiUpdateData.checkAndSetFloatVal(idx, value);}
 	
 	/**
@@ -297,7 +309,17 @@ public abstract class Base_DispWindow {
 	 * @param value value to set
 	 */
 	public final void updateBoolValFromExecCode(int idx, boolean value) {setPrivFlags(idx, value);uiUpdateData.setBoolValue(idx, value);}
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
 	public final void updateIntValFromExecCode(int idx, int value) {guiObjs[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
 	public final void updateFloatValFromExecCode(int idx, float value) {guiObjs[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
 	
 	/**
@@ -333,21 +355,22 @@ public abstract class Base_DispWindow {
 		if(null!=trajMgr) {		trajMgr.initDrwnTrajs();	initDrwnTrajIndiv();				}
 	}
 	
-	//init fill and stroke colors and dims of rectangular area open and closed - only called from ctor
+	/**
+	 * init fill and stroke colors and dims of rectangular area open and closed - only called from ctor
+	 * @param fc
+	 * @param sc
+	 * @param rd
+	 * @param rdClosed
+	 */
 	private void initClrDims(int[] fc,  int[] sc, float[] rd, float[] rdClosed) {
 		fillClr = new int[4];rtSideUIFillClr= new int[4]; rtSideUIStrkClr= new int[4]; strkClr = new int[4];	 
-		rectDim = new float[4];	rectDimClosed = new float[4]; closeBox = new float[4]; uiClkCoords = new float[4];		
+		setRectDimOpen(rd);
+		setRectDimClosed(rdClosed);		
+		closeBox = new float[4]; uiClkCoords = new float[4];		
 		for(int i =0;i<4;++i){
 			fillClr[i] = fc[i];strkClr[i]=sc[i];
-			rtSideUIFillClr[i] = fc[i];rtSideUIStrkClr[i]=sc[i];			
-			rectDim[i]=rd[i];rectDimClosed[i]=rdClosed[i];
+			rtSideUIFillClr[i] = fc[i];rtSideUIStrkClr[i]=sc[i];
 		}			
-		
-		float boxWidth = 1.1f*rectDim[0];
-		UIRtSideRectBox = new float[] {rectDim[2]-boxWidth,0,boxWidth, rectDim[3]};		
-		closedUIRtSideRecBox = new float[] {rectDim[2]-20,0,20,rectDim[3]};
-
-		curVisScrDims = new float[] {closedUIRtSideRecBox[0],rectDim[3]};
 	}//initClrDims	
 	
 	protected final void setVisScreenWidth(float visScrWidth) {setVisScreenDims(visScrWidth,curVisScrDims[1]);}
@@ -563,6 +586,29 @@ public abstract class Base_DispWindow {
 			privFlags[flIDX] = privFlags[flIDX] | mask;
 		}
 	}
+	
+	/**
+	 * Set or reset the dims of this window when it is open
+	 * @param dims
+	 */
+	public final void setRectDimOpen(float[] dims) {		
+		rectDim = new float[4];		
+		for(int i =0;i<4;++i){	rectDim[i]=dims[i];}
+		
+		float boxWidth = 1.1f*rectDim[0];
+		UIRtSideRectBox = new float[] {rectDim[2]-boxWidth,0,boxWidth, rectDim[3]};		
+		closedUIRtSideRecBox = new float[] {rectDim[2]-20,0,20,rectDim[3]};
+		curVisScrDims = new float[] {closedUIRtSideRecBox[0],rectDim[3]};
+	}//setRectDimOpen
+	
+	/**
+	 * Set or reset the dims of this window when it is closed
+	 * @param dims
+	 */
+	public final void setRectDimClosed(float[] dims) {
+		rectDimClosed = new float[4];		
+		for(int i =0;i<4;++i){	rectDimClosed[i]=dims[i];}
+	}//setRectDimClosed
 	
 	/**
 	 * this will set the height of the rectangle enclosing this window - this will be called when a 
@@ -1647,6 +1693,3 @@ public abstract class Base_DispWindow {
 		return res;
 	}
 }//Base_DispWindow
-
-
-
