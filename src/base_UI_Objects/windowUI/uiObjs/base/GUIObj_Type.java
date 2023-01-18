@@ -9,11 +9,11 @@ import java.util.Map;
 public enum GUIObj_Type {
 	IntVal(0), FloatVal(1), ListVal(2);
 	private int value; 
-	private String[] _typeExplanation = new String[] {
+	private static final String[] _typeExplanation = new String[] {
 			"UI Object holding an integer value",
 			"UI Object holding a float value",
 			"UI Object holding a list value"};
-	private static String[] _typeName = new String[] {"Integer Value","Float Value","List Value"};
+	private static final String[] _typeName = new String[] {"Integer Value","Float Value","List Value"};
 	public static String[] getListOfTypes() {return _typeName;}
 	private static Map<Integer, GUIObj_Type> map = new HashMap<Integer, GUIObj_Type>(); 
 	static { for (GUIObj_Type enumV : GUIObj_Type.values()) { map.put(enumV.value, enumV);}}
@@ -23,5 +23,6 @@ public enum GUIObj_Type {
 	public static int getNumVals(){return map.size();}						//get # of values in enum
 	public String getName() {return _typeName[value];}
 	@Override
-    public String toString() { return ""+value + ":"+_typeExplanation[value]; }	
+    public String toString() { return ""+this.name()+":"+_typeExplanation[value]; }	
+    public String toStrBrf() { return ""+_typeExplanation[value]; }	
 }

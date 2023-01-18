@@ -182,7 +182,7 @@ public abstract class Base_DispWindow {
 		className = this.getClass().getSimpleName();
 		name = _n;
 		pFlagIdx = _flagIdx;
-		msgObj = MessageObject.buildMe(pa != null);
+		msgObj = AppMgr.msgObj;
 		fileIO = new FileIOManager(msgObj, name);
 		//base screenshot path based on launch time
 		ssFolderDir = name+"_"+getNowDateTimeString();

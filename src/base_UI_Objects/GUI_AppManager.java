@@ -6,8 +6,8 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.jogamp.newt.opengl.GLWindow;
@@ -309,13 +309,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	// code
 	
 	public GUI_AppManager() {
-		super();
+		super(true);
 		//get primary monitor size
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		_displayWidth = gd.getDisplayMode().getWidth();
 		_displayHeight = gd.getDisplayMode().getHeight();	
 
 	}//	
+	
 		
 	/**
 	 * invoke the renderer main function - this is called from instancing GUI_AppManager class
@@ -324,7 +325,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param passedArgs
 	 */
 	public static <T extends GUI_AppManager> void invokeProcessingMain(T _appMgr, String[] _passedArgs) {
-		_appMgr.handleRuntimeArgs(_passedArgs);
+		Java_AppManager.invokeMain(_appMgr, _passedArgs);
 		my_procApplet._invokedMain(_appMgr, _passedArgs);
 	}
 	
@@ -333,13 +334,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param passedArgs
 	 */	
 	@Override
-	protected final void handleRuntimeArgs(String[] passedArgs) {
-		TreeMap<String, Object> rawArgsMap = new TreeMap<String, Object>();
+	protected final HashMap<String, Object> buildCmdLineArgs(String[] passedArgs) {
+		HashMap<String, Object> rawArgsMap = new HashMap<String, Object>();
 		//just populate argsMap with values from passed args
 		int argCount = 0;
 		for(String arg : passedArgs) {	rawArgsMap.put("Arg_"+argCount++, arg);	}
 		//possibly override arguments from arg parser within application
-        argsMap = setRuntimeArgsVals(rawArgsMap);
+      	return rawArgsMap;
     }//handleRuntimeArgs
 	
 	public final void setIRenderInterface(IRenderInterface _pa) {
@@ -1414,7 +1415,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 	//determine primary application flags that are actually being displayed or not displayed
 	private final void _setBaseFlagToShow(int idx, boolean val) {
-		TreeMap<Integer, Integer> tmpMapOfFlags = new TreeMap<Integer, Integer>();
+		HashMap<Integer, Integer> tmpMapOfFlags = new HashMap<Integer, Integer>();
 		for(Integer flag : flagsToShow) {			tmpMapOfFlags.put(flag, 0);		}
 		if(val) {tmpMapOfFlags.put(idx, 0);	} else {tmpMapOfFlags.remove(idx);}
 		flagsToShow = new ArrayList<Integer>(tmpMapOfFlags.keySet());
