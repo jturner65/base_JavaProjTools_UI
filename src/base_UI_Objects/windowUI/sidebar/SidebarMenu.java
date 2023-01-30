@@ -350,9 +350,9 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	public final void handleSideMenuMseOvrDispSel(int btn, boolean val) {	}
 	@Override
-	public final void handleSideMenuDebugSelEnable(int btn) {	}
+	protected final void handleSideMenuDebugSelEnable(int btn) {	}
 	@Override
-	public final void handleSideMenuDebugSelDisable(int btn) {	}
+	protected final void handleSideMenuDebugSelDisable(int btn) {	}
 	@Override
 	protected boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld){		return false;	}
 	@Override

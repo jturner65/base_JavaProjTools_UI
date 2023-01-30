@@ -21,6 +21,7 @@ import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_Utils_Objects.io.FileIOManager;
 import base_Utils_Objects.io.messaging.MessageObject;
+import base_Utils_Objects.io.messaging.MsgCodes;
 import processing.core.*;
 
 /**
@@ -1546,9 +1547,13 @@ public abstract class Base_DispWindow {
 		
 	public final void setThisWinDebugState(int btn,int val) {
 		if(val==0) {//turning on
+			msgObj.dispMessage(className, "handleSideMenuDebugSelEnable","Click Debug functionality on in " + name + " : btn : " + btn, MsgCodes.debug1);
 			handleSideMenuDebugSelEnable(btn);
+			msgObj.dispMessage(className, "handleSideMenuDebugSelEnable", "End Debug functionality on selection.",MsgCodes.debug1);
 		} else {
+			msgObj.dispMessage(className, "handleSideMenuDebugSelDisable","Click Debug functionality off in " + name + " : btn : " + btn, MsgCodes.debug1);
 			handleSideMenuDebugSelDisable(btn);			
+			msgObj.dispMessage(className, "handleSideMenuDebugSelDisable", "End Debug functionality off selection.",MsgCodes.debug1);
 		}
 	}
 	
@@ -1566,7 +1571,9 @@ public abstract class Base_DispWindow {
 		int row = curCstBtnRow-curCstFuncBtnOffset;
 		int col = curCustBtn[curCstBtnRow];
 		String label = AppMgr.getSidebarMenuButtonLabel(curCstBtnRow,col);
+		msgObj.dispDebugMessage(className, "launchMenuBtnHndlr", "Begin requested action : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + name);
 		launchMenuBtnHndlr(row, col, label);
+		msgObj.dispDebugMessage(className,"launchMenuBtnHndlr", "End requested action (multithreaded actions may still be working) : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + name);
 		custFuncDoLaunch=false;
 	}//checkCustMenuUIObjs
 
@@ -1591,14 +1598,14 @@ public abstract class Base_DispWindow {
 	 * @param btn
 	 * @param val
 	 */
-	public abstract void handleSideMenuDebugSelEnable(int btn);	
+	protected abstract void handleSideMenuDebugSelEnable(int btn);	
 
 	/**
 	 * handle desired debug functionality disable based on buttons selected from side bar menu
 	 * @param btn
 	 * @param val
 	 */
-	public abstract void handleSideMenuDebugSelDisable(int btn);	
+	protected abstract void handleSideMenuDebugSelDisable(int btn);	
 
 	/**
 	 * type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
