@@ -235,7 +235,7 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	//init/reinit this window
 	@Override
-	protected final void initMe() {		setFlags(closeable, false);	}	
+	protected final void initMe() {		dispFlags.setIsCloseable(false);	}	
 	//window UI object not used for sidebar menu
 	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {return null;}

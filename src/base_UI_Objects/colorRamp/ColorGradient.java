@@ -4,7 +4,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Render_Interface.IRenderInterface;
 
 public class ColorGradient{
-	public IRenderInterface pa;
+	private static IRenderInterface pa;
 	public ColorRamp rmp;
 	public String name;
 	public float x,y, w,h;

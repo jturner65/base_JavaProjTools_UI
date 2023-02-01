@@ -839,7 +839,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//simulation section
 		if(isRunSim() ){
 			//run simulation
-			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getFlags(Base_DispWindow.isRunnable))){dispWinFrames[i].simulate(modAmtMillis);}}
+			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].dispFlags.getIsRunnable())){dispWinFrames[i].simulate(modAmtMillis);}}
 			if(isSingleStep()){setSimIsRunning(false);}
 			++simCycles;
 			return true;
@@ -1400,7 +1400,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void mouseWheel(int ticks) {
 		if(dispWinFrames.length < 1) {return;}
-		if (dispWinFrames[curFocusWin].getFlags(Base_DispWindow.canChgView)) {// (canMoveView[curFocusWin]){	
+		if (dispWinFrames[curFocusWin].dispFlags.getCanChgView()) {// (canMoveView[curFocusWin]){	
 			float mult = (getBaseFlag(shiftKeyPressed)) ? 50.0f * mouseWhlSens : 10.0f*mouseWhlSens;
 			dispWinFrames[curFocusWin].handleViewChange(true,(mult * ticks),0);
 		}

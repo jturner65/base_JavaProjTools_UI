@@ -5,7 +5,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 
 public class ColorPoint extends myPoint{
-	public IRenderInterface pa;	
+	private static IRenderInterface pa;	
 	public String name;
 	public float rad;
 	

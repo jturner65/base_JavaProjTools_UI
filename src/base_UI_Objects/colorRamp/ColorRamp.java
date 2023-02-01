@@ -11,8 +11,8 @@ import base_UI_Objects.GUI_AppManager;
 
 
 public class ColorRamp {
-	public IRenderInterface pa;	
-	public GUI_AppManager AppMgr;
+	private static IRenderInterface pa;	
+	private static GUI_AppManager AppMgr;
 	public int R0=250, G0=245, B0=20, R1=17, G1=60, B1=242, k=30;
 	
 	public float sIncr = .005f;

@@ -8,11 +8,15 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 
 //object on menu that can be modified via mouse input
 public abstract class Base_GUIObj {
+	protected static IRenderInterface p;
+	
+	//object to draw or not draw the prefix box
+	protected base_UIObjDrawer boxDrawer; 
+
 	public final int ID;
 	//static variables - put obj constructor counters here
 	private static int GUIObjID = 0;										//counter variable for gui objs
 
-	protected IRenderInterface p;
 	protected final int objID;							//id in owning window
 	protected myVector start, end;				//x,y coords of start corner, end corner (z==0) for clickable region
 	protected final String name;
@@ -23,24 +27,32 @@ public abstract class Base_GUIObj {
 	
 	protected final GUIObj_Type objType;
 	
-	protected int[] uiFlags;
+	//Flags structure to monitor/manage internal state
+	protected int[] uiStateFlags;
 	protected static final int 
-			debugIDX 		= 0,
-			showIDX			= 1,				//show this component
-			valChangedIDX   = 2,				//object value is dirty/clean
+		debugIDX 		= 0,
+		showIDX			= 1,				//show this component
+		valChangedIDX   = 2;				//object value is dirty/clean
+	protected static final int numStateFlags = 3;	// # of internal state booleans
+	
+	//Flags structure to monitor/manage configurable behavior
+	private int[] uiConfigFlags;
+	protected static final int 
 			//config flags
-			usedByWinsIDX	= 3, 
-			updateWhileModIDX = 4,
-			explicitUIDataUpdateIDX = 5;		//does not update UIDataUpdate structure on changes - must be explicitly sent to consumers 
-	public static final int numFlags = 6;			
-	protected static final int numPrivFlags = 3;	// # of internal state booleans
-	protected int[] _cVal;
+			usedByWinsIDX	= 0, 				//value is sent to window
+			updateWhileModIDX = 1,				//value is sent to window on any change, not just release
+			explicitUIDataUpdateIDX = 2;		//if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers 
+	protected static final int numConfigFlags = 3;			// # of config flags		
+
+
+	
+	protected final int[] _cVal = new int[] {0,0,0};
 	protected double modMult,						//multiplier for mod value
 					xOff,yOff;						//Offset value
-	protected float[] initDrawTrans, boxDrawTrans;
-	protected int[] bxclr;
+	public float[] initDrawTrans, boxDrawTrans;
+	public int[] bxclr;
 	
-	protected final float[] boxDim = new float[] {-2.5f, -2.5f, 5.0f, 5.0f};
+	public final float[] boxDim = new float[] {-2.5f, -2.5f, 5.0f, 5.0f};
 
 	//Initial values for min, max, mod and val
 	protected double[] initVals;
@@ -54,8 +66,7 @@ public abstract class Base_GUIObj {
 		name = _name;
 		xOff = _off[0];
 		yOff = _off[1];
-		//dispText = new String("UI Obj "+ID+" : "+name + " : ");
-		dispText = new String(""+name + " : ");
+		dispText = name.length() > 0 ? new String(""+name + " : ") : ("");
 		start = new myVector(_xst,_yst,0); end =  new myVector(_xend,_yend,0);
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
@@ -63,31 +74,45 @@ public abstract class Base_GUIObj {
 		for(int i=0;i<_minMaxMod.length;++i) {initVals[i]=_minMaxMod[i];}
 		initVals[3] = _initVal;
 		objType = _objType;
-		initFlags();
-		int numToInit = (_flags.length < numFlags-numPrivFlags ? _flags.length : numFlags-numPrivFlags);
-		for(int i =0; i<numToInit;++i){ 	setFlags(i+numPrivFlags,_flags[i]);	}	
+		initStateFlags();
 		
-		_cVal = new int[] {0,0,0};
-		bxclr = new int[]{ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),ThreadLocalRandom.current().nextInt(256),255};
+		initConfigFlags();
+		
+		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
+		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}	
+		
+		bxclr = new int[]{ThreadLocalRandom.current().nextInt(256),
+				ThreadLocalRandom.current().nextInt(256),
+				ThreadLocalRandom.current().nextInt(256),255};
 		
 		initDrawTrans= new float[]{(float)(start.x + xOff), (float)(start.y + yOff)};
 		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};			
 	}
 	
-	public void initFlags(){			uiFlags = new int[1 + numFlags/32]; for(int i = 0; i<numFlags; ++i){setFlags(i,false);}	}
-	private boolean getFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiFlags[idx/32] & bitLoc) == bitLoc;}	
-	private void setFlags(int idx, boolean val){
+	private void initConfigFlags(){			uiConfigFlags = new int[1 + numConfigFlags/32]; for(int i = 0; i<numConfigFlags; ++i){setConfigFlags(i,false);}	}
+	protected boolean getConfigFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiConfigFlags[idx/32] & bitLoc) == bitLoc;}	
+	protected void setConfigFlags(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
-		uiFlags[flIDX] = (val ?  uiFlags[flIDX] | mask : uiFlags[flIDX] & ~mask);
+		uiConfigFlags[flIDX] = (val ?  uiConfigFlags[flIDX] | mask : uiConfigFlags[flIDX] & ~mask);
 		switch (idx) {//special actions for each flag
-		case debugIDX 					:{break;}
-		case showIDX					:{break;}	//show this component
-		case valChangedIDX 				:{break;}		
 		case usedByWinsIDX				:{break;}
 		case updateWhileModIDX			:{break;}
 		case explicitUIDataUpdateIDX 	:{break;}
 		}
 	}//setFlag	
+	
+	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
+	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
+	protected void setStateFlags(int idx, boolean val){
+		int flIDX = idx/32, mask = 1<<(idx%32);
+		uiStateFlags[flIDX] = (val ?  uiStateFlags[flIDX] | mask : uiStateFlags[flIDX] & ~mask);
+		switch (idx) {//special actions for each flag
+		case debugIDX 					:{break;}
+		case showIDX					:{break;}	//show this component
+		case valChangedIDX 				:{break;}
+		}
+	}//setFlag	
+	
 	
 	public final String getName(){return name;}
 	public final double getVal(){return val;}	
@@ -95,8 +120,8 @@ public abstract class Base_GUIObj {
 	public final double getMaxVal(){return maxVal;}
 	public final double getModStep(){return modMult;}	
 	
-	protected void setIsDirty(boolean isDirty) {setFlags(valChangedIDX, isDirty);}
-	public boolean shouldUpdateConsumer() {return !getFlags(explicitUIDataUpdateIDX);}
+	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
+	public boolean shouldUpdateConsumer() {return !getConfigFlags(explicitUIDataUpdateIDX);}
 		
 	//Make sure val adheres to specified bounds
 	protected double forceBounds(double _val) {
@@ -129,14 +154,7 @@ public abstract class Base_GUIObj {
 		return val;
 	}	
 	public abstract double modVal(double mod);
-//	{
-//		double oldVal = val;
-//		val += (mod*modMult);
-//		if(objType == GUIObj_Type.IntVal){val = Math.round(val);}
-//		val = forceBounds(val);
-//		if (oldVal != val) {setIsDirty(true);}		
-//		return val;		
-//	}
+
 	/**
 	 * Reset this UI component to its initialization values
 	 */
@@ -148,10 +166,10 @@ public abstract class Base_GUIObj {
 	}
 
 	public final boolean shouldUpdateWin(boolean isRelease) {
-		boolean isDirty = getFlags(valChangedIDX);
+		boolean isDirty = getStateFlags(valChangedIDX);
 		//only clear once processed
 		if (isRelease){	setIsDirty(false);	}
-		return isDirty && ((isRelease || getFlags(updateWhileModIDX)) && getFlags(usedByWinsIDX));
+		return isDirty && ((isRelease || getConfigFlags(updateWhileModIDX)) && getConfigFlags(usedByWinsIDX));
 	}
 	
 	public final int valAsInt(){return (int)(val) ;}
@@ -166,8 +184,13 @@ public abstract class Base_GUIObj {
 		//objtype == toks[2]
 		double uiVal = Double.parseDouble(toks[3].split("\\s")[1].trim());	
 		setVal(uiVal);
-		for(int i =0;i<Base_GUIObj.numFlags; ++i){
-			setFlags(i, Boolean.parseBoolean(toks[4].split("\\s")[i].trim()));
+		//state
+		for(int i =0;i<Base_GUIObj.numStateFlags; ++i){
+			setStateFlags(i, Boolean.parseBoolean(toks[4].split("\\s")[i].trim()));
+		}	
+		//config
+		for(int i =0;i<Base_GUIObj.numConfigFlags; ++i){
+			setConfigFlags(i, Boolean.parseBoolean(toks[5].split("\\s")[i].trim()));
 		}	
 	}//setValFromStrTokens
 	
@@ -186,9 +209,13 @@ public abstract class Base_GUIObj {
 		sb.append(objType.getVal());
 		sb.append(" |value: ");
 		sb.append(getVal());
-		sb.append(" |flags: ");
-		for(int i =0;i<Base_GUIObj.numFlags; ++i){
-			sb.append(getFlags(i) ? " true" : " false");
+		sb.append(" |state flags: ");
+		for(int i =0;i<Base_GUIObj.numStateFlags; ++i){
+			sb.append(getStateFlags(i) ? " true" : " false");
+		}
+		sb.append(" |config flags: ");
+		for(int i =0;i<Base_GUIObj.numConfigFlags; ++i){
+			sb.append(getConfigFlags(i) ? " true" : " false");
 		}
 		return sb.toString().trim();		
 		
@@ -198,14 +225,14 @@ public abstract class Base_GUIObj {
 	public final void draw(){
 		p.pushMatState();
 			p.translate(initDrawTrans[0],initDrawTrans[1],0);
-			p.setFill(_cVal,255);
-			p.setStroke(_cVal,255);
 			p.pushMatState();
 				p.noStroke();
 				p.setFill(bxclr,bxclr[3]);
 				p.translate(boxDrawTrans[0],boxDrawTrans[1],0);
 				p.drawRect(boxDim);
 			p.popMatState();
+			p.setFill(_cVal,255);
+			p.setStroke(_cVal,255);			
 			//draw specifics for this UI object
 			_drawIndiv();
 //			if(objType == GUIObj_Type.FloatVal){		p.showText(dispText + String.format("%.5f",val), 0,0);}
@@ -242,7 +269,34 @@ public abstract class Base_GUIObj {
 		res += "Start loc : "+ start + " End loc : "+ end + " Treat as Int  : " + (objType == GUIObj_Type.IntVal)+"\n";
 		res += "Value : "+ val +"|Max Val : "+ maxVal + "|Min Val : " + minVal+ "|Mod : " + modMult+"\n";
 		res += "Init Value : "+ initVals[3] +"|Init Max Val : "+ initVals[1] + "|Init Min Val : " + initVals[0]+ "|Init Mod : " + initVals[2]+"\n";
-		res += "Is Dirty :"+getFlags(valChangedIDX);
+		res += "Is Dirty :"+getStateFlags(valChangedIDX);
 		return res;
 	}
 }//class Base_GUIObj
+
+abstract class base_UIObjDrawer{
+	protected static IRenderInterface p;
+	public base_UIObjDrawer(IRenderInterface _p) {}
+	public abstract void draw(Base_GUIObj _obj);
+}//base_UIBoxDrawer
+
+class UIObjDrawerBox extends base_UIObjDrawer{
+	public UIObjDrawerBox(IRenderInterface p) {super(p);}
+	@Override
+	public final void draw(Base_GUIObj _obj) {
+		p.pushMatState();
+			p.noStroke();
+			p.setFill(_obj.bxclr,_obj.bxclr[3]);
+			p.translate(_obj.boxDrawTrans[0],_obj.boxDrawTrans[1],0);
+			p.drawRect(_obj.boxDim);
+		p.popMatState();		
+	}
+	
+}//class UIBoxDrawer
+
+class UIObjDrawerNoBox extends base_UIObjDrawer{
+	public UIObjDrawerNoBox(IRenderInterface p) {super(p);}
+	@Override
+	public final void draw(Base_GUIObj _obj) {}
+	
+}//class UINoBoxDrawer
