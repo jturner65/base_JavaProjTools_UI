@@ -36,6 +36,8 @@ public class WinAppPrivStateFlags extends Base_BoolFlags {
 	 */
 	@Override
 	protected void handleFlagSet_Indiv(int idx, boolean val, boolean oldVal) {
+		//update consumers of UI struct
+		owner.checkSetBoolAndUpdate(idx, val);
 		owner.handlePrivFlags_Indiv(idx, val, oldVal);
 	}
 

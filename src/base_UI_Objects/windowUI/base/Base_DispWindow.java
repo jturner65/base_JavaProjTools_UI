@@ -269,6 +269,17 @@ public abstract class Base_DispWindow {
 		for(Integer i=0;i<this._numPrivFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}//buildUIUpdateStruct
+	
+	/**
+	 * Called by privFlags bool struct, to update uiUpdateData when boolean flags have changed
+	 * @param idx
+	 * @param val
+	 */
+	public final void checkSetBoolAndUpdate(int idx, boolean val) {
+		if((uiUpdateData != null) && uiUpdateData.checkAndSetBoolValue(idx, val)) {
+			updateCalcObjUIVals();
+		}
+	}
 
 	/**
 	 * This will check if boolean value is different than previous value, and if so will change it
@@ -379,11 +390,6 @@ public abstract class Base_DispWindow {
 	//build UI clickable region
 	protected final void initUIClickCoords(float x1, float y1, float x2, float y2){uiClkCoords[0] = x1;uiClkCoords[1] = y1;uiClkCoords[2] = x2; uiClkCoords[3] = y2;}
 	protected final void initUIClickCoords(float[] cpy){	uiClkCoords[0] = cpy[0];uiClkCoords[1] = cpy[1];uiClkCoords[2] = cpy[2]; uiClkCoords[3] = cpy[3];}
-	//public void initFlags(){dispFlags = new boolean[numDispFlags];for(int i =0; i<numDispFlags;++i){dispFlags[i]=false;}}		
-	//child-class flag init
-	//private void initPrivFlags(int numPrivFlags){privFlags = new int[1 + numPrivFlags/32]; for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,false);}}
-	//private void setAllInitPrivFlagStates(int numPrivFlags) {for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,getPrivFlags(i));}}
-	
 	//set up initial colors for sim specific flags for display
 	protected void initPrivFlagColors(){
 		privFlagColors = new int[truePrivFlagLabels.length][4];
