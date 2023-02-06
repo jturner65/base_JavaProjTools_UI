@@ -253,14 +253,10 @@ public class SidebarMenu extends Base_DispWindow{
 	}
 	
 	/**
-	 * initialize application-specific windows and titles in structs :
-	 *  guiBtnRowNames, guiBtnLabels, defaultUIBtnLabels, guiBtnInst, guiBtnWaitForProc;
+	 * Handle application-specific flag setting
 	 */
-	//set flag values and execute special functionality for this sequencer
 	@Override
-	public final void setPrivFlags(int idx, boolean val){
-		int flIDX = idx/32, mask = 1<<(idx%32);
-		privFlags[flIDX] = (val ?  privFlags[flIDX] | mask : privFlags[flIDX] & ~mask);
+	public final void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal){
 		switch (idx) {//special actions for each flag
 			case mseClickedInBtnsIDX 	: {break;}			
 			case usesWinBtnDispIDX	 	: {break;}
@@ -269,6 +265,20 @@ public class SidebarMenu extends Base_DispWindow{
 		}
 	}
 
+	/**
+	 * UI code-level Debug mode functionality. Called only from flags structure
+	 * @param val
+	 */
+	@Override
+	public void handleDebugMode(boolean val) {}
+	
+	/**
+	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
+	 * @param val
+	 */
+	@Override
+	public void handlePrivFlagsDebugMode(boolean val) {	}
+	
 	//initialize structure to hold modifiable menu regions
 	//called from super.initThisWin
 	@Override
@@ -303,12 +313,12 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	//turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
 	public final void clearAllBtnStates(){
-		if(getPrivFlags(mseClickedInBtnsIDX)) {
+		if(privFlags.getFlag(mseClickedInBtnsIDX)) {
 			//guiBtnWaitForProc should only be set for non-momentary buttons when they are pushed and cleared when whatever they are do is complete
 			for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnLabels[row].length;++col){				
 				if((guiBtnSt[row][col]==1) && (guiBtnInst[row][col]  || !guiBtnWaitForProc[row][col])){	guiBtnSt[row][col] = 0;}//btn is on, and either is momentary or it is not waiting for processing
 			}}
-			setPrivFlags(mseClickedInBtnsIDX, false);
+			privFlags.setFlag(mseClickedInBtnsIDX, false);
 		}
 	}//clearAllBtnStates
 	
@@ -332,12 +342,12 @@ public class SidebarMenu extends Base_DispWindow{
 		guiBtnSt[row][col] = (guiBtnSt[row][col] + 1)%2;//change state
 		//if not momentary buttons, set wait for proc to true
 		setWaitForProc(row,col);
-		if((row == btnShowWinIdx) && getPrivFlags(usesWinBtnDispIDX)) {AppMgr.handleShowWin(col, val);}
-		else if((row == btnMseFuncIdx) && getPrivFlags(usesMseOvrBtnDispIDX)) {
+		if((row == btnShowWinIdx) && privFlags.getFlag(usesWinBtnDispIDX)) {AppMgr.handleShowWin(col, val);}
+		else if((row == btnMseFuncIdx) && privFlags.getFlag(usesMseOvrBtnDispIDX)) {
 			if(val==0) {clearRowExceptPassedBtn(row,col);}
 			AppMgr.handleMenuBtnMseOvDispSel(col, val==0);			
 		}
-		else if((row == btnDBGSelCmpIdx) && getPrivFlags(usesDbgBtnDispIDX)) {AppMgr.handleMenuBtnDebugSel(col, val);}
+		else if((row == btnDBGSelCmpIdx) && privFlags.getFlag(usesDbgBtnDispIDX)) {AppMgr.handleMenuBtnDebugSel(col, val);}
 		else {AppMgr.handleMenuBtnSelCmp(row, funcBtnIDXOffset, col, val);}		
 	}	
 
@@ -363,7 +373,7 @@ public class SidebarMenu extends Base_DispWindow{
 			AppMgr.flipMainFlag(i);return true;	
 		} else if(MyMathUtils.ptInRange(mouseX, mouseY, 0, minBtnClkY, uiClkCoords[2], uiClkCoords[1])){
 			boolean clkInBtnRegion = checkButtons(mouseX, mouseY);
-			if(clkInBtnRegion) { setPrivFlags(mseClickedInBtnsIDX, true);}
+			if(clkInBtnRegion) { privFlags.setFlag(mseClickedInBtnsIDX, true);}
 			return clkInBtnRegion;
 		}//in region where clickable buttons are - uiClkCoords[1] is bottom of buttons
 		return false;

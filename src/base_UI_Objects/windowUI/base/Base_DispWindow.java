@@ -76,8 +76,11 @@ public abstract class Base_DispWindow {
 	
 	public WinDispStateFlags dispFlags;
 		
-	//private window-specific flags and UI components (buttons)
-	public int[] privFlags;
+	/**
+	 * UI Application-specific flags and UI components (buttons)
+	 */	
+	public WinAppPrivStateFlags privFlags;
+		
 	public String[] truePrivFlagLabels; //needs to be in order of flags	
 	public String[] falsePrivFlagLabels;//needs to be in order of flags
 	/**
@@ -203,8 +206,8 @@ public abstract class Base_DispWindow {
 		initMe();
 		//set any custom button names if necessary
 		setCustMenuBtnLabels();
-		//pass all flag states to initialized structures in instancing window
-		setAllInitPrivFlagStates(_numPrivFlags);
+		//pass all flag states to initialized structures in instancing window handler
+		privFlags.refreshAllFlags();
 		setClosedBox();
 		mseClickCrnr = new float[2];		//this is offset for click to check buttons in x and y - since buttons for all menus will be in menubar, this should be the upper left corner of menubar - upper left corner of rect 
 		mseClickCrnr[0] = 0;
@@ -237,7 +240,7 @@ public abstract class Base_DispWindow {
 		//initialize all private buttons based on values put in arraylist
 		_buildAllPrivButtons(tmpBtnNamesArray);
 		// init specific sim flags
-		initPrivFlags(_numPrivFlags);
+		privFlags = new WinAppPrivStateFlags(this,_numPrivFlags);
 		// set instance-specific initial flags
 		int[] trueFlagIDXs= getFlagIDXsToInitToTrue();
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
@@ -263,7 +266,7 @@ public abstract class Base_DispWindow {
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, (float)guiObjs[idx].getVal());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
-		for(Integer i=0;i<this._numPrivFlags;++i) {		boolValues.put(i, getPrivFlags(i));}	
+		for(Integer i=0;i<this._numPrivFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}//buildUIUpdateStruct
 
@@ -294,7 +297,7 @@ public abstract class Base_DispWindow {
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateBoolValFromExecCode(int idx, boolean value) {setPrivFlags(idx, value);uiUpdateData.setBoolValue(idx, value);}
+	public final void updateBoolValFromExecCode(int idx, boolean value) {privFlags.setFlag(idx, value);uiUpdateData.setBoolValue(idx, value);}
 	/**
 	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
@@ -379,8 +382,7 @@ public abstract class Base_DispWindow {
 	//public void initFlags(){dispFlags = new boolean[numDispFlags];for(int i =0; i<numDispFlags;++i){dispFlags[i]=false;}}		
 	//child-class flag init
 	//private void initPrivFlags(int numPrivFlags){privFlags = new int[1 + numPrivFlags/32]; for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,false);}}
-	private void initPrivFlags(int numPrivFlags){privFlags = new int[1 + numPrivFlags/32]; }//for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,false);}}
-	private void setAllInitPrivFlagStates(int numPrivFlags) {for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,getPrivFlags(i));}}
+	//private void setAllInitPrivFlagStates(int numPrivFlags) {for(int i = 0; i<numPrivFlags; ++i){setPrivFlags(i,getPrivFlags(i));}}
 	
 	//set up initial colors for sim specific flags for display
 	protected void initPrivFlagColors(){
@@ -491,19 +493,25 @@ public abstract class Base_DispWindow {
 	public final void setRtSideInfoWinSt(boolean visible) {dispFlags.setRtSideInfoWinSt(visible);}	
 
 	/**
-	 * Debug mode functionality. Called only from flags structure
+	 * UI code-level Debug mode functionality. Called only from flags structure
 	 * @param val
 	 */
-	public void handleDebugMode(boolean val) {
-		//TODO	
-	}		
+	public abstract void handleDebugMode(boolean val);
 
 	/**
-	 * set/get child class flags
-	 * @param idx
+	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
 	 * @param val
 	 */
-	public abstract void setPrivFlags(int idx, boolean val);
+	public abstract void handlePrivFlagsDebugMode(boolean val);
+
+	/**
+	 * Switch structure only that handles priv flags being set or cleared. Called from WinAppPrivStateFlags structure
+	 * @param idx
+	 * @param val new value for this index
+	 * @param oldVal previous value for this index
+	 */
+	protected abstract void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal);
+
 	
 	/**
 	 * Custom handling of when show is set or cleared. Called from dispFlags handling
@@ -529,22 +537,13 @@ public abstract class Base_DispWindow {
 	 */
 	protected abstract int[] getFlagIDXsToInitToTrue();
 	
-
-	public final boolean getPrivFlags(int idx){int bitLoc = 1<<(idx%32);return (privFlags[idx/32] & bitLoc) == bitLoc;}	
-	public final boolean getAllPrivFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((privFlags[idx/32] & bitLoc) != bitLoc){return false;}} return true;}
-	public final boolean getAnyPrivFlags(int [] idxs){int bitLoc; for(int idx =0;idx<idxs.length;++idx){bitLoc = 1<<(idx%32);if ((privFlags[idx/32] & bitLoc) == bitLoc){return true;}} return false;}
-	//set a list of indexes in private flags array to be a specific value
-	public final void setAllPrivFlags(int[] idxs, boolean val) { for(int idx =0;idx<idxs.length;++idx) {setPrivFlags(idxs[idx],val);}}
 	/**
 	 * sets flag values without calling instancing window flag handler - only for init!
 	 * @param idxs
 	 * @param val
 	 */
 	private void initPassedPrivFlagsToTrue(int[] idxs) { 
-		for(Integer idx : idxs) {
-			int flIDX = idx / 32, mask = 1 << (idx % 32);
-			privFlags[flIDX] = privFlags[flIDX] | mask;
-		}
+		privFlags.setAllFlagsToTrue(idxs);
 	}
 	
 	/**
@@ -927,14 +926,14 @@ public abstract class Base_DispWindow {
 		pa.setColorValFill(IRenderInterface.gui_Black,255);
 		if(dispFlags.getUseRndBtnClrs()){
 			for(int i =0; i<privModFlgIdxs.length; ++i){//prlFlagRects dispBttnAtLoc(String txt, float[] loc, int[] clrAra)
-				if(getPrivFlags(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],privFlagColors[i]);			}
+				if(privFlags.getFlag(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],privFlagColors[i]);			}
 				else {	if(truePrivFlagLabels[i].equals(falsePrivFlagLabels[i])) {	dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],new int[]{180,180,180, 255});}	
 						else {														dispBttnAtLoc(falsePrivFlagLabels[i],privFlagBtns[i],new int[]{0,255-privFlagColors[i][1],255-privFlagColors[i][2], 255});}		
 				}
 			}		
 		} else {
 			for(int i =0; i<privModFlgIdxs.length; ++i){//prlFlagRects dispBttnAtLoc(String txt, float[] loc, int[] clrAra)
-				if(getPrivFlags(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],trueBtnClr);			}
+				if(privFlags.getFlag(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],trueBtnClr);			}
 				else {																dispBttnAtLoc(falsePrivFlagLabels[i],privFlagBtns[i],falseBtnClr);	}
 			}	
 		}
@@ -1209,7 +1208,7 @@ public abstract class Base_DispWindow {
 	protected final void clearAllPrivBtns() {
 		if(privBtnsToClear.size() == 0) {return;}
 		//only clear button if button is currently set to true, otherwise concurrent modification error
-		for (Integer idx : privBtnsToClear) {this.setPrivFlags(idx, false);}
+		for (Integer idx : privBtnsToClear) {privFlags.setFlag(idx, false);}
 		privBtnsToClear.clear();
 	}//clearPrivBtns()
 		
@@ -1265,7 +1264,8 @@ public abstract class Base_DispWindow {
 			mod = msePtInRect(mx, my, privFlagBtns[i]); 
 			//msgObj.dispInfoMessage("Base_DispWindow","checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
 			if (mod){ 
-				setPrivFlags(privModFlgIdxs[i],!getPrivFlags(privModFlgIdxs[i])); 
+				privFlags.toggleButton(privModFlgIdxs[i]);
+				//setPrivFlags(privModFlgIdxs[i],!getPrivFlags(privModFlgIdxs[i])); 
 				return mod;
 			}			
 		}

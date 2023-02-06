@@ -37,7 +37,8 @@ public class DrawnSimpleTraj {
 	//public myPoint[] pathBetweenPts;				//Array that stores all the path Points, once they are scaled
 	
 	public int[] fillClrCnst, strkClrCnst;
-		
+	
+	
 	public boolean[] trajFlags;
 	public static final int 
 				flatPtIDX 		= 0,						//whether this should draw plat circles or spheres for its points
@@ -53,7 +54,7 @@ public class DrawnSimpleTraj {
 		strkClrCnst = _strkClrCnst;
 		
 		ID = trjCnt++;
-		setTopOffy(_topOffy);			//offset in y from top of screen
+		topOffY = _topOffy;		//offset in y from top of screen
 		initTrajFlags();
 		initTrajStuff();		
 		trajFlags[flatPtIDX] = _flat;
@@ -88,7 +89,7 @@ public class DrawnSimpleTraj {
 	public void reCalcCntlPoints(float scale){
 		for(int i = 0; i<edtCrvEndPts.length; ++i){	edtCrvEndPts[i].y = trajMgr.calcOffsetScale(edtCrvEndPts[i].y,scale,topOffY);edtCrvEndPts[i].z = 0; }//edtCrvEndPts[curDrnTrajScrIDX][i].y -= topOffY; edtCrvEndPts[curDrnTrajScrIDX][i].y *= scale;edtCrvEndPts[curDrnTrajScrIDX][i].y += topOffY;	}	
 		if(drawnTraj != null){
-			((VariableTraj)drawnTraj).scaleMeY(false,scale,topOffY);//only for display - rescaling changes the notes slightly so don't recalc notes
+			drawnTraj.scaleMeY(false,scale,topOffY);//only for display - rescaling changes the notes slightly so don't recalc notes
 		}
 	}//reCalcCntlPoints/
 	
@@ -114,7 +115,7 @@ public class DrawnSimpleTraj {
 		if(distTocPts[0] < chkDist){						startEditEndPoint(cntpIdx);} 
 		else {
 			double[] distToPts = new double[1];			//using array as pointer, passing by reference
-			myPoint[] pts = ((VariableTraj)drawnTraj).getDrawnPtAra(false);
+			myPoint[] pts = drawnTraj.getDrawnPtAra(false);
 			int pIdx = trajMgr.findClosestPt(mse, distToPts, pts);
 			//pa.outStr2Scr("Handle TrajClick 2 startEditObj : " + name);
 			if(distToPts[0] < chkDist){//close enough to mod
@@ -140,7 +141,7 @@ public class DrawnSimpleTraj {
 		int cntpIdx = trajMgr.findClosestPt(mse, distToPts, edtCrvEndPts);	
 		if(distToPts[0] < chkDist){return true;}
 		distToPts[0] = 9999;
-		int pIdx = trajMgr.findClosestPt(mse, distToPts, ((VariableTraj)drawnTraj).getDrawnPtAra(false));
+		int pIdx = trajMgr.findClosestPt(mse, distToPts, drawnTraj.getDrawnPtAra(false));
 		return (distToPts[0] < chkDist);
 	}
 	
@@ -163,7 +164,7 @@ public class DrawnSimpleTraj {
 			else {				edtCrvEndPts[2]._add(a2);edtCrvEndPts[3]._add(a1);}
 			float dist2 = (float)myPoint._dist(edtCrvEndPts[2], edtCrvEndPts[3]);
 			//pa.outStr2Scr("modTrajCntlPts : editEndPt : " + editEndPt + " : diff : "+ diff+ " dist : " + dist+ " dist2 :" + dist2 + " rot tangent axis : " + abRotAxis + " | Scale : " + (1+dist2)/(1+dist) );
-			((VariableTraj)drawnTraj).scalePointsAboveAxis(edtCrvEndPts[0],edtCrvEndPts[1], abRotAxis, (1+dist2)/(1+dist));
+			drawnTraj.scalePointsAboveAxis(edtCrvEndPts[0],edtCrvEndPts[1], abRotAxis, (1+dist2)/(1+dist));
 			//pa.outStr2Scr("");
 		}			
 	}
@@ -189,7 +190,7 @@ public class DrawnSimpleTraj {
 			mod = true;
 		} else if (drawnTrajPickedIdx != -1){	//picked trajectory element to edit other than end points	
 			diff._div(mseSens);
-			((VariableTraj)drawnTraj).handleMouseDrag(diff,drawnTrajPickedIdx);
+			drawnTraj.handleMouseDrag(diff,drawnTrajPickedIdx);
 			mod = true;
 		} 
 		return mod;
@@ -215,9 +216,9 @@ public class DrawnSimpleTraj {
 	public void endDrawObj(myPoint endPoint){
 		drawnTraj.addPt(endPoint);
 		//pa.outStr2Scr("Size of drawn traj : " + drawnTraj.cntlPts.length);
-		if(drawnTraj.cntlPts.length >= 2){
+		if(drawnTraj.getNumCntlPts() >= 2){
 			drawnTraj.finalizeDrawing(true);
-			myPoint[] pts = ((VariableTraj)drawnTraj).getDrawnPtAra(false);
+			myPoint[] pts = drawnTraj.getDrawnPtAra(false);
 			//pa.outStr2Scr("Size of pts ara after finalize (use drawn vels : " +false + " ): " + pts.length);
 			edtCrvEndPts[0] = new myPoint(pts[0]);
 			edtCrvEndPts[1] = new myPoint(pts[pts.length-1]);
@@ -251,7 +252,7 @@ public class DrawnSimpleTraj {
 			for(int i =0; i< edtCrvEndPts.length; ++i){
 				trajMgr.showKeyPt(ri, edtCrvEndPts[i],""+ (i+1),ctlRad);
 			}	
-			((VariableTraj)drawnTraj).drawMe(ri, false,trajFlags[flatPtIDX]);
+			drawnTraj.drawMe(ri, false,trajFlags[flatPtIDX]);
 		} 
 	}
 	
@@ -261,7 +262,7 @@ public class DrawnSimpleTraj {
 		//Once edge is drawn
 		calcPerpPoints();
 		if(drawnTraj != null){
-			if(drawnTraj.getIsMade()){				  
+			if(drawnTraj.trajFlags.getIsMade()){				  
 				//Initialize the array that stores the path
 				int a= 0, b= 1;
 				boolean flipTraj = Base_DispWindow.AppMgr.doFlipTraj();
@@ -274,5 +275,5 @@ public class DrawnSimpleTraj {
 			}
 		}	
 	}//rebuildDrawnTraj	
-	public void setTopOffy(float _topOffy){	topOffY = _topOffy;	}		//offset in y from top of screen
+	
 }//class DrawnSimpleTraj
