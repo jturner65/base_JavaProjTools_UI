@@ -365,7 +365,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawLine(float x1, float y1, float z1, float x2, float y2, float z2){line(x1,y1,z1,x2,y2,z2 );}
 	@Override
 	public void drawLine(myPointf a, myPointf b, int stClr, int endClr){
-		gl_beginShape();
+		gl_beginShape(GL_PrimStyle.GL_LINES);
 		this.setStrokeWt(1.0f);
 		this.setColorValStroke(stClr, 255);
 		this.gl_vertex(a);
@@ -375,7 +375,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}
 	@Override
 	public void drawLine(myPointf a, myPointf b, int[] stClr, int[] endClr){
-		gl_beginShape();
+		gl_beginShape(GL_PrimStyle.GL_LINES);
 		this.setStrokeWt(1.0f);
 		this.setStroke(stClr, 255);
 		this.gl_vertex(a);
