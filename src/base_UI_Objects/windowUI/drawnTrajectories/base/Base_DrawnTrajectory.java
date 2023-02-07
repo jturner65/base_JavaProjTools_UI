@@ -111,7 +111,7 @@ public abstract class Base_DrawnTrajectory {
 	 * Debug mode functionality. Called only from flags structure
 	 * @param val whether or not we have started debug mode
 	 */
-	public void handleDebugMode(boolean val) {
+	protected final void handleTrajFlagsDebugMode(boolean val) {
 		//TODO	
 	}		
 

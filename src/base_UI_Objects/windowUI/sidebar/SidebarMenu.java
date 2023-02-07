@@ -23,13 +23,13 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	public final int clkFlgsStY = 10;
 
-
 	//private child-class flags - window specific
-	public static final int 
-			mseClickedInBtnsIDX 		= 0,					//the mouse was clicked in the button region of the menu and a click event was processed
-			usesWinBtnDispIDX			= 1,					//this menu displays the window title bar
-			usesMseOvrBtnDispIDX		= 2,					//this menu uses mouse-over display text
-			usesDbgBtnDispIDX			= 3;					//this menu displays debug side bar buttons
+	public static final int
+			//idx 0 is debug in Base_BoolFlags
+			mseClickedInBtnsIDX 		= 1,					//the mouse was clicked in the button region of the menu and a click event was processed
+			usesWinBtnDispIDX			= 2,					//this menu displays the window title bar
+			usesMseOvrBtnDispIDX		= 3,					//this menu uses mouse-over display text
+			usesDbgBtnDispIDX			= 4;					//this menu displays debug side bar buttons
 	//private flag based buttons - ui menu won't have these
 	private static final int numPrivFlags = 4;
 	
@@ -270,14 +270,14 @@ public class SidebarMenu extends Base_DispWindow{
 	 * @param val
 	 */
 	@Override
-	public void handleDebugMode(boolean val) {}
+	protected final void handleDispFlagsDebugMode_Indiv(boolean val) {}
 	
 	/**
 	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
 	 * @param val
 	 */
 	@Override
-	public void handlePrivFlagsDebugMode(boolean val) {	}
+	protected final void handlePrivFlagsDebugMode_Indiv(boolean val) {	}
 	
 	//initialize structure to hold modifiable menu regions
 	//called from super.initThisWin

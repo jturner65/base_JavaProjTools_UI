@@ -502,13 +502,28 @@ public abstract class Base_DispWindow {
 	 * UI code-level Debug mode functionality. Called only from flags structure
 	 * @param val
 	 */
-	public abstract void handleDebugMode(boolean val);
+	public final void handleDispFlagsDebugMode(boolean val) {
+		msgObj.dispInfoMessage(className, "handleDispFlagsDebugMode", "Start UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
+		handlePrivFlagsDebugMode_Indiv(val);
+		msgObj.dispInfoMessage(className, "handleDispFlagsDebugMode", "End UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
+	}
+	protected abstract void handleDispFlagsDebugMode_Indiv(boolean val);
 
 	/**
 	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
 	 * @param val
 	 */
-	public abstract void handlePrivFlagsDebugMode(boolean val);
+	public final void handlePrivFlagsDebugMode(boolean val) {
+		msgObj.dispInfoMessage(className, "handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ val +".");
+		handlePrivFlagsDebugMode_Indiv(val);
+		msgObj.dispInfoMessage(className, "handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ val +".");
+	}
+	
+	/**
+	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
+	 * @param val
+	 */
+	protected abstract void handlePrivFlagsDebugMode_Indiv(boolean val);
 
 	/**
 	 * Switch structure only that handles priv flags being set or cleared. Called from WinAppPrivStateFlags structure
@@ -1214,7 +1229,7 @@ public abstract class Base_DispWindow {
 	protected final void clearAllPrivBtns() {
 		if(privBtnsToClear.size() == 0) {return;}
 		//only clear button if button is currently set to true, otherwise concurrent modification error
-		for (Integer idx : privBtnsToClear) {privFlags.setFlag(idx, false);}
+		for (Integer idx : privBtnsToClear) {if (privFlags.getFlag(idx)) {privFlags.setFlag(idx, false);}}
 		privBtnsToClear.clear();
 	}//clearPrivBtns()
 		
