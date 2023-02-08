@@ -1147,7 +1147,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final String getMseEyeInfoString(String winCamDisp) {
 		myPoint mseLocPt = pa.getMouse_Raw();
-		return "mse loc on screen : " + mseLocPt + " mse loc in world :"+ canvas.mseLoc +"  Eye loc in world :"+ canvas.eyeInWorld+ winCamDisp;
+		return "mse loc on screen : " + mseLocPt + " mse loc in world :"+ canvas.getMseLoc() +"  Eye loc in world :"+ canvas.getEyeInWorld()+ winCamDisp;
 	}
 	
 	/**

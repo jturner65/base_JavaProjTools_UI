@@ -1158,61 +1158,63 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}
 	
 	/**
+	 * Get world location as float array from screen location + depth
+	 * @param x
+	 * @param y
+	 * @param depthValue
+	 * @return 4 element array. Point is idxs 0,1,2 normalized by idx 3
+	 */
+	private float[] _getWorldLocFromScreenLoc(int x, int y, float depthValue){
+		int newY = height - y;
+		if(depthValue == -1){depthValue = getDepth(x, y); }	
+		//get 3d transform matrices
+		PGraphics3D p3d = (PGraphics3D)g;
+		PMatrix3D modelViewProjInv = p3d.projection.get(),
+				modelView = p3d.modelview.get(); 
+		modelViewProjInv.apply( modelView ); 
+		modelViewProjInv.invert();	  
+		float[] normalized = new float[] {
+						(x/(width * 0.5f)) - 1.0f, 
+						(newY/(height* 0.5f)) - 1.0f, 
+						depthValue * 2.0f - 1.0f, 
+						1.0f};	  
+		//destination
+		float[] unprojected = new float[4];	  
+		modelViewProjInv.mult(normalized, unprojected);
+		return unprojected;	
+	}//_getWorldLocFromScreenLoc
+	
+	
+	/**
 	 * determine world location as myPoint based on mouse click and passed depth
 	 * @param x
 	 * @param y
-	 * @param depth
+	 * @param depthValue
 	 * @return
 	 */
 	@Override
-	public myPoint getWorldLoc(int x, int y, float depth){
-		int newY = height - y;
-		float depthValue = depth;
-		if(depth == -1){depthValue = getDepth( x,  y); }	
-		//get 3d matrices
-		PGraphics3D p3d = (PGraphics3D)g;
-		PMatrix3D proj = p3d.projection.get(), modelView = p3d.modelview.get(), modelViewProjInv = proj; modelViewProjInv.apply( modelView ); modelViewProjInv.invert();	  
-		float[] viewport = {0, 0, width, height},
-				normalized = new float[] {
-						((x - viewport[0]) / viewport[2]) * 2.0f - 1.0f, 
-						((newY - viewport[1]) / viewport[3]) * 2.0f - 1.0f, 
-						depthValue * 2.0f - 1.0f, 
-						1.0f};	  
-		float[] unprojected = new float[4];	  
-		modelViewProjInv.mult( normalized, unprojected );
-		myPoint pickLoc = new myPoint( unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3] );
-		return pickLoc;
-	}		
+	public myPoint getWorldLoc(int x, int y, float depthValue){ 
+		//destination
+		float[] unprojected = _getWorldLocFromScreenLoc(x,y,depthValue);
+		return new myPoint(unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3]);
+	}
+	
 	/**
 	 * determine world location as myPointf based on mouse click and passed depth
 	 * @param x
 	 * @param y
-	 * @param depth
+	 * @param depthValue
 	 * @return
 	 */
 	@Override
-	public myPointf getWorldLoc_f(int x, int y, float depth){
-		int newY = height - y;
-		float depthValue = depth;
-		
-		if(depth == -1){depthValue = getDepth( x,  y); }	
-		//get 3d matrices
-		PGraphics3D p3d = (PGraphics3D)g;
-		PMatrix3D proj = p3d.projection.get(), modelView = p3d.modelview.get(), modelViewProjInv = proj; modelViewProjInv.apply( modelView ); modelViewProjInv.invert();	  
-		float[] viewport = {0, 0, width, height},
-				normalized = new float[] {
-						((x - viewport[0]) / viewport[2]) * 2.0f - 1.0f, 
-						((newY - viewport[1]) / viewport[3]) * 2.0f - 1.0f, 
-						depthValue * 2.0f - 1.0f, 
-						1.0f};	  
-		float[] unprojected = new float[4];	  
-		modelViewProjInv.mult( normalized, unprojected );
-		myPointf pickLoc = new myPointf( unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3] );
-		return pickLoc;
-	}		
-
+	public myPointf getWorldLoc_f(int x, int y, float depthValue){
+		//destination
+		float[] unprojected = _getWorldLocFromScreenLoc(x,y,depthValue);
+		return new myPointf(unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3]);
+	}
+	
 	@Override
-	public final myPoint getScrLocOf3dWrldPt(myPoint pt){	return new myPoint(screenX((float)pt.x,(float)pt.y,(float)pt.z),screenY((float)pt.x,(float)pt.y,(float)pt.z),screenZ((float)pt.x,(float)pt.y,(float)pt.z));}
+	public final myPoint getScrLocOf3dWrldPt(myPoint pt){return new myPoint(screenX((float)pt.x,(float)pt.y,(float)pt.z),screenY((float)pt.x,(float)pt.y,(float)pt.z),screenZ((float)pt.x,(float)pt.y,(float)pt.z));}
 	
 	/////////////////////		
 	///color utils
