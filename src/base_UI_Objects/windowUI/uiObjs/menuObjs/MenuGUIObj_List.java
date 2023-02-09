@@ -1,14 +1,14 @@
-package base_UI_Objects.windowUI.uiObjs;
+package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.base.Base_MenuGUIObj;
 
-public class GUIObj_List extends Base_GUIObj {
+public class MenuGUIObj_List extends Base_MenuGUIObj {
 	
 	protected String[] listVals = new String[] {"None"};
 
-	public GUIObj_List(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
+	public MenuGUIObj_List(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
 			double _yend, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off) {
 		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, _off);
 	}

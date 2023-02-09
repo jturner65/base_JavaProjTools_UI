@@ -1,12 +1,12 @@
-package base_UI_Objects.windowUI.uiObjs;
+package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.base.Base_MenuGUIObj;
 
-public class GUIObj_Int extends Base_GUIObj {
+public class MenuGUIObj_Int extends Base_MenuGUIObj {
 
-	public GUIObj_Int(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
+	public MenuGUIObj_Int(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
 			double _yend, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _Off) {
 		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _minMaxMod, _initVal, GUIObj_Type.IntVal, _flags, _Off);
 	}

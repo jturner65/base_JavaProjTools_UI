@@ -1,25 +1,41 @@
 package base_UI_Objects.windowUI.uiObjs.base;
 
-import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
-
 import base_Render_Interface.IRenderInterface;
-import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
-//object on menu that can be modified via mouse input
+/**
+ * UI object on menu that can be modified via mouse input
+ * @author John Turner
+ *
+ */
 public abstract class Base_GUIObj {
+	/**
+	 * Interface to drawing/graphics engine
+	 */
 	protected static IRenderInterface p;
-	
-	//object to draw or not draw the prefix box
-	protected base_UIObjDrawer boxDrawer; 
-
+	/**
+	 * Internal object ID
+	 */
 	public final int ID;
-	//static variables - put obj constructor counters here
-	private static int GUIObjID = 0;										//counter variable for gui objs
-
-	protected final int objID;							//id in owning window
-	protected myVector start, end;				//x,y coords of start corner, end corner (z==0) for clickable region
+	/**
+	 * Keep count for next ID
+	 */
+	private static int GUIObjID = 0;
+	
 	protected final String name;
+										
+	/**
+	 * UI Object ID from owning window
+	 */
+	protected final int objID;			
+	/**
+	 * x,y coords of top left corner for clickable region
+	 */
+	protected myVectorf start;
+	/**
+	 * x,y coords of bottom right corner for clickable region
+	 */
+	protected myVectorf end;
 	protected String dispText;
 
 	protected double val;
@@ -27,21 +43,25 @@ public abstract class Base_GUIObj {
 	
 	protected final GUIObj_Type objType;
 	
-	//Flags structure to monitor/manage internal state
-	protected int[] uiStateFlags;
+	/**
+	 * Flags structure to monitor/manage internal UI object state. No child class should access these directly
+	 */
+	private int[] uiStateFlags;
 	protected static final int 
 		debugIDX 		= 0,
 		showIDX			= 1,				//show this component
 		valChangedIDX   = 2;				//object value is dirty/clean
 	protected static final int numStateFlags = 3;	// # of internal state booleans
 	
-	//Flags structure to monitor/manage configurable behavior
+	/**
+	 * Flags structure to monitor/manage configurable behavior. No child class should access these directly
+	 */
 	private int[] uiConfigFlags;
 	protected static final int 
 			//config flags
 			usedByWinsIDX	= 0, 				//value is sent to window
 			updateWhileModIDX = 1,				//value is sent to window on any change, not just release
-			explicitUIDataUpdateIDX = 2;		//if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers 
+			explicitUIDataUpdateIDX = 2;		//if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
 	protected static final int numConfigFlags = 3;			// # of config flags		
 
 
@@ -49,10 +69,6 @@ public abstract class Base_GUIObj {
 	protected final int[] _cVal = new int[] {0,0,0};
 	protected double modMult,						//multiplier for mod value
 					xOff,yOff;						//Offset value
-	public float[] initDrawTrans, boxDrawTrans;
-	public int[] bxclr;
-	
-	public final float[] boxDim = new float[] {-2.5f, -2.5f, 5.0f, 5.0f};
 
 	//Initial values for min, max, mod and val
 	protected double[] initVals;
@@ -67,7 +83,7 @@ public abstract class Base_GUIObj {
 		xOff = _off[0];
 		yOff = _off[1];
 		dispText = name.length() > 0 ? new String(""+name + " : ") : ("");
-		start = new myVector(_xst,_yst,0); end =  new myVector(_xend,_yend,0);
+		start = new myVectorf(_xst,_yst,0); end =  new myVectorf(_xend,_yend,0);
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
 		initVals = new double[4];
@@ -80,14 +96,8 @@ public abstract class Base_GUIObj {
 		
 		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
 		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}	
-		
-		bxclr = new int[]{ThreadLocalRandom.current().nextInt(256),
-				ThreadLocalRandom.current().nextInt(256),
-				ThreadLocalRandom.current().nextInt(256),255};
-		
-		initDrawTrans= new float[]{(float)(start.x + xOff), (float)(start.y + yOff)};
-		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};			
 	}
+
 	
 	private void initConfigFlags(){			uiConfigFlags = new int[1 + numConfigFlags/32]; for(int i = 0; i<numConfigFlags; ++i){setConfigFlags(i,false);}	}
 	protected boolean getConfigFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiConfigFlags[idx/32] & bitLoc) == bitLoc;}	
@@ -129,30 +139,55 @@ public abstract class Base_GUIObj {
 		if (_val > maxVal) {return maxVal;}
 		return _val;
 	}
+	/**
+	 * Set new maximum value for this object, which will also force current value to adhere to bounds.
+	 * NOTE: Does not currently verify that new max is > current min. Don't be stupid.
+	 * @param _newval
+	 */
 	public final void setNewMax(double _newval){
 		double oldVal = val;
 		maxVal = _newval;
 		val = forceBounds(val);	
 		if (oldVal != val) {setIsDirty(true);}		
 	}
+	
+	/**
+	 * Set a new minimum bound for this object, which will also force current value to adhere to bounds.
+	 * NOTE: Does not currently verify that new min is < current max. Don't be stupid.
+	 * @param _newval
+	 */
 	public final void setNewMin(double _newval){	
 		double oldVal = val;
 		minVal = _newval;
 		val = forceBounds(val);		
 		if (oldVal != val) {setIsDirty(true);}		
 	}
+	/**
+	 * Set a new modifier value to use for this object
+	 * @param _newval
+	 */
 	public final void setNewMod(double _newval){	
 		if (_newval > (maxVal-minVal)) {
 			_newval = (maxVal-minVal);
 		}
 		modMult = _newval;	
 	}
+	/**
+	 * Set the value explicitly that we want to have for this object, subject to bounds.
+	 * @param _newVal
+	 * @return
+	 */
 	public final double setVal(double _newVal){
 		double oldVal = val;
 		val = forceBounds(_newVal);	
 		if (oldVal != val) {setIsDirty(true);}		
 		return val;
 	}	
+	/**
+	 * Modify this object by passed mod value, scaled by modMult
+	 * @param mod
+	 * @return
+	 */
 	public abstract double modVal(double mod);
 
 	/**
@@ -164,17 +199,74 @@ public abstract class Base_GUIObj {
 		setNewMod(initVals[2]);
 		setVal(initVals[3]);
 	}
-
+	/**
+	 * Whether this object was intialized to update the owning window every time it was changed
+	 * @param isRelease
+	 * @return
+	 */
 	public final boolean shouldUpdateWin(boolean isRelease) {
 		boolean isDirty = getStateFlags(valChangedIDX);
 		//only clear once processed
 		if (isRelease){	setIsDirty(false);	}
 		return isDirty && ((isRelease || getConfigFlags(updateWhileModIDX)) && getConfigFlags(usedByWinsIDX));
 	}
-	
+	/**
+	 * Get this object's value as an int
+	 * @return
+	 */
 	public final int valAsInt(){return (int)(val) ;}
+	/**
+	 * Get this object's value as a float
+	 * @return
+	 */
 	public final float valAsFloat(){return (float)( val);}
 	
+	/**
+	 * Verify passed coordinates are within this object's modifiable zone. If true then this object will be modified by UI actions
+	 * @param _clkx
+	 * @param _clky
+	 * @return whether passed coords are within this object's modifiable zone
+	 */
+	public final boolean checkIn(float _clkx, float _clky){return (_clkx > start.x)&&(_clkx < end.x)&&(_clky > start.y)&&(_clky < end.y);}
+	
+	/**
+	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
+	 * @param animTimeMod animation time modifier to enable this object to blink
+	 */
+	public final void draw_Debug(float animTimeMod) {
+		p.pushMatState();
+			p.setStrokeWt(1.0f);
+			if((int)(animTimeMod * 1000) % 2 == 0) {
+				p.setStroke(0, 255, 255,255);
+			} else {
+				p.setStroke(255, 0, 255,255);				
+			}
+			p.noFill();
+			//Draw rectangle around this object denoting active zone
+			p.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);
+		p.popMatState();
+		draw();
+	}
+	
+	/**
+	 * Draw this UI Object
+	 */
+	public abstract void draw();
+	
+	protected abstract void _drawIndiv();
+	
+	/**
+	 * set new display text for this UI object - doesn't change name
+	 * @param _str
+	 */
+	public final void setNewDispText(String _str) {	dispText = new String(""+_str + " : ");	}
+	
+	/**
+	 * Return the type of this object as defined in GUIObj_Type enum
+	 * @return
+	 */
+	public final GUIObj_Type getObjType() {return objType;}
+		
 	/**
 	 * Set this UI object's value based on string tokens from file
 	 * @param toks
@@ -221,82 +313,27 @@ public abstract class Base_GUIObj {
 		
 	}//getStrFromUIObj
 	
-	public final boolean checkIn(float _clkx, float _clky){return (_clkx > start.x)&&(_clkx < end.x)&&(_clky > start.y)&&(_clky < end.y);}
-	public final void draw(){
-		p.pushMatState();
-			p.translate(initDrawTrans[0],initDrawTrans[1],0);
-			p.pushMatState();
-				p.noStroke();
-				p.setFill(bxclr,bxclr[3]);
-				p.translate(boxDrawTrans[0],boxDrawTrans[1],0);
-				p.drawRect(boxDim);
-			p.popMatState();
-			p.setFill(_cVal,255);
-			p.setStroke(_cVal,255);			
-			//draw specifics for this UI object
-			_drawIndiv();
-//			if(objType == GUIObj_Type.FloatVal){		p.showText(dispText + String.format("%.5f",val), 0,0);}
-//			else{
-//				//disp ints and list values
-//				//String resStr = (objType == GUIObj_Type.ListVal) ?  win.getUIListValStr(objID, (int)val) : String.format("%.0f",val);
-//				p.showText(dispText + getListValStr((int)val), 0,0);
-//			}
-		p.popMatState();
-	}//draw
-	
-	protected abstract void _drawIndiv();
 	
 	/**
-	 * set new display text for this UI object - doesn't change name
-	 * @param _str
+	 * Retrive an array of string debug data
+	 * @return
 	 */
-	public final void setNewDispText(String _str) {	dispText = new String(""+_str + " : ");	}
-
-	
-	public final GUIObj_Type getObjType() {return objType;}
-		
 	public String[] getStrData(){
-		ArrayList<String> tmpRes = new ArrayList<String>();
-		tmpRes.add("ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " distText : " + dispText);
-		tmpRes.add("Start loc : "+ start + " End loc : "+ end + " Treat as Int  : " + (objType == GUIObj_Type.IntVal));
-		tmpRes.add("Value : "+ val +" Max Val : "+ maxVal + " Min Val : " + minVal+ " Mod multiplier : " + modMult);
-		return tmpRes.toArray(new String[0]);
+		String[] tmpRes = new String[6];
+		tmpRes[0] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " distText : " + dispText;
+		tmpRes[1] = "Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";
+		tmpRes[2] = "Treat as Int  : " + (objType == GUIObj_Type.IntVal);
+		tmpRes[3] = "Value : "+ val +" Max Val : "+ maxVal + " Min Val : " + minVal+ " Mod multiplier : " + modMult;
+		tmpRes[4] = "Init Value : "+ initVals[3] +"|Init Max Val : "+ initVals[1] + "|Init Min Val : " + initVals[0]+ "|Init Mod : " + initVals[2];
+		tmpRes[5] = "Is Dirty :"+getStateFlags(valChangedIDX);
+		return tmpRes;
 	}
 	
 	@Override
 	public String toString() {
-		String res = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " distText : " + dispText+"\n";
-		res += "Start loc : "+ start + " End loc : "+ end + " Treat as Int  : " + (objType == GUIObj_Type.IntVal)+"\n";
-		res += "Value : "+ val +"|Max Val : "+ maxVal + "|Min Val : " + minVal+ "|Mod : " + modMult+"\n";
-		res += "Init Value : "+ initVals[3] +"|Init Max Val : "+ initVals[1] + "|Init Min Val : " + initVals[0]+ "|Init Mod : " + initVals[2]+"\n";
-		res += "Is Dirty :"+getStateFlags(valChangedIDX);
+		String[] tmpRes = getStrData();
+		String res = tmpRes[0]+"\n";
+		for (int i=1;i<tmpRes.length;++i) {res += tmpRes[i]+"\n";}
 		return res;
 	}
 }//class Base_GUIObj
-
-abstract class base_UIObjDrawer{
-	protected static IRenderInterface p;
-	public base_UIObjDrawer(IRenderInterface _p) {}
-	public abstract void draw(Base_GUIObj _obj);
-}//base_UIBoxDrawer
-
-class UIObjDrawerBox extends base_UIObjDrawer{
-	public UIObjDrawerBox(IRenderInterface p) {super(p);}
-	@Override
-	public final void draw(Base_GUIObj _obj) {
-		p.pushMatState();
-			p.noStroke();
-			p.setFill(_obj.bxclr,_obj.bxclr[3]);
-			p.translate(_obj.boxDrawTrans[0],_obj.boxDrawTrans[1],0);
-			p.drawRect(_obj.boxDim);
-		p.popMatState();		
-	}
-	
-}//class UIBoxDrawer
-
-class UIObjDrawerNoBox extends base_UIObjDrawer{
-	public UIObjDrawerNoBox(IRenderInterface p) {super(p);}
-	@Override
-	public final void draw(Base_GUIObj _obj) {}
-	
-}//class UINoBoxDrawer

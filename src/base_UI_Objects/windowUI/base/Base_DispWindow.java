@@ -13,12 +13,12 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.drawnTrajectories.TrajectoryManager;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
-import base_UI_Objects.windowUI.uiObjs.GUIObj_Float;
-import base_UI_Objects.windowUI.uiObjs.GUIObj_Int;
-import base_UI_Objects.windowUI.uiObjs.GUIObj_List;
 import base_UI_Objects.windowUI.uiObjs.ScrollBars;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Float;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Int;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_List;
 import base_Utils_Objects.io.FileIOManager;
 import base_Utils_Objects.io.messaging.MessageObject;
 import base_Utils_Objects.io.messaging.MsgCodes;
@@ -90,7 +90,9 @@ public abstract class Base_DispWindow {
 
 	
 		//for boolean buttons based on child-class window specific values
-	public int[][] privFlagColors;
+	private int[][] privFlagTrueColors;
+	private int[][] privFlagFalseColors;
+	
 	public int[] privModFlgIdxs;										//only modifiable idx's will be shown as buttons - this needs to be in order of flag names
 	public float[][] privFlagBtns;									//clickable dimensions for these buttons
 	public int numClickBools;
@@ -214,7 +216,11 @@ public abstract class Base_DispWindow {
 		mseClickCrnr[1] = 0;		
 		if((!_isMenu) && (dispFlags.getHasScrollBars())){scbrs = new ScrollBars[4];	for(int i =0; i<scbrs.length;++i){scbrs[i] = new ScrollBars(pa, this);}}
 	}//initThisWin	
-	
+
+	/**
+	 * Build appropriate UIDataUpdater instance for application
+	 * @return
+	 */
 	protected abstract UIDataUpdater buildUIDataUpdateObject();
 	
 	private void _initAllGUIObjs(boolean _isMenu) {
@@ -392,9 +398,17 @@ public abstract class Base_DispWindow {
 	protected final void initUIClickCoords(float[] cpy){	uiClkCoords[0] = cpy[0];uiClkCoords[1] = cpy[1];uiClkCoords[2] = cpy[2]; uiClkCoords[3] = cpy[3];}
 	//set up initial colors for sim specific flags for display
 	protected void initPrivFlagColors(){
-		privFlagColors = new int[truePrivFlagLabels.length][4];
+		privFlagTrueColors = new int[truePrivFlagLabels.length][4];
+		privFlagFalseColors = new int[privFlagTrueColors.length][4];
 		ThreadLocalRandom tr = ThreadLocalRandom.current();
-		for (int i = 0; i < privFlagColors.length; ++i) { privFlagColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150), 255}; }			
+		for (int i = 0; i < privFlagTrueColors.length; ++i) { 
+			privFlagTrueColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150), 255};
+			if(truePrivFlagLabels[i].equals(falsePrivFlagLabels[i])) {
+				privFlagFalseColors[i] = baseBtnFalseClr;
+			} else {
+				privFlagFalseColors[i] = new int[]{0,255-privFlagTrueColors[i][1],255-privFlagTrueColors[i][2], 255};
+			}
+		}			
 	}
 	
 	/**
@@ -658,19 +672,19 @@ public abstract class Base_DispWindow {
 		for(int i =0; i< guiObjs.length; ++i){
 			switch(guiObjTypes[i]) {
 				case IntVal : {
-					guiObjs[i] = new GUIObj_Int(pa, i, guiObjNames[i], uiClkCoords[0], 
+					guiObjs[i] = new MenuGUIObj_Int(pa, i, guiObjNames[i], uiClkCoords[0], 
 							stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off);					
 					break;}
 				case ListVal : {
 					++numListObjs;
-					guiObjs[i] = new GUIObj_List(pa, i, guiObjNames[i], uiClkCoords[0], 
+					guiObjs[i] = new MenuGUIObj_List(pa, i, guiObjNames[i], uiClkCoords[0], 
 							stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off);
-					((GUIObj_List)guiObjs[i]).setListVals(tmpListObjVals.get(i));
+					((MenuGUIObj_List)guiObjs[i]).setListVals(tmpListObjVals.get(i));
 					break;}
 				case FloatVal : {
-					guiObjs[i] = new GUIObj_Float(pa, i, guiObjNames[i], uiClkCoords[0], 
+					guiObjs[i] = new MenuGUIObj_Float(pa, i, guiObjNames[i], uiClkCoords[0], 
 							stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off);					
 					break;}
@@ -943,28 +957,43 @@ public abstract class Base_DispWindow {
 		//draw UI Objs
 		drawGUIObjs();
 		//draw all boolean-based buttons for this window
+	private static final int[] baseBtnFalseClr = new int[]{180,180,180, 255};
+	/**
+	 * Draw application-specific flag buttons
+	 * @param useRandBtnClrs
+	 */
+	private final void drawAppFlagButtons(boolean useRandBtnClrs) {
 		pa.pushMatState();	
 		pa.setColorValFill(IRenderInterface.gui_Black,255);
-		if(dispFlags.getUseRndBtnClrs()){
-			for(int i =0; i<privModFlgIdxs.length; ++i){//prlFlagRects dispBttnAtLoc(String txt, float[] loc, int[] clrAra)
-				if(privFlags.getFlag(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],privFlagColors[i]);			}
-				else {	if(truePrivFlagLabels[i].equals(falsePrivFlagLabels[i])) {	dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],new int[]{180,180,180, 255});}	
-						else {														dispBttnAtLoc(falsePrivFlagLabels[i],privFlagBtns[i],new int[]{0,255-privFlagColors[i][1],255-privFlagColors[i][2], 255});}		
-				}
-			}		
+		String label;
+		int[] clr;
+		if(useRandBtnClrs){
+			for(int i =0; i<privModFlgIdxs.length; ++i){
+				if(privFlags.getFlag(privModFlgIdxs[i])){
+					label = truePrivFlagLabels[i];
+					clr = privFlagTrueColors[i];		
+				} else {
+					label = falsePrivFlagLabels[i];
+					clr = privFlagFalseColors[i];
+				}	
+				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+			}
+			
 		} else {
-			for(int i =0; i<privModFlgIdxs.length; ++i){//prlFlagRects dispBttnAtLoc(String txt, float[] loc, int[] clrAra)
-				if(privFlags.getFlag(privModFlgIdxs[i]) ){								dispBttnAtLoc(truePrivFlagLabels[i],privFlagBtns[i],trueBtnClr);			}
-				else {																dispBttnAtLoc(falsePrivFlagLabels[i],privFlagBtns[i],falseBtnClr);	}
-			}	
-		}
-		pa.popMatState();	
-		//draw any custom menu objects for sidebar menu
-		drawCustMenuObjs();
-		//also launch custom function here if any are specified
-		checkCustMenuUIObjs();
+			for(int i =0; i<privModFlgIdxs.length; ++i){
+				if(privFlags.getFlag(privModFlgIdxs[i])){
+					label = truePrivFlagLabels[i];
+					clr = trueBtnClr;
+				} else {																
+					label = falsePrivFlagLabels[i];
+					clr = falseBtnClr;
+				}
+				dispBttnAtLoc(label,privFlagBtns[i],clr);	
 		
-	}//drawWindowGuiObjs
+			}	
+		}		
+		pa.popMatState();	
+	}//drawAppFlagButtons
 	
 	/**
 	 * Draw UI Objs
@@ -1563,9 +1592,16 @@ public abstract class Base_DispWindow {
 		custFuncDoLaunch=false;
 	}//checkCustMenuUIObjs
 
-	//call from custFunc/custDbg functions being launched in threads
-	//these are launched in threads to allow UI to respond to user input
+	/**
+	 * Call from custFunc/custDbg functions being launched in threads.
+	 * these are launched in threads to allow UI to respond to user input
+	 */
 	public final void resetButtonState() {resetButtonState(true);}
+	/**
+	 * call from custFunc/custDbg functions being launched in threads.
+	 * these are launched in threads to allow UI to respond to user input
+	 * @param isSlowProc
+	 */
 	public final void resetButtonState(boolean isSlowProc) {
 		if (curCstBtnRow == -1) {return;}
 		if (curCustBtn[curCstBtnRow] == -1) {return;}
@@ -1657,12 +1693,27 @@ public abstract class Base_DispWindow {
 	
 	public abstract void processTrajIndiv(DrawnSimpleTraj drawnTraj);
 	
-	//file io used from selectOutput/selectInput - 
-	//take loaded params and process
+	/**
+	 * file io used from selectOutput/selectInput - take loaded params and process
+	 * @param file
+	 * @param vals
+	 * @param stIdx
+	 */
 	public abstract void hndlFileLoad(File file, String[] vals, int[] stIdx);
-	//accumulate array of params to save
+	/**
+	 * accumulate array of params to save
+	 * @param file
+	 * @return
+	 */
 	public abstract ArrayList<String> hndlFileSave(File file);	
 	
+	/**
+	 * Initialize any UI control flags appropriate for window application
+	 */
+	protected abstract void initDispFlags();
+	/**
+	 * Initialize window's application-specific logic
+	 */
 	protected abstract void initMe();
 	protected abstract void resizeMe(float scale);	
 	protected abstract void showMe();
@@ -1673,7 +1724,10 @@ public abstract class Base_DispWindow {
 	protected abstract void drawMe(float animTimeMod);	
 	protected abstract void drawRightSideInfoBarPriv(float modAmtMillis);
 	protected abstract void drawOnScreenStuffPriv(float modAmtMillis);
-	
+	/**
+	 * Retrieve MessageObject for logging and message display
+	 * @return
+	 */
 	public final MessageObject getMsgObj() {return msgObj;}
 	
 	public final String getName() {return name;}
