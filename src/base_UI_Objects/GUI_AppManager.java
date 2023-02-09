@@ -1013,10 +1013,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * called by sidebar menu to display current window's UI components
 	 */
-	public final void drawWindowGuiObjs(){
+	public final void drawWindowGuiObjs(float animTimeMod){
 		if(curFocusWin != -1){
 			pa.pushMatState();
-			dispWinFrames[curFocusWin].drawWindowGuiObjs();					//draw what user-modifiable fields are currently available
+			dispWinFrames[curFocusWin].drawWindowGuiObjs(animTimeMod);					//draw what user-modifiable fields are currently available
 			pa.popMatState();	
 		}
 	}//	

@@ -194,6 +194,9 @@ public abstract class Base_DispWindow {
 	 */
 	public final void initThisWin(boolean _isMenu){
 		dispFlags = new WinDispStateFlags(this);
+		//initialize any state/display flags
+		initDispFlags();
+		
 		//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
 		if(!_isMenu){
 			initUIBox();				
@@ -953,10 +956,21 @@ public abstract class Base_DispWindow {
 		pa.translate(focusTar.x,focusTar.y,focusTar.z);
 	}
 	
-	public final void drawWindowGuiObjs() {
+	/**
+	 * Draw this window's gui objects in sidebar menu
+	 * @param animTimeMod
+	 */
+	public final void drawWindowGuiObjs(float animTimeMod) {
 		//draw UI Objs
 		drawGUIObjs();
 		//draw all boolean-based buttons for this window
+		drawAppFlagButtons(dispFlags.getUseRndBtnClrs());
+		//draw any custom menu objects for sidebar menu
+		drawCustMenuObjs(animTimeMod);
+		//also launch custom function here if any are specified
+		checkCustMenuUIObjs();		
+	}//drawWindowGuiObjs
+	
 	private static final int[] baseBtnFalseClr = new int[]{180,180,180, 255};
 	/**
 	 * Draw application-specific flag buttons
@@ -1007,7 +1021,7 @@ public abstract class Base_DispWindow {
 	/**
 	 * draw any custom menu objects for sidebar menu
 	 */
-	protected abstract void drawCustMenuObjs();
+	protected abstract void drawCustMenuObjs(float animTimeMod);
 	
 	/**
 	 * Build button descriptive arrays : each object array holds true label, false label, and idx of button in owning child class

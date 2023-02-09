@@ -233,9 +233,14 @@ public class SidebarMenu extends Base_DispWindow{
 	//initialize all private-flag based UI buttons here - called by base class
 	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
 	
+	@Override
+	protected final void initDispFlags() {
+		dispFlags.setIsCloseable(false);	
+	}
+	
 	//init/reinit this window
 	@Override
-	protected final void initMe() {		dispFlags.setIsCloseable(false);	}	
+	protected final void initMe() {	}	
 	//window UI object not used for sidebar menu
 	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {return null;}
@@ -440,12 +445,12 @@ public class SidebarMenu extends Base_DispWindow{
 			drawGUIObjs();					//draw what global user-modifiable fields are currently available 
 		pa.popMatState();			
 		pa.pushMatState();
-			AppMgr.drawWindowGuiObjs();			//draw objects for window with primary focus
+			AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus
 		pa.popMatState();	
 	}
 	
 	@Override
-	public final void drawCustMenuObjs(){}	
+	public final void drawCustMenuObjs(float animTimeMod){}	
 	//no custom camera handling for menu , float rx, float ry, float dz are all now member variables of every window
 	@Override
 	protected final void setCameraIndiv(float[] camVals){}
