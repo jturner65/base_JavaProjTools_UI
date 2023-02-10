@@ -47,7 +47,7 @@ public class Disp3DCanvas {
 	private float rawCtrDepth;
 	
 	public Disp3DCanvas(GUI_AppManager _AppMgr, IRenderInterface _p, int w, int h) {
-		p = (my_procApplet)_p;
+		p = _p;
 		AppMgr = _AppMgr;
 		mseFillClr = new int[] {0,0,0,255};
 		initCanvasVars();
@@ -219,7 +219,7 @@ public class Disp3DCanvas {
 			p.translate(dfCtr);
 			//project mouse point on bounding box walls if appropriate
 			if(projOnBox){AppMgr.drawProjOnBox(dfCtr);}
-			Base_DispWindow.AppMgr.drawAxes(10000,1f, myPoint.ZEROPT, 100, true);//
+			AppMgr.drawAxes(10000,1f, myPoint.ZEROPT, 100, true);//
 			//draw center point
 			p.showPtAsSphere(myPointf.ZEROPT,3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
 			drawText(win, ""+dfCtr+ "|fr:"+p.getFrameRate(),4.0f, 15.0f, 4.0f);

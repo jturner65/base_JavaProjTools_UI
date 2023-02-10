@@ -723,7 +723,7 @@ public abstract class Base_DispWindow {
 		}
 		uiClkCoords[3] = stClkY;
 		if(numListObjs != tmpListObjVals.size()) {
-			msgObj.dispWarningMessage("Base_DispWindow", "buildGUIObjs", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
+			msgObj.dispWarningMessage("Base_DispWindow", "_buildGUIObjsFromMaps", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
 		}
 		//build lists of data for all list UI objects
 		//for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
