@@ -166,28 +166,56 @@ public abstract class Base_DispWindow {
 	//this is set to true when curCustXXX vals are set to != -1; this is used as a 1-frame buffer to allow the UI to turn on the source buttons of these functions
 	private boolean custClickSetThisFrame = false, custFuncDoLaunch = false;
 	
-	public Base_DispWindow(IRenderInterface _p, GUI_AppManager _AppMgr, String _n, int _flagIdx, int[] fc,  int[] sc, float[] rd, float[] rdClosed, String _winTxt) {
+	/**
+	 * Individual window instantiation - use this for subwindows that are not instanced or registered in AppMgr
+	 * @param _p
+	 * @param _AppMgr
+	 * @param _n
+	 * @param _flagIdx
+	 * @param fc
+	 * @param sc
+	 * @param rd
+	 * @param rdClosed
+	 * @param _winTxt
+	 */
+	public Base_DispWindow(
+			IRenderInterface _p, 
+			GUI_AppManager _AppMgr, 
+			String _n, 
+			int _flagIdx, 
+			int[] fc,  int[] sc, float[] rd, float[] rdClosed, 
+			String _winTxt) {
 		pa=_p;
 		AppMgr = _AppMgr;
 		ID = winCnt++;
 		className = this.getClass().getSimpleName();
-		name = _n;
 		pFlagIdx = _flagIdx;
+		name = _n;
+		winText = _winTxt;
 		msgObj = AppMgr.msgObj;
 		fileIO = new FileIOManager(msgObj, name);
 		//base screenshot path based on launch time
 		ssFolderDir = name+"_"+getNowDateTimeString();
 		ssPathBase = AppMgr.getApplicationPath() +File.separatorChar + ssFolderDir + File.separatorChar;
 		initClrDims( fc, sc, rd, rdClosed);
-		winText = _winTxt;
 		msClkObj = -1;
 		msOvrObj = -1;
 		reInitInfoStr();
 	}//ctor
 	
+	/**
+	 * AppMgr based constructor - use this for all windows that are registered with and directly displayed by AppMgr
+	 * @param _p
+	 * @param _AppMgr
+	 * @param _winIdx
+	 * @param _flagIdx
+	 */
 	public Base_DispWindow(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, int _flagIdx) {
-		this(_p, _AppMgr,_AppMgr.winTitles[_winIdx], _flagIdx,_AppMgr.winFillClrs[_winIdx], _AppMgr.winStrkClrs[_winIdx], _AppMgr.winRectDimOpen[_winIdx], _AppMgr.winRectDimClose[_winIdx], _AppMgr.winDescr[_winIdx]);
+		this(_p, _AppMgr, _AppMgr.winTitles[_winIdx], _flagIdx,	_AppMgr.winFillClrs[_winIdx], 
+				_AppMgr.winStrkClrs[_winIdx], _AppMgr.winRectDimOpen[_winIdx], 
+				_AppMgr.winRectDimClose[_winIdx], _AppMgr.winDescr[_winIdx]);	
 	}//ctor
+	
 	/**
 	 * Must be called by inheriting class constructor!
 	 * @param _isMenu
@@ -683,8 +711,7 @@ public abstract class Base_DispWindow {
 					++numListObjs;
 					guiObjs[i] = new MenuGUIObj_List(pa, i, guiObjNames[i], uiClkCoords[0], 
 							stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off);
-					((MenuGUIObj_List)guiObjs[i]).setListVals(tmpListObjVals.get(i));
+							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i));
 					break;}
 				case FloatVal : {
 					guiObjs[i] = new MenuGUIObj_Float(pa, i, guiObjNames[i], uiClkCoords[0], 

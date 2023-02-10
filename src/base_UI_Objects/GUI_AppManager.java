@@ -124,12 +124,36 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 	protected float menuWidth;			
 	//side menu is 15% of screen grid2D_X, 
-	protected final float menuWidthMult = .15f;
+	protected final float menuWidthMult;
 	protected float hideWinWidth;
-	protected final float hideWinWidthMult = .03f;
+	protected final float hideWinWidthMult;
 	protected float hideWinHeight;
-	protected final float hideWinHeightMult = .05f;
-
+	protected final float hideWinHeightMult;	
+	
+	/**
+	 * Default menu width fraction
+	 */
+	private final float _dfltMenuWidthMult = .15f;
+	/**
+	 * Default hidden window width fraction
+	 */
+	private final float _dfltHideWinWidthMult = .03f;
+	/**
+	 * Default hidden window height fraction
+	 */
+	private final float _dfltHideWinHeightMult = .05f;	
+	/**
+	 * Default Popup window height fraction
+	 */
+	private final float _dfltPopUpWinOpenFraction = .80f;
+	
+	
+	
+	/**
+	 * fraction of height popup win should use, from bottom of screen
+	 */
+	protected float popUpWinHeight;
+	protected final float popUpWinOpenMult;
 	/**
 	 * specify windows that cannot be shown simultaneously here and their flags
 	 */
@@ -314,6 +338,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		_displayWidth = gd.getDisplayMode().getWidth();
 		_displayHeight = gd.getDisplayMode().getHeight();	
+		menuWidthMult = getMenuWidthMult();
+		hideWinWidthMult = getHideWinWidthMult();
+		hideWinHeightMult = getHideWinHeightMult();
+		popUpWinOpenMult = getPopUpWinOpenMult();
 
 	}//	
 	
@@ -439,14 +467,75 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		msSclX = MyMathUtils.PI_F/viewWidth;
 		msSclY = MyMathUtils.PI_F/viewHeight;
 
-		menuWidth = viewWidth * menuWidthMult;						//grid2D_X of menu region	
+		menuWidth = viewWidth * menuWidthMult;						
+		
 		hideWinWidth = viewWidth * hideWinWidthMult;				//dims for hidden windows
+		//popup/hidden window height to use when hidden 
 		hideWinHeight = viewHeight * hideWinHeightMult;
-
+		//popup window height when open
+		popUpWinHeight = viewHeight * popUpWinOpenMult;
 		// set cam vals
 		camVals = new float[]{0, 0, (float) (viewHeightHalf / Math.tan(MyMathUtils.PI/6.0)), 0, 0, 0, 0,1,0};		
 
 	}//setAppWindowWidth
+
+	/**
+	 * Override if want to resize menu width fraction. Needs to be [0,1]
+	 * @return
+	 */
+	protected float getMenuWidthMult_Custom() {return _dfltMenuWidthMult;}
+	/**
+	 * Override if want to resize hidden window width fraction. Needs to be [0,1]
+	 * @return
+	 */
+	protected float getHideWinWidthMult_Custom() {return _dfltHideWinWidthMult;}
+	/**
+	 * Override if want to resize hidden window height fraction. Needs to be [0,1]
+	 * @return
+	 */
+	protected float getHideWinHeightMult_Custom() {return _dfltHideWinHeightMult;}
+	
+	/**
+	 * Override if want to resize popup window open size fraction. Needs to be [0,1]
+	 * @return
+	 */
+	protected float getPopUpWinOpenMult_Custom() {	return _dfltPopUpWinOpenFraction;}	
+	
+	
+	/**
+	 * Provide multiplier for window width fraction. Needs to be [0,1]
+	 * @return
+	 */
+	private final float getMenuWidthMult() {
+		float retVal = getMenuWidthMult_Custom();
+		return MyMathUtils.inRange(retVal, 0.0f, 1.0f) ? retVal : _dfltMenuWidthMult;
+	}
+	/**
+	 * Provide multiplier for hidden window width fraction. Needs to be [0,1]
+	 * @return
+	 */
+	private final float getHideWinWidthMult() {
+		float retVal = getHideWinWidthMult_Custom();		
+		return MyMathUtils.inRange(retVal, 0.0f, 1.0f) ? retVal : _dfltHideWinWidthMult;
+	}
+	/**
+	 * Provide multiplier for hidden window height fraction. Needs to be [0,1]
+	 * @return
+	 */
+	private final float getHideWinHeightMult() {
+		float retVal = getHideWinHeightMult_Custom();		
+		return MyMathUtils.inRange(retVal, 0.0f, 1.0f) ? retVal : _dfltHideWinHeightMult;
+	}
+	
+	/**
+	 * Provide multiplier for popup window open size fraction. Needs to be [0,1]
+	 * @return
+	 */
+	private final float getPopUpWinOpenMult() {		
+		float retVal = getPopUpWinOpenMult_Custom();		
+		return MyMathUtils.inRange(retVal, 0.0f, 1.0f) ? retVal : _dfltPopUpWinOpenFraction;
+	}
+	
 	
 	/**
 	 * Retrieves reasonable default window open dims
@@ -459,6 +548,23 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public float[] getDefaultWinDimClosed() {return new float[]{menuWidth, 0, hideWinWidth,  viewHeight};}
+	
+	
+	
+	/**
+	 * Retrieves reasonable default pop-up window open dims
+	 * @return
+	 */
+	public float[] getDefaultPopUpWinDimOpen() {return new float[]{menuWidth, viewHeight-popUpWinHeight, viewWidth-menuWidth,  popUpWinHeight};}
+	
+	/**
+	 * Retrieves reasonable default pop-up window closed dims
+	 * @return
+	 */
+	public float[] getDefaultPopUpWinDimClosed() {return new float[]{menuWidth, viewHeight-hideWinHeight, hideWinWidth,  hideWinHeight};}
+	
+	
+		
 	
 	/**
 	 * Called in pre-draw initial setup, before first init

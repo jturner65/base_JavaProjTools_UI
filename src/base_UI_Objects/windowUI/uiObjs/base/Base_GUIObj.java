@@ -249,7 +249,7 @@ public abstract class Base_GUIObj {
 	}
 	
 	/**
-	 * Draw this UI Object
+	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
 	public abstract void draw();
 	
