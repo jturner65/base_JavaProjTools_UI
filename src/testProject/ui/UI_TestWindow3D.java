@@ -11,6 +11,7 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
+import testProject.uiData.UITestDataUpdater_3D;
 
 public class UI_TestWindow3D extends Base_DispWindow {
 
@@ -21,8 +22,7 @@ public class UI_TestWindow3D extends Base_DispWindow {
 
 	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {
-		// TODO Auto-generated method stub
-		return null;
+		return new UITestDataUpdater_3D(this);
 	}
 
 	@Override
