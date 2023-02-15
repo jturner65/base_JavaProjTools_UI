@@ -1150,7 +1150,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public float getDepth(int x, int y) {
 		PGL pgl = beginPGL();
-		FloatBuffer depthBuffer = ByteBuffer.allocateDirect(1 << 2).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		FloatBuffer depthBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		int newY = height - y;		pgl.readPixels(x, newY - 1, 1, 1, PGL.DEPTH_COMPONENT, PGL.FLOAT, depthBuffer);
 		float depthValue = depthBuffer.get(0);
 		endPGL();
