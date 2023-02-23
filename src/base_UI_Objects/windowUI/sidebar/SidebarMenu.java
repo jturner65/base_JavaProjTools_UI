@@ -434,7 +434,7 @@ public class SidebarMenu extends Base_DispWindow{
 			drawSideBarButtons();						//draw buttons
 		pa.popMatState();	
 		pa.pushMatState();
-			drawGUIObjs();					//draw what global user-modifiable fields are currently available 
+			drawGUIObjs(animTimeMod);					//draw what global user-modifiable fields are currently available 
 		pa.popMatState();			
 		pa.pushMatState();
 			AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus

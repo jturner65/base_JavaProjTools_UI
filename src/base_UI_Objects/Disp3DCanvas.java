@@ -8,6 +8,7 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IRenderInterface.GL_PrimStyle;
 
 /**
  * Class to manage display canvas and reticle
@@ -209,6 +210,22 @@ public class Disp3DCanvas {
 		p.popMatState();	
 	}//drawText	
 	
+	/**
+	 * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector
+	 */
+	public void drawCanvas() {
+		p.disableLights();
+		p.pushMatState();
+		p.gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
+		p.setFill(255,255,255,80);
+		p.setNoStroke();
+		p.gl_normal(eyeToMse);
+		myPointf[] pts = AppMgr.buildPlaneBoxBounds(canvas3D);	
+		for (int i=0; i<pts.length;++i) {p.gl_vertex(pts[i]);}
+        p.gl_endShape(true);
+        p.popMatState();
+        p.enableLights();		
+	}
 
 	public void drawMseEdge(Base_DispWindow win, boolean projOnBox){//draw mouse sphere and edge normal to cam eye through mouse sphere 
 		p.pushMatState();

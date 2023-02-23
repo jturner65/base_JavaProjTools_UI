@@ -233,10 +233,10 @@ public abstract class Base_GUIObj {
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
 	 * @param animTimeMod animation time modifier to enable this object to blink
 	 */
-	public final void draw_Debug(float animTimeMod) {
+	public final void drawDebug(float animTimeMod) {
 		p.pushMatState();
 			p.setStrokeWt(1.0f);
-			if((int)(animTimeMod * 1000) % 2 == 0) {
+			if((int)(animTimeMod) % 2 == 0) {
 				p.setStroke(0, 255, 255,255);
 			} else {
 				p.setStroke(255, 0, 255,255);				
