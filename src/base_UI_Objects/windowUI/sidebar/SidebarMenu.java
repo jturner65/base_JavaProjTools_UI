@@ -11,7 +11,6 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
-import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 
 //displays sidebar menu of interaction and functionality
 
@@ -89,8 +88,8 @@ public class SidebarMenu extends Base_DispWindow{
 	 */
 	public SidebarMenuBtnConfig btnConfig;
 
-	public SidebarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, int _flagIdx, SidebarMenuBtnConfig _c) {
-		super(_p, _AppMgr, _winIdx, _flagIdx);
+	public SidebarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
+		super(_p, _AppMgr, _winIdx);
 		btnConfig=_c;
 		//these have to be set before setupGUIObjsAras is called from initThisWin
 		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
@@ -230,9 +229,7 @@ public class SidebarMenu extends Base_DispWindow{
 	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
 	
 	@Override
-	protected final void initDispFlags() {
-		dispFlags.setIsCloseable(false);	
-	}
+	protected final void initDispFlags() {}
 	
 	//init/reinit this window
 	@Override
@@ -290,7 +287,6 @@ public class SidebarMenu extends Base_DispWindow{
 		minBtnClkY = (numMainFlagsToShow+3) * yOff + clkFlgsStY;										//start of buttons from under boolean flags
 		//all ui ojbects for all windows will follow this format and share the x[0] value
 		initUIClickCoords(rectDim[0] + xLblOffsetMult * rectDim[2],minBtnClkY + (guiBtnRowNames.length * 2.0f) * yOff,rectDim[0] + .99f * rectDim[2],0);//last val over-written by actual value in buildGuiObjs
-		guiObjs = new Base_GUIObj[0];			//list of modifiable gui objects
 		uiClkCoords[3] = uiClkCoords[1]-20;
 	}//setupGUIObjsAras
 	
@@ -365,9 +361,9 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void handleSideMenuDebugSelDisable(int btn) {	}
 	@Override
-	protected boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld){		return false;	}
+	protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld){		return false;	}
 	@Override
-	protected boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
+	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
 		if((!MyMathUtils.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}//not in this window's bounds, quit asap for speedz
 		int i = (int)((mouseY-(btnLblYOff + clkFlgsStY))/(yOff));					//TODO Awful - needs to be recalced, dependent on menu being on left
 		if((i>=0) && (i<numMainFlagsToShow)){
@@ -380,12 +376,12 @@ public class SidebarMenu extends Base_DispWindow{
 		return false;
 	}
 	@Override
-	public boolean hndlMouseDragIndiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {//regular UI obj handling handled elsewhere - custom UI handling necessary to call main window		
-		//boolean res = pa.getCurFocusDispWindow().hndlMouseDragIndiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
-		boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDragIndiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);	
+	public boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {//regular UI obj handling handled elsewhere - custom UI handling necessary to call main window		
+		//boolean res = pa.getCurFocusDispWindow().hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
+		boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);	
 		return res;	}
 	@Override
-	public void hndlMouseRelIndiv() {	clearAllBtnStates();}
+	public void hndlMouseRel_Indiv() {	clearAllBtnStates();}
 
 	private void drawSideBarBooleans(){
 		//draw main booleans and their state
@@ -449,7 +445,7 @@ public class SidebarMenu extends Base_DispWindow{
 	public final void drawCustMenuObjs(float animTimeMod){}	
 	//no custom camera handling for menu , float rx, float ry, float dz are all now member variables of every window
 	@Override
-	protected final void setCameraIndiv(float[] camVals){}
+	protected final void setCamera_Indiv(float[] camVals){}
 	@Override
 	public void hndlFileLoad(File file, String[] vals, int[] stIdx) {
 		hndlFileLoad_GUI(vals, stIdx);
@@ -487,18 +483,18 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void stopMe() {}
 	@Override
-	protected final void addSScrToWinIndiv(int newWinKey){}
+	protected final void addSScrToWin_Indiv(int newWinKey){}
 	@Override
-	protected final void addTrajToScrIndiv(int subScrKey, String newTrajKey){}
+	protected final void addTrajToScr_Indiv(int subScrKey, String newTrajKey){}
 	@Override
-	protected final void delSScrToWinIndiv(int idx) {}	
+	protected final void delSScrToWin_Indiv(int idx) {}	
 	@Override
-	protected final void delTrajToScrIndiv(int subScrKey, String newTrajKey) {}		
+	protected final void delTrajToScr_Indiv(int subScrKey, String newTrajKey) {}		
 	//no trajectory here
 	@Override
-	public final void processTrajIndiv(DrawnSimpleTraj drawnTraj){}	
+	public final void processTraj_Indiv(DrawnSimpleTraj drawnTraj){}	
 	@Override
-	protected final void initDrwnTrajIndiv(){}
+	protected final void initDrwnTraj_Indiv(){}
 	@Override
 	public String toString(){
 		String res = super.toString();

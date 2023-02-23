@@ -97,7 +97,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * always idx 0 - first window is always right side menu
 	 */
-	public static final int dispMenuIDX = 0;	
+	private static final int dispMenuIDX = 0;
 	/**
 	 * which Base_DispWindow currently has focus
 	 */
@@ -658,6 +658,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void initOnce() {
 		//1-time init for program and windows
+		setVisFlag(dispMenuIDX, true);					//show input UI menu
 		initOnce_Indiv();
 		//initProgram is called every time reinitialization is desired
 		initProgram();		
@@ -747,28 +748,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
 				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
 	}
-	
-	/**
-	 * initialize menu window
-	 * @param _showUIMenuIDX
-	 */
-	public final void buildInitMenuWin() {
-		//init sidebar menu vals
-		for(int i=0;i<dispWinFlags[dispMenuIDX].length;++i) {dispWinFlags[dispMenuIDX][i] = false;}
-		//set up dims for menu
-		winRectDimOpen[dispMenuIDX] =  new float[]{0,0, menuWidth, viewHeight};
-		winRectDimClose[dispMenuIDX] =  new float[]{0,0, hideWinWidth, viewHeight};
-		
-		winFillClrs[dispMenuIDX] = new int[]{255,255,255,255};
-		winStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};
-		
-		winTrajFillClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window
-		winTrajStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window		
-		winTitles[dispMenuIDX] = "UI Window";
-		winDescr[dispMenuIDX] = "User Controls";
-		
-	}//setIniMenuWin
-	
+
 	/**
 	 * call once for each display window before calling constructor. Sets essential values describing windows
 	 * @param _winIDX The index in the various window-descriptor arrays for the dispWindow being set
@@ -822,11 +802,25 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _dbgBtnNames array of names for each debug button. If array is empty then no debug buttons will be handled.
 	 * @param _inclWinNames include the names of all the instanced windows
 	 * @param _inclMseOvValues include a row for possible mouse over values
-	 * @return
 	 */
-	public final SidebarMenu buildSideBarMenu(int wIdx, int fIdx, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
+	public final void buildSideBarMenu(String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
+		//init sidebar menu vals
+		for(int i=0;i<dispWinFlags[dispMenuIDX].length;++i) {dispWinFlags[dispMenuIDX][i] = false;}
+		//set up dims for menu
+		winRectDimOpen[dispMenuIDX] =  new float[]{0,0, menuWidth, viewHeight};
+		winRectDimClose[dispMenuIDX] =  new float[]{0,0, hideWinWidth, viewHeight};
+		
+		winFillClrs[dispMenuIDX] = new int[]{255,255,255,255};
+		winStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};
+		
+		winTrajFillClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window
+		winTrajStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window		
+		winTitles[dispMenuIDX] = "UI Window";
+		winDescr[dispMenuIDX] = "User Controls";
+		
+		int wIdx = 0;
 		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _inclWinNames, _inclMseOvValues);
-		return new SidebarMenu(ri, this, wIdx, fIdx, sideBarConfig);		
+		dispWinFrames[wIdx] = new SidebarMenu(ri, this, wIdx, sideBarConfig);		
 	}
 	
 	//set up initial colors for primary flags for display
@@ -879,7 +873,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 					//selectOutput("Select a file to save to : ", "saveToFile", currFileIOLoc);
 					break;}
 			}
-			getSideBarMenuWindow().hndlMouseRelIndiv();
+			getSideBarMenuWindow().hndlMouseRel_Indiv();
 		}
 	}//handleFileCmd
 	
@@ -1120,12 +1114,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param xOffHalf
 	 * @param yOffHalf
 	 */
+	private final int[] btnGreyClr = new int[]{180,180,180};
 	public final void dispMenuText(float xOffHalf, float yOffHalf) {
 		for(int idx =0; idx<numFlagsToShow; ++idx){
-		int i = flagsToShow.get(idx);
-			if(getBaseFlag(i) ){											dispMenuTxtLat(truePFlagNames[i],pFlagColors[i], true, xOffHalf,yOffHalf);			}
-			else {	if(truePFlagNames[i].equals(falsePFlagNames[i])) {		dispMenuTxtLat(truePFlagNames[i],new int[]{180,180,180}, false, xOffHalf,yOffHalf);}	
-					else {													dispMenuTxtLat(falsePFlagNames[i],new int[]{0,255-pFlagColors[i][1],255-pFlagColors[i][2]}, true, xOffHalf,yOffHalf);}		
+			int i = flagsToShow.get(idx);
+			if(getBaseFlag(i) ){										dispMenuTxtLat(truePFlagNames[i], pFlagColors[i], true, xOffHalf,yOffHalf);}
+			else {	
+				if(truePFlagNames[i].equals(falsePFlagNames[i])) {		dispMenuTxtLat(truePFlagNames[i], btnGreyClr, false, xOffHalf,yOffHalf);}	
+				else {													dispMenuTxtLat(falsePFlagNames[i], new int[]{0,255-pFlagColors[i][1],255-pFlagColors[i][2]}, true, xOffHalf,yOffHalf);}		
 			}
 		}
 	}//dispMenuText
@@ -1527,7 +1523,22 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param idx
 	 * @return
 	 */
-	public abstract float[] getUIRectVals(int idx);
+	public final float[] getUIRectVals(int idx) {
+		switch(idx){
+			case dispMenuIDX 		: {return new float[0];}			//idx 0 is parent menu sidebar
+			default 	:{
+				return getUIRectVals_Indiv(idx, dispWinFrames[dispMenuIDX].uiClkCoords);
+			}
+		}
+	}//getUIRectVals
+	
+	/**
+	 * Individual window handling
+	 * @param idx window index
+	 * @param menuRectVals rectValus from left side menu
+	 * @return
+	 */
+	protected abstract float[] getUIRectVals_Indiv(int idx, float[] menuRectVals);
 	
 	/**
 	 * return a list of labels to apply to mse-over display select buttons - an empty or null list will not display option
@@ -1583,15 +1594,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//c.clearMsDepth();
 	}//mouseReleased
 
-	//determine primary application flags that are actually being displayed or not displayed
-	private final void _setBaseFlagToShow(int idx, boolean val) {
-		HashMap<Integer, Integer> tmpMapOfFlags = new HashMap<Integer, Integer>();
-		for(Integer flag : flagsToShow) {			tmpMapOfFlags.put(flag, 0);		}
-		if(val) {tmpMapOfFlags.put(idx, 0);	} else {tmpMapOfFlags.remove(idx);}
-		flagsToShow = new ArrayList<Integer>(tmpMapOfFlags.keySet());
-		numFlagsToShow = flagsToShow.size();
-	}//_setBaseFlagToShow
-	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// state and control flag handling
 	/**
@@ -1615,7 +1617,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void setVisFlag(int idx, boolean val ){
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		_visFlags[flIDX] = (val ?  _visFlags[flIDX] | mask : _visFlags[flIDX] & ~mask);
-		setVisFlag_Indiv(idx, val);
+		switch (idx){
+			case dispMenuIDX 	: { dispWinFrames[dispMenuIDX].dispFlags.setShowWin(val);    break;}
+			default 			: {	setVisFlag_Indiv(idx, val);	}
+		}
 	}
 
 	/**
@@ -1742,14 +1747,37 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void setSaveAnim(boolean val) {setBaseFlag(saveAnim, val);}
 	public final void toggleSaveAnim() {setBaseFlag(saveAnim, !getBaseFlag(saveAnim));}
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	// flags to show
+	// Top-level UI flags to show
 	protected final void setBaseFlagToShow_debugMode(boolean val) {_setBaseFlagToShow(debugMode, val);}
 	protected final void setBaseFlagToShow_saveAnim(boolean val) {_setBaseFlagToShow(saveAnim, val);}
 	protected final void setBaseFlagToShow_runSim(boolean val) {_setBaseFlagToShow(runSim, val);}
 	protected final void setBaseFlagToShow_singleStep(boolean val) {_setBaseFlagToShow(singleStep, val);}
 	protected final void setBaseFlagToShow_showRtSideMenu(boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}	
 	
-		
+	public final boolean getBaseFlagIsShown_debugMode() {return _getBaseFlagIsShown(debugMode);}
+	public final boolean getBaseFlagIsShown_saveAnim() {return _getBaseFlagIsShown(saveAnim);}
+	public final boolean getBaseFlagIsShown_runSim() {return _getBaseFlagIsShown(runSim);}
+	public final boolean getBaseFlagIsShown_singleStep() {return _getBaseFlagIsShown(singleStep);}
+	public final boolean getBaseFlagIsShown_showRtSideMenu() {return _getBaseFlagIsShown(showRtSideMenu);}
+	
+
+	//determine primary application flags that are actually being displayed or not displayed
+	private final void _setBaseFlagToShow(int idx, boolean val) {
+		HashMap<Integer, Integer> tmpMapOfFlags = new HashMap<Integer, Integer>();
+		for(Integer flag : flagsToShow) {			tmpMapOfFlags.put(flag, 0);		}
+		if(val) {tmpMapOfFlags.put(idx, 0);	} else {tmpMapOfFlags.remove(idx);}
+		flagsToShow = new ArrayList<Integer>(tmpMapOfFlags.keySet());
+		numFlagsToShow = flagsToShow.size();
+	}//_setBaseFlagToShow
+	
+	private final boolean _getBaseFlagIsShown(int idx) {
+		for(Integer flag : flagsToShow) { if (flag == idx) {return true;}}
+		return false;
+	}
+	
+	
+	
+	
 	public abstract double clickValModMult();
 	public abstract boolean isClickModUIVal();
 

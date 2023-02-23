@@ -286,7 +286,7 @@ public class TrajectoryManager {
 //				if(tmpTreeMap == null) {tmpTreeMap = new TreeMap<String,ArrayList<DrawnSimpleTraj>>();} 
 //			}
 			tmpTreeMap.put(getTrajAraKeyStr(curTrajAraIDX), tmpAra);
-			ownr.processTrajIndiv(drawnTraj);
+			ownr.processTraj_Indiv(drawnTraj);
 		}	
 		//individual traj processing
 	}
@@ -367,13 +367,13 @@ public class TrajectoryManager {
 	 * Draw text for notifications regarding process of drawing or editing trajectory
 	 * 
 	 */
-	public void drawNotifications(IRenderInterface ri){		
+	public void drawNotifications(IRenderInterface ri, float xLoc, float yLoc){		
 		if(!getFlags(canDrawTraj)) {return;}
 		//debug stuff
 		ri.pushMatState();	
 		ri.translate(ownr.rectDim[0]+20,ownr.rectDim[1]+ownr.rectDim[3]-70, 0);
-		Base_DispWindow.AppMgr.dispMenuTxtLat("Drawing trajectory curve", ri.getClr((getFlags(drawingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, Base_DispWindow.xOffHalf,Base_DispWindow.yOffHalf);
-		Base_DispWindow.AppMgr.dispMenuTxtLat("Editing trajectory curve", ri.getClr((getFlags(editingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, Base_DispWindow.xOffHalf,Base_DispWindow.yOffHalf);
+		Base_DispWindow.AppMgr.dispMenuTxtLat("Drawing trajectory curve", ri.getClr((getFlags(drawingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, xLoc, yLoc);
+		Base_DispWindow.AppMgr.dispMenuTxtLat("Editing trajectory curve", ri.getClr((getFlags(editingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, xLoc, yLoc);
 		ri.popMatState();		
 	}//drawNotifications
 

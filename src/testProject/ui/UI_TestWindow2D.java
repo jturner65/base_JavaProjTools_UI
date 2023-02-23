@@ -15,11 +15,23 @@ import testProject.uiData.UITestDataUpdater_2D;
 
 public class UI_TestWindow2D extends Base_DispWindow {
 
-	public UI_TestWindow2D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, int _flagIdx) {
-		super(_p, _AppMgr, _winIdx, _flagIdx);
+	public UI_TestWindow2D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
+		super(_p, _AppMgr, _winIdx);
 		super.initThisWin(false);
 	}
 
+	@Override
+	protected void initDispFlags() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void initMe() {
+		// TODO Auto-generated method stub
+
+	}
+	
 	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {
 		return new UITestDataUpdater_2D(this);
@@ -110,31 +122,31 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	}
 
 	@Override
-	protected void initDrwnTrajIndiv() {
+	protected void initDrwnTraj_Indiv() {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	protected void addSScrToWinIndiv(int newWinKey) {
+	protected void addSScrToWin_Indiv(int newWinKey) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	protected void addTrajToScrIndiv(int subScrKey, String newTrajKey) {
+	protected void addTrajToScr_Indiv(int subScrKey, String newTrajKey) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	protected void delSScrToWinIndiv(int idx) {
+	protected void delSScrToWin_Indiv(int idx) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	protected void delTrajToScrIndiv(int subScrKey, String newTrajKey) {
+	protected void delTrajToScr_Indiv(int subScrKey, String newTrajKey) {
 		// TODO Auto-generated method stub
 
 	}
@@ -152,19 +164,19 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	}
 
 	@Override
-	protected boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld) {
+	protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	protected boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
+	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	protected boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D,
+	protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D,
 			myVector mseDragInWorld, int mseBtn) {
 		// TODO Auto-generated method stub
 		return false;
@@ -177,7 +189,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	}
 
 	@Override
-	protected void hndlMouseRelIndiv() {
+	protected void hndlMouseRel_Indiv() {
 		// TODO Auto-generated method stub
 
 	}
@@ -214,7 +226,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	}
 
 	@Override
-	public void processTrajIndiv(DrawnSimpleTraj drawnTraj) {
+	public void processTraj_Indiv(DrawnSimpleTraj drawnTraj) {
 		// TODO Auto-generated method stub
 
 	}
@@ -229,18 +241,6 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	public ArrayList<String> hndlFileSave(File file) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	protected void initDispFlags() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void initMe() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -274,7 +274,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	}
 
 	@Override
-	protected void setCameraIndiv(float[] camVals) {
+	protected void setCamera_Indiv(float[] camVals) {
 		// TODO Auto-generated method stub
 
 	}
