@@ -31,7 +31,7 @@ public class SidebarMenu extends Base_DispWindow{
 			usesMseOvrBtnDispIDX		= 3,					//this menu uses mouse-over display text
 			usesDbgBtnDispIDX			= 4;					//this menu displays debug side bar buttons
 	//private flag based buttons - ui menu won't have these
-	private static final int numPrivFlags = 4;
+	private static final int numPrivFlags = 5;
 	
 	//GUI Buttons
 	public float minBtnClkY;			
@@ -205,12 +205,8 @@ public class SidebarMenu extends Base_DispWindow{
 	 * @return
 	 */
 	public final String getSidebarMenuButtonLabel(int row, int col) {
-		if(row >= guiBtnLabels.length) {
-			return "Row " +row+" too high for max rows : "+guiBtnLabels.length;
-		}
-		if(col >= guiBtnLabels[row].length) {
-			return "Col " +col+" too high for max cols @ row " + row+" : "+guiBtnLabels[row].length;
-		}
+		if(row >= guiBtnLabels.length) {		return "Row " +row+" too high for max rows : "+guiBtnLabels.length;}
+		if(col >= guiBtnLabels[row].length) {	return "Col " +col+" too high for max cols @ row " + row+" : "+guiBtnLabels[row].length;}
 		return guiBtnLabels[row][col];}
 	
 	public Boolean[][] getGuiBtnWaitForProc() {return guiBtnWaitForProc;}
