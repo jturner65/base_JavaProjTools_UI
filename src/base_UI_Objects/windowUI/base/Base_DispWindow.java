@@ -83,11 +83,6 @@ public abstract class Base_DispWindow {
 		
 	public String[] truePrivFlagLabels; //needs to be in order of flags	
 	public String[] falsePrivFlagLabels;//needs to be in order of flags
-	/**
-	 * # of priv flags from base class and instancing class
-	 */
-	protected int _numPrivFlags;
-
 	
 		//for boolean buttons based on child-class window specific values
 	private int[][] privFlagTrueColors;
@@ -218,7 +213,7 @@ public abstract class Base_DispWindow {
 	
 	/**
 	 * Must be called by inheriting class constructor!
-	 * @param _isMenu
+	 * @param _isMenu whether this window is the side-bar menu window or not
 	 */
 	public final void initThisWin(boolean _isMenu){
 		dispFlags = new WinDispStateFlags(this);
@@ -263,7 +258,7 @@ public abstract class Base_DispWindow {
 		//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
 		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);				
 		//initialize arrays to hold idxs of int and float items being created.
-		guiFloatValIDXs= new ArrayList<Integer>();
+		guiFloatValIDXs = new ArrayList<Integer>();
 		guiIntValIDXs = new ArrayList<Integer>();		
 		if(!_isMenu){
 			//build ui objects - not used for sidebar menu
@@ -273,7 +268,7 @@ public abstract class Base_DispWindow {
 		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
 		//  set up all window-specific boolean buttons for this window
 		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
-		_numPrivFlags = initAllPrivBtns(tmpBtnNamesArray);
+		int _numPrivFlags = initAllPrivBtns(tmpBtnNamesArray);
 		//initialize all private buttons based on values put in arraylist
 		_buildAllPrivButtons(tmpBtnNamesArray);
 		// init specific sim flags
@@ -303,7 +298,7 @@ public abstract class Base_DispWindow {
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, (float)guiObjs[idx].getVal());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
-		for(Integer i=0;i<this._numPrivFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
+		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}//buildUIUpdateStruct
 	
@@ -548,9 +543,9 @@ public abstract class Base_DispWindow {
 	 * @param val
 	 */
 	public final void handleDispFlagsDebugMode(boolean val) {
-		msgObj.dispInfoMessage(className, "handleDispFlagsDebugMode", "Start UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
+		msgObj.dispDebugMessage(className, "handleDispFlagsDebugMode", "Start UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
 		handlePrivFlagsDebugMode_Indiv(val);
-		msgObj.dispInfoMessage(className, "handleDispFlagsDebugMode", "End UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
+		msgObj.dispDebugMessage(className, "handleDispFlagsDebugMode", "End UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
 	}
 	protected abstract void handleDispFlagsDebugMode_Indiv(boolean val);
 
@@ -559,9 +554,9 @@ public abstract class Base_DispWindow {
 	 * @param val
 	 */
 	public final void handlePrivFlagsDebugMode(boolean val) {
-		msgObj.dispInfoMessage(className, "handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ val +".");
+		msgObj.dispDebugMessage(className, "handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ val +".");
 		handlePrivFlagsDebugMode_Indiv(val);
-		msgObj.dispInfoMessage(className, "handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ val +".");
+		msgObj.dispDebugMessage(className, "handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ val +".");
 	}
 	
 	/**

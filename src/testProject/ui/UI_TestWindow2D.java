@@ -297,4 +297,4 @@ public class UI_TestWindow2D extends Base_DispWindow {
 
 	}
 
-}
+}//class UI_TestWindow2D
