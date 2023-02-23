@@ -19,7 +19,7 @@ public class WinDispStateFlags extends Base_BoolFlags {
 		useRndBtnClrs		= _numBaseFlags + 7,	
 		useCustCam			= _numBaseFlags + 8,			//whether or not to use a custom camera for this window
 		drawMseEdge			= _numBaseFlags + 9,			//whether or not to draw the mouse location/edge from eye/projection onto box
-		drawRightSideMenu	= _numBaseFlags + 10,			//whether this window has a right-side info menu overlay
+		hasRightSideMenu	= _numBaseFlags + 10,			//whether this window has a right-side info menu overlay
 		showRightSideMenu	= _numBaseFlags + 11,			//whether this window is currently showing right side info menu, or if it is minimized
 		clearPrivBtns		= _numBaseFlags + 12;			//momentary priv buttons have been set, need to be cleared next frame
 				
@@ -156,20 +156,20 @@ public class WinDispStateFlags extends Base_BoolFlags {
 	 * @param visible
 	 */
 	public final void setRtSideInfoWinSt(boolean visible) {
-		if(getFlag(drawRightSideMenu)) {setFlag(showRightSideMenu,visible);}
+		if(getFlag(hasRightSideMenu)) {setFlag(showRightSideMenu,visible);}
 	}
 	
 	/**
 	 * Whether able to draw right side menu
 	 * @return
 	 */
-	public final boolean getDrawRtSideMenu() {return getFlag(drawRightSideMenu);}
+	public final boolean getHasRtSideMenu() {return getFlag(hasRightSideMenu);}
 	
 	/**
 	 * Whether able to draw right side menu
 	 * @return
 	 */
-	public final void setDrawRtSideMenu(boolean val) {setFlag(drawRightSideMenu, val);}	
+	public final void setHasRtSideMenu(boolean val) {setFlag(hasRightSideMenu, val);}	
 	
 	/**
 	 * Whether to show right side menu
@@ -213,10 +213,10 @@ public class WinDispStateFlags extends Base_BoolFlags {
 		case useCustCam			: { break;}
 		case drawMseEdge		: { break;}
 		case clearPrivBtns		: { break;}
-		case drawRightSideMenu  : { break;}	//can drawn right side menu
+		case hasRightSideMenu  : { break;}	//can drawn right side menu
 		case showRightSideMenu  : { 		
 			//modify the dimensions of the visible window based on whether the side bar menu is shown
-			if(getFlag(drawRightSideMenu)) {
+			if(getFlag(hasRightSideMenu)) {
 				owner.handleShowRtSideMenu(val);
 			}
 			break;}		

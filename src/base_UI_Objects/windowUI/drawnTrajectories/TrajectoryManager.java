@@ -286,7 +286,7 @@ public class TrajectoryManager {
 //				if(tmpTreeMap == null) {tmpTreeMap = new TreeMap<String,ArrayList<DrawnSimpleTraj>>();} 
 //			}
 			tmpTreeMap.put(getTrajAraKeyStr(curTrajAraIDX), tmpAra);
-			ownr.processTrajIndiv(drawnTraj);
+			ownr.processTraj_Indiv(drawnTraj);
 		}	
 		//individual traj processing
 	}
