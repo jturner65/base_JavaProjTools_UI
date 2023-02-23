@@ -3,6 +3,7 @@ package base_UI_Objects;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.HashMap;
 
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
@@ -30,8 +31,10 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	//animation control variables	
 	public final float maxAnimCntr = MyMathUtils.PI_F*1000.0f, baseAnimSpd = 1.0f;
 	
-	//giant sphere encapsulating entire scene
-	private PShape bgrndSphere;	
+	//array of giant spheres encapsulating entire 3D scene - allows for different ones for each 3D window
+	private HashMap<Integer, PShape> bgrndSphereAra;	
+	//array of background colors for every window
+	private HashMap<Integer, int[]> bgrndColorAra;
 		
 	////////////////////////
 	// code
@@ -58,10 +61,12 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 */
 	@Override
 	public void initRenderInterface() {
-		//initialize constants
+		bgrndSphereAra = new HashMap<Integer, PShape>();
+		bgrndColorAra = new HashMap<Integer, int[]>();
 	}
 	
 	//processing being run in eclipse uses settings for variable size dimensions
+	@Override
 	public void settings(){	
 		AppMgr.setIRenderInterface(this);
 		int[] desDims = AppMgr.getIdealAppWindowDims();
@@ -71,28 +76,50 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}
 	
 	/**
+	 * Set the background painted color for specified window idx
+	 * @param winIdx window idx to set color for
+	 * @param r
+	 * @param g
+	 * @param b
+	 * @param alpha
+	 */	
+	@Override
+	public final void setRenderBackground(int winIdx, int r, int g, int b, int alpha) {
+		bgrndColorAra.put(winIdx, new int[] {r,g,b,alpha});
+	}
+	
+	/**
 	 * Load a background "skybox" sphere using texture from filename
 	 * @param filename Texture to use for background skybox sphere
 	 */
 	@Override
-	public void loadBkgndSphere(String filename) {
-		int sDet = getSphereDetail();
+	public void loadBkgndSphere(int winIdx, String filename) {
+		//save current sphere detail
+		int sPrevDet = getSphereDetail();
 		setSphereDetail(100);
 		PImage bgrndTex = loadImage(filename);
-		bgrndSphere = createShape(PConstants.SPHERE, 10000);
+		PShape bgrndSphere = createShape(PConstants.SPHERE, 10000);
 		bgrndSphere.setTexture(bgrndTex);
 		bgrndSphere.rotate(MyMathUtils.HALF_PI_F,-1,0,0);
 		bgrndSphere.setStroke(false);	
-		setRenderBackground(getClr(gui_White, 255), 255);		
+		bgrndSphereAra.put(winIdx, bgrndSphere);
+		setRenderBackground(winIdx,getClr(gui_White, 255), 255);		
 		shape(bgrndSphere);	
-		setSphereDetail(sDet);
+		//reset detail
+		setSphereDetail(sPrevDet);
 	}
 	/**
 	 * Set loaded background sphere as skybox
+	 * @param winIdx the idx of the skybox to draw
 	 */
 	@Override
-	public void setBkgndSphere() {
-		shape(bgrndSphere);	
+	public void drawBkgndSphere(int winIdx) {
+		PShape shape = bgrndSphereAra.get(winIdx);
+		if(shape==null) {
+			System.out.println("ERROR! No background sphere specified for window idx :"+winIdx);
+			drawRenderBackground(winIdx);
+		}
+		shape(bgrndSphereAra.get(winIdx));	
 	}
 	
 	
@@ -105,30 +132,24 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		textureMode(NORMAL);			
 		rectMode(CORNER);	
 		sphereDetail(4);
-		//potentially override setup variables on per-project basis
-		AppMgr.setup_Indiv();
-		
-		System.out.println("Current sketchPath " + sketchPath());
-		
-		//Initialize application
-		AppMgr.setupAppInit(width, height);
-		
-		//call this in first draw loop?
-		AppMgr.initOnce();		
+		//Set up application
+		AppMgr.setupApp(width, height);
+
 		//needs to be the last thing called in setup, to avoid timeout 5000ms issue
 		frameRate(frate);
 	}//setup()
 	
 	/**
-	 * Set the background painted color
-	 * @param r
-	 * @param g
-	 * @param b
-	 * @param alpha
+	 * Draw the specified window's background color
+	 * @param winIdx the window whose background to draw
 	 */
 	@Override
-	public void setRenderBackground(int r, int g, int b, int alpha) {
-		super.background(r,g,b,alpha);
+	public void drawRenderBackground(int winIdx) {
+		int[] bGroundAra = bgrndColorAra.get(winIdx);
+		if (bGroundAra == null) {
+			bGroundAra = getClr(gui_White, 255);
+		}
+		super.background(bGroundAra[0],bGroundAra[1],bGroundAra[2],bGroundAra[3]);
 	}
 	
 	/**
@@ -445,12 +466,12 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void drawCircle3D(myPoint P, double r, myVector I, myVector J, int n) {
 		myPoint[] pts = AppMgr.buildCircleInscribedPoints(P,r,I,J,n);
-		pushMatState();noFill(); show(pts);popMatState();
+		pushMatState();noFill(); drawShapeFromPts(pts);popMatState();
 	}
 	@Override
 	public void drawCircle3D(myPointf P, float r, myVectorf I, myVectorf J, int n) {
 		myPointf[] pts = AppMgr.buildCircleInscribedPoints(P,r,I,J,n);
-		pushMatState();noFill(); show(pts);popMatState();
+		pushMatState();noFill(); drawShapeFromPts(pts);popMatState();
 	} 
 	
 	/**
@@ -824,8 +845,17 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		sphere((float)r); 
 		popMatState();} // render sphere of radius r and center P)
 	
-	public void show(myPoint[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(true);};                     
-	public void show(myPoint[] ara, myVector norm) {gl_beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(true);};   
+	public void drawShapeFromPts(myPoint[] ara) {
+		gl_beginShape(); 
+		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
+		gl_endShape(true);
+	}                     
+	public void drawShapeFromPts(myPoint[] ara, myVector norm) {
+		gl_beginShape();
+		gl_normal(norm); 
+		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
+		gl_endShape(true);
+	}   
 	
 	///////////
 	// end double points
@@ -985,8 +1015,17 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		 popMatState();
 	} // render sphere of radius r and center P)
 	
-	public void show(myPointf[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(true);};                     
-	public void show(myPointf[] ara, myVectorf norm) {gl_beginShape();gl_normal(norm); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape(true);};                     
+	public void drawShapeFromPts(myPointf[] ara) {
+		gl_beginShape(); 
+		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
+		gl_endShape(true);
+	}                     
+	public void drawShapeFromPts(myPointf[] ara, myVectorf norm) {
+		gl_beginShape();
+		gl_normal(norm); 
+		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
+		gl_endShape(true);
+	}                     
 	
 	public void showNoClose(myPoint[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape();};                     
 	public void showNoClose(myPointf[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape();};   

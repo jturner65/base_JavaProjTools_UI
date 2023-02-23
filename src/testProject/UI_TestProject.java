@@ -35,6 +35,11 @@ public class UI_TestProject extends GUI_AppManager {
 							disp2DResIDX = 2;	
 	
 	/**
+	 * Whether to use skybox or not
+	 */
+	private final boolean[] useSkybox = new boolean[] {false,true,false};
+	
+	/**
 	 * Background color
 	 */
 	public final int[] bground = new int[]{244,244,255,255};
@@ -60,7 +65,7 @@ public class UI_TestProject extends GUI_AppManager {
 	}
 
 	@Override
-	protected void setSmoothing() {		pa.setSmoothing(0);		}
+	protected void setSmoothing() {		ri.setSmoothing(0);		}
 	/**
 	 * whether or not we want to restrict window size on widescreen monitors
 	 * 
@@ -72,9 +77,16 @@ public class UI_TestProject extends GUI_AppManager {
 	protected int setAppWindowDimRestrictions() {	return 1;}	
 
 	@Override
-	protected void setBkgrnd() {
-		pa.setRenderBackground(bground[0],bground[1],bground[2],bground[3]);		
-	}
+	protected boolean getUseSkyboxBKGnd(int winIdx) {return useSkybox[winIdx];}
+
+	@Override
+	protected String getSkyboxFilename(int winIdx) {return "bkgrndTex.jpg";}
+
+	@Override
+	protected int[] getBackgroundColor(int winIdx) {return bground;}
+
+	@Override
+	protected int getNumDispWindows() {	return numVisFlags;	}
 	
 	@Override
 	public String getPrjNmShrt() {return prjNmShrt;}
@@ -85,8 +97,9 @@ public class UI_TestProject extends GUI_AppManager {
 	
 	/**
 	 * Called in pre-draw initial setup, before first init
-	 * potentially override setup variables on per-project basis :
-	 * (Current settings in my_procApplet) 	
+	 * potentially override setup variables on per-project basis.
+	 * Do not use for setting background color or Skybox anymore.
+	 *  	(Current settings in my_procApplet) 	
 	 *  	strokeCap(PROJECT);
 	 *  	textSize(txtSz);
 	 *  	textureMode(NORMAL);			
@@ -94,9 +107,7 @@ public class UI_TestProject extends GUI_AppManager {
 	 *  	sphereDetail(4);	 * 
 	 */
 	@Override
-	protected void setup_Indiv() {
-		setBkgrnd();
-	}
+	protected void setupAppDims_Indiv() {}
 
 	@Override
 	protected void initBaseFlags_Indiv() {
@@ -110,10 +121,9 @@ public class UI_TestProject extends GUI_AppManager {
 	@Override
 	protected void initAllDispWindows() {
 		showInfo = true;
-		int numWins = numVisFlags;//includes 1 for menu window (never < 1)
 		String[] _winTitles = new String[]{"","UI Test Window 3D","UI Test Window 2D"},
 				_winDescr = new String[] {"", "Multi Flock Predator/Prey Boids 3D Simulation","Multi Flock Predator/Prey Boids 2D Simulation"};
-		initWins(numWins,_winTitles, _winDescr);
+		setWinTitlesAndDescs(_winTitles, _winDescr);
 		//call for menu window
 		buildInitMenuWin();
 		//instanced window dimensions when open and closed - only showing 1 open at a time
@@ -144,10 +154,10 @@ public class UI_TestProject extends GUI_AppManager {
 		//			//display window initialization	
 		wIdx = disp3DResIDX; fIdx = show3DWin;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,true,true,true}, new int[]{255,255,255,255},new int[]{0,0,0,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new UI_TestWindow3D(pa, this, wIdx, fIdx);
+		dispWinFrames[wIdx] = new UI_TestWindow3D(ri, this, wIdx, fIdx);
 		wIdx = disp2DResIDX; fIdx = show2DWin;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,false,true,false}, new int[]{50,40,20,255}, new int[]{255,255,255,255},new int[]{180,180,180,255},new int[]{100,100,100,255});
-		dispWinFrames[wIdx] = new UI_TestWindow2D(pa, this, wIdx, fIdx);
+		dispWinFrames[wIdx] = new UI_TestWindow2D(ri, this, wIdx, fIdx);
 
 		//specify windows that cannot be shown simultaneously here
 		initXORWins(new int[]{show3DWin,show2DWin}, new int[]{disp3DResIDX, disp2DResIDX});

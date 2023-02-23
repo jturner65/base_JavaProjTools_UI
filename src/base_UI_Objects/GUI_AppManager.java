@@ -3,6 +3,7 @@ package base_UI_Objects;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +36,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * rendering engine interface, providing expected methods.
 	 */
-	protected static IRenderInterface pa = null;
+	protected static IRenderInterface ri = null;
 	/**
 	 * 3d interaction stuff and mouse tracking
 	 */
@@ -48,7 +49,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * physical display width and height this project is running on
 	 */
-	protected static int _displayWidth, _displayHeight;
+	protected final int _displayWidth, _displayHeight;
 	
 	/**
 	 * Width and height of application window
@@ -81,7 +82,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Display Window-based values
 	/**
-	 * max ratio of width to height to use for application window initialization
+	 * max ratio of width to height to use for application window initialization for widescreen
 	 */
 	public final float maxWinRatio =  1.77777778f;	
 	
@@ -92,7 +93,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * set in instancing class - must be > 1
 	 */
-	protected int numDispWins;
+	protected final int numDispWins;
 	/**
 	 * always idx 0 - first window is always right side menu
 	 */
@@ -147,13 +148,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	private final float _dfltPopUpWinOpenFraction = .80f;
 	
-	
-	
 	/**
-	 * fraction of height popup win should use, from bottom of screen
+	 * height, and fraction of window height, popup win should use, from bottom of screen, when open
 	 */
 	protected float popUpWinHeight;
 	protected final float popUpWinOpenMult;
+	
+	/**
+	 * Whether or not this application uses a sphere background for each window
+	 */
+	protected boolean[] useSkyboxBKGndAra;
+	
 	/**
 	 * specify windows that cannot be shown simultaneously here and their flags
 	 */
@@ -310,9 +315,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// file IO variables
-	protected final String exeDir = Paths.get(".").toAbsolutePath().toString();
+	protected final Path exePath = Paths.get(".").toAbsolutePath();
+	//path string location
+	protected final String exeDir = exePath.toString();
 	//file location of current executable
-	protected File currFileIOLoc = Paths.get(".").toAbsolutePath().toFile();
+	protected File currFileIOLoc = exePath.toFile();
 	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -338,16 +345,31 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		_displayWidth = gd.getDisplayMode().getWidth();
 		_displayHeight = gd.getDisplayMode().getHeight();	
+		
 		menuWidthMult = getMenuWidthMult();
 		hideWinWidthMult = getHideWinWidthMult();
 		hideWinHeightMult = getHideWinHeightMult();
 		popUpWinOpenMult = getPopUpWinOpenMult();
-
+		//Get number of windows
+		numDispWins = getNumDispWindows();
+		//Init window structures
+		winRectDimOpen = new float[numDispWins][];
+		winRectDimClose = new float[numDispWins][];
+		//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
+		dispWinFlags = new boolean[numDispWins][numDispWinBoolFlags];
+		winFillClrs = new int[numDispWins][4];
+		winStrkClrs = new int[numDispWins][4];
+		winTrajFillClrs = new int[numDispWins][4];		//set to color constants for each window
+		winTrajStrkClrs = new int[numDispWins][4];	//set to color constants for each window
+		//whether each 3D window uses Skybox or color background 
+		useSkyboxBKGndAra= new boolean[numDispWins];
 	}//	
 	
 		
 	/**
-	 * invoke the renderer main function - this is called from instancing GUI_AppManager class
+	 * invoke the renderer main function for processing-based renderer - this is called 
+	 * from instancing GUI_AppManager class
+	 * TODO : remake this to be agnostic to render interface/applet
 	 * @param <T>
 	 * @param _appMgr
 	 * @param passedArgs
@@ -372,8 +394,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
     }//handleRuntimeArgs
 	
 	public final void setIRenderInterface(IRenderInterface _pa) {
-		if (null == pa) {pa=_pa;}
-		pa.initRenderInterface();
+		if (null == ri) {ri=_pa;}
+		ri.initRenderInterface();
 	}	
 	
 	/**
@@ -414,20 +436,34 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected abstract int setAppWindowDimRestrictions();
 		
 	public int getNumThreadsAvailable() {return Runtime.getRuntime().availableProcessors();}
-
+	
 	/**
-	 * called once, at beginning of IRenderInterface object initVisOnce()
-	 * @param width
-	 * @param height
+	 * Setup this application.  Called from render interface setup
+	 * @param width width of the application window
+	 * @param height height of the application window
 	 */
-	public final void setupAppInit(int width, int height) {
-		window = pa.getGLWindow();
+	public final void setupApp(int width, int height) {
+		//potentially override setup variables on per-project basis
+		setupAppDims_Indiv();
+		
+		//for every window, load either window color or window Skybox, depending on 
+		//per-window specification
+		for(int i=0;i<numDispWins;++i) {
+			useSkyboxBKGndAra[i] = getUseSkyboxBKGnd(i);
+			if (useSkyboxBKGndAra[i]) {
+				ri.loadBkgndSphere(i, getSkyboxFilename(i));
+			}
+			int[] bGroundClr = getBackgroundColor(i);
+			ri.setRenderBackground(i, bGroundClr, bGroundClr[3]);
+		}
+				
+		//Initialize application
+		//Set window to point to main GL window
+		window = ri.getGLWindow();
 		//init internal state flags structure
 		initBaseFlags();
-		
+		//Set dimensions for application based on applet window size and rebuild canvas
 		setAppWindowDims(width, height);
-		//build canvas
-		canvas = new Disp3DCanvas(this, pa, viewWidth, viewHeight);	
 		
 		//called after windows are built
 		initBaseFlags_Indiv();
@@ -446,11 +482,29 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		
 		// set milli time tracking
 		glblStartSimFrameTime = timeSinceStart();
-		glblLastSimFrameTime =  glblStartSimFrameTime;			
-	}//setupAppInit
+		glblLastSimFrameTime =  glblStartSimFrameTime;	
+		
+		
+		//call this in first draw loop also, if not setup yet
+		initOnce();
+	}
 	
 	/**
-	 * Set the application window width and height, on init or resize (TODO)
+	 * Called in pre-draw initial setup, before first init
+	 * potentially override setup variables on per-project basis.
+	 * Do not use for setting background color or Skybox anymore.
+	 *  	(Current settings in my_procApplet) 	
+	 *  	strokeCap(PROJECT);
+	 *  	textSize(txtSz);
+	 *  	textureMode(NORMAL);			
+	 *  	rectMode(CORNER);	
+	 *  	sphereDetail(4);	 * 
+	 */
+	protected abstract void setupAppDims_Indiv();		
+
+	
+	/**
+	 * Set the application window width and height and rebuild camera and canvas, on init or resize (TODO)
 	 * @param width
 	 * @param height
 	 */
@@ -458,7 +512,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		viewWidth = width;
 		viewHeight = height;
 		
-		System.out.println("Base applet width : " + viewWidth + " | height : " +  viewHeight);
+		msgObj.dispInfoMessage("GUI_AppManager","setAppWindowDims","Base applet width : " + viewWidth + " | height : " +  viewHeight);
 		
 		viewWidthHalf = viewWidth/2; 
 		viewHeightHalf = viewHeight/2;
@@ -476,7 +530,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		popUpWinHeight = viewHeight * popUpWinOpenMult;
 		// set cam vals
 		camVals = new float[]{0, 0, (float) (viewHeightHalf / Math.tan(MyMathUtils.PI/6.0)), 0, 0, 0, 0,1,0};		
-
+		//build canvas
+		canvas = new Disp3DCanvas(this, ri, viewWidth, viewHeight);	
 	}//setAppWindowWidth
 
 	/**
@@ -501,6 +556,33 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	protected float getPopUpWinOpenMult_Custom() {	return _dfltPopUpWinOpenFraction;}	
 	
+	/**
+	 * Whether or not the 3d window at winIdx of this application 
+	 * should use a sphere Skybox background. Ignored for 2D
+	 * @param winIdx the window idx
+	 * @return
+	 */
+	protected abstract boolean getUseSkyboxBKGnd(int winIdx);
+	
+	/**
+	 * Get the file name for the window skybox
+	 * @param winIdx
+	 * @return
+	 */
+	protected abstract String getSkyboxFilename(int winIdx);
+	
+	/**
+	 * Get the background color to use for the window at winIdx
+	 * @param winIdx
+	 * @return
+	 */
+	protected abstract int[] getBackgroundColor(int winIdx);
+	
+	/**
+	 * Returns the number of display windows in this application, including the sidebar menu
+	 * @return
+	 */
+	protected abstract int getNumDispWindows();
 	
 	/**
 	 * Provide multiplier for window width fraction. Needs to be [0,1]
@@ -548,9 +630,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public float[] getDefaultWinDimClosed() {return new float[]{menuWidth, 0, hideWinWidth,  viewHeight};}
-	
-	
-	
+
 	/**
 	 * Retrieves reasonable default pop-up window open dims
 	 * @return
@@ -562,21 +642,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public float[] getDefaultPopUpWinDimClosed() {return new float[]{menuWidth, viewHeight-hideWinHeight, hideWinWidth,  hideWinHeight};}
-	
-	
-		
-	
-	/**
-	 * Called in pre-draw initial setup, before first init
-	 * potentially override setup variables on per-project basis :
-	 * (Current settings in my_procApplet) 	
-	 *  	strokeCap(PROJECT);
-	 *  	textSize(txtSz);
-	 *  	textureMode(NORMAL);			
-	 *  	rectMode(CORNER);	
-	 *  	sphereDetail(4);	 * 
-	 */
-	protected abstract void setup_Indiv();	
+
 	/**
 	 * this is called to determine which main flags to display in the window
 	 */
@@ -617,26 +683,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected abstract void initProgram_Indiv();
 	
 	/**
-	 * set up window structures - called from instanced class of IRenderInterface
-	 * @param _numWins
+	 * Specify window titles and descriptions
 	 * @param _winTtls
 	 * @param _winDescs
 	 */
-	public final void initWins(int _numWins, String[] _winTtls, String[] _winDescs) {
-		numDispWins = _numWins;	//must be set here!
-		winRectDimOpen = new float[numDispWins][];
-		winRectDimClose = new float[numDispWins][];
-		//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
-		dispWinFlags = new boolean[numDispWins][numDispWinBoolFlags];
+	public final void setWinTitlesAndDescs(String[] _winTtls, String[] _winDescs) {
+		//display window initialization
+		dispWinFrames = new Base_DispWindow[numDispWins];	
+		
 		//need 1 per display window
 		winTitles = _winTtls;
 		winDescr = _winDescs;
-		winFillClrs = new int[numDispWins][4];
-		winStrkClrs = new int[numDispWins][4];
-		winTrajFillClrs = new int[numDispWins][4];		//set to color constants for each window
-		winTrajStrkClrs = new int[numDispWins][4];	//set to color constants for each window
-		//display window initialization
-		dispWinFrames = new Base_DispWindow[numDispWins];			
 	}//initWins
 	
 	//specify windows that cannot be shown simultaneously here
@@ -769,7 +826,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final SidebarMenu buildSideBarMenu(int wIdx, int fIdx, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
 		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _inclWinNames, _inclMseOvValues);
-		return new SidebarMenu(pa, this, wIdx, fIdx, sideBarConfig);		
+		return new SidebarMenu(ri, this, wIdx, fIdx, sideBarConfig);		
 	}
 	
 	//set up initial colors for primary flags for display
@@ -895,8 +952,16 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// draw/display functions
+	/**
+	 * Draw background
+	 * @param winIdx
+	 */
+	private final void drawBackground(int winIdx) {
+		if(useSkyboxBKGndAra[winIdx]) {	ri.drawBkgndSphere(winIdx);} 
+		else {					ri.drawRenderBackground(winIdx);}
+	}
+
 	
-	protected abstract void setBkgrnd();//{	background(_bground[0],_bground[1],_bground[2],_bground[3]);}//setBkgrnd
 	public boolean getShouldClearBKG() {return getBaseFlag(clearBKG);}
 	
 	/**
@@ -923,6 +988,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * primary sim and draw loop.  Called from draw in IRenderInterface class
 	 */
 	public boolean mainSimAndDrawLoop() {
+		//Finish final init if not done already
 		if(!isFinalInitDone()) {initOnce(); return false;}	
 		float modAmtMillis = getModAmtMillis();
 		//simulation section
@@ -932,7 +998,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//Draw UI and 
 		drawUI(modAmtMillis);												//draw UI overlay on top of rendered results			
 		//build window title
-		pa.setWindowTitle(getPrjNmLong(), ("IDX : " + curFocusWin + " : " + getCurFocusDispWindowName()));
+		ri.setWindowTitle(getPrjNmLong(), ("IDX : " + curFocusWin + " : " + getCurFocusDispWindowName()));
 		return true;
 	}//mainSimAndDrawLoop
 	
@@ -956,8 +1022,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * setup 
 	 */
 	protected void drawSetup(){
-		pa.setPerspective(MyMathUtils.THIRD_PI_F, aspectRatio, .5f, camVals[2]*100.0f);
-		pa.enableLights(); 	
+		ri.setPerspective(MyMathUtils.THIRD_PI_F, aspectRatio, .5f, camVals[2]*100.0f);
+		ri.enableLights(); 	
 		dispWinFrames[curFocusWin].drawSetupWin(camVals);
 	}//drawSetup
 	
@@ -965,27 +1031,25 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * main draw loop
 	 */
 	public final void drawMe(float modAmtMillis){
-		pa.pushMatState();
+		ri.pushMatState();
 		drawSetup();
 		boolean is3DDraw = (curFocusWin == -1) || (curDispWinIs3D()); 
 		if(is3DDraw){	//allow for single window to have focus, but display multiple windows	
 			//if refreshing screen, this clears screen, sets background
 			if(getShouldClearBKG()) {
-				setBkgrnd();				
+				drawBackground(curFocusWin);				
 				draw3D_solve3D(modAmtMillis);
-				canvas.buildCanvas();
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}
 				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);	}		
 			} else {
 				draw3D_solve3D(modAmtMillis);
-				canvas.buildCanvas();
 			}
-			pa.popMatState(); 
+			ri.popMatState(); 
 		} else {	//either/or 2d window
 			//2d windows paint window box so background is always cleared
 			canvas.buildCanvas();
 			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);
-			pa.popMatState(); 
+			ri.popMatState(); 
 			draw2D(modAmtMillis);
 		}
 		drawMePost_Indiv(modAmtMillis, is3DDraw);
@@ -1004,13 +1068,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param modAmtMillis
 	 */
 	private final void draw3D_solve3D(float modAmtMillis){
-		pa.pushMatState();
+		ri.pushMatState();
 		for(int i =1; i<numDispWins; ++i){
 			if((isShowingWindow(i)) && (dispWinFrames[i].getIs3DWindow())){	dispWinFrames[i].draw3D(modAmtMillis);}
 		}
-		pa.popMatState();
+		ri.popMatState();
 		//fixed xyz rgb axes for visualisation purposes and to show movement and location in otherwise empty scene
-		drawAxes(100,3, new myPoint(-viewWidth/2.0f+40,0.0f,0.0f), 200, false); 		
+		drawAxes(100,3, new myPoint(-viewWidth/2.0f+40,0.0f,0.0f), 200, false); 
+		//build target canvas
+		canvas.buildCanvas();
 	}//draw3D_solve3D
 	
 	/**
@@ -1026,12 +1092,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * draw bounding box for 3d
 	 */
 	public final void drawBoxBnds(){
-		pa.pushMatState();
-		pa.setStrokeWt(3f);
-		pa.noFill();
-		pa.setColorValStroke(IRenderInterface.gui_TransGray,255);		
-		pa.drawBox3D(gridDimX,gridDimY,gridDimZ);
-		pa.popMatState();
+		ri.pushMatState();
+		ri.setStrokeWt(3f);
+		ri.noFill();
+		ri.setColorValStroke(IRenderInterface.gui_TransGray,255);		
+		ri.drawBox3D(gridDimX,gridDimY,gridDimZ);
+		ri.popMatState();
 	}	
 	
 	/**
@@ -1039,16 +1105,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param p
 	 */
 	public final void drawProjOnBox(myPoint p){
-		//myPoint[]  projOnPlanes = new myPoint[6];
 		myPoint prjOnPlane;
-		//public final myPoint intersectPl(myPoint E, myVector T, myPoint A, myPoint B, myPoint C) { // if ray from E along T intersects triangle (A,B,C), return true and set proposal to the intersection point
-		pa.pushMatState();
-		pa.translate(-p.x,-p.y,-p.z);
+		ri.pushMatState();
+		ri.translate(-p.x,-p.y,-p.z);
 		for(int i  = 0; i< 6; ++i){				
 			prjOnPlane = bndChkInCntrdBox3D(intersectPl(p, boxNorms[i], boxWallPts[i][0],boxWallPts[i][1],boxWallPts[i][2]));				
-			pa.showPtAsSphere(prjOnPlane,5,5,IRenderInterface.rgbClrs[i/2],IRenderInterface.rgbClrs[i/2]);				
+			ri.showPtAsSphere(prjOnPlane,5,5,IRenderInterface.rgbClrs[i/2],IRenderInterface.rgbClrs[i/2]);				
 		}
-		pa.popMatState();
+		ri.popMatState();
 	}//drawProjOnBox
 
 	/**
@@ -1075,12 +1139,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param yOff y-dim offset
 	 */
 	public final void dispMenuTxtLat(String txt, int[] clrAra, boolean showSphere, float xOff, float yOff){
-		pa.setFill(clrAra, 255); 
-		pa.translate(xOff,yOff);
-		if(showSphere){pa.setStroke(clrAra, 255);		pa.drawSphere(5);	} 
-		else {	pa.noStroke();		}
-		pa.translate(-xOff,yOff);
-		pa.showText(""+txt,2.0f*xOff,-yOff*.5f);	
+		ri.setFill(clrAra, 255); 
+		ri.translate(xOff,yOff);
+		if(showSphere){ri.setStroke(clrAra, 255);		ri.drawSphere(5);	} 
+		else {	ri.noStroke();		}
+		ri.translate(-xOff,yOff);
+		ri.showText(""+txt,2.0f*xOff,-yOff*.5f);	
 	}
 	
 	/**
@@ -1093,26 +1157,26 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	protected void dispBoolStFlag(String txt, int[] clrAra, boolean state, float stMult, float yOff){
 		if(state){
-			pa.setFill(clrAra, 255); 
-			pa.setStroke(clrAra, 255);
+			ri.setFill(clrAra, 255); 
+			ri.setStroke(clrAra, 255);
 		} else {
-			pa.setColorValFill(IRenderInterface.gui_DarkGray,255); 
-			pa.noStroke();	
+			ri.setColorValFill(IRenderInterface.gui_DarkGray,255); 
+			ri.noStroke();	
 		}
-		pa.drawSphere(5);
+		ri.drawSphere(5);
 		//text(""+txt,-xOff,yOff*.8f);	
-		pa.showText(""+txt,stMult*txt.length(),yOff*.8f);	
+		ri.showText(""+txt,stMult*txt.length(),yOff*.8f);	
 	}	
 	
 	/**
 	 * draw state booleans at top of screen and their state
 	 */
 	public final void drawSideBarStateBools(float yOff){ //numStFlagsToShow
-		pa.translate(110,10);
+		ri.translate(110,10);
 		float xTrans = (int)((getMenuWidth()-100) / (1.0f*numStFlagsToShow));
 		for(int idx =0; idx<numStFlagsToShow; ++idx){
 			dispBoolStFlag(StateBoolNames[idx],stBoolFlagColors[idx], getStateFlagState(idx),StrWdMult[idx], yOff);			
-			pa.translate(xTrans,0);
+			ri.translate(xTrans,0);
 		}
 	}
 	
@@ -1121,9 +1185,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void drawWindowGuiObjs(float animTimeMod){
 		if(curFocusWin != -1){
-			pa.pushMatState();
+			ri.pushMatState();
 			dispWinFrames[curFocusWin].drawWindowGuiObjs(animTimeMod);					//draw what user-modifiable fields are currently available
-			pa.popMatState();	
+			ri.popMatState();	
 		}
 	}//	
 	
@@ -1151,46 +1215,46 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param centered whether axis should be centered at ctr or just in positive direction at ctr
 	 */
 	public final void drawAxes(double len, float stW, myPoint ctr, int alpha, boolean centered){//axes using current global orientation
-		pa.pushMatState();
-			pa.setStrokeWt(stW);
-			pa.setStroke(255,0,0,alpha);
+		ri.pushMatState();
+			ri.setStrokeWt(stW);
+			ri.setStroke(255,0,0,alpha);
 			if(centered){
 				double off = len*.5f;
-				pa.drawLine(ctr.x-off,ctr.y,ctr.z,ctr.x+off,ctr.y,ctr.z);pa.setStroke(0,255,0,alpha);pa.drawLine(ctr.x,ctr.y-off,ctr.z,ctr.x,ctr.y+off,ctr.z);pa.setStroke(0,0,255,alpha);pa.drawLine(ctr.x,ctr.y,ctr.z-off,ctr.x,ctr.y,ctr.z+off);} 
-			else {		pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+len,ctr.y,ctr.z);pa.setStroke(0,255,0,alpha);pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y+len,ctr.z);pa.setStroke(0,0,255,alpha);pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y,ctr.z+len);}
-		pa.popMatState();	
+				ri.drawLine(ctr.x-off,ctr.y,ctr.z,ctr.x+off,ctr.y,ctr.z);ri.setStroke(0,255,0,alpha);ri.drawLine(ctr.x,ctr.y-off,ctr.z,ctr.x,ctr.y+off,ctr.z);ri.setStroke(0,0,255,alpha);ri.drawLine(ctr.x,ctr.y,ctr.z-off,ctr.x,ctr.y,ctr.z+off);} 
+			else {		ri.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+len,ctr.y,ctr.z);ri.setStroke(0,255,0,alpha);ri.drawLine(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y+len,ctr.z);ri.setStroke(0,0,255,alpha);ri.drawLine(ctr.x,ctr.y,ctr.z,ctr.x,ctr.y,ctr.z+len);}
+		ri.popMatState();	
 	}//	drawAxes
 	public final void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int alpha, boolean drawVerts){//RGB -> XYZ axes
-		pa.pushMatState();
+		ri.pushMatState();
 		if(drawVerts){
-			pa.showPtAsSphere(ctr,3,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
-			for(int i=0;i<_axis.length;++i){pa.showPtAsSphere(myPoint._add(ctr, myVector._mult(_axis[i],len)),3,5,IRenderInterface.rgbClrs[i],IRenderInterface.rgbClrs[i]);}
+			ri.showPtAsSphere(ctr,3,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
+			for(int i=0;i<_axis.length;++i){ri.showPtAsSphere(myPoint._add(ctr, myVector._mult(_axis[i],len)),3,5,IRenderInterface.rgbClrs[i],IRenderInterface.rgbClrs[i]);}
 		}
-		pa.setStrokeWt(stW);
-		for(int i =0; i<3;++i){	pa.setColorValStroke(IRenderInterface.rgbClrs[i],255);	pa.showVec(ctr,len, _axis[i]);	}
-		pa.popMatState();	
+		ri.setStrokeWt(stW);
+		for(int i =0; i<3;++i){	ri.setColorValStroke(IRenderInterface.rgbClrs[i],255);	ri.showVec(ctr,len, _axis[i]);	}
+		ri.popMatState();	
 	}//	drawAxes
 	public final void drawAxes(double len, float stW, myPoint ctr, myVector[] _axis, int[] clr, boolean drawVerts){//all axes same color
-		pa.pushMatState();
+		ri.pushMatState();
 			if(drawVerts){
-				pa.showPtAsSphere(ctr,2,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
-				for(int i=0;i<_axis.length;++i){pa.showPtAsSphere(myPoint._add(ctr, myVector._mult(_axis[i],len)),2,5,IRenderInterface.rgbClrs[i],IRenderInterface.rgbClrs[i]);}
+				ri.showPtAsSphere(ctr,2,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
+				for(int i=0;i<_axis.length;++i){ri.showPtAsSphere(myPoint._add(ctr, myVector._mult(_axis[i],len)),2,5,IRenderInterface.rgbClrs[i],IRenderInterface.rgbClrs[i]);}
 			}
-			pa.setStrokeWt(stW);pa.setStroke(clr[0],clr[1],clr[2],clr[3]);
-			for(int i =0; i<3;++i){	pa.showVec(ctr,len, _axis[i]);	}
-		pa.popMatState();	
+			ri.setStrokeWt(stW);ri.setStroke(clr[0],clr[1],clr[2],clr[3]);
+			for(int i =0; i<3;++i){	ri.showVec(ctr,len, _axis[i]);	}
+		ri.popMatState();	
 	}//	drawAxes
 	
 	public final void drawAxes(double len, double stW, myPoint ctr, myVectorf[] _axis, int alpha){
-		pa.pushMatState();
-			pa.setStrokeWt((float)stW);
-			pa.setStroke(255,0,0,alpha);
-			pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[0].x)*len,ctr.y+(_axis[0].y)*len,ctr.z+(_axis[0].z)*len);
-			pa.setStroke(0,255,0,alpha);
-			pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[1].x)*len,ctr.y+(_axis[1].y)*len,ctr.z+(_axis[1].z)*len);	
-			pa.setStroke(0,0,255,alpha);	
-			pa.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[2].x)*len,ctr.y+(_axis[2].y)*len,ctr.z+(_axis[2].z)*len);
-		pa.popMatState();	
+		ri.pushMatState();
+			ri.setStrokeWt((float)stW);
+			ri.setStroke(255,0,0,alpha);
+			ri.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[0].x)*len,ctr.y+(_axis[0].y)*len,ctr.z+(_axis[0].z)*len);
+			ri.setStroke(0,255,0,alpha);
+			ri.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[1].x)*len,ctr.y+(_axis[1].y)*len,ctr.z+(_axis[1].z)*len);	
+			ri.setStroke(0,0,255,alpha);	
+			ri.drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(_axis[2].x)*len,ctr.y+(_axis[2].y)*len,ctr.z+(_axis[2].z)*len);
+		ri.popMatState();	
 	}//	drawAxes
 	
 
@@ -1202,11 +1266,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final myVector getEyeToMse() {return canvas.getEyeToMse();}
 	public final myVectorf getEyeToMse_f() {return canvas.getEyeToMse_f();}
 
-	public final myVector getUScrUpInWorld(){			myVector res = new myVector(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidthHalf, viewHeight,-.00001f));		return res._normalize();}	
-	public final myVector getUScrRightInWorld(){		myVector res = new myVector(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));		return res._normalize();}
-	public final myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidthHalf,viewHeight,-.00001f));	return res._normalize();}	
-	public final myVectorf getUScrRightInWorldf(){	myVectorf res = new myVectorf(pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),pa.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));	return res._normalize();}
-	public final myPoint getEyeLoc(){return pa.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f);	}
+	public final myVector getUScrUpInWorld(){			myVector res = new myVector(ri.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),ri.getWorldLoc(viewWidthHalf, viewHeight,-.00001f));		return res._normalize();}	
+	public final myVector getUScrRightInWorld(){		myVector res = new myVector(ri.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),ri.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));		return res._normalize();}
+	public final myVectorf getUScrUpInWorldf(){		myVectorf res = new myVectorf(ri.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),ri.getWorldLoc(viewWidthHalf,viewHeight,-.00001f));	return res._normalize();}	
+	public final myVectorf getUScrRightInWorldf(){	myVectorf res = new myVectorf(ri.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f),ri.getWorldLoc(viewWidth, viewHeightHalf,-.00001f));	return res._normalize();}
+	public final myPoint getEyeLoc(){return ri.getWorldLoc(viewWidthHalf, viewHeightHalf,-.00001f);	}
 	
 	public final myPoint getMseLoc(){			return canvas.getMseLoc();}
 	public final myPointf getMseLoc_f(){		return canvas.getMseLoc_f();}
@@ -1218,8 +1282,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public myVector getMse2DtoMse3DinWorld(myPoint glbTrans){
-		int[] mse = pa.getMouse_Raw_Int();
-		myVector res = new myVector(pa.getWorldLoc(mse[0], mse[1],-.00001f),getMseLoc(glbTrans) );		
+		int[] mse = ri.getMouse_Raw_Int();
+		myVector res = new myVector(ri.getWorldLoc(mse[0], mse[1],-.00001f),getMseLoc(glbTrans) );		
 		return res._normalize();
 	}
 	/**
@@ -1252,7 +1316,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * return display string holding sreen and world mouse and eye locations 
 	 */
 	public final String getMseEyeInfoString(String winCamDisp) {
-		myPoint mseLocPt = pa.getMouse_Raw();
+		myPoint mseLocPt = ri.getMouse_Raw();
 		return "mse loc on screen : " + mseLocPt + " mse loc in world :"+ canvas.getMseLoc() +"  Eye loc in world :"+ canvas.getEyeInWorld()+ winCamDisp;
 	}
 	
@@ -1275,76 +1339,76 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param txt
 	 */
 	public final void showOffsetText_RightSideMenu(int[] tclr, float mult,  String txt) {
-		pa.setFill(tclr,tclr[3]);pa.setStroke(tclr,tclr[3]);
-		pa.showText(txt,0.0f,0.0f,0.0f);
-		pa.translate(txt.length()*mult, 0.0f,0.0f);		
+		ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
+		ri.showText(txt,0.0f,0.0f,0.0f);
+		ri.translate(txt.length()*mult, 0.0f,0.0f);		
 	}
 	
 	public final void showOffsetText(float d, int tclr, String txt){
-		pa.setColorValFill(tclr, 255);pa.setColorValStroke(tclr, 255);
-		pa.showText(txt, d, d,d); 
+		ri.setColorValFill(tclr, 255);ri.setColorValStroke(tclr, 255);
+		ri.showText(txt, d, d,d); 
 	}	
 	public final void showOffsetText(myPointf loc, int tclr, String txt){
-		pa.setColorValFill(tclr, 255);pa.setColorValStroke(tclr, 255);
-		pa.showText(txt, loc.x, loc.y, loc.z); 
+		ri.setColorValFill(tclr, 255);ri.setColorValStroke(tclr, 255);
+		ri.showText(txt, loc.x, loc.y, loc.z); 
 	}	
 	public final void showOffsetText2D(float d, int tclr, String txt){
-		pa.setColorValFill(tclr, 255);pa.setColorValStroke(tclr, 255);
-		pa.showText(txt, d, d,0); 
+		ri.setColorValFill(tclr, 255);ri.setColorValStroke(tclr, 255);
+		ri.showText(txt, d, d,0); 
 	}
 		
 	public final void showBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, String txt) {
-		pa.pushMatState();  
-		pa.translate(P.x,P.y,P.z);
-		pa.setColorValFill(IRenderInterface.gui_White,150);
-		pa.setColorValStroke(IRenderInterface.gui_Black,255);
-		pa.drawRect(new float[] {0,6.0f,txt.length()*7.8f,-15});
+		ri.pushMatState();  
+		ri.translate(P.x,P.y,P.z);
+		ri.setColorValFill(IRenderInterface.gui_White,150);
+		ri.setColorValStroke(IRenderInterface.gui_Black,255);
+		ri.drawRect(new float[] {0,6.0f,txt.length()*7.8f,-15});
 		tclr = IRenderInterface.gui_Black;		
-		pa.setFill(fclr,255); pa.setStroke(strkclr,255);			
-		pa.drawSphere(myPointf.ZEROPT, rad, det);
+		ri.setFill(fclr,255); ri.setStroke(strkclr,255);			
+		ri.drawSphere(myPointf.ZEROPT, rad, det);
 		showOffsetText(1.2f * rad,tclr, txt);
-		pa.popMatState();
+		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
 	//translate to point, draw point and text
 	public final void showNoBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, String txt) {
-		pa.pushMatState();  
-		pa.setFill(fclr,255); 
-		pa.setStroke(strkclr,255);		
-		pa.translate(P.x,P.y,P.z); 
-		pa.drawSphere(myPointf.ZEROPT, rad, det);
+		ri.pushMatState();  
+		ri.setFill(fclr,255); 
+		ri.setStroke(strkclr,255);		
+		ri.translate(P.x,P.y,P.z); 
+		ri.drawSphere(myPointf.ZEROPT, rad, det);
 		showOffsetText(1.2f * rad,tclr, txt);
-		pa.popMatState();
+		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
 	//textP is location of text relative to point
 	public final void showNoBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, myPointf txtP, String txt) {
-		pa.pushMatState();  
-		pa.translate(P.x,P.y,P.z); 
-		pa.setFill(fclr,255); 
-		pa.setStroke(strkclr,255);			
-		pa.drawSphere(myPointf.ZEROPT, rad, det);
+		ri.pushMatState();  
+		ri.translate(P.x,P.y,P.z); 
+		ri.setFill(fclr,255); 
+		ri.setStroke(strkclr,255);			
+		ri.drawSphere(myPointf.ZEROPT, rad, det);
 		showOffsetText(txtP,tclr, txt);
-		pa.popMatState();
+		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
 	//textP is location of text relative to point
 	public final void showCrclNoBox_ClrAra(myPointf P, float rad, int[] fclr, int[] strkclr, int tclr, myPointf txtP, String txt) {
-		pa.pushMatState();  
-		pa.translate(P.x,P.y,P.z); 
-		if((fclr!= null) && (strkclr!= null)){pa.setFill(fclr,255); pa.setStroke(strkclr,255);}		
-		pa.drawEllipse2D(0,0,rad,rad); 
-		pa.drawEllipse2D(0,0,2,2);
+		ri.pushMatState();  
+		ri.translate(P.x,P.y,P.z); 
+		if((fclr!= null) && (strkclr!= null)){ri.setFill(fclr,255); ri.setStroke(strkclr,255);}		
+		ri.drawEllipse2D(0,0,rad,rad); 
+		ri.drawEllipse2D(0,0,2,2);
 		showOffsetText(txtP,tclr, txt);
-		pa.popMatState();
+		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
 	//show sphere of certain radius
 	public final void show_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr) {
-		pa.pushMatState();   
-		if((fclr!= null) && (strkclr!= null)){pa.setFill(fclr,255); pa.setStroke(strkclr,255);}
-		pa.drawSphere(P, rad, det);
-		pa.popMatState();
+		ri.pushMatState();   
+		if((fclr!= null) && (strkclr!= null)){ri.setFill(fclr,255); ri.setStroke(strkclr,255);}
+		ri.drawSphere(P, rad, det);
+		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
 	///////////////////////////////
@@ -2108,9 +2172,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	//		  dgreen=0xff157901;
 	//set color based on passed point r= x, g = z, b=y
 	public final void fillAndShowLineByRBGPt(myPoint p, float x,  float y, float w, float h){
-		pa.setFill((int)p.x,(int)p.y,(int)p.z, 255);
-		pa.setStroke((int)p.x,(int)p.y,(int)p.z, 255);
-		pa.drawRect(x,y,w,h);
+		ri.setFill((int)p.x,(int)p.y,(int)p.z, 255);
+		ri.setStroke((int)p.x,(int)p.y,(int)p.z, 255);
+		ri.drawRect(x,y,w,h);
 	}	
 	
 }//class GUI_AppManager
