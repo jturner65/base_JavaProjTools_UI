@@ -56,7 +56,7 @@ public abstract class Base_MenuGUIObj extends Base_GUIObj {
 				ThreadLocalRandom.current().nextInt(256),
 				ThreadLocalRandom.current().nextInt(256),255};
 
-		initDrawTrans = new float[]{(float)(start.x + xOff), (float)(start.y + yOff)};
+		initDrawTrans = new float[]{(float)(start.x + xOff), (float)(start.y + .75f* yOff)};
 		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};
 	}
 

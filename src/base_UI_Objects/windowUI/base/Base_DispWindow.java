@@ -995,7 +995,7 @@ public abstract class Base_DispWindow {
 	 */
 	public final void drawWindowGuiObjs(float animTimeMod) {
 		//draw UI Objs
-		drawGUIObjs();
+		drawGUIObjs(animTimeMod);
 		//draw all boolean-based buttons for this window
 		drawAppFlagButtons(dispFlags.getUseRndBtnClrs());
 		//draw any custom menu objects for sidebar menu
@@ -1043,9 +1043,10 @@ public abstract class Base_DispWindow {
 	/**
 	 * Draw UI Objs
 	 */
-	protected final void drawGUIObjs() {
+	protected final void drawGUIObjs(float animTimeMod) {
 		pa.pushMatState();	
-		for(int i =0; i<guiObjs.length; ++i){guiObjs[i].draw();}
+		if (AppMgr.isDebugMode()) { for(int i =0; i<guiObjs.length; ++i){guiObjs[i].drawDebug(animTimeMod);}}
+		else {						for(int i =0; i<guiObjs.length; ++i){guiObjs[i].draw();}}
 		pa.popMatState();	
 	}
 	

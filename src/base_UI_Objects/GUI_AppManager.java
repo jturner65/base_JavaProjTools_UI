@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.jogamp.newt.opengl.GLWindow;
@@ -186,27 +187,29 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			debugMode 			= 0,			//whether we are in debug mode or not	
 			finalInitDone		= 1,			//used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
 			saveAnim 			= 2,			//whether we are saving or not an anim screenie
+			showCanvas			= 3,
 	//interface flags	                   
-			valueKeyPressed		= 3,
-			shiftKeyPressed 	= 4,			//shift pressed
-			altKeyPressed  		= 5,			//alt pressed
-			cntlKeyPressed  	= 6,			//cntrl pressed
-			mouseClicked 		= 7,			//mouse left button is held down	
-			drawing				= 8, 			//currently drawing  showSOMMapUI
-			modView	 			= 9,			//shift+mouse click+mouse move being used to modify the view
+			valueKeyPressed		= 4,
+			shiftKeyPressed 	= 5,			//shift pressed
+			altKeyPressed  		= 6,			//alt pressed
+			cntlKeyPressed  	= 7,			//cntrl pressed
+			mouseClicked 		= 8,			//mouse left button is held down	
+			drawing				= 9, 			//currently drawing  showSOMMapUI
+			modView	 			= 10,			//shift+mouse click+mouse move being used to modify the view
 	//simulation
-			runSim				= 10,			//run simulation
-			singleStep			= 11,			//run single sim step
-			showRtSideMenu		= 12,			//display the right side info menu for the current window, if it supports that display
-			flipDrawnTraj  		= 13,			//whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
-			clearBKG 			= 14;			//whether or not background should be cleared for every draw.  defaults to true
-	public final int numBaseFlags = 15;
+			runSim				= 11,			//run simulation
+			singleStep			= 12,			//run single sim step
+			showRtSideMenu		= 13,			//display the right side info menu for the current window, if it supports that display
+			flipDrawnTraj  		= 14,			//whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
+			clearBKG 			= 15;			//whether or not background should be cleared for every draw.  defaults to true
+	public final int numBaseFlags = 16;
 	
 	//booleans in main program - need to have labels in idx order, even if not displayed
 	private final String[] truePFlagNames = {//needs to be in order of flags
 			"Debug Mode",
 			"Final init Done",
-			"Save Anim", 	
+			"Save Anim",
+			"Show Drawable Canvas",
 			"Key Pressed",
 			"Shift-Key Pressed",
 			"Alt-Key Pressed",
@@ -224,7 +227,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	private final String[] falsePFlagNames = {//needs to be in order of flags
 			"Debug Mode",	
 			"Final init Done",
-			"Save Anim", 	
+			"Save Anim", 
+			"Show Drawable Canvas",
 			"Key Pressed",
 			"Shift-Key Pressed",
 			"Alt-Key Pressed",
@@ -251,6 +255,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		saveAnim,
 		runSim,
 		singleStep,
+		showCanvas,
 		showRtSideMenu
 		);
 	
@@ -284,34 +289,28 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public int gridDimX = 800, gridDimY = 800, gridDimZ = 800;				//dimensions of 3d region
 	public myVectorf gridHalfDim = new myVectorf(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
 
-	//boundary regions for enclosing cube - given as min and difference of min and max
-	public float[][] cubeBnds = new float[][]{//idx 0 is min, 1 is diffs
-		new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},//mins
-		new float[]{gridDimX,gridDimY,gridDimZ}};			//diffs		
+	/**
+	 * boundary regions for enclosing cube - given as min and difference of min and max
+	 */
+	public float[][] cubeBnds;			//diffs		
 	
-	//2D, 3D
-	private myVector[] sceneFcsValsBase = new myVector[]{						//set these values to be different targets of focus
-			new myVector(-grid2D_X/2,-grid2D_Y/1.75f,0),
-			new myVector(0,0,0)
-	};
-	//2D, 3D
-	private myPoint[] sceneCtrValsBase = new myPoint[]{				//set these values to be different display center translations -
-		new myPoint(0,0,0),										// to be used to calculate mouse offset in world for pick
-		new myPoint(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
-	};
+	public myVectorf[] cubeDirAra;
+	public myPointf[][] origPerDirAra;
+		
+	/**
+	 * 2D, 3D
+	 */
+	private myVector[] sceneFcsValsBase;
+	/**
+	 * 2D, 3D
+	 */
+	private myPoint[] sceneCtrValsBase;
 	
 	//3D box stuff
 	public myVector[] boxNorms = new myVector[] {new myVector(1,0,0),new myVector(-1,0,0),new myVector(0,1,0),new myVector(0,-1,0),new myVector(0,0,1),new myVector(0,0,-1)};//normals to 3 d bounding boxes
 	protected float hGDimX = gridDimX/2.0f, hGDimY = gridDimY/2.0f, hGDimZ = gridDimZ/2.0f;
 	protected float tGDimX = gridDimX*10, tGDimY = gridDimY*10, tGDimZ = gridDimZ*20;
-	public myPoint[][] boxWallPts = new myPoint[][] {//pts to check if intersection with 3D bounding box happens
-			new myPoint[] {new myPoint(hGDimX,tGDimY,tGDimZ), new myPoint(hGDimX,-tGDimY,tGDimZ), new myPoint(hGDimX,tGDimY,-tGDimZ)  },
-			new myPoint[] {new myPoint(-hGDimX,tGDimY,tGDimZ), new myPoint(-hGDimX,-tGDimY,tGDimZ), new myPoint(-hGDimX,tGDimY,-tGDimZ) },
-			new myPoint[] {new myPoint(tGDimX,hGDimY,tGDimZ), new myPoint(-tGDimX,hGDimY,tGDimZ), new myPoint(tGDimX,hGDimY,-tGDimZ) },
-			new myPoint[] {new myPoint(tGDimX,-hGDimY,tGDimZ),new myPoint(-tGDimX,-hGDimY,tGDimZ),new myPoint(tGDimX,-hGDimY,-tGDimZ) },
-			new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
-			new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }
-	};
+	public myPoint[][] boxWallPts;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// file IO variables
@@ -363,6 +362,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		winTrajStrkClrs = new int[numDispWins][4];	//set to color constants for each window
 		//whether each 3D window uses Skybox or color background 
 		useSkyboxBKGndAra= new boolean[numDispWins];
+		//initialize grid dim structs
+		setGridDimStructs();
 	}//	
 	
 		
@@ -717,11 +718,54 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	protected void setDesired3DGridDims(int _gx, int _gy, int _gz) {
 		gridDimX = _gx;gridDimY = _gy;gridDimZ = _gz;				//dimensions of 3d region
+		setGridDimStructs();
+	}
+	
+	/**
+	 * Specify 2D grid dims
+	 * @param _gx
+	 * @param _gy
+	 */
+	protected void setDesired2DGridDims(int _gx, int _gy) {
+		grid2D_X = _gx; grid2D_Y = _gy;	
+		setGridDimStructs();
+	}
+	
+	private void setGridDimStructs() {
 		gridHalfDim.set(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
 		
 		cubeBnds = new float[][]{//idx 0 is min, 1 is diffs
 			new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},//mins
 			new float[]{gridDimX,gridDimY,gridDimZ}};			//diffs
+			
+			
+		cubeDirAra = new myVectorf[] {
+				new myVectorf(cubeBnds[1][0], 0.f, 0.f),
+				new myVectorf(0.0f, cubeBnds[1][1], 0.0f),
+				new myVectorf(0.0f, 0.f, cubeBnds[1][2]),
+		};
+	
+		origPerDirAra = new myPointf[][] {
+			 new myPointf[] {
+			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1], 				cubeBnds[0][2]),				//min x, min y, min z
+			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1] +cubeBnds[1][1], cubeBnds[0][2]),				//min x, max y, min z
+			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1], 				cubeBnds[0][2] +cubeBnds[1][2]),	//min x, min y, max z
+			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1] +cubeBnds[1][1], cubeBnds[0][2] +cubeBnds[1][2])	//min x, max y, max z
+			    },
+			new myPointf[] {
+		    		new myPointf(cubeBnds[0][0], 				cubeBnds[0][1], 	cubeBnds[0][2]),             //min x, min y, min z  
+		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][0], 	cubeBnds[0][1], 	cubeBnds[0][2]),             //max x, min y, min z  
+		    		new myPointf(cubeBnds[0][0], 				cubeBnds[0][1], 	cubeBnds[0][2] +cubeBnds[1][2]),//min x, min y, max z  
+		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][1], 	cubeBnds[0][1], 	cubeBnds[0][2] +cubeBnds[1][2]) //max x, min y, max z  
+		    }, 
+			new myPointf[] {
+		    		new myPointf(cubeBnds[0][0], 				cubeBnds[0][1], 				cubeBnds[0][2]), //min x, min y, min z  
+		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][0],	cubeBnds[0][1], 				cubeBnds[0][2]), //max x, min y, min z  
+		    		new myPointf(cubeBnds[0][0], 				cubeBnds[0][1] +cubeBnds[1][1], 	cubeBnds[0][2]), //min x, max y, min z  
+		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][1], 	cubeBnds[0][1] +cubeBnds[1][1], 	cubeBnds[0][2])  //max x, max y, min z  
+		    }
+			
+		};
 		
 		//2D, 3D
 		sceneFcsValsBase = new myVector[]{						//set these values to be different targets of focus
@@ -748,6 +792,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
 				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
 	}
+	
 
 	/**
 	 * call once for each display window before calling constructor. Sets essential values describing windows
@@ -1035,6 +1080,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				draw3D_solve3D(modAmtMillis);
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}
 				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);	}		
+				if(doShowDrawawbleCanvas()) {canvas.drawCanvas();}
 			} else {
 				draw3D_solve3D(modAmtMillis);
 			}
@@ -1709,6 +1755,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	public final boolean isDebugMode() {return getBaseFlag(debugMode);}
 	
+	public final boolean doShowDrawawbleCanvas() {return getBaseFlag(showCanvas);}
+	
 	public final boolean isFinalInitDone() {return getBaseFlag(finalInitDone);}
 	public final boolean isRunSim() {return getBaseFlag(runSim);}
 	public final boolean isSingleStep() {return getBaseFlag(singleStep);}
@@ -1753,12 +1801,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected final void setBaseFlagToShow_runSim(boolean val) {_setBaseFlagToShow(runSim, val);}
 	protected final void setBaseFlagToShow_singleStep(boolean val) {_setBaseFlagToShow(singleStep, val);}
 	protected final void setBaseFlagToShow_showRtSideMenu(boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}	
+	protected final void setBaseFlagToShow_showDrawableCanvas(boolean val) {_setBaseFlagToShow(showCanvas, val);}	
 	
 	public final boolean getBaseFlagIsShown_debugMode() {return _getBaseFlagIsShown(debugMode);}
 	public final boolean getBaseFlagIsShown_saveAnim() {return _getBaseFlagIsShown(saveAnim);}
 	public final boolean getBaseFlagIsShown_runSim() {return _getBaseFlagIsShown(runSim);}
 	public final boolean getBaseFlagIsShown_singleStep() {return _getBaseFlagIsShown(singleStep);}
 	public final boolean getBaseFlagIsShown_showRtSideMenu() {return _getBaseFlagIsShown(showRtSideMenu);}
+	public final boolean getBaseFlagIsShown_showDrawableCanvas() {return _getBaseFlagIsShown(showCanvas);}
 	
 
 	//determine primary application flags that are actually being displayed or not displayed
@@ -1774,9 +1824,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		for(Integer flag : flagsToShow) { if (flag == idx) {return true;}}
 		return false;
 	}
-	
-	
-	
 	
 	public abstract double clickValModMult();
 	public abstract boolean isClickModUIVal();
@@ -1816,6 +1863,117 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// calculations
+	
+	
+	/**
+	 * point normal form of plane - give a normal and a point and receive a 4-element array of the coefficients of the plane equation.
+	 * @param _n unit normal of plane
+	 * @param _p point on plane
+	 * @return eq : coefficients of the plane equation in the form eq[0]*x + eq[1]*y + eq[2]*z + eq[3] = 0
+	 */
+	public float[] getPlanarEqFromPointAndNorm(myVectorf _n, myPoint _p) {
+		return new float[] { _n.x, _n.y, _n.z, (float) (_n.x * -_p.x + _n.y * -_p.y + _n.z * -_p.z)};
+	}
+	/**
+	 * point normal form of plane - give a normal and a point and receive a 4-element array of the coefficients of the plane equation.
+	 * @param _n unit normal of plane
+	 * @param _p point on plane
+	 * @return eq : coefficients of the plane equation in the form eq[0]*x + eq[1]*y + eq[2]*z + eq[3] = 0
+	 */
+	public float[] getPlanarEqFromPointAndNorm(myVectorf _n, myPointf _p) {
+		return new float[] { _n.x, _n.y, _n.z, (_n.x * -_p.x + _n.y * -_p.y + _n.z * -_p.z)};
+	}	
+		
+	/**
+	 * This will take given set of points and will calculate a set of points that make up the 
+	 * perimeter of the plane within the specified bounds.
+	 * @param pts
+	 * @return
+	 */
+	public final myPointf[] buildPlaneBoxBounds(myPoint[] pts) {
+		myVectorf tmpNorm = myVectorf._cross(new myVectorf(pts[0], pts[1]), new myVectorf(pts[0], pts[2]))._normalize();
+		float[] eq = getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
+		//works because plane is built with unit normal in equation
+		return buildPlaneBoxBounds(eq);
+	}
+	
+	/**
+	 * This will take given set of points and will calculate a set of points that make up the 
+	 * perimeter of the plane within the specified bounds.
+	 * @param pts
+	 * @return
+	 */
+	public final myPointf[] buildPlaneBoxBounds(myPointf[] pts) {
+		myVectorf tmpNorm = myVectorf._cross(new myVectorf(pts[0], pts[1]), new myVectorf(pts[0], pts[2]))._normalize();
+		float[] eq = getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
+		//works because plane is built with unit normal in equation
+		return buildPlaneBoxBounds(eq);
+	}
+	
+	/**
+	 * Given the equation this will derive the planar origin and then calculate a set of points that make up the perimeter
+	 * of the plane within the defined bounding box.
+	 * @param eq
+	 * @return
+	 */
+	public final myPointf[] buildPlaneBoxBounds(float[] eq) {
+		//works because plane is built with unit normal in equation
+		myPointf planeOrigin = new myPointf(-eq[0]*eq[3],-eq[1]*eq[3],-eq[2]*eq[3]);
+		return calcPlaneWBBoxIntersectPoints(eq, planeOrigin);
+	}
+	/**
+	 * Find intersection of plane as described by passed coefficients  with ray
+	 * @param eq Plane equation coefficients
+	 * @param RayOrig
+	 * @param RayDir
+	 * @return
+	 */
+	public myPointf rayIntersectPlane(float[] eq, myPointf rayOrig, myVectorf rayDir) {		
+		Float denomVal = eq[0]* rayDir.x +eq[1]* rayDir.y+ eq[2]* rayDir.z;
+	    if (denomVal == 0.0f) {        return null;}
+	    Float tVal = - (eq[0]* rayOrig.x +eq[1]* rayOrig.y+ eq[2]* rayOrig.z + eq[3]) / denomVal;
+	    if (tVal >= 0.f && tVal <= 1.f) {   	return (myPointf._add(rayOrig,tVal, rayDir));}
+	    return null;	
+	}
+	
+	/**
+	 * find intersection between this object's plane and every edge of world axis aligned bound box.
+	 * Maximum out_point_count == 6, so out_points must point to 6-element array. 
+	 * Out_point_count == 0 mean no intersection. out_points are not sorted.
+	 * @param wBnds
+	 * @return
+	 */
+	private myPointf[] calcPlaneWBBoxIntersectPoints(float[] eq, myPointf planeOrigin){
+	    ArrayList<myPointf> ptsAra = new ArrayList<myPointf>();
+	    for(int i=0; i<origPerDirAra.length;++i) {
+			for(int j=0;j<origPerDirAra[i].length;++j) {
+			    myPointf p = rayIntersectPlane(eq, origPerDirAra[i][j], cubeDirAra[i]);
+			    if(null!=p) {ptsAra.add(p);}
+			}
+	    }	    
+	    if(ptsAra.size() == 0) {    	
+	    	return new myPointf[0];
+	    }//no intersection
+	    //sort in cw order around normal
+	    TreeMap<Float, myPointf> ptsMap = sortBoundPoints(ptsAra, planeOrigin);
+	    return ptsMap.values().toArray(new myPointf[0]);
+	}	
+	
+	/**
+	 * sort points around normal, using first point in list as starting point
+	 * @param ptsAra
+	 * @return
+	 */
+	private TreeMap<Float, myPointf> sortBoundPoints(ArrayList<myPointf> ptsAra, myPointf planeOrigin){
+		TreeMap<Float, myPointf> resMap = new TreeMap<Float, myPointf>();
+		myVectorf baseVec = new myVectorf(planeOrigin, ptsAra.get(0));
+		for(int i=0;i<ptsAra.size();++i) {
+			myPointf pt = ptsAra.get(i);
+			float res = (myVectorf._angleBetween_Xprod(new myVectorf(planeOrigin, pt),baseVec));
+			resMap.put(res, pt);
+		}		
+		return resMap;
+	}//sortBoundPoints
 	
 	/**
 	 * build a frame based on passed normal given two passed points

@@ -11,10 +11,29 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import testProject.uiData.UITestDataUpdater_3D;
 
 public class UI_TestWindow3D extends Base_DispWindow {
+	/**
+	 * idxs - need one per ui object
+	 */
+	public final static int
+		gIDX_TimeStep 		= 0,
+		gIDX_NumFlocks		= 1,
+		gIDX_BoidType		= 2,
+		gIDX_ModNumBoids	= 3,
+		gIDX_BoidToObs		= 4;
 
+	public static final int numBaseGUIObjs = 5;											//# of gui objects for ui
+
+	protected String[] listOfNames = new String[]{"Name 1", "Name 2", "Name 3", "Name 4", "Name 5"};
+	//current/initial values
+	protected double curTimeStep = .1;
+	protected int numFlocks = 1;
+	protected final int maxNumFlocks = listOfNames.length;			//max # of flocks we'll support
+	
+	
 	public UI_TestWindow3D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
 		super(_p, _AppMgr, _winIdx);
 		super.initThisWin(false);
@@ -217,14 +236,33 @@ public class UI_TestWindow3D extends Base_DispWindow {
 		// TODO Auto-generated method stub
 
 	}
-
+	/**
+	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 *           the first element double array of min/max/mod values                                                   
+	 *           the 2nd element is starting value                                                                      
+	 *           the 3rd elem is label for object                                                                       
+	 *           the 4th element is object type (GUIObj_Type enum)
+	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 *           	{value is sent to owning window, 
+	 *           	value is sent on any modifications (while being modified, not just on release), 
+	 *           	changes to value must be explicitly sent to consumer (are not automatically sent)}    
+	 * @param tmpListObjVals
+	 */
 	@Override
-	protected void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray,
-			TreeMap<Integer, String[]> tmpListObjVals) {
-		// TODO Auto-generated method stub
-
+	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals){	
+		//build list select box values
+		//keyed by object idx (uiXXXIDX), entries are lists of values to use for list select ui objects
+		
+		tmpListObjVals.put(gIDX_BoidType, listOfNames);
+			
+		tmpUIObjArray.put(gIDX_TimeStep,  new Object[]{new double[]{0,1.0f,.0001f}, curTimeStep, "Float Value 1", GUIObj_Type.FloatVal, new boolean[]{true}});   				//uiTrainDataFrmtIDX                                                                        
+		tmpUIObjArray.put(gIDX_NumFlocks, new Object[]{new double[]{1,10,1.0f}, 1.0, "Int Value 1", GUIObj_Type.IntVal, new boolean[]{true}});   				//uiTrainDataFrmtIDX                                                                        
+		tmpUIObjArray.put(gIDX_BoidType,  new Object[]{new double[]{0,listOfNames.length-1,1.1f}, 0.0, "List of Names", GUIObj_Type.ListVal, new boolean[]{true}} );   				//uiTrainDataFrmtIDX                                                                        
+		tmpUIObjArray.put(gIDX_ModNumBoids, new Object[]{new double[]{-50,50,1.0f}, 0.0, "Int Value 2", GUIObj_Type.IntVal, new boolean[]{true}});   				//uiTrainDataFrmtIDX                                                                        
+		tmpUIObjArray.put(gIDX_BoidToObs, new Object[]{new double[]{0,1000,1.0f}, 0.0, "Int Value 3", GUIObj_Type.IntVal, new boolean[]{true}} );   				//uiTrainDataFrmtIDX
 	}
-
+	
 	@Override
 	public void processTraj_Indiv(DrawnSimpleTraj drawnTraj) {
 		// TODO Auto-generated method stub
