@@ -229,9 +229,7 @@ public class SidebarMenu extends Base_DispWindow{
 	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
 	
 	@Override
-	protected final void initDispFlags() {
-		dispFlags.setIsCloseable(false);	
-	}
+	protected final void initDispFlags() {}
 	
 	//init/reinit this window
 	@Override

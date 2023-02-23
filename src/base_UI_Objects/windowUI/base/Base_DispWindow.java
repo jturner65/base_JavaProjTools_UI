@@ -65,14 +65,14 @@ public abstract class Base_DispWindow {
 	public float[] curVisScrDims;
 
 	public static final float xOff = 20 , yOff = 18.0f * (IRenderInterface.txtSz/12.0f);
-	public static final double[] UI_off = new double[] { xOff, yOff };
-	public static final float btnLblYOff = 2 * yOff, rowStYOff = yOff*.15f;
-	public static final float xOffHalf = .5f*xOff, yOffHalf = .5f*yOff;
+	protected static final double[] UI_off = new double[] { xOff, yOff };
+	protected static final float btnLblYOff = 2 * yOff, rowStYOff = yOff*.15f;
+	protected static final float xOffHalf = .5f*xOff, yOffHalf = .5f*yOff;
 	private static final float maxBtnWidthMult = .95f;
 	public static final int topOffY = 40;			//offset values to render boolean menu on side of screen - offset at top before drawing
 	public static final float clkBxDim = 10;//size of interaction/close window box in pxls
 	
-	public int pFlagIdx;					//the flags idx in the App Manager that controls this window - use -1 for none	
+	public int dispFlagWinIDX;					//the flags idx in the App Manager that controls this window - use -1 for none	
 	
 	public WinDispStateFlags dispFlags;
 		
@@ -88,11 +88,11 @@ public abstract class Base_DispWindow {
 	private int[][] privFlagTrueColors;
 	private int[][] privFlagFalseColors;
 	
-	public int[] privModFlgIdxs;										//only modifiable idx's will be shown as buttons - this needs to be in order of flag names
-	public float[][] privFlagBtns;									//clickable dimensions for these buttons
-	public int numClickBools;
+	private int[] privModFlgIdxs;										//only modifiable idx's will be shown as buttons - this needs to be in order of flag names
+	private float[][] privFlagBtns;									//clickable dimensions for these buttons
+	private int numClickBools;
 	//array of priv buttons to be cleared next frame - should always be empty except when buttons need to be cleared
-	protected ArrayList<Integer> privBtnsToClear;
+	private ArrayList<Integer> privBtnsToClear;
 	
 	//UI objects in this window
 	//GUI Objects
@@ -184,7 +184,7 @@ public abstract class Base_DispWindow {
 		AppMgr = _AppMgr;
 		ID = winCnt++;
 		className = this.getClass().getSimpleName();
-		pFlagIdx = _winIdx;
+		dispFlagWinIDX = _winIdx;
 		name = _n;
 		winText = _winTxt;
 		msgObj = AppMgr.msgObj;
@@ -216,17 +216,21 @@ public abstract class Base_DispWindow {
 	 */
 	public final void initThisWin(boolean _isMenu){
 		dispFlags = new WinDispStateFlags(this);
-		//Initialize dispFlags settings based on AppMgr
-		//Does this window include a runnable sim (launched by main menu flag)
-		dispFlags.setIsRunnable(AppMgr.getBaseFlagIsShown_runSim());
-		//Is this window capable of showing right side menu
-		dispFlags.setHasRtSideMenu(AppMgr.getBaseFlagIsShown_showRtSideMenu());
-		//initialize any state/display flags
-		initDispFlags();
 		
 		//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
 		if(!_isMenu){
+			//Initialize dispFlags settings based on AppMgr
+			//Does this window include a runnable sim (launched by main menu flag)
+			dispFlags.setIsRunnable(AppMgr.getBaseFlagIsShown_runSim());
+			//Is this window capable of showing right side menu
+			dispFlags.setHasRtSideMenu(AppMgr.getBaseFlagIsShown_showRtSideMenu());
+			//initialize any state/display flags
+			initDispFlags();
+			
 			initUIBox();				
+		} else {
+			//menu is not ever closeable 
+			dispFlags.setIsCloseable(false);
 		}
 		
 		privBtnsToClear = new ArrayList<Integer>();
@@ -696,7 +700,7 @@ public abstract class Base_DispWindow {
 	 * Set or reset the dims of this window when it is open
 	 * @param dims
 	 */
-	public final void setRectDimOpen(float[] dims) {		
+	private final void setRectDimOpen(float[] dims) {		
 		rectDim = new float[4];		
 		for(int i =0;i<4;++i){	rectDim[i]=dims[i];}
 		
@@ -1107,7 +1111,7 @@ public abstract class Base_DispWindow {
 		pa.setStroke(strkClr, strkClr[3]);
 		pa.setFill(strkClr, strkClr[3]);
 		if(winText.trim() != ""){	dispMultiLineText(winText,  rectDim[0]+10,  rectDim[1]+10);}
-		if(null!=trajMgr){	trajMgr.drawNotifications(pa);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		if(null!=trajMgr){	trajMgr.drawNotifications(pa, xOffHalf, yOffHalf);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		if(dispFlags.getIsCloseable()){drawMouseBox();}
 		//TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
 		if(dispFlags.getHasScrollBars() && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe();}
@@ -1325,7 +1329,7 @@ public abstract class Base_DispWindow {
 	protected final void toggleWindowState(){
 		//msgObj.dispInfoMessage("Base_DispWindow","toggleWindowState","Attempting to close window : " + this.name);
 		dispFlags.toggleShowWin();
-		AppMgr.setVisFlag(pFlagIdx, dispFlags.getShowWin());		//value has been changed above by close box
+		AppMgr.setVisFlag(dispFlagWinIDX, dispFlags.getShowWin());		//value has been changed above by close box
 	}
 	
 	/**

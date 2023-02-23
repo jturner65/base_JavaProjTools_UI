@@ -21,6 +21,18 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	}
 
 	@Override
+	protected void initDispFlags() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void initMe() {
+		// TODO Auto-generated method stub
+
+	}
+	
+	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {
 		return new UITestDataUpdater_2D(this);
 	}
@@ -229,18 +241,6 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	public ArrayList<String> hndlFileSave(File file) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	protected void initDispFlags() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void initMe() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

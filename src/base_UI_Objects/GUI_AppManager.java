@@ -748,28 +748,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
 				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
 	}
-	
-	/**
-	 * initialize menu window
-	 * @param _showUIMenuIDX
-	 */
-	public final void buildInitMenuWin() {
-		//init sidebar menu vals
-		for(int i=0;i<dispWinFlags[dispMenuIDX].length;++i) {dispWinFlags[dispMenuIDX][i] = false;}
-		//set up dims for menu
-		winRectDimOpen[dispMenuIDX] =  new float[]{0,0, menuWidth, viewHeight};
-		winRectDimClose[dispMenuIDX] =  new float[]{0,0, hideWinWidth, viewHeight};
-		
-		winFillClrs[dispMenuIDX] = new int[]{255,255,255,255};
-		winStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};
-		
-		winTrajFillClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window
-		winTrajStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window		
-		winTitles[dispMenuIDX] = "UI Window";
-		winDescr[dispMenuIDX] = "User Controls";
-		
-	}//setIniMenuWin
-	
+
 	/**
 	 * call once for each display window before calling constructor. Sets essential values describing windows
 	 * @param _winIDX The index in the various window-descriptor arrays for the dispWindow being set
@@ -825,6 +804,20 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _inclMseOvValues include a row for possible mouse over values
 	 */
 	public final void buildSideBarMenu(String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
+		//init sidebar menu vals
+		for(int i=0;i<dispWinFlags[dispMenuIDX].length;++i) {dispWinFlags[dispMenuIDX][i] = false;}
+		//set up dims for menu
+		winRectDimOpen[dispMenuIDX] =  new float[]{0,0, menuWidth, viewHeight};
+		winRectDimClose[dispMenuIDX] =  new float[]{0,0, hideWinWidth, viewHeight};
+		
+		winFillClrs[dispMenuIDX] = new int[]{255,255,255,255};
+		winStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};
+		
+		winTrajFillClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window
+		winTrajStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window		
+		winTitles[dispMenuIDX] = "UI Window";
+		winDescr[dispMenuIDX] = "User Controls";
+		
 		int wIdx = 0;
 		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _inclWinNames, _inclMseOvValues);
 		dispWinFrames[wIdx] = new SidebarMenu(ri, this, wIdx, sideBarConfig);		

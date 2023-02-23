@@ -120,8 +120,6 @@ public class UI_TestProject extends GUI_AppManager {
 		String[] _winTitles = new String[]{"","UI Test Window 3D","UI Test Window 2D"},
 				_winDescr = new String[] {"", "Multi Flock Predator/Prey Boids 3D Simulation","Multi Flock Predator/Prey Boids 2D Simulation"};
 		setWinTitlesAndDescs(_winTitles, _winDescr);
-		//call for menu window
-		buildInitMenuWin();
 		//instanced window dimensions when open and closed - only showing 1 open at a time
 		float[] _dimOpen  = getDefaultWinDimOpen(), 
 				_dimClosed  = getDefaultWinDimClosed();	
