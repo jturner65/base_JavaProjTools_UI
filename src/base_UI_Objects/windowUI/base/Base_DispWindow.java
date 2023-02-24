@@ -1123,11 +1123,18 @@ public abstract class Base_DispWindow {
 		pa.enableLights();	
 		pa.setEndNoDepthTest();
 		pa.popMatState();	
+		postDraw();
+	}//drawHeader
+	
+	/**
+	 * This is called after all UI and other draw functionality has occurred.
+	 */
+	public final void postDraw() {
 		//last thing per draw - clear btns that have been set to clear after 1 frame of display
 		if (dispFlags.getClearPrivBtns()) {clearAllPrivBtns();dispFlags.setClearPrivBtns(false);}
 //		//if buttons have been set to clear, clear them next draw - put this in mouse release?
-//		if (privBtnsToClear.size() > 0){dispFlags.setClearPrivBtns(true);	}		
-	}//drawHeader
+//		if (privBtnsToClear.size() > 0){dispFlags.setClearPrivBtns(true);	}				
+	}
 	
 	/**
 	 * separating bar for menu

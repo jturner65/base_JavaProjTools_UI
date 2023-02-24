@@ -387,21 +387,21 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void drawLine(myPointf a, myPointf b, int stClr, int endClr){
 		gl_beginShape(GL_PrimStyle.GL_LINES);
-		this.setStrokeWt(1.0f);
-		this.setColorValStroke(stClr, 255);
-		this.gl_vertex(a);
-		this.setColorValStroke(endClr,255);
-		this.gl_vertex(b);
+		setStrokeWt(1.0f);
+		setColorValStroke(stClr, 255);
+		gl_vertex(a);
+		setColorValStroke(endClr,255);
+		gl_vertex(b);
 		gl_endShape();
 	}
 	@Override
 	public void drawLine(myPointf a, myPointf b, int[] stClr, int[] endClr){
 		gl_beginShape(GL_PrimStyle.GL_LINES);
-		this.setStrokeWt(1.0f);
-		this.setStroke(stClr, 255);
-		this.gl_vertex(a);
-		this.setStroke(endClr,255);
-		this.gl_vertex(b);
+		setStrokeWt(1.0f);
+		setStroke(stClr, 255);
+		gl_vertex(a);
+		setStroke(endClr,255);
+		gl_vertex(b);
 		gl_endShape();
 	}
 	
@@ -418,8 +418,8 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawPointCloudWithColors(int numPts, int ptIncr, int[][] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
 		gl_beginShape(GL_PrimStyle.GL_POINTS);
 		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
-			this.setStroke(h_part_clr_int[i][0], h_part_clr_int[i][1], h_part_clr_int[i][2], 255);
-			this.gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
+			setStroke(h_part_clr_int[i][0], h_part_clr_int[i][1], h_part_clr_int[i][2], 255);
+			gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
 		}
 		gl_endShape();
 	}//drawPointCloudWithColors	
@@ -436,9 +436,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void drawPointCloudWithColor(int numPts, int ptIncr, int[] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
 		gl_beginShape(GL_PrimStyle.GL_POINTS);
-		this.setStroke(h_part_clr_int[0], h_part_clr_int[1], h_part_clr_int[2], 255);
+		setStroke(h_part_clr_int[0], h_part_clr_int[1], h_part_clr_int[2], 255);
 		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
-			this.gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
+			gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
 		}
 		gl_endShape();
 	}//drawPointCloudWithColors	

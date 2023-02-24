@@ -182,12 +182,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * flags used to control various elements of the entire application.
 	 */
 	private int[] _baseFlags;
-	//dev/debug flags
+	/**
+	 * Base flag idxs
+	 */
 	private static final int 
-			debugMode 			= 0,			//whether we are in debug mode or not	
+			debugMode 			= 0,			//whether we are in dev debug mode or not	
 			finalInitDone		= 1,			//used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
 			saveAnim 			= 2,			//whether we are saving or not an anim screenie
 			showCanvas			= 3,
+
 	//interface flags	                   
 			valueKeyPressed		= 4,
 			shiftKeyPressed 	= 5,			//shift pressed
@@ -196,15 +199,19 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			mouseClicked 		= 8,			//mouse left button is held down	
 			drawing				= 9, 			//currently drawing  showSOMMapUI
 			modView	 			= 10,			//shift+mouse click+mouse move being used to modify the view
+			
 	//simulation
 			runSim				= 11,			//run simulation
 			singleStep			= 12,			//run single sim step
+	//UI
 			showRtSideMenu		= 13,			//display the right side info menu for the current window, if it supports that display
 			flipDrawnTraj  		= 14,			//whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
 			clearBKG 			= 15;			//whether or not background should be cleared for every draw.  defaults to true
 	public final int numBaseFlags = 16;
 	
-	//booleans in main program - need to have labels in idx order, even if not displayed
+	/**
+	 * booleans in main program - need to have labels in idx order, even if not displayed
+	 */
 	private final String[] truePFlagNames = {//needs to be in order of flags
 			"Debug Mode",
 			"Final init Done",
@@ -243,9 +250,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			"Clear Background"
 			};
 	/**
-	 * Colors to use to display flags
+	 * Colors to use to display true flags
 	 */
-	private int[][] pFlagColors;
+	private int[][] trueFlagColors;
 	
 	/**
 	 * flags to actually display in menu as clickable text labels - order does matter
@@ -275,14 +282,23 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final int numStFlagsToShow = stateFlagsToShow.size();
 	
 	
-	private final String[] StateBoolNames = {"Shift","Alt","Cntl","Click", "Draw","View"};
-	//multiplier for displacement to display text label for stateboolnames
+	private final String[] stateFlagDispNames = {"Shift","Alt","Cntl","Click", "Draw","View"};
+	/**
+	 * Colors for state flags
+	 */
+	private int[][] stateFlagColors;	
+	
+	/**
+	 * multiplier for displacement to display text label for stateFlagDispNames
+	 */
 	private final float[] StrWdMult = new float[]{-3.0f,-3.0f,-3.0f,-3.2f,-3.5f,-2.5f};
-	private int[][] stBoolFlagColors;	
+
 	
 	public int animCounter = 0;
-	//whether or not to show start up instructions for code		
-	public boolean showInfo=false;			
+	/**
+	 * whether or not to show start up instructions for code		
+	 */
+	public boolean showInfo = false;			
 	
 	//display-related size variables
 	public int grid2D_X = 800, grid2D_Y = 800;	
@@ -659,7 +675,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void initOnce() {
 		//1-time init for program and windows
-		setVisFlag(dispMenuIDX, true);					//show input UI menu
+		setVisFlag(dispMenuIDX, true);					//always default to showing input UI menu
 		initOnce_Indiv();
 		//initProgram is called every time reinitialization is desired
 		initProgram();		
@@ -670,15 +686,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 	protected abstract void initOnce_Indiv();	
 	
-	//called every time re-initialized
-	private final void initVisProg(){	
+	/**
+	 * called every time re-initialized
+	 */
+	public final void initProgram() {
 		for (int i=1; i<dispWinFrames.length;++i) {
 			dispWinFrames[i].reInitInfoStr();
 		}
-	}
-		//called every time re-initialized
-	public final void initProgram() {
-		initVisProg();				//always first
 		
 		initProgram_Indiv();
 	}//initProgram	
@@ -868,16 +882,19 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		dispWinFrames[wIdx] = new SidebarMenu(ri, this, wIdx, sideBarConfig);		
 	}
 	
-	//set up initial colors for primary flags for display
+	/**
+	 * set up initial colors for primary flags for display
+	 */
 	private void initPFlagColors(){
-		pFlagColors = new int[numBaseFlags][3];
+		trueFlagColors = new int[numBaseFlags][3];
+		stateFlagColors = new int[numStFlagsToShow][3];
+		
 		ThreadLocalRandom tr = ThreadLocalRandom.current();
-		for (int i = 0; i < numBaseFlags; ++i) { pFlagColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150)}; }		
-		stBoolFlagColors = new int[numStFlagsToShow][3];
-		stBoolFlagColors[0] = new int[]{255,0,0};
-		stBoolFlagColors[1] = new int[]{0,255,0};
-		stBoolFlagColors[2] = new int[]{0,0,255};		//new int[]{100+((int) random(150)),150+((int) random(100)),150+((int) random(150))};	
-		for (int i = 3; i < numStFlagsToShow; ++i) { stBoolFlagColors[i] = new int[]{tr.nextInt(100,250),tr.nextInt(150,250),tr.nextInt(150,250)};		}
+		for (int i = 0; i < numBaseFlags; ++i) { trueFlagColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150)}; }	
+		stateFlagColors[0] = new int[]{255,0,0};
+		stateFlagColors[1] = new int[]{0,255,0};
+		stateFlagColors[2] = new int[]{0,0,255};		//new int[]{100+((int) random(150)),150+((int) random(100)),150+((int) random(150))};	
+		for (int i = 3; i < numStFlagsToShow; ++i) { stateFlagColors[i] = new int[]{tr.nextInt(100,250),tr.nextInt(150,250),tr.nextInt(150,250)};		}
 	}
 	
 	//clear menu side bar buttons when window-specific processing is finished
@@ -1033,7 +1050,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//simulation section
 		execSimDuringDrawLoop(modAmtMillis);
 		//drawing section																//initialize camera, lights and scene orientation and set up eye movement
-		drawMe(modAmtMillis);				
+		drawMainWinAndCanvas(modAmtMillis);				
 		//Draw UI and 
 		drawUI(modAmtMillis);												//draw UI overlay on top of rendered results			
 		//build window title
@@ -1069,7 +1086,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * main draw loop
 	 */
-	public final void drawMe(float modAmtMillis){
+	public final void drawMainWinAndCanvas(float modAmtMillis){
 		ri.pushMatState();
 		drawSetup();
 		boolean is3DDraw = (curFocusWin == -1) || (curDispWinIs3D()); 
@@ -1080,7 +1097,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				draw3D_solve3D(modAmtMillis);
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}
 				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);	}		
-				if(doShowDrawawbleCanvas()) {canvas.drawCanvas();}
+				if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts());}
 			} else {
 				draw3D_solve3D(modAmtMillis);
 			}
@@ -1164,11 +1181,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void dispMenuText(float xOffHalf, float yOffHalf) {
 		for(int idx =0; idx<numFlagsToShow; ++idx){
 			int i = flagsToShow.get(idx);
-			if(getBaseFlag(i) ){										dispMenuTxtLat(truePFlagNames[i], pFlagColors[i], true, xOffHalf,yOffHalf);}
-			else {	
-				if(truePFlagNames[i].equals(falsePFlagNames[i])) {		dispMenuTxtLat(truePFlagNames[i], btnGreyClr, false, xOffHalf,yOffHalf);}	
-				else {													dispMenuTxtLat(falsePFlagNames[i], new int[]{0,255-pFlagColors[i][1],255-pFlagColors[i][2]}, true, xOffHalf,yOffHalf);}		
-			}
+			if(getBaseFlag(i) ){		dispMenuTxtLat(truePFlagNames[i], trueFlagColors[i], true, xOffHalf,yOffHalf);}
+			else {						dispMenuTxtLat(falsePFlagNames[i], btnGreyClr, false, xOffHalf,yOffHalf);}					
 		}
 	}//dispMenuText
 	
@@ -1217,7 +1231,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.translate(110,10);
 		float xTrans = (int)((getMenuWidth()-100) / (1.0f*numStFlagsToShow));
 		for(int idx =0; idx<numStFlagsToShow; ++idx){
-			dispBoolStFlag(StateBoolNames[idx],stBoolFlagColors[idx], getStateFlagState(idx),StrWdMult[idx], yOff);			
+			dispBoolStFlag(stateFlagDispNames[idx],stateFlagColors[idx], getStateFlagState(stateFlagsToShow.get(idx)), StrWdMult[idx], yOff);			
 			ri.translate(xTrans,0);
 		}
 	}
@@ -1235,8 +1249,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	public final void drawUI(float modAmtMillis){					
 		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
-		//menu always idx 0
-		//normal(0,0,1);
 		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
 		dispWinFrames[dispMenuIDX].drawHeader(modAmtMillis);
 		if(isDebugMode()){
@@ -1743,10 +1755,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}	
 	/**
 	 * get the current state (T/F) of state flags (Such as if shift is pressed or not) specified by idx in stateFlagsToShow List
-	 * @param idx
+	 * @param idx the actual idx of the state flag
 	 * @return
 	 */
-	public final boolean getStateFlagState(int idx) {return getBaseFlag(stateFlagsToShow.get(idx));}
+	public final boolean getStateFlagState(int idx) {return getBaseFlag(idx);}
 	/**
 	 * get number of main flags to display in right side menu
 	 * @return
@@ -1864,6 +1876,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// calculations
 	
+	/**
+	 * Return the points describing a plane orthogonal to the eye vector and bound to the 3d Cube bounds.
+	 * @return
+	 */
+	public myPointf[] getCanvasDrawPlanePts() {
+		return buildPlaneBoxBounds(canvas.getCanvasCorners());
+	}
 	
 	/**
 	 * point normal form of plane - give a normal and a point and receive a 4-element array of the coefficients of the plane equation.
