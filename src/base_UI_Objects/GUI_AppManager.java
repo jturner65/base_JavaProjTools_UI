@@ -1256,7 +1256,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		} else if(showInfo){
 			dispWinFrames[curFocusWin].drawOnscreenText();
 		}
-		dispWinFrames[curFocusWin].updateConsoleStrs();		
+		dispWinFrames[curFocusWin].updateConsoleStrs();	
+		
+		
 	}//drawUI
 	
 	
@@ -1575,29 +1577,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	private void endAltKey(){			setAltPressed(false);				for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endAltKey();}}
 	private void endCntlKey(){			setCntlPressed(false);				for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endCntlKey();}}
 	private void endValueKeyPressed() {	setValueKeyPressed(false);			for(int i =0; i<numDispWins; ++i){dispWinFrames[i].endValueKeyPress();}}
-
-	/**
-	 * get the ui rect values of the "master" ui region (another window) -> this is so ui objects of one window can be made, clicked, and shown displaced from those of the parent window
-	 * @param idx
-	 * @return
-	 */
-	public final float[] getUIRectVals(int idx) {
-		switch(idx){
-			case dispMenuIDX 		: {return new float[0];}			//idx 0 is parent menu sidebar
-			default 	:{
-				return getUIRectVals_Indiv(idx, dispWinFrames[dispMenuIDX].uiClkCoords);
-			}
-		}
-	}//getUIRectVals
-	
-	/**
-	 * Individual window handling
-	 * @param idx window index
-	 * @param menuRectVals rectValus from left side menu
-	 * @return
-	 */
-	protected abstract float[] getUIRectVals_Indiv(int idx, float[] menuRectVals);
-	
+		
 	/**
 	 * return a list of labels to apply to mse-over display select buttons - an empty or null list will not display option
 	 * @return
@@ -1654,6 +1634,31 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// state and control flag handling
+	
+	/**
+	 * get the ui rect values of the "master" ui region (another window) -> this is so ui objects of one window can be made, clicked, and shown displaced from those of the parent window
+	 * @param idx
+	 * @return
+	 */
+	
+	public final float[] getUIRectVals(int idx) {
+		switch(idx){
+			//sidebar menu synthesizes it's uiClickCoords in its constructor
+			case dispMenuIDX 		: {return new float[0];}			
+			default 	:{
+				return getUIRectVals_Indiv(idx, dispWinFrames[dispMenuIDX].uiClkCoords);
+			}
+		}
+	}//getUIRectVals
+	
+	/**
+	 * Individual window handling
+	 * @param idx window index
+	 * @param menuRectVals rectValus from left side menu
+	 * @return
+	 */
+	protected abstract float[] getUIRectVals_Indiv(int idx, float[] menuRectVals);
+	
 	/**
 	 * init boolean state machine flags for visible flags
 	 */
@@ -1808,12 +1813,20 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void toggleSaveAnim() {setBaseFlag(saveAnim, !getBaseFlag(saveAnim));}
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Top-level UI flags to show
+//	protected final void setBaseFlagToShow_debugMode(int winIdx, boolean val) {_setBaseFlagToShow(debugMode, val);}
+//	protected final void setBaseFlagToShow_saveAnim(int winIdx, boolean val) {_setBaseFlagToShow(saveAnim, val);}
+//	protected final void setBaseFlagToShow_runSim(int winIdx, boolean val) {_setBaseFlagToShow(runSim, val);}
+//	protected final void setBaseFlagToShow_singleStep(int winIdx, boolean val) {_setBaseFlagToShow(singleStep, val);}
+//	protected final void setBaseFlagToShow_showRtSideMenu(int winIdx, boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}	
+//	protected final void setBaseFlagToShow_showDrawableCanvas(int winIdx, boolean val) {_setBaseFlagToShow(showCanvas, val);}	
+
 	protected final void setBaseFlagToShow_debugMode(boolean val) {_setBaseFlagToShow(debugMode, val);}
 	protected final void setBaseFlagToShow_saveAnim(boolean val) {_setBaseFlagToShow(saveAnim, val);}
 	protected final void setBaseFlagToShow_runSim(boolean val) {_setBaseFlagToShow(runSim, val);}
 	protected final void setBaseFlagToShow_singleStep(boolean val) {_setBaseFlagToShow(singleStep, val);}
 	protected final void setBaseFlagToShow_showRtSideMenu(boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}	
 	protected final void setBaseFlagToShow_showDrawableCanvas(boolean val) {_setBaseFlagToShow(showCanvas, val);}	
+
 	
 	public final boolean getBaseFlagIsShown_debugMode() {return _getBaseFlagIsShown(debugMode);}
 	public final boolean getBaseFlagIsShown_saveAnim() {return _getBaseFlagIsShown(saveAnim);}

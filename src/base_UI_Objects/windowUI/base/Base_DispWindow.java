@@ -64,10 +64,10 @@ public abstract class Base_DispWindow {
 	//current visible screen width and height
 	public float[] curVisScrDims;
 
-	public static final float xOff = 20 , yOff = 18.0f * (IRenderInterface.txtSz/12.0f);
-	protected static final double[] UI_off = new double[] { xOff, yOff };
-	protected static final float btnLblYOff = 2 * yOff, rowStYOff = yOff*.15f;
-	protected static final float xOffHalf = .5f*xOff, yOffHalf = .5f*yOff;
+	public static final float xOff = 20 , txtHeightOff = 18.0f * (IRenderInterface.txtSz/12.0f);
+	protected static final double[] UI_off = new double[] { xOff, txtHeightOff };
+	protected static final float btnLblYOff = 2 * txtHeightOff, rowStYOff = txtHeightOff*.15f;
+	protected static final float xOffHalf = .5f*xOff, yOffHalf = .5f*txtHeightOff;
 	private static final float maxBtnWidthMult = .95f;
 	public static final int topOffY = 40;			//offset values to render boolean menu on side of screen - offset at top before drawing
 	public static final float clkBxDim = 10;//size of interaction/close window box in pxls
@@ -90,7 +90,6 @@ public abstract class Base_DispWindow {
 	
 	private int[] privModFlgIdxs;										//only modifiable idx's will be shown as buttons - this needs to be in order of flag names
 	private float[][] privFlagBtns;									//clickable dimensions for these buttons
-	private int numClickBools;
 	//array of priv buttons to be cleared next frame - should always be empty except when buttons need to be cleared
 	private ArrayList<Integer> privBtnsToClear;
 	
@@ -192,7 +191,7 @@ public abstract class Base_DispWindow {
 		//base screenshot path based on launch time
 		ssFolderDir = name+"_"+getNowDateTimeString();
 		ssPathBase = AppMgr.getApplicationPath() +File.separatorChar + ssFolderDir + File.separatorChar;
-		initClrDims( fc, sc, rd, rdClosed);
+		initClrsAndDims( fc, sc, rd, rdClosed);
 		msClkObj = -1;
 		msOvrObj = -1;
 		reInitInfoStr();
@@ -217,6 +216,8 @@ public abstract class Base_DispWindow {
 	public final void initThisWin(boolean _isMenu){
 		dispFlags = new WinDispStateFlags(this);
 		
+		privBtnsToClear = new ArrayList<Integer>();
+		
 		//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
 		if(!_isMenu){
 			//Initialize dispFlags settings based on AppMgr
@@ -224,20 +225,21 @@ public abstract class Base_DispWindow {
 			dispFlags.setIsRunnable(AppMgr.getBaseFlagIsShown_runSim());
 			//Is this window capable of showing right side menu
 			dispFlags.setHasRtSideMenu(AppMgr.getBaseFlagIsShown_showRtSideMenu());
-			//initialize any state/display flags
+			//initialize/override any state/display flags
 			initDispFlags();
-			
+			//build uiClkCoords for this object
 			initUIBox();				
+			// build all UI objects using specifications from instancing window
+			_initAllGUIObjs(_isMenu);
+		
 		} else {
 			//menu is not ever closeable 
 			dispFlags.setIsCloseable(false);
-		}
-		
-		privBtnsToClear = new ArrayList<Integer>();
-		
-		// build all UI objects using specifications from instancing window
-		_initAllGUIObjs(_isMenu);
-		
+			//no guiObjs for menu
+			guiObjs = new Base_GUIObj[0];
+			//initialize menu private boolean flags
+			_initAllPrivButtons();
+		}				
 		//run instancing window-specific initialization
 		initMe();
 		//set any custom button names if necessary
@@ -270,11 +272,23 @@ public abstract class Base_DispWindow {
 		guiIntValIDXs = new ArrayList<Integer>();	
 		//initialized for sidebar menu as well as for display windows
 		guiObjs = new Base_GUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
-		if(!_isMenu){
+		//if(!_isMenu){
 			//build ui objects - not used for sidebar menu
-			_buildGUIObjsFromMaps(tmpUIObjArray, tmpListObjVals);	
-		} 
+		_buildGUIObjsFromMaps(tmpUIObjArray, tmpListObjVals);	
+		//} 
+		_initAllPrivButtons();
 		
+		// build instance-specific UI update communication object if exists
+		if(!_isMenu){
+			//build ui data updater - not used for sidebar menu
+			buildUIUpdateStruct();
+		}
+	}//_initAllGUIObjs
+	
+	/**
+	 * Initialize instancing window's private buttons and state flags
+	 */
+	private void _initAllPrivButtons() {		
 		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
 		//  set up all window-specific boolean buttons for this window
 		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
@@ -284,16 +298,11 @@ public abstract class Base_DispWindow {
 		// init specific sim flags
 		privFlags = new WinAppPrivStateFlags(this,_numPrivFlags);
 		// set instance-specific initial flags
-		int[] trueFlagIDXs= getFlagIDXsToInitToTrue();
+		int[] trueFlagIDXs = getFlagIDXsToInitToTrue();
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
-		if(null!=trueFlagIDXs) {initPassedPrivFlagsToTrue(trueFlagIDXs);}
-		
-		// build instance-specific UI update communication object if exists
-		if(!_isMenu){
-			//build ui data updater - not used for sidebar menu
-			buildUIUpdateStruct();
-		}
-	}//_initAllGUIObjs
+		if(null!=trueFlagIDXs) {initPassedPrivFlagsToTrue(trueFlagIDXs);}		
+	}
+	
 	
 	/**
 	 * build ui objects from maps, keyed by ui object idx, with value being data
@@ -347,22 +356,22 @@ public abstract class Base_DispWindow {
 			switch(guiObjTypes[i]) {
 				case IntVal : {
 					guiObjs[i] = new MenuGUIObj_Int(pa, i, guiObjNames[i], uiClkCoords[0], 
-							stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], 
+							stClkY, uiClkCoords[2], stClkY+txtHeightOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off);					
 					break;}
 				case ListVal : {
 					++numListObjs;
 					guiObjs[i] = new MenuGUIObj_List(pa, i, guiObjNames[i], uiClkCoords[0], 
-							stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], 
+							stClkY, uiClkCoords[2], stClkY+txtHeightOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i));
 					break;}
 				case FloatVal : {
 					guiObjs[i] = new MenuGUIObj_Float(pa, i, guiObjNames[i], uiClkCoords[0], 
-							stClkY, uiClkCoords[2], stClkY+yOff, guiMinMaxModVals[i], 
+							stClkY, uiClkCoords[2], stClkY+txtHeightOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off);					
 					break;}
 			}			
-			stClkY += yOff;
+			stClkY += txtHeightOff;
 		}
 		uiClkCoords[3] = stClkY;
 		if(numListObjs != tmpListObjVals.size()) {
@@ -483,27 +492,45 @@ public abstract class Base_DispWindow {
 	 * @param rd
 	 * @param rdClosed
 	 */
-	private void initClrDims(int[] fc,  int[] sc, float[] rd, float[] rdClosed) {
-		fillClr = new int[4];rtSideUIFillClr= new int[4]; rtSideUIStrkClr= new int[4]; strkClr = new int[4];	 
-		setRectDimOpen(rd);
-		setRectDimClosed(rdClosed);		
+	private void initClrsAndDims(int[] fc,  int[] sc, float[] rd, float[] rdClosed) {
+		fillClr = new int[4];
+		rtSideUIFillClr = new int[4]; 
+		rtSideUIStrkClr = new int[4]; 
+		strkClr = new int[4];
+		
+		rectDim = new float[4];		
+		rectDimClosed = new float[4];
+
 		closeBox = new float[4]; uiClkCoords = new float[4];		
-		for(int i =0;i<4;++i){
-			fillClr[i] = fc[i];strkClr[i]=sc[i];
-			rtSideUIFillClr[i] = fc[i];rtSideUIStrkClr[i]=sc[i];
-		}			
+		for(int i=0; i<4; ++i){
+			fillClr[i] = fc[i]; strkClr[i] = sc[i];
+			rtSideUIFillClr[i] = fc[i]; rtSideUIStrkClr[i] = sc[i];
+			rectDim[i] = rd[i]; rectDimClosed[i] = rdClosed[i];
+		}
+		float boxWidth = 1.1f*rectDim[0];
+		UIRtSideRectBox = new float[] {rectDim[2]-boxWidth,0,boxWidth, rectDim[3]};		
+		closedUIRtSideRecBox = new float[] {rectDim[2]-20,0,20,rectDim[3]};
+		curVisScrDims = new float[] {closedUIRtSideRecBox[0],rectDim[3]};		
 	}//initClrDims	
 	
 	protected final void setVisScreenWidth(float visScrWidth) {setVisScreenDims(visScrWidth,curVisScrDims[1]);}
 	protected final void setVisScreenHeight(float visScrHeight) {setVisScreenDims(curVisScrDims[0],visScrHeight);}
-	//based on current visible screen width, set map and calc analysis display locations
+	/**
+	 * based on current visible screen width, set map and calc analysis display locations
+	 * @param visScrWidth
+	 * @param visScrHeight
+	 */
 	protected final void setVisScreenDims(float visScrWidth, float visScrHeight) {
 		curVisScrDims[0] = visScrWidth;
 		curVisScrDims[1] = visScrHeight;
 		setVisScreenDimsPriv();
 	}//calcAndSetMapLoc
 	
-	//set right side data display fill/stroke colors
+	/**
+	 * set right side data display fill/stroke colors
+	 * @param fc
+	 * @param sc
+	 */
 	public final void setRtSideUIBoxClrs(int[] fc,  int[] sc) {
 		for(int i =0;i<4;++i){rtSideUIFillClr[i] = fc[i];rtSideUIStrkClr[i]=sc[i];}				
 	}		
@@ -540,7 +567,7 @@ public abstract class Base_DispWindow {
 	private static final float ltrLen = 5.0f;private static final int btnStep = 5;
 	private float calcBtnLength(String tStr, String fStr){return btnStep * (int)(((PApplet.max(tStr.length(),fStr.length())+4) * ltrLen)/btnStep);}
 	
-	private void setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {(float)(uiClkCoords[0])+oldBtnLen, (float) uiClkCoords[3], btnLen, yOff };}
+	private void setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {uiClkCoords[0]+oldBtnLen, uiClkCoords[3], btnLen, txtHeightOff };}
 	
 	/**
 	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
@@ -557,8 +584,7 @@ public abstract class Base_DispWindow {
 			falsePrivFlagLabels[i] = (String) tmpAra[1];
 			privModFlgIdxs[i] = (int) tmpAra[2];
 		}
-		numClickBools = truePrivFlagLabels.length;
-		_buildPrivBtnRects(0, numClickBools);
+		_buildPrivBtnRects(0, truePrivFlagLabels.length);
 	}//_buildAllPrivButtons
 	
 	/**
@@ -567,11 +593,11 @@ public abstract class Base_DispWindow {
 	 * @param numBtns number of buttons to make
 	 */
 	private void _buildPrivBtnRects(float yDisp, int numBtns){
-		//msgObj.dispInfoMessage("Base_DispWindow","_buildPrivBtnRects","_buildPrivBtnRects in :"+ name + "st value for uiClkCoords[3]");
-		float maxBtnLen = maxBtnWidthMult * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
-		//pa.pr("maxBtnLen : " + maxBtnLen);
+		msgObj.dispInfoMessage(className,"_buildPrivBtnRects","Start value for uiClkCoords[3] : "+uiClkCoords[3] + " | numBtns : "+ numBtns);
 		privFlagBtns = new float[numBtns][];
-		this.uiClkCoords[3] += yOff;
+		if (numBtns == 0) {	return;	}
+		float maxBtnLen = maxBtnWidthMult * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
+		this.uiClkCoords[3] += txtHeightOff;
 		float oldBtnLen = 0;
 		boolean lastBtnHalfStLine = false, startNewLine = true;
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
@@ -582,11 +608,11 @@ public abstract class Base_DispWindow {
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
 					privFlagBtns[i-1][2] = maxBtnLen;
-					this.uiClkCoords[3] += yOff;
+					this.uiClkCoords[3] += txtHeightOff;
 				}
 				setBtnDims(i, 0, btnLen);
 				//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-xOff), (float) uiClkCoords[3], btnLen, yOff };				
-				this.uiClkCoords[3] += yOff;
+				this.uiClkCoords[3] += txtHeightOff;
 				startNewLine = true;
 				lastBtnHalfStLine = false;
 			} else {//button len should be half width unless this button started a new line
@@ -598,7 +624,7 @@ public abstract class Base_DispWindow {
 				} else {//should only get here if 2nd of two <1/2 width buttons in a row
 					lastBtnHalfStLine = false;
 					setBtnDims(i, oldBtnLen, btnLen);
-					this.uiClkCoords[3] += yOff;
+					this.uiClkCoords[3] += txtHeightOff;
 					startNewLine = true;					
 				}
 			}			
@@ -606,10 +632,11 @@ public abstract class Base_DispWindow {
 		}
 		if(lastBtnHalfStLine){//set last button full length if starting new line
 			privFlagBtns[numBtns-1][2] = maxBtnLen;
-			this.uiClkCoords[3] += yOff;
+			this.uiClkCoords[3] += txtHeightOff;
 		}
-		this.uiClkCoords[3] += yOff;
+		this.uiClkCoords[3] += txtHeightOff;
 		initPrivFlagColors();
+		msgObj.dispInfoMessage(className,"_buildPrivBtnRects","End value for uiClkCoords[3] : "+uiClkCoords[3]);
 	}//_buildPrivBtnRects
 	/**
 	 * find index in flag name arrays of passed boolean IDX
@@ -695,29 +722,6 @@ public abstract class Base_DispWindow {
 	private void initPassedPrivFlagsToTrue(int[] idxs) { 
 		privFlags.setAllFlagsToTrue(idxs);
 	}
-	
-	/**
-	 * Set or reset the dims of this window when it is open
-	 * @param dims
-	 */
-	private final void setRectDimOpen(float[] dims) {		
-		rectDim = new float[4];		
-		for(int i =0;i<4;++i){	rectDim[i]=dims[i];}
-		
-		float boxWidth = 1.1f*rectDim[0];
-		UIRtSideRectBox = new float[] {rectDim[2]-boxWidth,0,boxWidth, rectDim[3]};		
-		closedUIRtSideRecBox = new float[] {rectDim[2]-20,0,20,rectDim[3]};
-		curVisScrDims = new float[] {closedUIRtSideRecBox[0],rectDim[3]};
-	}//setRectDimOpen
-	
-	/**
-	 * Set or reset the dims of this window when it is closed
-	 * @param dims
-	 */
-	public final void setRectDimClosed(float[] dims) {
-		rectDimClosed = new float[4];		
-		for(int i =0;i<4;++i){	rectDimClosed[i]=dims[i];}
-	}//setRectDimClosed
 	
 	/**
 	 * this will set the height of the rectangle enclosing this window - this will be called when a 
@@ -1181,7 +1185,7 @@ public abstract class Base_DispWindow {
 			if(dispFlags.getShowRtSideMenu()) {				
 				pa.drawRect(UIRtSideRectBox);
 				//move to manage internal text display in owning window
-				pa.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+yOff-4,0);
+				pa.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+txtHeightOff-4,0);
 				pa.setFill(255,255,255,255);	
 				 //instancing class implements this function
 				drawRightSideInfoBarPriv(modAmtMillis); 

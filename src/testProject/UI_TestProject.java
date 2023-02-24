@@ -142,6 +142,8 @@ public class UI_TestProject extends GUI_AppManager {
 		//float[] _dimOpen, float[] _dimClosed  : dimensions opened or closed
 		//boolean[] _dispFlags 					: 
 		//   flags controlling display of window :  idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
+		//boolean[] _baseFlagsToShow
+		//   flags determining which global flags to show for this window
 		//int[] _fill, int[] _strk, 			: window fill and stroke colors
 		//int _trajFill, int _trajStrk)			: trajectory fill and stroke colors, if these objects can be drawn in window (used as alt color otherwise)
 		//			//display window initialization	
