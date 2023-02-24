@@ -15,8 +15,6 @@ import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 //displays sidebar menu of interaction and functionality
 
 public class SidebarMenu extends Base_DispWindow{
-
-	protected static final float xLblOffsetMult = .02f;
 	
 	private final int numMainFlagsToShow;
 	
@@ -48,6 +46,10 @@ public class SidebarMenu extends Base_DispWindow{
 	private boolean _initBtnShowWin = false, _initBtnMseFunc= false, _initBtnDBGSelCmp = false;
 
 	private String[] guiBtnRowNames;
+	/**
+	 * This is the y distance taken up by the guiBtnRows
+	 */
+	private float guiBtnRowsEndY;
 	/**
 	 * names for each row of buttons - idx 1 is name of row
 	 */
@@ -91,20 +93,33 @@ public class SidebarMenu extends Base_DispWindow{
 	public SidebarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
 		super(_p, _AppMgr, _winIdx);
 		btnConfig=_c;
+
+		//set up side bar menu buttons with format specific to instancing application
+		setBtnData();
 		//these have to be set before setupGUIObjsAras is called from initThisWin
 		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
+		minBtnClkY = (numMainFlagsToShow+3) * txtHeightOff + clkFlgsStY;										//start of buttons from under boolean flags
+		//all ui ojbects for all windows will follow this format and share the x[0] value
+		initUIClickCoords(rectDim[0] + .02f * rectDim[2], minBtnClkY + guiBtnRowsEndY,rectDim[0] + .99f * rectDim[2],minBtnClkY + guiBtnRowsEndY);
+		//make a little space below debug buttons
+		uiClkCoords[3] += txtHeightOff;
+		//standard init
 		super.initThisWin(true);
-	}
+	}//ctor
 			
 	/**
 	 * init/reinit this window
 	 */
 	@Override
-	protected final void initMe() {	
-		
-		
-		
-	}	
+	protected final void initMe() {	}	
+	
+	
+	//initialize structure to hold modifiable menu regions
+	//called from super.initThisWin
+	@Override
+	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals){}//setupGUIObjsAras
+	
+	
 	/**
 	 * call this from each new window to set function btn labels, if specified, when window gets focus
 	 * @param rowIdx
@@ -120,7 +135,7 @@ public class SidebarMenu extends Base_DispWindow{
 	 * Set values for ui action buttons, based on specifications of @class mySidebarMenuBtnConfig
 	 * Parameters user defined in main as window is specified, individual button names can be overridden in individual app windows
 	 */
-	protected final void setBtnData() {
+	private final void setBtnData() {
 		ArrayList<String> tmpGuiBtnRowNames = new ArrayList<String>();
 		ArrayList<String[]> tmpBtnLabels = new ArrayList<String[]>();
 		ArrayList<String[]> tmpDfltBtnLabels = new ArrayList<String[]>();
@@ -196,6 +211,8 @@ public class SidebarMenu extends Base_DispWindow{
 		guiBtnWaitForProc = tmpBtnWaitForProc.toArray(new Boolean[0][]);
 		
 		guiBtnSt = new int[guiBtnRowNames.length][];
+		//set y span of the buttons
+		guiBtnRowsEndY = (guiBtnRowNames.length * 2.0f) * txtHeightOff;
 		for(int i=0;i<guiBtnSt.length;++i) {guiBtnSt[i] = new int[guiBtnLabels[i].length];}
 		
 		//set button names
@@ -283,22 +300,9 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void handlePrivFlagsDebugMode_Indiv(boolean val) {	}
 	
-	//initialize structure to hold modifiable menu regions
-	//called from super.initThisWin
-	@Override
-	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals){
-		//set up side bar menu buttons with format specific to instancing application
-		setBtnData();
-		
-		minBtnClkY = (numMainFlagsToShow+3) * yOff + clkFlgsStY;										//start of buttons from under boolean flags
-		//all ui ojbects for all windows will follow this format and share the x[0] value
-		initUIClickCoords(rectDim[0] + xLblOffsetMult * rectDim[2],minBtnClkY + (guiBtnRowNames.length * 2.0f) * yOff,rectDim[0] + .99f * rectDim[2],0);//last val over-written by actual value in buildGuiObjs
-		uiClkCoords[3] = uiClkCoords[1]-20;
-	}//setupGUIObjsAras
-	
 	//check if buttons clicked
 	private boolean checkButtons(int mseX, int mseY){
-		double stY = minBtnClkY + rowStYOff, endY = stY+yOff, stX = 0, endX, widthX; //btnLblYOff			
+		double stY = minBtnClkY + rowStYOff, endY = stY+txtHeightOff, stX = 0, endX, widthX; //btnLblYOff			
 		for(int row=0; row<guiBtnRowNames.length;++row){
 			widthX = rectDim[2]/(1.0f * guiBtnLabels[row].length);
 			stX =0;	endX = widthX;
@@ -309,13 +313,15 @@ public class SidebarMenu extends Base_DispWindow{
 				}					
 				stX += widthX;	endX += widthX; 
 			}
-			stY = endY + yOff+ rowStYOff;endY = stY + yOff;				
+			stY = endY + txtHeightOff+ rowStYOff;endY = stY + txtHeightOff;				
 		}
 		return false;
 	}//handleButtonClick	
 	
-	//turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
-	public final void clearAllBtnStates(){
+	/**
+	 * turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
+	 */
+	private final void clearAllBtnStates(){
 		if(privFlags.getFlag(mseClickedInBtnsIDX)) {
 			//guiBtnWaitForProc should only be set for non-momentary buttons when they are pushed and cleared when whatever they are do is complete
 			for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnLabels[row].length;++col){				
@@ -335,12 +341,20 @@ public class SidebarMenu extends Base_DispWindow{
 		guiBtnSt[row][btnToKeepOn]=1;
 	}
 	
-	//set non-momentary buttons to be waiting for processing complete comand
+	/**
+	 * set non-momentary buttons to be waiting for processing complete comand
+	 * @param row
+	 * @param col
+	 */
 	public final void setWaitForProc(int row, int col) {
 		if(!guiBtnInst[row][col]) {	guiBtnWaitForProc[row][col] = true;}		
 	}
-	//handle click on button region of menubar
-	public final void handleButtonClick(int row, int col){
+	/**
+	 * handle click on button region of menubar
+	 * @param row
+	 * @param col
+	 */
+	private final void handleButtonClick(int row, int col){
 		int val = guiBtnSt[row][col];//initial state, before being changed
 		guiBtnSt[row][col] = (guiBtnSt[row][col] + 1)%2;//change state
 		//if not momentary buttons, set wait for proc to true
@@ -371,10 +385,10 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
 		if((!MyMathUtils.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}//not in this window's bounds, quit asap for speedz
-		int i = (int)((mouseY-(btnLblYOff + clkFlgsStY))/(yOff));					//TODO Awful - needs to be recalced, dependent on menu being on left
+		int i = (int)((mouseY-(btnLblYOff + clkFlgsStY))/(txtHeightOff));					//TODO Awful - needs to be recalced, dependent on menu being on left
 		if((i>=0) && (i<numMainFlagsToShow)){
 			AppMgr.flipMainFlag(i);return true;	
-		} else if(MyMathUtils.ptInRange(mouseX, mouseY, 0, minBtnClkY, uiClkCoords[2], uiClkCoords[1])){
+		} else if(MyMathUtils.ptInRange(mouseX, mouseY, uiClkCoords[0], minBtnClkY, uiClkCoords[2], uiClkCoords[1])){
 			boolean clkInBtnRegion = checkButtons(mouseX, mouseY);
 			if(clkInBtnRegion) { privFlags.setFlag(mseClickedInBtnsIDX, true);}
 			return clkInBtnRegion;
@@ -393,18 +407,20 @@ public class SidebarMenu extends Base_DispWindow{
 		//draw main booleans and their state
 		pa.translate(10,btnLblYOff);
 		pa.setColorValFill(IRenderInterface.gui_Black,255);
-		pa.showText("Boolean Flags",0,yOff*.20f);
+		pa.showText("Boolean Flags",0,txtHeightOff*.20f);
 		pa.translate(0,clkFlgsStY);
 		AppMgr.dispMenuText(xOffHalf,yOffHalf);
 	}//drawSideBarBooleans
 
 	
-	//draw UI buttons that control functions, debug and global load/save stubs
+	/**
+	 * draw UI buttons that control functions, debug and global load/save stubs
+	 */
 	private void drawSideBarButtons(){
 		pa.translate(xOffHalf,(float)minBtnClkY);
 		pa.setFill(new int[]{0,0,0}, 255);
 		for(int row=0; row<guiBtnRowNames.length;++row){
-			pa.showText(guiBtnRowNames[row],0,-yOff*.15f);
+			pa.showText(guiBtnRowNames[row],0,-txtHeightOff*.15f);
 			pa.translate(0,rowStYOff);
 			float xWidthOffset = rectDim[2]/(1.0f * guiBtnLabels[row].length), halfWay;
 			pa.pushMatState();
@@ -415,9 +431,9 @@ public class SidebarMenu extends Base_DispWindow{
 			for(int col =0; col<guiBtnLabels[row].length;++col){
 				halfWay = (xWidthOffset - pa.textWidth(guiBtnLabels[row][col]))/2.0f;
 				pa.setColorValFill(guiBtnStFillClr[guiBtnSt[row][col]+1],255);
-				pa.drawRect(new float[] {0,0,xWidthOffset, yOff});	
+				pa.drawRect(new float[] {0,0,xWidthOffset, txtHeightOff});	
 				pa.setColorValFill(guiBtnStTxtClr[guiBtnSt[row][col]+1],255);
-				pa.showText(guiBtnLabels[row][col], halfWay, yOff*.75f);
+				pa.showText(guiBtnLabels[row][col], halfWay, txtHeightOff*.75f);
 				pa.translate(xWidthOffset, 0);
 			}
 			pa.popMatState();						
@@ -434,7 +450,7 @@ public class SidebarMenu extends Base_DispWindow{
 			drawSideBarBooleans();				//toggleable booleans 
 		pa.popMatState();	
 		pa.pushMatState();
-			AppMgr.drawSideBarStateBools(yOff);				//lights that reflect various states
+			AppMgr.drawSideBarStateBools(txtHeightOff);				//lights that reflect various states
 		pa.popMatState();	
 		pa.pushMatState();			
 			drawSideBarButtons();						//draw buttons
