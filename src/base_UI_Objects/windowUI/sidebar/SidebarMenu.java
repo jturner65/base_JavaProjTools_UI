@@ -29,7 +29,7 @@ public class SidebarMenu extends Base_DispWindow{
 			usesWinBtnDispIDX			= 2,					//this menu displays the window title bar
 			usesMseOvrBtnDispIDX		= 3,					//this menu uses mouse-over display text
 			usesDbgBtnDispIDX			= 4;					//this menu displays debug side bar buttons
-	//private flag based buttons - ui menu won't have these
+	//private flag based buttons - ui menu won't display these
 	private static final int numPrivFlags = 5;
 	
 	//GUI Buttons
@@ -96,6 +96,15 @@ public class SidebarMenu extends Base_DispWindow{
 		super.initThisWin(true);
 	}
 			
+	/**
+	 * init/reinit this window
+	 */
+	@Override
+	protected final void initMe() {	
+		
+		
+		
+	}	
 	/**
 	 * call this from each new window to set function btn labels, if specified, when window gets focus
 	 * @param rowIdx
@@ -231,9 +240,6 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void initDispFlags() {}
 	
-	//init/reinit this window
-	@Override
-	protected final void initMe() {	}	
 	//window UI object not used for sidebar menu
 	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {return null;}
