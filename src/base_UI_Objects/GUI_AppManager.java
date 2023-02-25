@@ -2014,8 +2014,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param I normal to build frame around
 	 * @return vec array of {AB, Normal, Tangent}
 	 */
-	public myVector[] buildFrameAroundNormal(myPoint A, myPoint B, myVector norm) {
+	public myVector[] buildFrameAroundNormal(myPoint A, myPoint B, myVector C) {
 		myVector V = new myVector(A,B);
+		myVector norm = myVector._findNormToPlane(C,V);		
 		myVector tan = norm._cross(V)._normalize(); 
 		return new myVector[] {V,norm,tan};		
 	}
@@ -2027,8 +2028,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param I normal to build frame around
 	 * @return vec array of {AB, Normal, Tangent}
 	 */
-	public myVectorf[] buildFrameAroundNormal(myPointf A, myPointf B, myVectorf norm) {
+	public myVectorf[] buildFrameAroundNormal(myPointf A, myPointf B, myVectorf C) {
 		myVectorf V = new myVectorf(A,B);
+		myVectorf norm = myVectorf._findNormToPlane(C,V);
 		myVectorf tan = norm._cross(V)._normalize(); 
 		return new myVectorf[] {V,norm,tan};		
 	}
