@@ -92,7 +92,7 @@ public abstract class Base_DrawnTrajectory {
 	
 	public Base_DrawnTrajectory(Base_DispWindow _win, myVector _canvNorm) {
 		win =_win;
-		if(wScale == -1) {			wScale = Base_DispWindow.pa.getFrameRate()/5.0f;		}
+		if(wScale == -1) {			wScale = Base_DispWindow.ri.getFrameRate()/5.0f;		}
 		canvasNorm = _canvNorm;		//c.drawSNorm  draw surface normal
 		//intialize underlying flags structure
 		trajFlags = new DrawnTrajFlags(this);

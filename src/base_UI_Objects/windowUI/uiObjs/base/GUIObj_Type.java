@@ -7,13 +7,14 @@ import java.util.Map;
  * @author john turner 
  */
 public enum GUIObj_Type {
-	IntVal(0), FloatVal(1), ListVal(2);
+	IntVal(0), FloatVal(1), ListVal(2), Button(3);
 	private int value; 
 	private static final String[] _typeExplanation = new String[] {
 			"UI Object holding an integer value",
 			"UI Object holding a float value",
-			"UI Object holding a list value"};
-	private static final String[] _typeName = new String[] {"Integer Value","Float Value","List Value"};
+			"UI Object holding a list value",
+			"UI Object representing a button reflecting 2 or more states"};
+	private static final String[] _typeName = new String[] {"Integer Value","Float Value","List Value", "Button Object"};
 	public static String[] getListOfTypes() {return _typeName;}
 	private static Map<Integer, GUIObj_Type> map = new HashMap<Integer, GUIObj_Type>(); 
 	static { for (GUIObj_Type enumV : GUIObj_Type.values()) { map.put(enumV.value, enumV);}}
@@ -24,5 +25,5 @@ public enum GUIObj_Type {
 	public String getName() {return _typeName[value];}
 	@Override
     public String toString() { return ""+this.name()+":"+_typeExplanation[value]; }	
-    public String toStrBrf() { return ""+_typeExplanation[value]; }	
+    public String toStrBrf() { return ""+_typeName[value]; }	
 }

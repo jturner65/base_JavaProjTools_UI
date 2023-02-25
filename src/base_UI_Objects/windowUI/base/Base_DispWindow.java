@@ -14,8 +14,9 @@ import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.drawnTrajectories.TrajectoryManager;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.ScrollBars;
-import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Float;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Int;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_List;
@@ -32,14 +33,22 @@ import processing.core.*;
  *
  */
 public abstract class Base_DispWindow {
-	public static IRenderInterface pa;
+	/**
+	 * Render interface
+	 */
+	public static IRenderInterface ri;
+	/**
+	 * Gui-based application manager
+	 */
 	public static GUI_AppManager AppMgr;
 	/**
 	 * msg object for output to console or log
 	 */
 	protected MessageObject msgObj;
 
-	//enable drawing dbug info onto app canvas	
+	/**
+	 * enable drawing dbug info onto app canvas	
+	 */
 	private ArrayList<String> DebugInfoAra;	
 	//count of draw cycles for consoleString decay
 	private int drawCount = 0;
@@ -67,13 +76,20 @@ public abstract class Base_DispWindow {
 	public static final float xOff = 20 , txtHeightOff = 18.0f * (IRenderInterface.txtSz/12.0f);
 	protected static final double[] UI_off = new double[] { xOff, txtHeightOff };
 	protected static final float btnLblYOff = 2 * txtHeightOff, rowStYOff = txtHeightOff*.15f;
-	protected static final float xOffHalf = .5f*xOff, yOffHalf = .5f*txtHeightOff;
+	protected static final float xOffHalf = .5f*xOff, txtHeightOffHalf = .5f*txtHeightOff;
 	private static final float maxBtnWidthMult = .95f;
 	public static final int topOffY = 40;			//offset values to render boolean menu on side of screen - offset at top before drawing
 	public static final float clkBxDim = 10;//size of interaction/close window box in pxls
 	
-	public int dispFlagWinIDX;					//the flags idx in the App Manager that controls this window - use -1 for none	
+	/**
+	 * the flags idx in the App Manager that controls this window - use -1 for none.
+	 * (means this window is owned and managed by another window)
+	 */
+	public int dispFlagWinIDX;	
 	
+	/**
+	 * Flags controlling the state of this window
+	 */
 	public WinDispStateFlags dispFlags;
 		
 	/**
@@ -84,18 +100,26 @@ public abstract class Base_DispWindow {
 	public String[] truePrivFlagLabels; //needs to be in order of flags	
 	public String[] falsePrivFlagLabels;//needs to be in order of flags
 	
-		//for boolean buttons based on child-class window specific values
+	/**
+	 * Colors for boolean buttons set to True based on child-class window specific values
+	 */
 	private int[][] privFlagTrueColors;
+	/**
+	 * Colors for boolean buttons set to False based on child-class window specific values
+	 */
 	private int[][] privFlagFalseColors;
 	
-	private int[] privModFlgIdxs;										//only modifiable idx's will be shown as buttons - this needs to be in order of flag names
+	/**
+	 * only modifiable idx's will be shown as buttons - this needs to be in order of flag names
+	 */
+	private int[] privModFlgIdxs;										
 	private float[][] privFlagBtns;									//clickable dimensions for these buttons
 	//array of priv buttons to be cleared next frame - should always be empty except when buttons need to be cleared
 	private ArrayList<Integer> privBtnsToClear;
 	
 	//UI objects in this window
 	//GUI Objects
-	public Base_GUIObj[] guiObjs;	
+	private Base_NumericGUIObj[] guiObjs_Numeric;	
 
 	public int msClkObj, msOvrObj;												//myGUIObj object that was clicked on  - for modification, object mouse moved over
 	public int msBtnClcked;														//mouse button clicked
@@ -106,12 +130,18 @@ public abstract class Base_DispWindow {
 	private ArrayList<Integer> guiFloatValIDXs, guiIntValIDXs;
 	
 	
-	//offset to bottom of custom window menu 
+	/**
+	 * offset to bottom of custom window menu 
+	 */
 	protected float custMenuOffset;
 	
-	//box holding x,y,w,h values of black rectangle to form around menu for display variables on right side of screen, if present
+	/**
+	 * box holding x,y,w,h values of black rectangle to form around menu for display variables on right side of screen, if present
+	 */
 	private float[] UIRtSideRectBox;
-	//closed window box
+	/**
+	 * closed window box
+	 */
 	private float[] closedUIRtSideRecBox;	
 	/**
 	 * structure to facilitate communicating UI changes with functional code
@@ -179,7 +209,7 @@ public abstract class Base_DispWindow {
 			int _winIdx, 
 			int[] fc,  int[] sc, float[] rd, float[] rdClosed, 
 			String _winTxt) {
-		pa=_p;
+		ri=_p;
 		AppMgr = _AppMgr;
 		ID = winCnt++;
 		className = this.getClass().getSimpleName();
@@ -230,13 +260,13 @@ public abstract class Base_DispWindow {
 			//build uiClkCoords for this object
 			initUIBox();				
 			// build all UI objects using specifications from instancing window
-			_initAllGUIObjs(_isMenu);
+			_initAllGUIObjs();
 		
 		} else {
 			//menu is not ever closeable 
 			dispFlags.setIsCloseable(false);
 			//no guiObjs for menu
-			guiObjs = new Base_GUIObj[0];
+			guiObjs_Numeric = new Base_NumericGUIObj[0];
 			//initialize menu private boolean flags
 			_initAllPrivButtons();
 		}				
@@ -250,7 +280,7 @@ public abstract class Base_DispWindow {
 		mseClickCrnr = new float[2];		//this is offset for click to check buttons in x and y - since buttons for all menus will be in menubar, this should be the upper left corner of menubar - upper left corner of rect 
 		mseClickCrnr[0] = 0;
 		mseClickCrnr[1] = 0;		
-		if((!_isMenu) && (dispFlags.getHasScrollBars())){scbrs = new ScrollBars[4];	for(int i =0; i<scbrs.length;++i){scbrs[i] = new ScrollBars(pa, this);}}
+		if((!_isMenu) && (dispFlags.getHasScrollBars())){scbrs = new ScrollBars[4];	for(int i =0; i<scbrs.length;++i){scbrs[i] = new ScrollBars(ri, this);}}
 	}//initThisWin	
 
 	/**
@@ -259,7 +289,7 @@ public abstract class Base_DispWindow {
 	 */
 	protected abstract UIDataUpdater buildUIDataUpdateObject();
 	
-	private void _initAllGUIObjs(boolean _isMenu) {
+	private void _initAllGUIObjs() {
 		// list box values - keyed by list obj IDX, value is string array of list obj values
 		TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
 		// ui object values - keyed by object idx, value is object array of describing values
@@ -271,18 +301,15 @@ public abstract class Base_DispWindow {
 		guiFloatValIDXs = new ArrayList<Integer>();
 		guiIntValIDXs = new ArrayList<Integer>();	
 		//initialized for sidebar menu as well as for display windows
-		guiObjs = new Base_GUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
-		//if(!_isMenu){
-			//build ui objects - not used for sidebar menu
+		guiObjs_Numeric = new Base_NumericGUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
+		//build ui objects
 		_buildGUIObjsFromMaps(tmpUIObjArray, tmpListObjVals);	
-		//} 
+		//build UI boolean buttons
 		_initAllPrivButtons();
 		
 		// build instance-specific UI update communication object if exists
-		if(!_isMenu){
-			//build ui data updater - not used for sidebar menu
-			buildUIUpdateStruct();
-		}
+		buildUIUpdateStruct();
+		
 	}//_initAllGUIObjs
 	
 	/**
@@ -352,28 +379,38 @@ public abstract class Base_DispWindow {
 		// since horizontal row of UI comps, uiClkCoords[2] will be set in buildGUIObjs
 		float stClkY = uiClkCoords[1];
 		int numListObjs = 0;
-		for(int i =0; i< guiObjs.length; ++i){
+		for(int i =0; i< guiObjs_Numeric.length; ++i){
 			switch(guiObjTypes[i]) {
 				case IntVal : {
-					guiObjs[i] = new MenuGUIObj_Int(pa, i, guiObjNames[i], uiClkCoords[0], 
+					guiObjs_Numeric[i] = new MenuGUIObj_Int(ri, i, guiObjNames[i], uiClkCoords[0], 
 							stClkY, uiClkCoords[2], stClkY+txtHeightOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off);					
 					break;}
 				case ListVal : {
 					++numListObjs;
-					guiObjs[i] = new MenuGUIObj_List(pa, i, guiObjNames[i], uiClkCoords[0], 
+					guiObjs_Numeric[i] = new MenuGUIObj_List(ri, i, guiObjNames[i], uiClkCoords[0], 
 							stClkY, uiClkCoords[2], stClkY+txtHeightOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i));
 					break;}
 				case FloatVal : {
-					guiObjs[i] = new MenuGUIObj_Float(pa, i, guiObjNames[i], uiClkCoords[0], 
+					guiObjs_Numeric[i] = new MenuGUIObj_Float(ri, i, guiObjNames[i], uiClkCoords[0], 
 							stClkY, uiClkCoords[2], stClkY+txtHeightOff, guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off);					
 					break;}
+				case Button  :{
+					//TODO
+					msgObj.dispWarningMessage(className, "_buildGUIObjsFromMaps", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
+					break;
+				}
+				default : {
+					msgObj.dispWarningMessage(className, "_buildGUIObjsFromMaps", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
+					break;				
+				}
 			}			
 			stClkY += txtHeightOff;
 		}
-		uiClkCoords[3] = stClkY;
+		//Make a smaller padding amount for final row
+		uiClkCoords[3] = stClkY - .5f*txtHeightOff;
 		if(numListObjs != tmpListObjVals.size()) {
 			msgObj.dispWarningMessage("Base_DispWindow", "_buildGUIObjsFromMaps", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
 		}
@@ -381,7 +418,159 @@ public abstract class Base_DispWindow {
 		//for(Integer listIDX : tmpListObjVals.keySet()) {	guiObjs[listIDX].setListVals(tmpListObjVals.get(listIDX));}		
 	}//_buildGUIObjsFromMaps
 	
+	/**
+	 * 
+	 * @param idx
+	 * @param len
+	 * @param calFunc
+	 * @param desc
+	 * @return
+	 */
+	private boolean _validateUIObjectIdx(int idx, int len, String calFunc, String desc) {
+		if (!MyMathUtils.inRange(idx, 0, len)){
+		msgObj.dispErrorMessage(className, calFunc, 
+				"Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
+		return false;
+		}		
+		return true;
+	}
 	
+	/**
+	 * 
+	 * @param obj
+	 * @param calFunc
+	 * @return
+	 */
+	private boolean _validateIdxIsListObj(Base_GUIObj obj, String calFunc, String desc) {
+		if (obj.getObjType() != GUIObj_Type.ListVal) {
+			msgObj.dispErrorMessage(className, calFunc, 
+					"Attempting to access illegal List UI object to "+desc+" (object :"+obj.getName()+" is not a list object). Aborting.");
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Sets the passed UI object's new max value
+	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes
+	 * @param maxVal
+	 */
+	public void setNewUIMaxVal(int idx, double maxVal) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMaxVal", "set its max value")) {guiObjs_Numeric[idx].setNewMax(maxVal);}	
+	}
+	
+	
+	/**
+	 * Sets the passed UI object's new min value
+	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes
+	 * @param minVal
+	 */
+	public void setNewUIMinVal(int idx, double minVal) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMinVal", "set its min value")) {guiObjs_Numeric[idx].setNewMin(minVal);}
+	}
+	
+	/**
+	 * Force a value to be set in the numeric UI object at the passed IDX
+	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes and returns 0
+	 * @param val
+	 * @return the new value that was set, after having been bounded
+	 */
+	public double setNewUIValue(int idx, double val) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIValue", "set its value")) {guiObjs_Numeric[idx].setVal(val);}
+			return 0;
+		}		
+	
+	/**
+	 * Set the display text of the passed UI Object, either numeric or boolean
+	 * @param idx
+	 * @param isNumeric
+	 * @param str
+	 */
+	public void setNewUIDispText(int idx, boolean isNumeric, String str) {
+		if (isNumeric) {
+			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setNewDispText(str);}
+			return;
+		} else {
+			//TODO support boolean UI objects
+			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setNewDispText(str);}
+			return;
+		}
+	}
+	/**
+	 * Specify a string to display in the idx'th List UI Object, if it exists, and is a list object
+	 * @param idx
+	 * @param val
+	 * @return
+	 */
+	public int[] setDispUIListVal(int idx, String val) {		
+		if ((!_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setDispUIListVal", "display passed value")) || 
+				(!_validateIdxIsListObj(guiObjs_Numeric[idx], "setDispUIListVal", "display passed value"))){return new int[0];}
+		return ((MenuGUIObj_List) guiObjs_Numeric[idx]).setValInList(val);
+	}
+	
+	/**
+	 * Set all the values in the idx'th List UI Object, if it exists, and is a list object
+	 * @param idx
+	 * @param values
+	 * @return
+	 */
+	public int setAllUIListValues(int idx, String[] values) {		
+		if ((!_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setAllUIListValues", "add all list values")) || 
+				(!_validateIdxIsListObj(guiObjs_Numeric[idx], "setAllUIListValues", "add all list values"))){return -1;}
+		return ((MenuGUIObj_List) guiObjs_Numeric[idx]).setListVals(values);
+	}
+	
+	/**
+	 * Retrieve the min value of a numeric UI object
+	 * @param idx index in numeric UI object array to access. If out of range, returns max value
+	 * @return
+	 */
+	public double getMinUIValue(int idx) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMinUIValue","get its min value")) {	return guiObjs_Numeric[idx].getMinVal();}
+		return Double.MAX_VALUE;
+	}
+	
+	/**
+	 * Retrieve the max value of a numeric UI object
+	 * @param idx index in numeric UI object array to access. If out of range, returns min value
+	 * @return
+	 */
+	public double getMaxUIValue(int idx) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMaxUIValue","get its max value")){return guiObjs_Numeric[idx].getMaxVal();}
+		return guiObjs_Numeric[idx].getMaxVal();
+	}
+	
+	/**
+	 * Retrieve the mod step value of a numeric UI object
+	 * @param idx index in numeric UI object array to access. If out of range, returns 0
+	 * @return
+	 */
+	public double getModStep(int idx) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getModStep", "get its mod value")) {return guiObjs_Numeric[idx].getModStep();}
+		return 0;
+	}
+	
+	/**
+	 * Retrieve the value of a numeric UI object
+	 * @param idx index in numeric UI object array to access. If out of range, returns 0
+	 * @return
+	 */
+	public double getUIValue(int idx) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getUIValue", "get its value")) {guiObjs_Numeric[idx].getVal();}
+		return 0;
+	}
+	
+	/**
+	 * Get the string representation of the passed integer listIdx from the UI Object at UIidx
+	 * @param UIidx
+	 * @param listIdx
+	 * @return
+	 */
+	public String getListValStr(int UIidx, int listIdx) {		
+		if ((!_validateUIObjectIdx(UIidx, guiObjs_Numeric.length, "getListValStr", "get a list value at specified idx")) || 
+				(!_validateIdxIsListObj(guiObjs_Numeric[UIidx], "getListValStr", "get a list value at specified idx"))){return "";}
+		return ((MenuGUIObj_List) guiObjs_Numeric[UIidx]).getListValStr(listIdx);
+	}
 	
 	/**
 	 * This has to be called after UI structs are built and set - this creates and populates the 
@@ -392,9 +581,9 @@ public abstract class Base_DispWindow {
 		//initialize it after private flags are built and initialized
 		uiUpdateData = buildUIDataUpdateObject();		
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
-		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, (int) guiObjs[idx].getVal());}		
+		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, guiObjs_Numeric[idx].valAsInt());}		
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
-		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, (float)guiObjs[idx].getVal());}
+		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjs_Numeric[idx].valAsFloat());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
 		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
@@ -444,13 +633,13 @@ public abstract class Base_DispWindow {
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateIntValFromExecCode(int idx, int value) {guiObjs[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
+	public final void updateIntValFromExecCode(int idx, int value) {guiObjs_Numeric[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
 	/**
 	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateFloatValFromExecCode(int idx, float value) {guiObjs[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
+	public final void updateFloatValFromExecCode(int idx, float value) {guiObjs_Numeric[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
 	
 	/**
 	 * This function is called on ui value update, to pass new ui values on to window-owned consumers
@@ -593,7 +782,6 @@ public abstract class Base_DispWindow {
 	 * @param numBtns number of buttons to make
 	 */
 	private void _buildPrivBtnRects(float yDisp, int numBtns){
-		msgObj.dispInfoMessage(className,"_buildPrivBtnRects","Start value for uiClkCoords[3] : "+uiClkCoords[3] + " | numBtns : "+ numBtns);
 		privFlagBtns = new float[numBtns][];
 		if (numBtns == 0) {	return;	}
 		float maxBtnLen = maxBtnWidthMult * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
@@ -634,9 +822,8 @@ public abstract class Base_DispWindow {
 			privFlagBtns[numBtns-1][2] = maxBtnLen;
 			this.uiClkCoords[3] += txtHeightOff;
 		}
-		this.uiClkCoords[3] += txtHeightOff;
+		this.uiClkCoords[3] += rowStYOff;
 		initPrivFlagColors();
-		msgObj.dispInfoMessage(className,"_buildPrivBtnRects","End value for uiClkCoords[3] : "+uiClkCoords[3]);
 	}//_buildPrivBtnRects
 	/**
 	 * find index in flag name arrays of passed boolean IDX
@@ -765,35 +952,42 @@ public abstract class Base_DispWindow {
 	 */
 	protected final void setUIWinVals(int UIidx) {
 		//Determine whether int (int or list) or float
-		GUIObj_Type objType = guiObjs[UIidx].getObjType();
+		GUIObj_Type objType = guiObjs_Numeric[UIidx].getObjType();
 		switch (objType) {
 			case IntVal : {
-				int ival = (int)guiObjs[UIidx].getVal();
+				int ival = guiObjs_Numeric[UIidx].valAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
-					if(guiObjs[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
 					//Special per-obj int handling, if pertinent
 					setUI_IntValsCustom(UIidx, ival, origVal);
 				}
 				break;}
 			case ListVal : {
-				int ival = (int)guiObjs[UIidx].getVal();
+				int ival = guiObjs_Numeric[UIidx].valAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
-					if(guiObjs[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
 					//Special per-obj int (list idx)-related handling, if pertinent
 					setUI_IntValsCustom(UIidx, ival, origVal);
 				}
 				break;}
 			case FloatVal : {
-				float val = (float)guiObjs[UIidx].getVal();
+				float val = guiObjs_Numeric[UIidx].valAsFloat();
 				float origVal = uiUpdateData.getFloatValue(UIidx);
 				if(checkAndSetFloatVal(UIidx, val)) {
-					if(guiObjs[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
 					//Special per-obj float handling, if pertinent
 					setUI_FloatValsCustom(UIidx, val, origVal);
 				}
 				break;}
+			case Button : {
+				msgObj.dispWarningMessage(className, "setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
+				break;}
+			default : {
+				msgObj.dispWarningMessage(className, "setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
+				break;}
+			
 		}//switch on obj type
 	}//setUIWinVals
 	
@@ -801,7 +995,7 @@ public abstract class Base_DispWindow {
 	 * Reset guiObj given by passed index to starting value
 	 * @param uiIdx
 	 */
-	protected final void resetUIObj(int uiIdx) {guiObjs[uiIdx].resetToInit();setUIWinVals(uiIdx);}
+	protected final void resetUIObj(int uiIdx) {guiObjs_Numeric[uiIdx].resetToInit();setUIWinVals(uiIdx);}
 	
 	/**
 	 * Called if int-handling guiObjs[UIidx] (int or list) has new data which updated UI adapter. 
@@ -829,7 +1023,7 @@ public abstract class Base_DispWindow {
 	 * @param forceVals If true, this will bypass setUIWinVals, if false, will call set vals, to propagate changes to window vars 
 	 */
 	public final void resetUIVals(boolean forceVals){
-		for(int i=0; i<guiObjs.length;++i){				guiObjs[i].resetToInit();		}
+		for(int i=0; i<guiObjs_Numeric.length;++i){				guiObjs_Numeric[i].resetToInit();		}
 		if (!forceVals) {
 			setAllUIWinVals();
 		}
@@ -841,7 +1035,7 @@ public abstract class Base_DispWindow {
 		//window has no data values to load
 		if(toks.length==0){return;}
 		int uiIdx = Integer.parseInt(toks[0].split("\\s")[1].trim());
-		guiObjs[uiIdx].setValFromStrTokens(toks);
+		guiObjs_Numeric[uiIdx].setValFromStrTokens(toks);
 		setUIWinVals(uiIdx);//update window's values with UI construct's values
 	}//setValFromFileStr
 
@@ -899,7 +1093,7 @@ public abstract class Base_DispWindow {
 	protected final ArrayList<String> hndlFileSave_GUI(){
 		ArrayList<String> res = new ArrayList<String>();
 		res.add(name);
-		for(int i=0;i<guiObjs.length;++i){	res.add(guiObjs[i].getStrFromUIObj(i));}		
+		for(int i=0;i<guiObjs_Numeric.length;++i){	res.add(guiObjs_Numeric[i].getStrFromUIObj(i));}		
 		//bound for custom components
 		res.add(name + "_custUIComps");
 		//add blank space
@@ -923,10 +1117,10 @@ public abstract class Base_DispWindow {
 	public final void setCamera(float[] camVals){
 		if(dispFlags.getUseCustCam()){setCamera_Indiv(camVals);}//individual window camera handling
 		else {
-			pa.setCameraWinVals(camVals);  
+			ri.setCameraWinVals(camVals);  
 			//if(this.flags[this.debugMode]){outStr2Scr("rx :  " + rx + " ry : " + ry + " dz : " + dz);}
 			// puts origin of all drawn objects at screen center and moves forward/away by dz
-			pa.translate(camVals[0],camVals[1],(float)dz); 
+			ri.translate(camVals[0],camVals[1],(float)dz); 
 		    setCamOrient();	
 		}
 	}//setCamera
@@ -934,11 +1128,11 @@ public abstract class Base_DispWindow {
 	/**
 	 * used to handle camera location/motion
 	 */
-	public final void setCamOrient(){pa.setCamOrient(rx,ry); }//sets the rx, ry, pi/2 orientation of the camera eye	
+	public final void setCamOrient(){ri.setCamOrient(rx,ry); }//sets the rx, ry, pi/2 orientation of the camera eye	
 	/**
 	 * used to draw text on screen without changing mode - reverses camera orientation setting
 	 */
-	public final void unSetCamOrient(){pa.unSetCamOrient(rx,ry); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
+	public final void unSetCamOrient(){ri.unSetCamOrient(rx,ry); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
 	/**
 	 * return display string for camera location
 	 * @return
@@ -964,12 +1158,12 @@ public abstract class Base_DispWindow {
 	
 	//draw a series of strings in a row
 	protected final void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
-		pa.setFill(clrAra, clrAra[3]);
-		pa.setColorValStroke(IRenderInterface.gui_Black,255);
-		pa.drawRect(loc);		
-		pa.setColorValFill(IRenderInterface.gui_Black,255);
+		ri.setFill(clrAra, clrAra[3]);
+		ri.setColorValStroke(IRenderInterface.gui_Black,255);
+		ri.drawRect(loc);		
+		ri.setColorValFill(IRenderInterface.gui_Black,255);
 		//pa.translate(-xOff*.5f,-yOff*.5f);
-		pa.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
+		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
 		//pa.translate(width, 0);
 	}
 	
@@ -990,7 +1184,7 @@ public abstract class Base_DispWindow {
 	public final void drawSetupWin(float[] camVals) {
 		setCamera(camVals);
 		//move to focus target
-		pa.translate(focusTar.x,focusTar.y,focusTar.z);
+		ri.translate(focusTar.x,focusTar.y,focusTar.z);
 	}
 	
 	/**
@@ -1014,8 +1208,8 @@ public abstract class Base_DispWindow {
 	 * @param useRandBtnClrs
 	 */
 	private final void drawAppFlagButtons(boolean useRandBtnClrs) {
-		pa.pushMatState();	
-		pa.setColorValFill(IRenderInterface.gui_Black,255);
+		ri.pushMatState();	
+		ri.setColorValFill(IRenderInterface.gui_Black,255);
 		String label;
 		int[] clr;
 		if(useRandBtnClrs){
@@ -1041,17 +1235,17 @@ public abstract class Base_DispWindow {
 				dispBttnAtLoc(label,privFlagBtns[i],clr);	
 			}	
 		}		
-		pa.popMatState();	
+		ri.popMatState();	
 	}//drawAppFlagButtons
 	
 	/**
 	 * Draw UI Objs
 	 */
 	protected final void drawGUIObjs(float animTimeMod) {
-		pa.pushMatState();	
-		if (AppMgr.isDebugMode()) { for(int i =0; i<guiObjs.length; ++i){guiObjs[i].drawDebug(animTimeMod);}}
-		else {						for(int i =0; i<guiObjs.length; ++i){guiObjs[i].draw();}}
-		pa.popMatState();	
+		ri.pushMatState();	
+		if (AppMgr.isDebugMode()) { for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug(animTimeMod);}}
+		else {						for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}}
+		ri.popMatState();	
 	}
 	
 	/**
@@ -1074,34 +1268,34 @@ public abstract class Base_DispWindow {
 	 */
 	private final void drawMouseBox(){
 		if( dispFlags.getShowWin()){
-		    pa.setColorValFill(IRenderInterface.gui_LightGreen ,255);
-			pa.drawRect(closeBox);
-			pa.setFill(strkClr, strkClr[3]);
-			pa.showText("Close" , closeBox[0]-35, closeBox[1]+10);
+		    ri.setColorValFill(IRenderInterface.gui_LightGreen ,255);
+			ri.drawRect(closeBox);
+			ri.setFill(strkClr, strkClr[3]);
+			ri.showText("Close" , closeBox[0]-35, closeBox[1]+10);
 		} else {
-		    pa.setColorValFill(IRenderInterface.gui_DarkRed,255);
-			pa.drawRect(closeBox);
-			pa.setFill(strkClr, strkClr[3]);
-			pa.showText("Open", closeBox[0]-35, closeBox[1]+10);			
+		    ri.setColorValFill(IRenderInterface.gui_DarkRed,255);
+			ri.drawRect(closeBox);
+			ri.setFill(strkClr, strkClr[3]);
+			ri.showText("Open", closeBox[0]-35, closeBox[1]+10);			
 		}
 	}
 	private final void drawSmall(){
-		pa.pushMatState();
+		ri.pushMatState();
 		//msgObj.dispInfoMessage("Base_DispWindow","drawSmall","Hitting hint code draw small");
-		pa.setBeginNoDepthTest();
-		pa.disableLights();		
-		pa.setStroke(strkClr, strkClr[3]);
-		pa.setFill(fillClr, fillClr[3]);
+		ri.setBeginNoDepthTest();
+		ri.disableLights();		
+		ri.setStroke(strkClr, strkClr[3]);
+		ri.setFill(fillClr, fillClr[3]);
 		//main window drawing
-		pa.drawRect(rectDimClosed);		
-		pa.setFill(strkClr, strkClr[3]);
+		ri.drawRect(rectDimClosed);		
+		ri.setFill(strkClr, strkClr[3]);
 		if(winText.trim() != ""){
-			pa.showText(winText.split(" ")[0], rectDimClosed[0]+10, rectDimClosed[1]+25);
+			ri.showText(winText.split(" ")[0], rectDimClosed[0]+10, rectDimClosed[1]+25);
 		}		
 		//close box drawing
 		if(dispFlags.getIsCloseable()){drawMouseBox();}
-		pa.setEndNoDepthTest();
-		pa.popMatState();		
+		ri.setEndNoDepthTest();
+		ri.popMatState();		
 	}
 	/**
 	 * called by drawUI in IRenderInterface
@@ -1109,14 +1303,14 @@ public abstract class Base_DispWindow {
 	 */
 	public final void drawHeader(float modAmtMillis){
 		if(!dispFlags.getShowWin()){return;}
-		pa.pushMatState();		
+		ri.pushMatState();		
 		//msgObj.dispInfoMessage("Base_DispWindow","drawHeader","Hitting hint code drawHeader");
-		pa.setBeginNoDepthTest();
-		pa.disableLights();		
-		pa.setStroke(strkClr, strkClr[3]);
-		pa.setFill(strkClr, strkClr[3]);
+		ri.setBeginNoDepthTest();
+		ri.disableLights();		
+		ri.setStroke(strkClr, strkClr[3]);
+		ri.setFill(strkClr, strkClr[3]);
 		if(winText.trim() != ""){	dispMultiLineText(winText,  rectDim[0]+10,  rectDim[1]+10);}
-		if(null!=trajMgr){	trajMgr.drawNotifications(pa, xOffHalf, yOffHalf);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		if(null!=trajMgr){	trajMgr.drawNotifications(ri, xOffHalf, txtHeightOffHalf);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		if(dispFlags.getIsCloseable()){drawMouseBox();}
 		//TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
 		if(dispFlags.getHasScrollBars() && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe();}
@@ -1124,9 +1318,9 @@ public abstract class Base_DispWindow {
 		//if(dispFlags.getDrawRtSideMenu()) {drawOnScreenStuff(modAmtMillis);	}
 		//draw stuff on screen, including rightSideMenu stuff, if this window supports it
 		drawOnScreenStuff(modAmtMillis);	
-		pa.enableLights();	
-		pa.setEndNoDepthTest();
-		pa.popMatState();	
+		ri.enableLights();	
+		ri.setEndNoDepthTest();
+		ri.popMatState();	
 		postDraw();
 	}//drawHeader
 	
@@ -1145,13 +1339,13 @@ public abstract class Base_DispWindow {
 	 * @param uiClkCoords2
 	 */
 	protected void drawSepBar(double uiClkCoords2) {
-		pa.pushMatState();
-			pa.translate(0,uiClkCoords2 + (.5*IRenderInterface.txtSz),0);
-			pa.setFill(0,0,0,255);
-			pa.setStrokeWt(1.0f);
-			pa.setStroke(0,0,0,255);
-			pa.drawLine(0,0,0,AppMgr.getMenuWidth(),0,0);
-		pa.popMatState();				
+		ri.pushMatState();
+			ri.translate(0,uiClkCoords2 + (.5*IRenderInterface.txtSz),0);
+			ri.setFill(0,0,0,255);
+			ri.setStrokeWt(1.0f);
+			ri.setStroke(0,0,0,255);
+			ri.drawLine(0,0,0,AppMgr.getMenuWidth(),0,0);
+		ri.popMatState();				
 	}//
 	
 	/**
@@ -1159,13 +1353,13 @@ public abstract class Base_DispWindow {
 	 * @param res UI debug data from dispMenu window
 	 */
 	public final void drawUIDebugMode(String[] res) {
-		pa.pushMatState();			
+		ri.pushMatState();			
 		reInitInfoStr();
 		addInfoStr(0,AppMgr.getMseEyeInfoString(getCamDisp()));
 		int numToPrint = MyMathUtils.min(res.length,80);
 		for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
 		drawInfoStr(1.0f, strkClr); 	
-		pa.popMatState();		
+		ri.popMatState();		
 	}//drawUIDebugMode
 	
 	/**
@@ -1173,54 +1367,54 @@ public abstract class Base_DispWindow {
 	 * @param modAmtMillis
 	 */
 	private void drawOnScreenStuff(float modAmtMillis) {
-		pa.pushMatState();
+		ri.pushMatState();
 		//move to upper right corner of sidebar menu - cannot draw over leftside menu, use drawCustMenuObjs() instead to put UI objects there
 		//this side window is for information display
-		pa.translate(rectDim[0],0,0);			
+		ri.translate(rectDim[0],0,0);			
 		//draw onscreen stuff for main window
 		drawOnScreenStuffPriv(modAmtMillis);
 		//draw right side info display if relelvant
 		if(dispFlags.getHasRtSideMenu()) {
-			pa.setFill(rtSideUIFillClr, rtSideUIFillClr[3]);//transparent black
+			ri.setFill(rtSideUIFillClr, rtSideUIFillClr[3]);//transparent black
 			if(dispFlags.getShowRtSideMenu()) {				
-				pa.drawRect(UIRtSideRectBox);
+				ri.drawRect(UIRtSideRectBox);
 				//move to manage internal text display in owning window
-				pa.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+txtHeightOff-4,0);
-				pa.setFill(255,255,255,255);	
+				ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+txtHeightOff-4,0);
+				ri.setFill(255,255,255,255);	
 				 //instancing class implements this function
 				drawRightSideInfoBarPriv(modAmtMillis); 
 			} else {
 				//shows narrow rectangular reminder that window is there								 
-				pa.drawRect(closedUIRtSideRecBox);
+				ri.drawRect(closedUIRtSideRecBox);
 			}
 		}
-		pa.popMatState();			
+		ri.popMatState();			
 	}//drawRtSideInfoBar
 	
 	/**
 	 * Called by Appmgr to display window instance-specify Console Strings
 	 */
 	public final void drawOnscreenText() {
-		pa.pushMatState();			
+		ri.pushMatState();			
 		reInitInfoStr();	
 		String[] res = msgObj.getConsoleStringsAsArray();
 		int dispNum = MyMathUtils.min(res.length, 80);
 		for(int i=0;i<dispNum;++i){addInfoStr(res[i]);}
 	    drawInfoStr(1.1f,strkClr); 
-	    pa.popMatState();
+	    ri.popMatState();
 	}
 	
 	public final void draw3D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){return;}
 		float animTimeMod = (modAmtMillis/1000.0f);//in seconds
-		pa.pushMatState();		
-		pa.setFill(fillClr, fillClr[3]);
-		pa.setStroke(strkClr,strkClr[3]);
+		ri.pushMatState();		
+		ri.setFill(fillClr, fillClr[3]);
+		ri.setStroke(strkClr,strkClr[3]);
 		//draw traj stuff if exists and appropriate
-		if(null!=trajMgr){		trajMgr.drawTraj_3d(pa, animTimeMod, myPoint._add(sceneCtrVal,focusTar));}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		if(null!=trajMgr){		trajMgr.drawTraj_3d(ri, animTimeMod, myPoint._add(sceneCtrVal,focusTar));}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		//draw instancing win-specific stuff
 		drawMe(animTimeMod);			//call instance class's draw
-		pa.popMatState();		
+		ri.popMatState();		
 	}//draw3D
 	
 	public void drawTraj3D(float animTimeMod,myPoint trans){
@@ -1240,21 +1434,21 @@ public abstract class Base_DispWindow {
 	public final void draw2D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){drawSmall();return;}
 		float animTimeMod = (modAmtMillis/1000.0f);
-		pa.pushMatState();
+		ri.pushMatState();
 		//msgObj.dispInfoMessage("Base_DispWindow","draw2D","Hitting hint code draw2D");
-		pa.setBeginNoDepthTest();
-		pa.disableLights();
-		pa.setStroke(strkClr,strkClr[3]);
-		pa.setFill(fillClr,fillClr[3]);
+		ri.setBeginNoDepthTest();
+		ri.disableLights();
+		ri.setStroke(strkClr,strkClr[3]);
+		ri.setFill(fillClr,fillClr[3]);
 		//main window drawing
-		pa.drawRect(rectDim);
+		ri.drawRect(rectDim);
 		//draw traj stuff if exists and appropriate
-		if(null!=trajMgr){		trajMgr.drawTraj_2d(pa, animTimeMod);}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		if(null!=trajMgr){		trajMgr.drawTraj_2d(ri, animTimeMod);}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		//draw instancing win-specific stuff
 		drawMe(animTimeMod);			//call instance class's draw
-		pa.enableLights();
-		pa.setEndNoDepthTest();
-		pa.popMatState();
+		ri.enableLights();
+		ri.setEndNoDepthTest();
+		ri.popMatState();
 	}
 
 	/**
@@ -1278,14 +1472,14 @@ public abstract class Base_DispWindow {
 		setInfoStr(idx,str);	return idx;
 	}
 	public final void setInfoStr(int idx, String str){DebugInfoAra.set(idx,str);	}
-	public final void drawInfoStr(float sc, int clr){drawInfoStr(sc, pa.getClr(clr,255));}
+	public final void drawInfoStr(float sc, int clr){drawInfoStr(sc, ri.getClr(clr,255));}
 	public final void drawInfoStr(float sc, int[] fillClr){//draw text on main part of screen
-		pa.pushMatState();		
-			pa.setFill(fillClr,fillClr[3]);
-			pa.translate((AppMgr.getMenuWidth()),0);
-			pa.scale(sc,sc);
-			for(int i = 0; i < DebugInfoAra.size(); ++i){		pa.showText((AppMgr.isDebugMode()?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(10+(12*i)));	}
-		pa.popMatState();
+		ri.pushMatState();		
+			ri.setFill(fillClr,fillClr[3]);
+			ri.translate((AppMgr.getMenuWidth()),0);
+			ri.scale(sc,sc);
+			for(int i = 0; i < DebugInfoAra.size(); ++i){		ri.showText((AppMgr.isDebugMode()?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(10+(12*i)));	}
+		ri.popMatState();
 	}		
 	
 	//print out multiple-line text to screen
@@ -1293,7 +1487,7 @@ public abstract class Base_DispWindow {
 		String[] res = str.split("\\r?\\n");
 		float disp = 0;
 		for(int i =0; i<res.length; ++i){
-			pa.showText(res[i],x, y+disp);		//add console string output to screen display- decays over time
+			ri.showText(res[i],x, y+disp);		//add console string output to screen display- decays over time
 			disp += 12;
 		}
 	}
@@ -1423,7 +1617,7 @@ public abstract class Base_DispWindow {
 	public final boolean handleMouseMove(int mouseX, int mouseY){
 		if(!dispFlags.getShowWin()){return false;}
 		if((dispFlags.getShowWin())&& (msePtInUIRect(mouseX, mouseY))){//in clickable region for UI interaction
-			for(int j=0; j<guiObjs.length; ++j){if(guiObjs[j].checkIn(mouseX, mouseY)){	msOvrObj=j;return true;	}}
+			for(int j=0; j<guiObjs_Numeric.length; ++j){if(guiObjs_Numeric[j].checkIn(mouseX, mouseY)){	msOvrObj=j;return true;	}}
 		}
 		myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneCtrVal);
 		if(hndlMouseMove_Indiv(mouseX, mouseY, mouseClickIn3D)){return true;}
@@ -1443,8 +1637,8 @@ public abstract class Base_DispWindow {
 	public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
 		boolean mod = false;
 		if((dispFlags.getShowWin())&& (msePtInUIRect(mouseX, mouseY))){//in clickable region for UI interaction
-			for(int j=0; j<guiObjs.length; ++j){
-				if(guiObjs[j].checkIn(mouseX, mouseY)){	
+			for(int j=0; j<guiObjs_Numeric.length; ++j){
+				if(guiObjs_Numeric[j].checkIn(mouseX, mouseY)){	
 					msBtnClcked = mseBtn;
 					if(AppMgr.isClickModUIVal()){//allows for click-mod
 						setUIObjValFromClickAlone(j);
@@ -1495,9 +1689,9 @@ public abstract class Base_DispWindow {
 			//any generic dragging stuff - need flag to determine if trajectory is being entered		
 			//modify object that was clicked in by mouse motion
 			if(msClkObj!=-1){	
-				guiObjs[msClkObj].modVal((mouseX-pmouseX)+(mouseY-pmouseY)*-(shiftPressed ? 50.0f : 5.0f));
+				guiObjs_Numeric[msClkObj].modVal((mouseX-pmouseX)+(mouseY-pmouseY)*-(shiftPressed ? 50.0f : 5.0f));
 				dispFlags.setUIObjMod(true); 
-				if(guiObjs[msClkObj].shouldUpdateWin(false)){setUIWinVals(msClkObj);}
+				if(guiObjs_Numeric[msClkObj].shouldUpdateWin(false)){setUIWinVals(msClkObj);}
 				return true;
 			}		
 			
@@ -1515,12 +1709,12 @@ public abstract class Base_DispWindow {
 	/**
 	 * set all window values for UI objects
 	 */
-	protected final void setAllUIWinVals() {for(int i=0;i<guiObjs.length;++i){if(guiObjs[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
+	protected final void setAllUIWinVals() {for(int i=0;i<guiObjs_Numeric.length;++i){if(guiObjs_Numeric[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
 	//set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	private void setUIObjValFromClickAlone(int j) {
 		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
 		//msgObj.dispInfoMessage("Base_DispWindow","setUIObjValFromClickAlone","Mult : " + (mult *pa.clickValModMult()));
-		guiObjs[j].modVal(mult * AppMgr.clickValModMult());
+		guiObjs_Numeric[j].modVal(mult * AppMgr.clickValModMult());
 	}//setUIObjValFromClickAlone
 	
 	public final void handleMouseRelease(){
@@ -1537,7 +1731,7 @@ public abstract class Base_DispWindow {
 			msClkObj = -1;	
 		}
 		
-		if(null!=trajMgr) {trajMgr.handleMouseRelease_Traj(getMsePoint(pa.getMouse_Raw()));}
+		if(null!=trajMgr) {trajMgr.handleMouseRelease_Traj(getMsePoint(ri.getMouse_Raw()));}
 		msClkObj = -1;	
 		//if buttons have been put in clear queue (set to clear), set flag to clear them next draw
 		if (privBtnsToClear.size() > 0){dispFlags.setClearPrivBtns(true);	}
@@ -1550,17 +1744,17 @@ public abstract class Base_DispWindow {
 	//release shift/control/alt keys
 	public final void endShiftKey(){
 		if(!dispFlags.getShowWin()){return;}
-		if(null!=trajMgr) {trajMgr.endShiftKey(getMsePoint(pa.getMouse_Raw()));}
+		if(null!=trajMgr) {trajMgr.endShiftKey(getMsePoint(ri.getMouse_Raw()));}
 		endShiftKeyI();
 	}
 	public final void endAltKey(){
 		if(!dispFlags.getShowWin()){return;}
-		if(null!=trajMgr) {trajMgr.endAltKey(getMsePoint(pa.getMouse_Raw()));}
+		if(null!=trajMgr) {trajMgr.endAltKey(getMsePoint(ri.getMouse_Raw()));}
 		endAltKeyI();
 	}	
 	public final void endCntlKey(){
 		if(!dispFlags.getShowWin()){return;}
-		if(null!=trajMgr) {trajMgr.endCntlKey(getMsePoint(pa.getMouse_Raw()));}
+		if(null!=trajMgr) {trajMgr.endCntlKey(getMsePoint(ri.getMouse_Raw()));}
 		endCntlKeyI();
 	}	
 	
@@ -1592,7 +1786,7 @@ public abstract class Base_DispWindow {
 	public final String[] getDebugData(){
 		ArrayList<String> res = new ArrayList<String>();
 		List<String>tmp;
-		for(int j = 0; j<guiObjs.length; j++){tmp = Arrays.asList(guiObjs[j].getStrData());res.addAll(tmp);}
+		for(int j = 0; j<guiObjs_Numeric.length; j++){tmp = Arrays.asList(guiObjs_Numeric[j].getStrData());res.addAll(tmp);}
 		return res.toArray(new String[0]);	
 	}
 	
@@ -1613,7 +1807,7 @@ public abstract class Base_DispWindow {
 	public final void delTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,true);		delTrajToScr_Indiv(subScrKey,newTrajKey);}}
 		
 	//updates values in UI with programatic changes 
-	public final boolean setWinToUIVals(int UIidx, double val){return val == guiObjs[UIidx].setVal(val);}	
+	public final boolean setWinToUIVals(int UIidx, double val){return val == guiObjs_Numeric[UIidx].setVal(val);}	
 	//UI controlled auxiliary/debug functionality	
 	public final void clickSideMenuBtn(int _row, int _funcOffset, int btnNum) {	curCstBtnRow = _row; curCstFuncBtnOffset = _funcOffset; curCustBtn[_row] = btnNum; custClickSetThisFrame = true;}
 		
