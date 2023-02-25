@@ -6,7 +6,7 @@ package base_UI_Objects.windowUI.uiObjs.menuObjs.base;
 import java.util.concurrent.ThreadLocalRandom;
 
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 
 /**
@@ -14,7 +14,7 @@ import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
  * @author John Turner
  *
  */
-public abstract class Base_MenuGUIObj extends Base_GUIObj {
+public abstract class Base_MenuGUIObj extends Base_NumericGUIObj {
 	
 	/**
 	 * Color for prefix display box

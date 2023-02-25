@@ -102,7 +102,7 @@ public class SidebarMenu extends Base_DispWindow{
 		//all ui ojbects for all windows will follow this format and share the x[0] value
 		initUIClickCoords(rectDim[0] + .02f * rectDim[2], minBtnClkY + guiBtnRowsEndY,rectDim[0] + .99f * rectDim[2],minBtnClkY + guiBtnRowsEndY);
 		//make a little space below debug buttons
-		uiClkCoords[3] += txtHeightOff;
+		uiClkCoords[3] += rowStYOff;
 		//standard init
 		super.initThisWin(true);
 	}//ctor
@@ -405,11 +405,11 @@ public class SidebarMenu extends Base_DispWindow{
 
 	private void drawSideBarBooleans(){
 		//draw main booleans and their state
-		pa.translate(10,btnLblYOff);
-		pa.setColorValFill(IRenderInterface.gui_Black,255);
-		pa.showText("Boolean Flags",0,txtHeightOff*.20f);
-		pa.translate(0,clkFlgsStY);
-		AppMgr.dispMenuText(xOffHalf,yOffHalf);
+		ri.translate(10,btnLblYOff);
+		ri.setColorValFill(IRenderInterface.gui_Black,255);
+		ri.showText("Boolean Flags",0,txtHeightOff*.20f);
+		ri.translate(0,clkFlgsStY);
+		AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
 	}//drawSideBarBooleans
 
 	
@@ -417,27 +417,27 @@ public class SidebarMenu extends Base_DispWindow{
 	 * draw UI buttons that control functions, debug and global load/save stubs
 	 */
 	private void drawSideBarButtons(){
-		pa.translate(xOffHalf,(float)minBtnClkY);
-		pa.setFill(new int[]{0,0,0}, 255);
+		ri.translate(xOffHalf,(float)minBtnClkY);
+		ri.setFill(new int[]{0,0,0}, 255);
 		for(int row=0; row<guiBtnRowNames.length;++row){
-			pa.showText(guiBtnRowNames[row],0,-txtHeightOff*.15f);
-			pa.translate(0,rowStYOff);
+			ri.showText(guiBtnRowNames[row],0,-txtHeightOff*.15f);
+			ri.translate(0,rowStYOff);
 			float xWidthOffset = rectDim[2]/(1.0f * guiBtnLabels[row].length), halfWay;
-			pa.pushMatState();
-			pa.setStrokeWt(1.0f);
-			pa.setColorValStroke(IRenderInterface.gui_Black,255);
-			pa.noFill();
-			pa.translate(-xOff*.5f, 0);
+			ri.pushMatState();
+			ri.setStrokeWt(1.0f);
+			ri.setColorValStroke(IRenderInterface.gui_Black,255);
+			ri.noFill();
+			ri.translate(-xOff*.5f, 0);
 			for(int col =0; col<guiBtnLabels[row].length;++col){
-				halfWay = (xWidthOffset - pa.textWidth(guiBtnLabels[row][col]))/2.0f;
-				pa.setColorValFill(guiBtnStFillClr[guiBtnSt[row][col]+1],255);
-				pa.drawRect(new float[] {0,0,xWidthOffset, txtHeightOff});	
-				pa.setColorValFill(guiBtnStTxtClr[guiBtnSt[row][col]+1],255);
-				pa.showText(guiBtnLabels[row][col], halfWay, txtHeightOff*.75f);
-				pa.translate(xWidthOffset, 0);
+				halfWay = (xWidthOffset - ri.textWidth(guiBtnLabels[row][col]))/2.0f;
+				ri.setColorValFill(guiBtnStFillClr[guiBtnSt[row][col]+1],255);
+				ri.drawRect(new float[] {0,0,xWidthOffset, txtHeightOff});	
+				ri.setColorValFill(guiBtnStTxtClr[guiBtnSt[row][col]+1],255);
+				ri.showText(guiBtnLabels[row][col], halfWay, txtHeightOff*.75f);
+				ri.translate(xWidthOffset, 0);
 			}
-			pa.popMatState();						
-			pa.translate(0,btnLblYOff);
+			ri.popMatState();						
+			ri.translate(0,btnLblYOff);
 		}
 	}//drawSideBarButtons	
 	@Override
@@ -446,21 +446,21 @@ public class SidebarMenu extends Base_DispWindow{
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {}
 	@Override
 	protected final void drawMe(float animTimeMod) {
-		pa.pushMatState();
+		ri.pushMatState();
 			drawSideBarBooleans();				//toggleable booleans 
-		pa.popMatState();	
-		pa.pushMatState();
+		ri.popMatState();	
+		ri.pushMatState();
 			AppMgr.drawSideBarStateBools(txtHeightOff);				//lights that reflect various states
-		pa.popMatState();	
-		pa.pushMatState();			
+		ri.popMatState();	
+		ri.pushMatState();			
 			drawSideBarButtons();						//draw buttons
-		pa.popMatState();	
-		pa.pushMatState();
+		ri.popMatState();	
+		ri.pushMatState();
 			drawGUIObjs(animTimeMod);					//draw what global user-modifiable fields are currently available 
-		pa.popMatState();			
-		pa.pushMatState();
+		ri.popMatState();			
+		ri.pushMatState();
 			AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus
-		pa.popMatState();	
+		ri.popMatState();	
 	}
 	
 	@Override
