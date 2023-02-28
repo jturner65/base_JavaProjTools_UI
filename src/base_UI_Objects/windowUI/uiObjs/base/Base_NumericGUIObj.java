@@ -7,12 +7,11 @@ import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
 
 /**
- * Base class for UI objects that manage numeric or sequential data
+ * Base class for UI objects that manage numeric or numerically-backed data (like a list/drop down)
  * @author John Turner
  *
  */
-public abstract class Base_NumericGUIObj extends Base_GUIObj {
-	
+public abstract class Base_NumericGUIObj extends Base_GUIObj {	
 
 	/**
 	 * Initial values for min, max, mod and val
@@ -46,8 +45,8 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param _off
 	 */
 	public Base_NumericGUIObj(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
-			double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
-		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _objType, _flags, _off);
+			double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags) {
+		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _objType, _flags);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
@@ -63,7 +62,11 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	public final double getModStep(){return modMult;}	
 
 		
-	//Make sure val adheres to specified bounds
+	/**
+	 * Make sure val adheres to specified bounds
+	 * @param _val
+	 * @return
+	 */
 	protected double forceBounds(double _val) {
 		if (_val < minVal) {return minVal;}
 		if (_val > maxVal) {return maxVal;}

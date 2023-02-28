@@ -10,21 +10,27 @@ import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
  *
  */
 public abstract class Base_MiscGUIObj extends Base_NumericGUIObj {
+
 	/**
+	 * 
+	 * @param _p
+	 * @param _objID
+	 * @param _name
+	 * @param _xst
+	 * @param _yst
+	 * @param _xend
+	 * @param _yend
+	 * @param _minMaxMod
+	 * @param _initVal
+	 * @param _objType
+	 * @param _flags
+	 * @param _off
 	 */
 	public Base_MiscGUIObj(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
 			double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
-		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _minMaxMod, _initVal, _objType, _flags, _off);
+		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _minMaxMod, _initVal, _objType, _flags);
 	}
 
 	@Override
-	public void draw() {
-		p.pushMatState();
-			p.translate(start.x,start.y,0);
-			p.setFill(_cVal,255);
-			p.setStroke(_cVal,255);			
-			//draw specifics for this UI object
-			_drawIndiv();
-		p.popMatState();
-	}//draw
+	public final void drawPrefixObj() {}//drawPrefixObj
 }//class Base_MiscGUIObj

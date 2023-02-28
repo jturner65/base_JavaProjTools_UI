@@ -1,6 +1,3 @@
-/**
- * 
- */
 package base_UI_Objects.windowUI.uiObjs.menuObjs.base;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,7 +31,7 @@ public abstract class Base_MenuGUIObj extends Base_NumericGUIObj {
 	 * Where to start drawing this UI object
 	 */
 	private float[] initDrawTrans;
-	
+
 	/**
 	 * @param _p
 	 * @param _objID
@@ -51,32 +48,30 @@ public abstract class Base_MenuGUIObj extends Base_NumericGUIObj {
 	 */
 	public Base_MenuGUIObj(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
 			double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
-		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _minMaxMod, _initVal, _objType, _flags, _off);
+		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _minMaxMod, _initVal, _objType, _flags);
 		bxclr = new int[]{ThreadLocalRandom.current().nextInt(256),
 				ThreadLocalRandom.current().nextInt(256),
 				ThreadLocalRandom.current().nextInt(256),255};
-
-		initDrawTrans = new float[]{(float)(start.x + xOff), (float)(start.y + .75f* yOff)};
+		//get offset values
+		double xOff = _off[0];
+		double yOff = _off[1];		
+		initDrawTrans = new float[]{(float)(xOff), (float)(.75f* yOff)};
 		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};
 	}
 
 	/**
-	 * Draw this UI Object
+	 * Draw this UI object's prefix rectangle (UI ornament). 
+	 * Adding translation amount corresponding to offset to make room for rectangle
 	 */
 	@Override
-	public final void draw(){
+	public final void drawPrefixObj(){
+		//outside push/pull because translating beyond the initial for both rectangle and UI object
+		p.translate(initDrawTrans[0],initDrawTrans[1],0);
 		p.pushMatState();
-			p.translate(initDrawTrans[0],initDrawTrans[1],0);
-			p.pushMatState();
-				p.noStroke();
-				p.setFill(bxclr,bxclr[3]);
-				p.translate(boxDrawTrans[0],boxDrawTrans[1],0);
-				p.drawRect(boxDim);
-			p.popMatState();
-			p.setFill(_cVal,255);
-			p.setStroke(_cVal,255);			
-			//draw specifics for this UI object
-			_drawIndiv();
+			p.noStroke();
+			p.setFill(bxclr,bxclr[3]);
+			p.translate(boxDrawTrans[0],boxDrawTrans[1],0);
+			p.drawRect(boxDim);
 		p.popMatState();
 	}//draw
 }//class Base_MenuGUIObj

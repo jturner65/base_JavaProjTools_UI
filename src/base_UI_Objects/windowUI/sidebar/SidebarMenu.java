@@ -12,15 +12,22 @@ import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 
-//displays sidebar menu of interaction and functionality
-
+/**
+ * displays sidebar menu of interaction and functionality
+ * @author John Turner
+ *
+ */
 public class SidebarMenu extends Base_DispWindow{
-	
+	/**
+	 * Number of main, app-wide booleans to show
+	 */
 	private final int numMainFlagsToShow;
 	
 	public final int clkFlgsStY = 10;
 
-	//private child-class flags - window specific
+	/**
+	 * private child-class flags - window specific
+	 */
 	public static final int
 			//idx 0 is debug in Base_BoolFlags
 			mseClickedInBtnsIDX 		= 1,					//the mouse was clicked in the button region of the menu and a click event was processed
@@ -77,10 +84,10 @@ public class SidebarMenu extends Base_DispWindow{
 			IRenderInterface.gui_LightGray,								//not clicked button color
 			IRenderInterface.gui_LightBlue,									//clicked button color
 		};
-	public final int[] guiBtnStTxtClr = new int[]{			//text color for buttons
-			IRenderInterface.gui_LightGray,									//disabled color for buttons
-			IRenderInterface.gui_Black,									//not clicked button color
-			IRenderInterface.gui_Black,									//clicked button color
+	public final int[] guiBtnStTxtClr = new int[]{					//text color for buttons
+			IRenderInterface.gui_LightGray,							//disabled color for buttons
+			IRenderInterface.gui_Black,								//not clicked button color
+			IRenderInterface.gui_Black,								//clicked button color
 		};	
 	//row and column of currently clicked-on button (for display highlight as pressing)
 	public int[] curBtnClick = new int[]{-1,-1};
@@ -88,7 +95,7 @@ public class SidebarMenu extends Base_DispWindow{
 	/**
 	 * configuration of side bar buttons
 	 */
-	public SidebarMenuBtnConfig btnConfig;
+	private SidebarMenuBtnConfig btnConfig;
 
 	public SidebarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
 		super(_p, _AppMgr, _winIdx);
@@ -100,7 +107,10 @@ public class SidebarMenu extends Base_DispWindow{
 		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
 		minBtnClkY = (numMainFlagsToShow+3) * txtHeightOff + clkFlgsStY;										//start of buttons from under boolean flags
 		//all ui ojbects for all windows will follow this format and share the x[0] value
-		initUIClickCoords(rectDim[0] + .02f * rectDim[2], minBtnClkY + guiBtnRowsEndY,rectDim[0] + .99f * rectDim[2],minBtnClkY + guiBtnRowsEndY);
+		initUIClickCoords(winInitVals.rectDim[0] + .02f * winInitVals.rectDim[2], 
+				minBtnClkY + guiBtnRowsEndY,
+				winInitVals.rectDim[0] + .99f * winInitVals.rectDim[2],
+				minBtnClkY + guiBtnRowsEndY);
 		//make a little space below debug buttons
 		uiClkCoords[3] += rowStYOff;
 		//standard init
@@ -153,9 +163,10 @@ public class SidebarMenu extends Base_DispWindow{
 		btnDBGSelCmpIdx = -1;
 		btnMseFuncIdx = -1;
 		funcBtnIDXOffset = 0;
-		String[] titleArray = new String[AppMgr.winTitles.length-1];		
+		
+		String[] titleArray = new String[btnConfig.winTitles.length-1];		
 		if((btnConfig.inclWinNames)&&(titleArray.length != 0)) {
-			for(int i=0;i<titleArray.length;++i) {titleArray[i] = AppMgr.winTitles[i+1];}
+			for(int i=0;i<titleArray.length;++i) {titleArray[i] = btnConfig.winTitles[i+1];}
 			tmpBtnLabels.add(titleArray);
 			tmpDfltBtnLabels.add(titleArray);
 
@@ -300,11 +311,16 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void handlePrivFlagsDebugMode_Indiv(boolean val) {	}
 	
-	//check if buttons clicked
+	/**
+	 * check if buttons clicked
+	 * @param mseX
+	 * @param mseY
+	 * @return
+	 */
 	private boolean checkButtons(int mseX, int mseY){
 		double stY = minBtnClkY + rowStYOff, endY = stY+txtHeightOff, stX = 0, endX, widthX; //btnLblYOff			
 		for(int row=0; row<guiBtnRowNames.length;++row){
-			widthX = rectDim[2]/(1.0f * guiBtnLabels[row].length);
+			widthX = winInitVals.rectDim[2]/(1.0f * guiBtnLabels[row].length);
 			stX =0;	endX = widthX;
 			for(int col =0; col<guiBtnLabels[row].length;++col){	
 				if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (guiBtnSt[row][col] != -1)){
@@ -366,7 +382,7 @@ public class SidebarMenu extends Base_DispWindow{
 		}
 		else if((row == btnDBGSelCmpIdx) && privFlags.getFlag(usesDbgBtnDispIDX)) {AppMgr.handleMenuBtnDebugSel(col, val);}
 		else {AppMgr.handleMenuBtnSelCmp(row, funcBtnIDXOffset, col, val);}		
-	}	
+	}
 
 	@Override
 	protected void setUI_IntValsCustom(int UIidx, int ival, int oldval) {}
@@ -384,7 +400,7 @@ public class SidebarMenu extends Base_DispWindow{
 	protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld){		return false;	}
 	@Override
 	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
-		if((!MyMathUtils.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))){return false;}//not in this window's bounds, quit asap for speedz
+		if(!pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
 		int i = (int)((mouseY-(btnLblYOff + clkFlgsStY))/(txtHeightOff));					//TODO Awful - needs to be recalced, dependent on menu being on left
 		if((i>=0) && (i<numMainFlagsToShow)){
 			AppMgr.flipMainFlag(i);return true;	
@@ -422,7 +438,7 @@ public class SidebarMenu extends Base_DispWindow{
 		for(int row=0; row<guiBtnRowNames.length;++row){
 			ri.showText(guiBtnRowNames[row],0,-txtHeightOff*.15f);
 			ri.translate(0,rowStYOff);
-			float xWidthOffset = rectDim[2]/(1.0f * guiBtnLabels[row].length), halfWay;
+			float xWidthOffset = winInitVals.rectDim[2]/(1.0f * guiBtnLabels[row].length), halfWay;
 			ri.pushMatState();
 			ri.setStrokeWt(1.0f);
 			ri.setColorValStroke(IRenderInterface.gui_Black,255);

@@ -371,7 +371,8 @@ public class TrajectoryManager {
 		if(!getFlags(canDrawTraj)) {return;}
 		//debug stuff
 		ri.pushMatState();	
-		ri.translate(ownr.rectDim[0]+20,ownr.rectDim[1]+ownr.rectDim[3]-70, 0);
+		float[] winRectDim = ownr.getRectDims();
+		ri.translate(winRectDim[0]+20,winRectDim[1]+winRectDim[3]-70, 0);
 		Base_DispWindow.AppMgr.dispMenuTxtLat("Drawing trajectory curve", ri.getClr((getFlags(drawingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, xLoc, yLoc);
 		Base_DispWindow.AppMgr.dispMenuTxtLat("Editing trajectory curve", ri.getClr((getFlags(editingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, xLoc, yLoc);
 		ri.popMatState();		

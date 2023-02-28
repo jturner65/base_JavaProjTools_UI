@@ -22,6 +22,6 @@ public class MenuGUIObj_Float extends Base_MenuGUIObj {
 	
 
 	@Override
-	protected void _drawIndiv() {		p.showText(dispText + String.format("%.5f",val), 0,0);	}
+	protected void _drawObject_Indiv() {		p.showText(dispText + String.format("%.5f",val), 0,0);	}
 
 }//class myGUIObj_Float

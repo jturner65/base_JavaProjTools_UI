@@ -21,6 +21,7 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
+import base_UI_Objects.windowUI.base.GUI_AppWinVals;
 import base_UI_Objects.windowUI.sidebar.SidebarMenu;
 import base_UI_Objects.windowUI.sidebar.SidebarMenuBtnConfig;
 import base_Utils_Objects.appManager.Java_AppManager;
@@ -94,7 +95,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * set in instancing class - must be > 1
 	 */
-	protected final int numDispWins;
+	public final int numDispWins;
 	/**
 	 * always idx 0 - first window is always right side menu
 	 */
@@ -103,26 +104,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * which Base_DispWindow currently has focus
 	 */
 	public int curFocusWin;		
-	/**
-	 * need 1 per display window
-	 */
-	public String[] winTitles,winDescr;
-
-	//whether or not the display windows will accept a drawn trajectory
-	protected boolean[][] dispWinFlags;
-	//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
-	protected static final int
-				dispCanDrawInWinIDX 	= 0,
-				dispCanShow3dboxIDX 	= 1,
-				dispCanMoveViewIDX 		= 2,
-				dispWinIs3dIDX 			= 3;
-	private static int numDispWinBoolFlags = 4;
-	
-	public int[][] winFillClrs, winStrkClrs;
-	
-	public int[][] winTrajFillClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window
-	public int[][] winTrajStrkClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window
-	
 
 	protected float menuWidth;			
 	//side menu is 15% of screen grid2D_X, 
@@ -165,10 +146,42 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public int[] winFlagsXOR, winDispIdxXOR;
 	
+	
 	/**
-	 * unblocked window dimensions - location and dim of window if window is open\closed
+	 * Window initialization values, 1 per window, including left-side menu
 	 */
-	public float[][] winRectDimOpen, winRectDimClose;
+	public GUI_AppWinVals[] winInitVals;
+	
+	
+	/**
+	 * need 1 per display window
+	 */
+//	public String[] winTitles,winDescr;
+//
+//	//whether or not the display windows will accept a drawn trajectory
+//	protected boolean[][] dispWinFlags;
+//	//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
+//	protected static final int
+//				dispCanDrawInWinIDX 	= 0,
+//				dispCanShow3dboxIDX 	= 1,
+//				dispCanMoveViewIDX 		= 2,
+//				dispWinIs3dIDX 			= 3;
+//	private static int numDispWinBoolFlags = 4;
+//	
+//	public int[][] winFillClrs, winStrkClrs;
+//	
+//	public int[][] winTrajFillClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window
+//	public int[][] winTrajStrkClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window	
+//	
+//	/**
+//	 * Per-window unblocked window dimensions - location and dim of window if window is open\closed
+//	 */
+//	public float[][] winRectDimOpen, winRectDimClosed;
+//	
+//	/**
+//	 * Per-window initial camera values (rx, ry, dz). dz value needs to be negative
+//	 */
+//	public float [][] winCameraInitVals;
 
 	/**
 	 * flags explicitly pertaining to window visibility.  1 flag per window in application - flags defined in child class
@@ -367,21 +380,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		popUpWinOpenMult = getPopUpWinOpenMult();
 		//Get number of windows
 		numDispWins = getNumDispWindows();
-		//Init window structures
-		winRectDimOpen = new float[numDispWins][];
-		winRectDimClose = new float[numDispWins][];
-		//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
-		dispWinFlags = new boolean[numDispWins][numDispWinBoolFlags];
-		winFillClrs = new int[numDispWins][4];
-		winStrkClrs = new int[numDispWins][4];
-		winTrajFillClrs = new int[numDispWins][4];		//set to color constants for each window
-		winTrajStrkClrs = new int[numDispWins][4];	//set to color constants for each window
+		//set up initial window-based configuration arrays
+		//per-window initialization values
+		winInitVals = new GUI_AppWinVals[numDispWins];		
+		//display window initialization
+		dispWinFrames = new Base_DispWindow[numDispWins];
 		//whether each 3D window uses Skybox or color background 
 		useSkyboxBKGndAra= new boolean[numDispWins];
+		
 		//initialize grid dim structs
 		setGridDimStructs();
 	}//	
-	
 		
 	/**
 	 * invoke the renderer main function for processing-based renderer - this is called 
@@ -488,7 +497,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		initAllDispWindows();
 
 		initPFlagColors();		
-		//after all display windows are drawn
+		//after all display windows are created
 		finalDispWinInit();
 		//set clearing the background to be true
 		setBaseFlag(clearBKG,true);
@@ -675,7 +684,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void initOnce() {
 		//1-time init for program and windows
-		setVisFlag(dispMenuIDX, true);					//always default to showing input UI menu
+		//always default to showing left side input UI menu
+		setVisFlag(dispMenuIDX, true);
+		//app-specific 1-time init
 		initOnce_Indiv();
 		//initProgram is called every time reinitialization is desired
 		initProgram();		
@@ -690,27 +701,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * called every time re-initialized
 	 */
 	public final void initProgram() {
-		for (int i=1; i<dispWinFrames.length;++i) {
-			dispWinFrames[i].reInitInfoStr();
-		}
-		
+		for (int i=1; i<dispWinFrames.length;++i) {	dispWinFrames[i].reInitInfoStr();}		
 		initProgram_Indiv();
 	}//initProgram	
 	protected abstract void initProgram_Indiv();
-	
-	/**
-	 * Specify window titles and descriptions
-	 * @param _winTtls
-	 * @param _winDescs
-	 */
-	public final void setWinTitlesAndDescs(String[] _winTtls, String[] _winDescs) {
-		//display window initialization
-		dispWinFrames = new Base_DispWindow[numDispWins];	
-		
-		//need 1 per display window
-		winTitles = _winTtls;
-		winDescr = _winDescs;
-	}//initWins
 	
 	//specify windows that cannot be shown simultaneously here
 	protected void initXORWins(int[] _winFlags, int[] _winIdxs) {
@@ -807,42 +801,119 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
 	}
 	
-
+	/**
+	 * build the appropriate side bar menu configuration for this application
+	 * @param _winTitles array of per window titles
+	 * @param _funcRowNames array of names for each row of functional buttons 
+	 * @param _funcBtnNames array of arrays of names for each button
+	 * @param _dbgBtnNames array of names for each debug button. If array is empty then no debug buttons will be handled.
+	 * @param _inclWinNames include the names of all the instanced windows
+	 * @param _inclMseOvValues include a row for possible mouse over values
+	 */
+	public final void buildSideBarMenu(String[] _winTitles, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
+		winInitVals[dispMenuIDX] = new GUI_AppWinVals(dispMenuIDX, new String[] {"UI Window", "User Controls"}, new boolean[4],
+				new float[][] {new float[]{0,0, menuWidth, viewHeight}, new float[]{0,0, hideWinWidth, viewHeight},getInitCameraValues()},
+				new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,200},new int[]{255,255,255,255}},
+				sceneCtrValsBase[0], sceneFcsValsBase[0]);
+		_winTitles[0] = "UI Window";
+		int wIdx = dispMenuIDX;
+		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _winTitles, _inclWinNames, _inclMseOvValues);
+		dispWinFrames[wIdx] = new SidebarMenu(ri, this, wIdx, sideBarConfig);		
+	}
+	
 	/**
 	 * call once for each display window before calling constructor. Sets essential values describing windows
-	 * @param _winIDX The index in the various window-descriptor arrays for the dispWindow being set
-	 * @param _dimOpen The array of x,y,W,H dimensions for the dispWindow being open
-	 * @param _dimClosed The array of x,y,W,H dimensions for the dispWindow being closed
-	 * @param _dispFlags Essential flags describing the nature of the dispWindow
-	 * @param _fill Fill color to use for dispWindow
-	 * @param _strk Stroke color to use for dispWindow
-	 * @param _trajFill Trajetory's fill color to use for dispWindow
-	 * @param _trajStrk Trajetory's stroke color to use for dispWindow
+	 * @param _winIdx The index in the various window-descriptor arrays for the dispWindow being set
+	 * @param _title string title of this window
+	 * @param _descr string description of this window
+	 * @param _dispFlags Essential flags describing the nature of the dispWindow for idxs : 
+	 * 		0 : dispWinIs3d, 
+	 * 		1 : canDrawInWin; 
+	 * 		2 : canShow3dbox (only supported for 3D); 
+	 * 		3 : canMoveView
+	 * @param _floatVals an array holding float arrays for 
+	 * 				rectDimOpen(idx 0),
+	 * 				rectDimClosed(idx 1),
+	 * 				initCameraVals(idx 2)
+	 * @param _intClrVals and array holding int arrays for
+	 * 				winFillClr (idx 0),
+	 * 				winStrkClr (idx 1),
+	 * 				winTrajFillClr(idx 2),
+	 * 				winTrajStrkClr(idx 3),
+	 * 				rtSideFillClr(idx 4),
+	 * 				rtSideStrkClr(idx 5)
+	 * @param _sceneCenterVal center of scene, for drawing objects
+	 * @param _initSceneFocusVal initial focus target for camera
 	 */
-	public final void setInitDispWinVals(int _winIDX, float[] _dimOpen, float[] _dimClosed, boolean[] _dispFlags, int[] _fill, int[] _strk, int[] _trajFill, int[] _trajStrk) {
-		winRectDimOpen[_winIDX] = new float[_dimOpen.length];
-		System.arraycopy(_dimOpen, 0, winRectDimOpen[_winIDX], 0, _dimOpen.length);
-		winRectDimClose[_winIDX] = new float[_dimClosed.length];
-		System.arraycopy(_dimClosed, 0, winRectDimClose[_winIDX], 0, _dimClosed.length);
-		dispWinFlags[_winIDX] = new boolean[ _dispFlags.length];
-		System.arraycopy(_dispFlags, 0, dispWinFlags[_winIDX], 0, _dispFlags.length);
-		winFillClrs[_winIDX] = new int[_fill.length];
-		System.arraycopy(_fill, 0, winFillClrs[_winIDX], 0, _fill.length);
-		winStrkClrs[_winIDX] = new int[_strk.length];
-		System.arraycopy(_strk, 0, winStrkClrs[_winIDX], 0, _strk.length);
-		winTrajFillClrs[_winIDX] = new int[_trajFill.length];		//set to color constants for each window
-		System.arraycopy(_trajFill, 0, winTrajFillClrs[_winIDX], 0, _trajFill.length);
-		winTrajStrkClrs[_winIDX] = new int[_trajStrk.length];	//set to color constants for each window		
-		System.arraycopy(_trajStrk, 0, winTrajStrkClrs[_winIDX], 0, _trajStrk.length);
+	public final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
+			float[][] _floatVals, int[][] _intClrVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
+		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+				_floatVals, _intClrVals, _sceneCenterVal, _initSceneFocusVal);
 	
 	}//setInitDispWinVals
 	
+	/**
+	 * call once for each display window before calling constructor. Sets essential values describing windows
+	 * @param _winIdx The index in the various window-descriptor arrays for the dispWindow being set
+	 * @param _title string title of this window
+	 * @param _descr string description of this window
+	 * @param _dispFlags Essential flags describing the nature of the dispWindow for idxs : 
+	 * 		0 : dispWinIs3d, 
+	 * 		1 : canDrawInWin; 
+	 * 		2 : canShow3dbox (only supported for 3D); 
+	 * 		3 : canMoveView
+	 * @param _floatVals an array holding float arrays for 
+	 * 				rectDimOpen(idx 0),
+	 * 				rectDimClosed(idx 1),
+	 * 				initCameraVals(idx 2)
+	 * @param _intClrVals and array holding int arrays for
+	 * 				winFillClr (idx 0),
+	 * 				winStrkClr (idx 1),
+	 * 				winTrajFillClr(idx 2),
+	 * 				winTrajStrkClr(idx 3),
+	 * 				rtSideFillClr(idx 4),
+	 * 				rtSideStrkClr(idx 5)
+	 */
+	public final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
+			float[][] _floatVals, int[][] _intClrVals) {
+		int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
+		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+				_floatVals, _intClrVals, sceneCtrValsBase[scIdx], sceneFcsValsBase[scIdx]);
+	
+	}//setInitDispWinVals
+	
+	/**
+	 * This will build a 6 element array of color int arrays, based on the integer tags provided.
+	 * @param _tags IRenderInterface constants reflecting specific colors
+	 * 				winFillClr (idx 0),
+	 * 				winStrkClr (idx 1),
+	 * 				winTrajFillClr(idx 2),
+	 * 				winTrajStrkClr(idx 3),
+	 * 				rtSideFillClr(idx 4), (if not provided defaults to {0,0,0,200})
+	 * 				rtSideStrkClr(idx 5)  (if not provided defaults to {255,255,255,255})
+	 * @return
+	 */
+	protected int[][] buildWinColorArray(int[] _tags){
+		int[][] res = new int[6][];		
+		res[4] = new int[]{0,0,0,200};
+		res[5] = new int[]{255,255,255,255};
+		int minLen = res.length > _tags.length ? _tags.length : res.length;
+		for(int i=0; i<minLen;++i) {res[i] = ri.getClr(_tags[i], 255);}	
+		return res;
+	}
+	
+	/**
+	 * Get a reasonable initial camera setting, for windows with camera movement
+	 * @return
+	 */
+	protected float[] getInitCameraValues() {
+		return new float[] {-0.06f*MyMathUtils.TWO_PI_F, -0.04f*MyMathUtils.TWO_PI_F, -200.0f};
+	}
+	
 	private void finalDispWinInit() {
 		for(int i =0; i < numDispWins; ++i){
-			int scIdx = dispWinFlags[i][dispWinIs3dIDX] ? 1 : 0;//whether or not is 3d
-			dispWinFrames[i].finalInit(dispWinFlags[i][dispCanDrawInWinIDX],dispWinFlags[i][dispWinIs3dIDX], dispWinFlags[i][dispCanMoveViewIDX], sceneCtrValsBase[scIdx], sceneFcsValsBase[scIdx]);
-			dispWinFrames[i].setTrajColors(winTrajFillClrs[i], winTrajStrkClrs[i]);
-			dispWinFrames[i].setRtSideUIBoxClrs(new int[]{0,0,0,200},new int[]{255,255,255,255});
+			int scIdx = winInitVals[i].dispWinIs3D() ? 1 : 0;//whether or not is 3d
+			dispWinFrames[i].finalInit(sceneCtrValsBase[scIdx], sceneFcsValsBase[scIdx]);
 		}	
 	
 	}//finalDispWinInit	
@@ -851,36 +922,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// side bar menu stuff
-	
-	/**
-	 * build the appropriate side bar menu configuration for this application
-	 * @param wIdx
-	 * @param fIdx
-	 * @param _funcRowNames array of names for each row of functional buttons 
-	 * @param _funcBtnNames array of arrays of names for each button
-	 * @param _dbgBtnNames array of names for each debug button. If array is empty then no debug buttons will be handled.
-	 * @param _inclWinNames include the names of all the instanced windows
-	 * @param _inclMseOvValues include a row for possible mouse over values
-	 */
-	public final void buildSideBarMenu(String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
-		//init sidebar menu vals
-		for(int i=0;i<dispWinFlags[dispMenuIDX].length;++i) {dispWinFlags[dispMenuIDX][i] = false;}
-		//set up dims for menu
-		winRectDimOpen[dispMenuIDX] =  new float[]{0,0, menuWidth, viewHeight};
-		winRectDimClose[dispMenuIDX] =  new float[]{0,0, hideWinWidth, viewHeight};
-		
-		winFillClrs[dispMenuIDX] = new int[]{255,255,255,255};
-		winStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};
-		
-		winTrajFillClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window
-		winTrajStrkClrs[dispMenuIDX] = new int[]{0,0,0,255};		//set to color constants for each window		
-		winTitles[dispMenuIDX] = "UI Window";
-		winDescr[dispMenuIDX] = "User Controls";
-		
-		int wIdx = 0;
-		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _inclWinNames, _inclMseOvValues);
-		dispWinFrames[wIdx] = new SidebarMenu(ri, this, wIdx, sideBarConfig);		
-	}
 	
 	/**
 	 * set up initial colors for primary flags for display
@@ -1067,7 +1108,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//simulation section
 		if(isRunSim() ){
 			//run simulation
-			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].dispFlags.getIsRunnable())){dispWinFrames[i].simulate(modAmtMillis);}}
+			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getIsRunnable())){dispWinFrames[i].simulate(modAmtMillis);}}
 			if(isSingleStep()){setSimIsRunning(false);}
 			++simCycles;
 			return true;
@@ -1506,17 +1547,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			//turn off not shown, turn on shown				
 			for(int i =0;i<winDispIdxXOR.length;++i){//check windows that should be mutually exclusive during display
 				if(winDispIdxXOR[i]!= idx){
-					dispWinFrames[winDispIdxXOR[i]].setShow(false);
+					dispWinFrames[winDispIdxXOR[i]].setShowWin(false);
 					handleShowWin(i ,0,false); 
 					forceVisFlag(winFlagsXOR[i], false);
 				}//not this window
 				else {//turning on this one
-					dispWinFrames[idx].setShow(true);
+					dispWinFrames[idx].setShowWin(true);
 					handleShowWin(i ,1,false); 
 					forceVisFlag(winFlagsXOR[i], true);
 					curFocusWin = winDispIdxXOR[i];
 					//setCamView();	//camera now handled by individual windows
-					dispWinFrames[idx].setInitCamView();
+					//dispWinFrames[idx].setInitCamView();
 				}
 			}
 		} else {//if turning off a window - need a default uncloseable window - for now just turn on next window
@@ -1619,10 +1660,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void mouseWheel(int ticks) {
 		if(dispWinFrames.length < 1) {return;}
-		if (dispWinFrames[curFocusWin].dispFlags.getCanChgView()) {// (canMoveView[curFocusWin]){	
-			float mult = (getBaseFlag(shiftKeyPressed)) ? 50.0f * mouseWhlSens : 10.0f*mouseWhlSens;
-			dispWinFrames[curFocusWin].handleViewChange(true,(mult * ticks),0);
-		}
+		dispWinFrames[curFocusWin].handleMouseWheel(ticks, (getBaseFlag(shiftKeyPressed)) ? 50.0f * mouseWhlSens : 10.0f*mouseWhlSens);
 	}
 
 	public final void mouseReleased(){
@@ -1681,7 +1719,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		_visFlags[flIDX] = (val ?  _visFlags[flIDX] | mask : _visFlags[flIDX] & ~mask);
 		switch (idx){
-			case dispMenuIDX 	: { dispWinFrames[dispMenuIDX].dispFlags.setShowWin(val);    break;}
+			case dispMenuIDX 	: { dispWinFrames[dispMenuIDX].setShowWin(val);    break;}
 			default 			: {	setVisFlag_Indiv(idx, val);	}
 		}
 	}
@@ -1789,15 +1827,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final boolean IsDrawing() {return getBaseFlag(drawing);}
 	
 	//display window flags
-	public final boolean dispWinCanDrawInWin(int wIdx) {return dispWinFlags[wIdx][dispCanDrawInWinIDX];}
-	public final boolean dispWinCanShow3dbox(int wIdx) {return dispWinFlags[wIdx][dispCanShow3dboxIDX];}
-	public final boolean dispWinCanMoveView(int wIdx) {return dispWinFlags[wIdx][dispCanMoveViewIDX];}
-	public final boolean dispWinIs3D(int wIdx) {return dispWinFlags[wIdx][dispWinIs3dIDX];}
+	public final boolean dispWinCanDrawInWin(int wIdx) {return winInitVals[wIdx].canDrawInWin();}
+	public final boolean dispWinCanShow3dbox(int wIdx) {return winInitVals[wIdx].canShow3dbox();}
+	public final boolean dispWinCanMoveView(int wIdx) {return winInitVals[wIdx].canMoveView();}
+	public final boolean dispWinIs3D(int wIdx) {return winInitVals[wIdx].dispWinIs3D();}
 	
-	public final boolean curDispWinCanDrawInWin() {return dispWinFlags[curFocusWin][dispCanDrawInWinIDX];}
-	public final boolean curDispWinCanShow3dbox() {return dispWinFlags[curFocusWin][dispCanShow3dboxIDX];}
-	public final boolean curDispWinCanMoveView() {return dispWinFlags[curFocusWin][dispCanMoveViewIDX];}
-	public final boolean curDispWinIs3D() {return dispWinFlags[curFocusWin][dispWinIs3dIDX];}
+	public final boolean curDispWinCanDrawInWin() {return winInitVals[curFocusWin].canDrawInWin();}
+	public final boolean curDispWinCanShow3dbox() {return winInitVals[curFocusWin].canShow3dbox();}
+	public final boolean curDispWinCanMoveView() {return winInitVals[curFocusWin].canMoveView();}
+	public final boolean curDispWinIs3D() {return winInitVals[curFocusWin].dispWinIs3D();}
 	
 	public final void setSimIsRunning(boolean val) {setBaseFlag(runSim,val);}
 	public final void toggleSimIsRunning() {setBaseFlag(runSim, !getBaseFlag(runSim));}
