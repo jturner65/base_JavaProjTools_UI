@@ -144,44 +144,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * specify windows that cannot be shown simultaneously here and their flags
 	 */
-	public int[] winFlagsXOR, winDispIdxXOR;
-	
+	public int[] winFlagsXOR, winDispIdxXOR;	
 	
 	/**
 	 * Window initialization values, 1 per window, including left-side menu
 	 */
 	public GUI_AppWinVals[] winInitVals;
-	
-	
-	/**
-	 * need 1 per display window
-	 */
-//	public String[] winTitles,winDescr;
-//
-//	//whether or not the display windows will accept a drawn trajectory
-//	protected boolean[][] dispWinFlags;
-//	//idxs : 0 : canDrawInWin; 1 : canShow3dbox; 2 : canMoveView; 3 : dispWinIs3d
-//	protected static final int
-//				dispCanDrawInWinIDX 	= 0,
-//				dispCanShow3dboxIDX 	= 1,
-//				dispCanMoveViewIDX 		= 2,
-//				dispWinIs3dIDX 			= 3;
-//	private static int numDispWinBoolFlags = 4;
-//	
-//	public int[][] winFillClrs, winStrkClrs;
-//	
-//	public int[][] winTrajFillClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window
-//	public int[][] winTrajStrkClrs = new int [][]{{0,0},{0,0}};		//set to color constants for each window	
-//	
-//	/**
-//	 * Per-window unblocked window dimensions - location and dim of window if window is open\closed
-//	 */
-//	public float[][] winRectDimOpen, winRectDimClosed;
-//	
-//	/**
-//	 * Per-window initial camera values (rx, ry, dz). dz value needs to be negative
-//	 */
-//	public float [][] winCameraInitVals;
 
 	/**
 	 * flags explicitly pertaining to window visibility.  1 flag per window in application - flags defined in child class
@@ -474,6 +442,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		
 		//for every window, load either window color or window Skybox, depending on 
 		//per-window specification
+		
+		int[][] bkGrndColors = new int[numDispWins][];
 		for(int i=0;i<numDispWins;++i) {
 			useSkyboxBKGndAra[i] = getUseSkyboxBKGnd(i);
 			if (useSkyboxBKGndAra[i]) {
@@ -481,6 +451,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			}
 			int[] bGroundClr = getBackgroundColor(i);
 			ri.setRenderBackground(i, bGroundClr, bGroundClr[3]);
+			bkGrndColors[i] = bGroundClr;
 		}
 				
 		//Initialize application
@@ -495,10 +466,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		initBaseFlags_Indiv();
 		//instancing class version
 		initAllDispWindows();
-
+		//All GUI_AppWinVals objects are built by here, now set 
+		for (int i=0; i< winInitVals.length;++i) {
+			winInitVals[i].setBackgrndColor(bkGrndColors[i]);
+		}
+		
 		initPFlagColors();		
 		//after all display windows are created
 		finalDispWinInit();
+		
 		//set clearing the background to be true
 		setBaseFlag(clearBKG,true);
 		//init sim cycles count
@@ -822,6 +798,19 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}
 	
 	/**
+	 * Return a default boolean array of window-related falgs suitable for most window creation for both 2D and 3D.
+	 * @param is3D whether the window is 3d or not
+	 * @return an array of booleans with idx/vals : 
+	 * 								is3D		!is3D
+	 * 		0 : dispWinIs3d,		true		false
+	 * 		1 : canDrawInWin		false		false
+	 * 		2 : canShow3dbox		true		false
+	 * 		3 : canMoveView 		true		true
+	 * 
+	 */
+	protected boolean[] getDfltBoolAra(boolean is3D) {return new boolean[]{is3D,false,is3D,true};}
+	
+	/**
 	 * call once for each display window before calling constructor. Sets essential values describing windows
 	 * @param _winIdx The index in the various window-descriptor arrays for the dispWindow being set
 	 * @param _title string title of this window
@@ -845,7 +834,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _sceneCenterVal center of scene, for drawing objects
 	 * @param _initSceneFocusVal initial focus target for camera
 	 */
-	public final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
+	protected final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
 		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
 				_floatVals, _intClrVals, _sceneCenterVal, _initSceneFocusVal);
@@ -874,7 +863,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * 				rtSideFillClr(idx 4),
 	 * 				rtSideStrkClr(idx 5)
 	 */
-	public final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
+	protected final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals) {
 		int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
 		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
@@ -956,12 +945,33 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}
 	
 	
-	//these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
+	/**
+	 * these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
+	 * @param btn
+	 * @param val
+	 */
 	public final void handleShowWin(int btn, int val){handleShowWin(btn, val, true);}					//display specific windows - multi-select/ always on if sel
-	//these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
+	/**
+	 * these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
+	 * @param btn
+	 * @param val
+	 * @param callFlags
+	 */
 	public abstract void handleShowWin(int btn, int val, boolean callFlags);
-	//process to handle file io	- TODO	
+	/**
+	 * process to handle file io	- TODO	
+	 * @param _type
+	 * @param btn
+	 * @param val
+	 */
 	public final void handleFileCmd(int _type, int btn, int val){handleFileCmd(_type,btn, val, true);}					//display specific windows - multi-select/ always on if sel
+	/**
+	 * process to handle file io	- TODO
+	 * @param _type
+	 * @param btn
+	 * @param val
+	 * @param callFlags
+	 */
 	public final void handleFileCmd(int _type, int btn, int val, boolean callFlags){//{"Load","Save"},							//load an existing score, save an existing score - momentary	
 		if(!callFlags){			setMenuBtnState(_type,btn, val);		}  else {
 			switch(btn){
@@ -980,8 +990,22 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		}
 	}//handleFileCmd
 	
-	//display specific windows - multi-select/ always on if sel
+	/**
+	 * display specific windows - multi-select/ always on if sel
+	 * @param row
+	 * @param funcOffset
+	 * @param col
+	 * @param val
+	 */
 	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val){handleMenuBtnSelCmp(row, funcOffset, col, val, true);}					
+	/**
+	 * display specific windows - multi-select/ always on if sel
+	 * @param row
+	 * @param funcOffset
+	 * @param col
+	 * @param val
+	 * @param callFlags
+	 */
 	public final void handleMenuBtnSelCmp(int row, int funcOffset, int col, int val, boolean callFlags){
 		if(!callFlags){			setMenuBtnState(row,col, val);		} //if called programmatically, not via ui action
 		else {					dispWinFrames[curFocusWin].clickSideMenuBtn(row, funcOffset, col);		}
@@ -1138,7 +1162,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				draw3D_solve3D(modAmtMillis);
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}
 				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);	}		
-				if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts());}
+				if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts(), winInitVals[curFocusWin].canvasColor);}
 			} else {
 				draw3D_solve3D(modAmtMillis);
 			}

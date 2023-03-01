@@ -8,7 +8,8 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
 
 /**
- * Struct holding per-window object dims
+ * Struct holding per-window object dims and colors, consumed by Base_DispWindow to create 
+ * the window and also to determine its capabilities.
  * @author John Turner
  *
  */
@@ -18,9 +19,9 @@ public class GUI_AppWinVals {
 	 */
 	public final int winIdx;
 	/**
-	 * Window title
+	 * Window name
 	 */
-	public final String winTitle;
+	public final String winName;
 	/**
 	 * Window description
 	 */
@@ -74,6 +75,14 @@ public class GUI_AppWinVals {
 	 * Initial focus point for camera
 	 */
 	public final myVector initSceneFocusVal;
+	/**
+	 * Background color for this window
+	 */
+	public int[] bGroundColor;
+	/**
+	 * Inverted background color for this window to be used as a canvas color
+	 */	
+	public int[] canvasColor;
 
 	
 	/**
@@ -119,7 +128,7 @@ public class GUI_AppWinVals {
 	 */
 	public GUI_AppWinVals(int _winIdx, String[] _strVals, boolean[] _flags, float[][] _floatVals, int[][] _intVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
 		winIdx = _winIdx;
-		winTitle = _strVals[0];
+		winName = _strVals[0];
 		winDescr = _strVals[1];
 		
 		dispWinFlags = new boolean[numDispWinBoolFlags];
@@ -151,7 +160,18 @@ public class GUI_AppWinVals {
 		}		
 		sceneCenterVal = new myPoint(_sceneCenterVal);
 		initSceneFocusVal = new myVector(_initSceneFocusVal);
+		//background and canvas colors
+		bGroundColor = new int[4];
+		canvasColor = new int[4];
 	}//ctor
+	
+	public final void setBackgrndColor(int[] _clr) {
+		for (int i=0;i<_clr.length;++i) {
+			bGroundColor[i] = _clr[i];
+			canvasColor[i] = 255-_clr[i];
+		}
+		canvasColor[3] = 80;
+	}//setBackgrndColor
 	
 	/**
 	 * Window can be drawn in
@@ -181,19 +201,28 @@ public class GUI_AppWinVals {
 	 */
 	public final void setWinFill(IRenderInterface ri) {ri.setFill(fillClr, fillClr[3]);}
 	
-	
-	/**
-	 * Set fill for the owning window using specified stroke color
-	 * @param ri
-	 */
-	public final void setWinFillWithStroke(IRenderInterface ri) {ri.setFill(strkClr, strkClr[3]);}
-	
 	/**
 	 * Set stroke for owning window
 	 * @param ri
 	 */
 	public final void setWinStroke(IRenderInterface ri) {ri.setStroke(strkClr, strkClr[3]);}
 	
+	
+	/**
+	 * Set fill for the owning window using specified stroke color
+	 * @param ri
+	 */
+	public final void setWinFillWithStroke(IRenderInterface ri) {ri.setFill(strkClr, strkClr[3]);}	
+	
+	/**
+	 * Set fill and stroke for owning window
+	 * @param ri
+	 */
+	public final void setWinFillAndStroke(IRenderInterface ri) {
+		ri.setFill(fillClr, fillClr[3]);
+		ri.setStroke(strkClr, strkClr[3]);
+	}
+
 	/**
 	 * Check if passed x-y point is in rectDims
 	 * @param x
@@ -222,7 +251,7 @@ public class GUI_AppWinVals {
 	 */
 	public boolean pointInRectDim(myPointf pt){
 		return ((pt.x >= rectDim[0]) && (pt.x <= rectDim[0]+rectDim[2]) 
-				&& (pt.y >= rectDim[1]) && (pt.y <=  rectDim[1]+rectDim[3]));}	
+				&& (pt.y >= rectDim[1]) && (pt.y <=  rectDim[1]+rectDim[3]));}
 	
 	
 	/**
@@ -238,19 +267,9 @@ public class GUI_AppWinVals {
 	 */
 	public final void drawRectDimClosed(IRenderInterface ri) {ri.drawRect(rectDimClosed);}
 	
-	
-	/**
-	 * Set fill and stroke for owning window
-	 * @param ri
-	 */
-	public final void setWinFillAndStroke(IRenderInterface ri) {
-		ri.setFill(fillClr, fillClr[3]);
-		ri.setStroke(strkClr, strkClr[3]);
-	}
-	
 	@Override
 	public String toString() {
-		String res = "IDX :"+winIdx+" | Name : `"+ winTitle + "` | Descr : `"+ winDescr + "`\n";
+		String res = "IDX :"+winIdx+" | Name : `"+ winName + "` | Descr : `"+ winDescr + "`\n";
 		res += "\tFill Color :"+Arrays.toString(fillClr) + " | Stroke Color :"+Arrays.toString(strkClr)+ "\n";
 		res += "\tTraj Fill Color :"+Arrays.toString(trajFillClr) + " | Traj Stroke Color :"+Arrays.toString(trajStrkClr)+ "\n";
 		res += "\tRt Side Fill Color :"+Arrays.toString(rtSideFillClr) + " | Rt Side Stroke Color :"+Arrays.toString(rtSideStrkClr)+ "\n";

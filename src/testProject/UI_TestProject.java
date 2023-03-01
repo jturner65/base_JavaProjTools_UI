@@ -23,23 +23,27 @@ public class UI_TestProject extends GUI_AppManager {
 	 * idx's in dispWinFrames for each window - 0 is always left side menu window
 	 * Side menu is dispMenuIDX == 0
 	 */
-	private static final int disp3DResIDX = 1,
-							disp2DResIDX = 2;
+	private static final int disp3DRes1IDX = 1,
+							disp3DRes2IDX = 2,
+							disp2DResIDX = 3;
 	/**
 	 * # of visible windows including side menu (always at least 1 for side menu)
 	 */
-	private static final int numVisWins = 3;
+	private static final int numVisWins = 4;
 	
 	/**
 	 * Whether to use skybox or not
 	 */
-	private final boolean[] useSkybox = new boolean[] {false,false,false};
+	private final boolean[] useSkybox = new boolean[] {false,false,false,false};
 	
 	/**
 	 * Background color
 	 */
-	public final int[] bground = new int[]{244,244,255,255};
-	
+	public final int[][] bground = new int[][]{
+		new int[]{244,244,255,255},
+		new int[]{244,244,255,255},
+		new int[]{55,44,60,255},
+		new int[]{55,44,33,255}};	
 
 	/**
 	 * @param args
@@ -79,7 +83,7 @@ public class UI_TestProject extends GUI_AppManager {
 	protected String getSkyboxFilename(int winIdx) {return "bkgrndTex.jpg";}
 
 	@Override
-	protected int[] getBackgroundColor(int winIdx) {return bground;}
+	protected int[] getBackgroundColor(int winIdx) {return bground[winIdx];}
 
 	@Override
 	protected int getNumDispWindows() {	return numVisWins;	}
@@ -117,10 +121,10 @@ public class UI_TestProject extends GUI_AppManager {
 	@Override
 	protected void initAllDispWindows() {
 		showInfo = true;
-		String[] _winTitles = new String[]{"","UI Test Window 3D","UI Test Window 2D"},
-				_winDescr = new String[] {"", "Multi Flock Predator/Prey Boids 3D Simulation","Multi Flock Predator/Prey Boids 2D Simulation"};
+		String[] _winTitles = new String[]{"","UI Test Window 3D 1","UI Test Window 3D 2","UI Test Window 2D"},
+				_winDescr = new String[] {"", "Light Background Test 3D Window 1","Dark Background Test 3D Window 2","Test 2D Window"};
 
-		//instanced window dimensions when open and closed - only showing 1 open at a time
+		//instanced window dims when open and closed - only showing 1 open at a time - and init cam vals
 		float[][] _floatDims  = new float[][] {getDefaultWinDimOpen(), getDefaultWinDimClosed(), getInitCameraValues()};	
 
 		//Builds sidebar menu button config - application-wide menu button bar titles and button names
@@ -159,27 +163,33 @@ public class UI_TestProject extends GUI_AppManager {
 		 *  _initSceneFocusVal initial focus target for camera (optional)
 		 */
 		
-		int wIdx = disp3DResIDX;
-		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], new boolean[]{true,false,true,true}, _floatDims,		
+		int wIdx = disp3DRes1IDX;
+		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], getDfltBoolAra(true), _floatDims,		
+				new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},
+					new int[]{180,180,180,255},new int[]{100,100,100,255},
+					new int[]{0,0,0,200},new int[]{255,255,255,255}});
+			dispWinFrames[wIdx] = new UI_TestWindow3D(ri, this, wIdx);
+		wIdx = disp3DRes2IDX;
+		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], getDfltBoolAra(true), _floatDims,		
 			new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},
 				new int[]{180,180,180,255},new int[]{100,100,100,255},
 				new int[]{0,0,0,200},new int[]{255,255,255,255}});
 		dispWinFrames[wIdx] = new UI_TestWindow3D(ri, this, wIdx);
 		wIdx = disp2DResIDX;
-		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], new boolean[]{false,false,false,true}, _floatDims,
+		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], getDfltBoolAra(false), _floatDims,
 				new int[][] {new int[]{50,40,20,255}, new int[]{255,255,255,255},
 					new int[]{180,180,180,255}, new int[]{100,100,100,255},
 					new int[]{0,0,0,200},new int[]{255,255,255,255}});
 		dispWinFrames[wIdx] = new UI_TestWindow2D(ri, this, wIdx);
 
 		//specify windows that cannot be shown simultaneously here
-		initXORWins(new int[]{disp3DResIDX,disp2DResIDX}, new int[]{disp3DResIDX, disp2DResIDX});
+		initXORWins(new int[]{disp3DRes1IDX,disp3DRes2IDX,disp2DResIDX}, new int[]{disp3DRes1IDX, disp3DRes2IDX,disp2DResIDX});
 		
 	}//initAllDispWindows
 
 	@Override
 	protected void initOnce_Indiv() {
-		setVisFlag(disp3DResIDX, true);
+		setVisFlag(disp3DRes1IDX, true);
 	}
 	@Override
 	protected void initProgram_Indiv() {	}
@@ -243,7 +253,8 @@ public class UI_TestProject extends GUI_AppManager {
 	protected final float[] getUIRectVals_Indiv(int idx, float[] menuRectVals) {
 			//this.pr("In getUIRectVals for idx : " + idx);
 		switch(idx){
-			case disp3DResIDX 		: {return menuRectVals;}
+			case disp3DRes1IDX 		: {return menuRectVals;}
+			case disp3DRes2IDX 		: {return menuRectVals;}
 			case disp2DResIDX 		: {return menuRectVals;}
 			default :  return menuRectVals;
 		}
@@ -272,7 +283,8 @@ public class UI_TestProject extends GUI_AppManager {
 	//address all flag-setting here, so that if any special cases need to be addressed they can be
 	protected void setVisFlag_Indiv(int idx, boolean val ){
 		switch (idx){
-			case disp3DResIDX		: {setWinFlagsXOR(disp3DResIDX, val); break;}
+			case disp3DRes1IDX		: {setWinFlagsXOR(disp3DRes1IDX, val); break;}
+			case disp3DRes2IDX		: {setWinFlagsXOR(disp3DRes2IDX, val); break;}			
 			case disp2DResIDX		: {setWinFlagsXOR(disp2DResIDX, val); break;}
 			default : {break;}
 		}

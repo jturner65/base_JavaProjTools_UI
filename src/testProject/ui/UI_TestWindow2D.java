@@ -11,7 +11,6 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
-import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 import testProject.uiData.UITestDataUpdater_2D;
 
@@ -116,14 +115,14 @@ public class UI_TestWindow2D extends Base_DispWindow {
 		tmpListObjVals.put(gIDX_ListVal1, listOfNames1);
 		tmpListObjVals.put(gIDX_ListVal2, listOfNames2);
 			
-		tmpUIObjArray.put(gIDX_FloatVal1,  new Object[]{new double[]{0,1.0f,.0001f}, floatVal1, "Float Value 1", GUIObj_Type.FloatVal, new boolean[]{true}});   	                                                            
-		tmpUIObjArray.put(gIDX_IntVal1, new Object[]{new double[]{1,10,1.0f}, 1.0, "Int Value 1", GUIObj_Type.IntVal, new boolean[]{true}});   						                                                        
-		tmpUIObjArray.put(gIDX_ListVal1,  new Object[]{new double[]{0,listOfNames1.length-1,1.1f}, 0.0, "List of Names 1", GUIObj_Type.ListVal, new boolean[]{true}} );                                                                     
-		tmpUIObjArray.put(gIDX_IntVal2, new Object[]{new double[]{-50,50,1.0f}, 0.0, "Int Value 2", GUIObj_Type.IntVal, new boolean[]{true}});   					                                                        
-		tmpUIObjArray.put(gIDX_IntVal3, new Object[]{new double[]{0,1000,1.0f}, 0.0, "Int Value 3", GUIObj_Type.IntVal, new boolean[]{true}} );   					
-		tmpUIObjArray.put(gIDX_FloatVal2,  new Object[]{new double[]{0,10.0f,.0001f}, floatVal2, "Float Value 2", GUIObj_Type.FloatVal, new boolean[]{true}});   	                                                            
-		tmpUIObjArray.put(gIDX_ListVal2,  new Object[]{new double[]{0,listOfNames2.length-1,1.1f}, 0.0, "List of Names 2", GUIObj_Type.ListVal, new boolean[]{true}} );                                                                     
-		tmpUIObjArray.put(gIDX_FloatVal3,  new Object[]{new double[]{1.0f,100.0f,.0001f}, floatVal3, "Float Value 3", GUIObj_Type.FloatVal, new boolean[]{true}});   	                                                            
+		tmpUIObjArray.put(gIDX_FloatVal1, uiObjInitAra_Float(new double[]{0,1.0f,.0001f}, floatVal1, "Float Value 1", new boolean[]{true}));   	                                                            
+		tmpUIObjArray.put(gIDX_IntVal1, uiObjInitAra_Int(new double[]{1,10,1.0f}, 1.0, "Int Value 1", new boolean[]{true}));   						                                                        
+		tmpUIObjArray.put(gIDX_ListVal1, uiObjInitAra_List(new double[]{0,listOfNames1.length-1,1.1f}, 0.0, "List of Names 1", new boolean[]{true}));                                                                     
+		tmpUIObjArray.put(gIDX_IntVal2, uiObjInitAra_Int(new double[]{-50,50,1.0f}, 0.0, "Int Value 2", new boolean[]{true}));   					                                                        
+		tmpUIObjArray.put(gIDX_IntVal3, uiObjInitAra_Int(new double[]{0,1000,1.0f}, 0.0, "Int Value 3", new boolean[]{true}));   					
+		tmpUIObjArray.put(gIDX_FloatVal2, uiObjInitAra_Float(new double[]{0,10.0f,.0001f}, floatVal2, "Float Value 2", new boolean[]{true}));   	                                                            
+		tmpUIObjArray.put(gIDX_ListVal2,  uiObjInitAra_List(new double[]{0,listOfNames2.length-1,1.1f}, 0.0, "List of Names 2", new boolean[]{true}));                                                                     
+		tmpUIObjArray.put(gIDX_FloatVal3,  uiObjInitAra_Float(new double[]{1.0f,100.0f,.0001f}, floatVal3, "Float Value 3", new boolean[]{true}));   	                                                            
 	}	
 	
 	@Override

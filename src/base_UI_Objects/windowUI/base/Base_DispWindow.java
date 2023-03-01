@@ -16,8 +16,8 @@ import base_UI_Objects.windowUI.drawnTrajectories.TrajectoryManager;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.ScrollBars;
 import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
-import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Float;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Int;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_List;
@@ -127,11 +127,24 @@ public abstract class Base_DispWindow {
 	//UI objects in this window
 	//GUI Objects
 	private Base_NumericGUIObj[] guiObjs_Numeric;	
+	
+	/**
+	 * Base_GUIObj that was clicked on for modification
+	 */
+	protected int msClkObj;
+	/**
+	 * object mouse moved over
+	 */
+	protected int msOvrObj;												
+	/**
+	 * mouse button clicked - consumed for individual click mod
+	 */
+	protected int msBtnClcked;														//mouse button clicked
 
-	public int msClkObj, msOvrObj;												//myGUIObj object that was clicked on  - for modification, object mouse moved over
-	public int msBtnClcked;														//mouse button clicked
-	public float[] uiClkCoords;												//subregion of window where UI objects may be found
-	public static final double uiWidthMult = 9;							//multipler of size of label for width of UI components, when aligning components horizontally
+	/**
+	 * subregion of window where UI objects may be found
+	 */
+	public float[] uiClkCoords;												//
 											
 	/**
 	 * array lists of idxs for integer/list-based objects
@@ -237,7 +250,7 @@ public abstract class Base_DispWindow {
 		ID = winCnt++;
 		dispFlagWinIDX = _winIdx;
 		winInitVals = _winInitVals;			
-		name = winInitVals.winTitle;
+		name = winInitVals.winName;
 		fileIO = new FileIOManager(msgObj, name);
 		//base screenshot path based on launch time
 		ssFolderDir = name+"_"+getNowDateTimeString();
@@ -347,6 +360,53 @@ public abstract class Base_DispWindow {
 		buildUIUpdateStruct();
 		
 	}//_initAllGUIObjs
+	
+	/**
+	 * Build the object array that describes a integer object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * 		idx 0 : value is sent to owning window
+	 * 		idx 1 : value is sent on modification, not mouse release
+	 * 		idx 2 : changes must be explicitly sent to consumer (not automatically sent)	 * 
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.IntVal,boolVals};	
+	}
+	
+	/**
+	 * Build the object array that describes a float object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * 		idx 0 : value is sent to owning window
+	 * 		idx 1 : value is sent on modification, not mouse release
+	 * 		idx 2 : changes must be explicitly sent to consumer (not automatically sent)	 * 
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.FloatVal,boolVals};	
+	}
+		
+	
+	/**
+	 * Build the object array that describes a list object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * 		idx 0 : value is sent to owning window
+	 * 		idx 1 : value is sent on modification, not mouse release
+	 * 		idx 2 : changes must be explicitly sent to consumer (not automatically sent)	 * 
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.ListVal,boolVals};	
+	}
+	
 	
 	/**
 	 * Initialize instancing window's private buttons and state flags
@@ -1575,7 +1635,8 @@ public abstract class Base_DispWindow {
 	 */
 	protected final boolean checkClsBox(int mouseX, int mouseY){
 		boolean res = false;
-		if(MyMathUtils.ptInRange(mouseX, mouseY, closeBox[0], closeBox[1], closeBox[0]+closeBox[2], closeBox[1]+closeBox[3])){toggleWindowState(); res = true;}				
+		//if(MyMathUtils.ptInRange(mouseX, mouseY, closeBox[0], closeBox[1], closeBox[0]+closeBox[2], closeBox[1]+closeBox[3])){toggleWindowState(); res = true;}				
+		if(msePtInRect(mouseX, mouseY, closeBox)){toggleWindowState(); res = true;}				
 		return res;		
 	}
 	/**
@@ -1659,8 +1720,13 @@ public abstract class Base_DispWindow {
 		return false;
 	}//handleMouseMove
 	
-	public final boolean msePtInRect(int x, int y, float[] r){return ((x > r[0])&&(x <= r[0]+r[2])&&(y > r[1])&&(y <= r[1]+r[3]));}	
-	public final boolean msePtInUIRect(int x, int y){return ((x > uiClkCoords[0])&&(x <= uiClkCoords[2])&&(y > uiClkCoords[1])&&(y <= uiClkCoords[3]));}	
+	public final boolean msePtInRect(int x, int y, float[] r){return ((x >= r[0])&&(x <= r[0]+r[2])&&(y >= r[1])&&(y <= r[1]+r[3]));}
+	
+	public final boolean msePtInUIRect(int x, int y){
+		return ((x > uiClkCoords[0])&&(x <= uiClkCoords[2])
+				&&(y > uiClkCoords[1])&&(y <= uiClkCoords[3]));
+	}	
+	
 	public final boolean pointInRectDim(int x, int y){return winInitVals.pointInRectDim(x, y);	}
 	public final boolean pointInRectDim(myPoint pt){return winInitVals.pointInRectDim(pt);}	
 	public final boolean pointInRectDim(myPointf pt){return winInitVals.pointInRectDim(pt);}

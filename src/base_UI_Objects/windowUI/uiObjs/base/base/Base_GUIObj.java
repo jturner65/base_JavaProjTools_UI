@@ -1,7 +1,7 @@
 package base_UI_Objects.windowUI.uiObjs.base.base;
 
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.ornaments.base.Base_GUIPrefixObj;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
@@ -13,7 +13,7 @@ public abstract class Base_GUIObj {
 	/**
 	 * Interface to drawing/graphics engine
 	 */
-	protected static IRenderInterface p;
+	protected static IRenderInterface ri;
 	/**
 	 * Internal object ID
 	 */
@@ -77,6 +77,11 @@ public abstract class Base_GUIObj {
 	protected int[] _strkClr = new int[] {0,0,0,255};
 	
 	/**
+	 * Object to either manage and display or not show an ornamental box in front of a UI element
+	 */
+	private final Base_GUIPrefixObj _ornament;
+	
+	/**
 	 * Builds a UI object
 	 * @param _p render interface
 	 * @param _objID the index of the object in the managing container
@@ -91,8 +96,8 @@ public abstract class Base_GUIObj {
 	 */
 	public Base_GUIObj(IRenderInterface _p, int _objID, String _name, 
 			double _xst, double _yst, double _xend, double _yend, 
-			GUIObj_Type _objType, boolean[] _flags) {
-		p=_p;
+			GUIObj_Type _objType, boolean[] _flags, double[] _off) {
+		ri=_p;
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
@@ -105,10 +110,18 @@ public abstract class Base_GUIObj {
 		initStateFlags();
 		//UI Object configuration
 		initConfigFlags();
+		//build prefix ornament to display
+		_ornament = _buildPrefixOrnament(_off);
 		
 		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
 		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}
 	}
+	
+	/**
+	 * Instance class should build an ornament object based on whether it should or should not have one
+	 * @return
+	 */
+	protected abstract Base_GUIPrefixObj _buildPrefixOrnament(double[] _off);
 	
 	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
 	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
@@ -172,15 +185,15 @@ public abstract class Base_GUIObj {
 	private int _animCount = 0;
 	private boolean _cyanStroke = false;
 	public final void drawDebug() {
-		p.pushMatState();
-			p.setStrokeWt(1.0f);
+		ri.pushMatState();
+			ri.setStrokeWt(1.0f);
 			++_animCount;
 			if(_animCount>20) {_animCount = 0; _cyanStroke = !_cyanStroke;}
-			if(_cyanStroke) {p.setStroke(0, 255, 255,255);} else {	p.setStroke(255, 0, 255,255);}
-			p.noFill();
+			if(_cyanStroke) {ri.setStroke(0, 255, 255,255);} else {	ri.setStroke(255, 0, 255,255);}
+			ri.noFill();
 			//Draw rectangle around this object denoting active zone
-			p.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);
-		p.popMatState();
+			ri.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);
+		ri.popMatState();
 		draw();
 	}
 	
@@ -188,22 +201,16 @@ public abstract class Base_GUIObj {
 	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
 	public final void draw() {
-		p.pushMatState();
-			p.translate(start.x,start.y,0);
-			drawPrefixObj();
-			p.setFill(_fillClr,_fillClr[3]);
-			p.setStroke(_strkClr,_strkClr[3]);	
+		ri.pushMatState();
+			ri.translate(start.x,start.y,0);
+			_ornament.drawPrefixObj(ri);
+			ri.setFill(_fillClr,_fillClr[3]);
+			ri.setStroke(_strkClr,_strkClr[3]);	
 			//draw specifics for this UI object
 			_drawObject_Indiv();
-		p.popMatState();
+		ri.popMatState();
 	}//draw
-	
-	/**
-	 * Draw any prefix objects if appropriate - after translate but before object colors are set.
-	 */
-	protected abstract void drawPrefixObj();
-	
-	
+
 	protected abstract void _drawObject_Indiv();
 	
 	/**

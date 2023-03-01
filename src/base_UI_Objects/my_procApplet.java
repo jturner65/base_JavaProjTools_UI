@@ -31,10 +31,15 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	//animation control variables	
 	public final float maxAnimCntr = MyMathUtils.PI_F*1000.0f, baseAnimSpd = 1.0f;
 	
-	//array of giant spheres encapsulating entire 3D scene - allows for different ones for each 3D window
+	/**
+	 * map of giant spheres encapsulating entire 3D scene - allows for different ones for each 3D window
+	 */
 	private HashMap<Integer, PShape> bgrndSphereAra;	
-	//array of background colors for every window
+	/**
+	 * map of background colors for every window
+	 */
 	private HashMap<Integer, int[]> bgrndColorAra;
+	
 		
 	////////////////////////
 	// code
@@ -119,7 +124,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 			System.out.println("ERROR! No background sphere specified for window idx :"+winIdx);
 			drawRenderBackground(winIdx);
 		}
-		shape(bgrndSphereAra.get(winIdx));	
+		shape(shape);	
 	}
 	
 	
@@ -209,14 +214,16 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	/**
 	 * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector
 	 * @param eyeToMse vector 
-	 * @param canvas3D
+	 * @param canvas3D bounded points to draw polygon edge of canvas
+	 * @param color color to paint the canvas - should be translucent (Alpha should be no more than 80), 
+	 * 				light for dark backgrounds and dark for light backgrounds. 
 	 */
 	@Override
-	public void drawCanvas(myVector eyeToMse, myPointf[] canvas3D){
+	public void drawCanvas(myVector eyeToMse, myPointf[] canvas3D, int[] color){
 		disableLights();
 		pushMatState();
 		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
-		setFill(255,255,255,80);
+		gl_setFill(color, color[3]);
 		setNoStroke();
 		gl_normal(eyeToMse);
         for(int i =canvas3D.length-1;i>=0;--i){		//build invisible canvas to draw upon

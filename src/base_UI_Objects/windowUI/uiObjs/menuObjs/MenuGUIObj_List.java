@@ -1,16 +1,16 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.base.Base_MenuGUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
 
-public class MenuGUIObj_List extends Base_MenuGUIObj {
+public class MenuGUIObj_List extends Base_NumericGUIObj {
 	
 	protected String[] listVals = new String[] {"None"};
 
-	public MenuGUIObj_List(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
+	public MenuGUIObj_List(IRenderInterface _ri, int _objID, String _name, double _xst, double _yst, double _xend,
 			double _yend, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off, String[] _listVals) {
-		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, _off);
+		super(_ri, _objID, _name, _xst, _yst, _xend, _yend, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, _off);
 		setListVals(_listVals);
 	}
 	
@@ -34,8 +34,8 @@ public class MenuGUIObj_List extends Base_MenuGUIObj {
 	}// getListValStr
 
 	@Override
-	protected void _drawObject_Indiv() {
-		p.showText(dispText + listVals[(((int)val) % listVals.length)], 0,0);		
+	protected final void _drawObject_Indiv() {
+		ri.showText(dispText + listVals[(((int)val) % listVals.length)], 0,0);		
 	}
 	
 	
