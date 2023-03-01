@@ -40,17 +40,30 @@ public class SidebarMenu extends Base_DispWindow{
 	//GUI Buttons
 	public float minBtnClkY;			
 	//where buttons should start on side menu
-	//index in arrays of button states/names for the show window buttons, if present
+	/**
+	 * index in arrays of button states/names for the show window buttons, if present
+	 */
 	public static final int btnShowWinIdx = 0;
-	public static int btnMseFuncIdx, btnDBGSelCmpIdx; 
-	//array of the idxs in the guiBtnArrays where the user-definable/modifiable functions reside
+	/**
+	 * Index in button rows corresponding to the mouse-over display control buttons
+	 */
+	public static int btnMseOvrFuncIdx; 
+	/**
+	 * Index in button rows corresponding to the debug function buttons
+	 */
+	public static int btnDBGSelCmpIdx; 
+	/**
+	 * array of the idxs in the guiBtnArrays where the user-definable/modifiable functions reside
+	 */
 	protected int[] funcBtnIDXAra;
-	//offset in arrays where actual function buttons start
+	/**
+	 * offset in arrays where actual function buttons start
+	 */
 	public int funcBtnIDXOffset=0;
-	//index in array where debug buttons reside
-	private int debugBtnRowIDX = -1;
 	
-	private boolean _initBtnShowWin = false, _initBtnMseFunc= false, _initBtnDBGSelCmp = false;
+	private boolean _initBtnShowWin = false, 
+			_initBtnMseFunc= false, 
+			_initBtnDBGSelCmp = false;
 
 	private String[] guiBtnRowNames;
 	/**
@@ -154,14 +167,13 @@ public class SidebarMenu extends Base_DispWindow{
 		ArrayList<Boolean[]> tmpBtnWaitForProc = new ArrayList<Boolean[]>();
 		int numFuncBtnArrayNames = btnConfig.funcRowNames.length;
 		//if debug btn names array is not empty in config, add debug button names row to funcBtnIDXAra
-		if(btnConfig.debugBtnLabels.length > 0) {
-			debugBtnRowIDX = numFuncBtnArrayNames++;
-		}
+		int debugBtnRowIDX = (btnConfig.debugBtnLabels.length > 0) 
+				? numFuncBtnArrayNames++ : -1;
 		
 		funcBtnIDXAra = new int[numFuncBtnArrayNames];
 		
 		btnDBGSelCmpIdx = -1;
-		btnMseFuncIdx = -1;
+		btnMseOvrFuncIdx = -1;
 		funcBtnIDXOffset = 0;
 		
 		String[] titleArray = new String[btnConfig.winTitles.length-1];		
@@ -188,7 +200,7 @@ public class SidebarMenu extends Base_DispWindow{
 			tmpBtnWaitForProc.add(buildDfltBtnFlagAra(mseOvrBtnLabels.length));
 
 			tmpGuiBtnRowNames.add("Mouse Over Info To Display");
-			btnMseFuncIdx = funcBtnIDXOffset;  //btnConfig.
+			btnMseOvrFuncIdx = funcBtnIDXOffset;  //btnConfig.
 			++funcBtnIDXOffset;
 			_initBtnMseFunc= true;
 		} else {			_initBtnMseFunc= false;}
@@ -376,7 +388,7 @@ public class SidebarMenu extends Base_DispWindow{
 		//if not momentary buttons, set wait for proc to true
 		setWaitForProc(row,col);
 		if((row == btnShowWinIdx) && privFlags.getFlag(usesWinBtnDispIDX)) {AppMgr.handleShowWin(col, val);}
-		else if((row == btnMseFuncIdx) && privFlags.getFlag(usesMseOvrBtnDispIDX)) {
+		else if((row == btnMseOvrFuncIdx) && privFlags.getFlag(usesMseOvrBtnDispIDX)) {
 			if(val==0) {clearRowExceptPassedBtn(row,col);}
 			AppMgr.handleMenuBtnMseOvDispSel(col, val==0);			
 		}
@@ -402,6 +414,7 @@ public class SidebarMenu extends Base_DispWindow{
 	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
 		if(!pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
 		int i = (int)((mouseY-(btnLblYOff + clkFlgsStY))/(txtHeightOff));					//TODO Awful - needs to be recalced, dependent on menu being on left
+		//msgObj.dispInfoMessage(className, "hndlMouseClick_Indiv", "uiClkCoords[1] = "+uiClkCoords[1]+" | minBtnClkY :"+minBtnClkY);
 		if((i>=0) && (i<numMainFlagsToShow)){
 			AppMgr.flipMainFlag(i);return true;	
 		} else if(MyMathUtils.ptInRange(mouseX, mouseY, uiClkCoords[0], minBtnClkY, uiClkCoords[2], uiClkCoords[1])){

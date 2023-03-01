@@ -5,6 +5,10 @@ package base_UI_Objects.windowUI.uiObjs.base;
 
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_NoPrefixObj;
+import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_PrefixObj;
+import base_UI_Objects.windowUI.uiObjs.base.ornaments.base.Base_GUIPrefixObj;
 
 /**
  * Base class for UI objects that manage numeric or numerically-backed data (like a list/drop down)
@@ -31,7 +35,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	protected double minVal, maxVal;
 
 	/**
-	 * @param _p
+	 * @param _ri
 	 * @param _objID
 	 * @param _name
 	 * @param _xst
@@ -44,9 +48,9 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param _flags
 	 * @param _off
 	 */
-	public Base_NumericGUIObj(IRenderInterface _p, int _objID, String _name, double _xst, double _yst, double _xend,
-			double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags) {
-		super(_p, _objID, _name, _xst, _yst, _xend, _yend, _objType, _flags);
+	public Base_NumericGUIObj(IRenderInterface _ri, int _objID, String _name, double _xst, double _yst, double _xend,
+			double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
+		super(_ri, _objID, _name, _xst, _yst, _xend, _yend, _objType, _flags, _off);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
@@ -55,10 +59,33 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 		initVals[3] = _initVal;	
 	}
 
+
+	@Override
+	protected Base_GUIPrefixObj _buildPrefixOrnament(double[] _off) {
+		// TODO Auto-generated method stub
+		return _off == null ? new GUI_NoPrefixObj() : new GUI_PrefixObj(_off);
+	}
+
 	
-	public final double getVal(){return val;}	
+	/**
+	 * 
+	 * @return
+	 */
+	public final double getVal(){return val;}
+	/**
+	 * 
+	 * @return
+	 */
 	public final double getMinVal(){return minVal;}
+	/**
+	 * 
+	 * @return
+	 */
 	public final double getMaxVal(){return maxVal;}
+	/**
+	 * 
+	 * @return
+	 */
 	public final double getModStep(){return modMult;}	
 
 		
