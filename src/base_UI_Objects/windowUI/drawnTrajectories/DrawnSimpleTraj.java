@@ -72,8 +72,9 @@ public class DrawnSimpleTraj {
 		
 		edtCrvEndPts = new myPoint[4];
 		//pathBetweenPts = new myPoint[0];
-		edtCrvEndPts[0] = new myPoint(win.rectDim[0] + .25 * win.rectDim[2], .5 * (2*win.rectDim[1] + win.rectDim[3]),0);
-		edtCrvEndPts[1] = new myPoint(win.rectDim[0] + .75 * win.rectDim[2], .5 * (2*win.rectDim[1] + win.rectDim[3]),0);		
+		float[] winRectDim = win.getRectDims();
+		edtCrvEndPts[0] = new myPoint(winRectDim[0] + .25 * winRectDim[2], .5 * (2*winRectDim[1] + winRectDim[3]),0);
+		edtCrvEndPts[1] = new myPoint(winRectDim[0] + .75 * winRectDim[2], .5 * (2*winRectDim[1] + winRectDim[3]),0);		
 	}
 
 	public void calcPerpPoints(){
@@ -145,11 +146,10 @@ public class DrawnSimpleTraj {
 		return (distToPts[0] < chkDist);
 	}
 	
-	private boolean checkEndPoint(myPoint pt){return ((pt.x >= win.rectDim[0]) && (pt.x <= win.rectDim[0]+win.rectDim[2]) && (pt.y >= win.rectDim[1]) && (pt.y <=  win.rectDim[1]+win.rectDim[3]));}
 	private void modTrajCntlPts(myVector diff){
 		if((editEndPt == 0) || (editEndPt == 1)){
 			myPoint newLoc = myPoint._add(edtCrvEndPts[editEndPt], diff);
-			if(checkEndPoint(newLoc)){edtCrvEndPts[editEndPt].set(newLoc);}
+			if(win.pointInRectDim(newLoc)){edtCrvEndPts[editEndPt].set(newLoc);}
 			//edtCrvEndPts[editEndPt]._add(diff);		
 			calcPerpPoints();
 			drawnTraj.remakeDrawnTraj(false);

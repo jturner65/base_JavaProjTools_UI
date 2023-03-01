@@ -5,7 +5,7 @@ import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
- * UI object on menu that can be modified via mouse input
+ * Base class for interactable UI objects
  * @author John Turner
  *
  */
@@ -22,11 +22,12 @@ public abstract class Base_GUIObj {
 	 * Keep count for next ID
 	 */
 	private static int GUIObjID = 0;
-	
-	protected final String name;
-										
 	/**
-	 * UI Object ID from owning window
+	 * Name/display label of object
+	 */
+	protected final String name;	
+	/**
+	 * UI Object ID from owning window (index in holding container)
 	 */
 	protected final int objID;			
 	/**
@@ -41,17 +42,18 @@ public abstract class Base_GUIObj {
 	 * Text to display as a label
 	 */
 	protected String dispText;
-
-	protected final GUIObj_Type objType;
-	
+	/**
+	 * Type of this object
+	 */
+	protected final GUIObj_Type objType;	
 	/**
 	 * Flags structure to monitor/manage internal UI object state. No child class should access these directly
 	 */
 	private int[] uiStateFlags;
 	protected static final int 
 		debugIDX 		= 0,
-		showIDX			= 1,				//show this component
-		valChangedIDX   = 2;				//object value is dirty/clean
+		showIDX			= 1,					//show this component
+		valChangedIDX   = 2;					//object value is dirty/clean
 	protected static final int numStateFlags = 3;	// # of internal state booleans
 	
 	/**
@@ -65,20 +67,36 @@ public abstract class Base_GUIObj {
 			explicitUIDataUpdateIDX = 2;		//if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
 	protected static final int numConfigFlags = 3;			// # of config flags		
 
-	//color value
-	protected final int[] _cVal = new int[] {0,0,0};
-	protected double xOff,yOff;						//Offset value
+	/**
+	 * Fill color value for main UI object
+	 */
+	protected int[] _fillClr = new int[] {0,0,0,255};
+	/**
+	 * Stroke color value for main UI object
+	 */
+	protected int[] _strkClr = new int[] {0,0,0,255};
 	
+	/**
+	 * Builds a UI object
+	 * @param _p render interface
+	 * @param _objID the index of the object in the managing container
+	 * @param _name the name/display label of the object
+	 * @param _xst the x value of the upper-left corner of the object's hot zone
+	 * @param _yst the y value of the upper-left corner of the object's hot zone
+	 * @param _xend the x value of the lower-right corner of the object's hot zone
+	 * @param _yend the y value of the lower-right corner of the object's hot zone
+	 * @param _objType the type of UI object this is
+	 * @param _flags any preset configuration flags
+	 * @param _off
+	 */
 	public Base_GUIObj(IRenderInterface _p, int _objID, String _name, 
 			double _xst, double _yst, double _xend, double _yend, 
-			GUIObj_Type _objType, boolean[] _flags, double[] _off) {
+			GUIObj_Type _objType, boolean[] _flags) {
 		p=_p;
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
-		xOff = _off[0];
-		yOff = _off[1];
-		dispText = name.length() > 0 ? new String(""+name + " : ") : ("");
+		dispText = name.length() > 0 ? name + " : " : ("");
 		//hotbox start and end x,y's
 		start = new myVectorf(_xst,_yst,0); end =  new myVectorf(_xend,_yend,0);
 		//type of object
@@ -91,7 +109,18 @@ public abstract class Base_GUIObj {
 		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
 		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}
 	}
-
+	
+	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
+	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
+	protected void setStateFlags(int idx, boolean val){
+		int flIDX = idx/32, mask = 1<<(idx%32);
+		uiStateFlags[flIDX] = (val ?  uiStateFlags[flIDX] | mask : uiStateFlags[flIDX] & ~mask);
+		switch (idx) {//special actions for each flag
+		case debugIDX 					:{break;}
+		case showIDX					:{break;}
+		case valChangedIDX 				:{break;}
+		}
+	}//setFlag	
 	
 	private void initConfigFlags(){			uiConfigFlags = new int[1 + numConfigFlags/32]; for(int i = 0; i<numConfigFlags; ++i){setConfigFlags(i,false);}	}
 	protected boolean getConfigFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiConfigFlags[idx/32] & bitLoc) == bitLoc;}	
@@ -104,18 +133,7 @@ public abstract class Base_GUIObj {
 		case explicitUIDataUpdateIDX 	:{break;}
 		}
 	}//setFlag	
-	
-	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
-	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
-	protected void setStateFlags(int idx, boolean val){
-		int flIDX = idx/32, mask = 1<<(idx%32);
-		uiStateFlags[flIDX] = (val ?  uiStateFlags[flIDX] | mask : uiStateFlags[flIDX] & ~mask);
-		switch (idx) {//special actions for each flag
-		case debugIDX 					:{break;}
-		case showIDX					:{break;}	//show this component
-		case valChangedIDX 				:{break;}
-		}
-	}//setFlag	
+
 	
 	
 	public final String getName(){return name;}
@@ -151,14 +169,14 @@ public abstract class Base_GUIObj {
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
 	 * @param animTimeMod animation time modifier to enable this object to blink
 	 */
-	public final void drawDebug(float animTimeMod) {
+	private int _animCount = 0;
+	private boolean _cyanStroke = false;
+	public final void drawDebug() {
 		p.pushMatState();
 			p.setStrokeWt(1.0f);
-			if((int)(animTimeMod) % 2 == 0) {
-				p.setStroke(0, 255, 255,255);
-			} else {
-				p.setStroke(255, 0, 255,255);				
-			}
+			++_animCount;
+			if(_animCount>20) {_animCount = 0; _cyanStroke = !_cyanStroke;}
+			if(_cyanStroke) {p.setStroke(0, 255, 255,255);} else {	p.setStroke(255, 0, 255,255);}
 			p.noFill();
 			//Draw rectangle around this object denoting active zone
 			p.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);
@@ -169,9 +187,24 @@ public abstract class Base_GUIObj {
 	/**
 	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
-	public abstract void draw();
+	public final void draw() {
+		p.pushMatState();
+			p.translate(start.x,start.y,0);
+			drawPrefixObj();
+			p.setFill(_fillClr,_fillClr[3]);
+			p.setStroke(_strkClr,_strkClr[3]);	
+			//draw specifics for this UI object
+			_drawObject_Indiv();
+		p.popMatState();
+	}//draw
 	
-	protected abstract void _drawIndiv();
+	/**
+	 * Draw any prefix objects if appropriate - after translate but before object colors are set.
+	 */
+	protected abstract void drawPrefixObj();
+	
+	
+	protected abstract void _drawObject_Indiv();
 	
 	/**
 	 * set new display text for this UI object - doesn't change name

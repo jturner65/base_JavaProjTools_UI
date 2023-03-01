@@ -44,10 +44,11 @@ public class ScrollBars{
 	}//myScrollBars
 	
 	public void setSize(){
-		float rectWidth = win.rectDim[0]+win.rectDim[2],vScrlStartY = win.rectDim[1]+(win.closeBox[3]),
-				rectHeight = win.rectDim[3]-(vScrlStartY);
+		float[] winRectDim = win.getRectDims();
+		float rectWidth = winRectDim[0]+winRectDim[2],vScrlStartY = winRectDim[1]+(win.closeBox[3]),
+				rectHeight = winRectDim[3]-(vScrlStartY);
 		vScrlDims = new float[]{rectWidth - thk,vScrlStartY, thk,  rectHeight-thk};
-		hScrlDims = new float[]{win.rectDim[0], win.rectDim[1]+win.rectDim[3] - thk,win.rectDim[2]-thk,thk};
+		hScrlDims = new float[]{winRectDim[0], winRectDim[1]+winRectDim[3] - thk,winRectDim[2]-thk,thk};
 
 		thmbs[hThmbIDX] = new float[]{hScrlDims[0]+thk,hScrlDims[1],thmult*thk,thk};			//location/dims of thumb
 		thmbBnds[hThmbIDX] = new float[]{thmbs[hThmbIDX][0],hScrlDims[2]-thmbs[hThmbIDX][2]-thk};		//min/max x val of horiz thumb

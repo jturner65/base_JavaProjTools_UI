@@ -34,7 +34,7 @@ public class MenuGUIObj_List extends Base_MenuGUIObj {
 	}// getListValStr
 
 	@Override
-	protected void _drawIndiv() {
+	protected void _drawObject_Indiv() {
 		p.showText(dispText + listVals[(((int)val) % listVals.length)], 0,0);		
 	}
 	

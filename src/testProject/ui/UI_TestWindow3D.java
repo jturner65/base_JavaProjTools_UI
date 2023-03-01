@@ -3,9 +3,12 @@ package testProject.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.concurrent.ThreadLocalRandom;
 
+import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
@@ -48,6 +51,8 @@ public class UI_TestWindow3D extends Base_DispWindow {
 	//current/initial values
 	protected double floatVal1 = .1;
 	
+	protected myPointf startLoc;
+	protected myPointf endLoc;
 	
 	public UI_TestWindow3D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
 		super(_p, _AppMgr, _winIdx);
@@ -62,8 +67,9 @@ public class UI_TestWindow3D extends Base_DispWindow {
 
 	@Override
 	protected void initMe() {
-		// TODO Auto-generated method stub
-
+		startLoc = new myPointf(MyMathUtils.SQRT_3_F, MyMathUtils.SQRT_3_F, MyMathUtils.SQRT_3_F);
+		endLoc = new myPointf();
+		setEndAndScalePoints();
 	}
 	
 
@@ -107,6 +113,29 @@ public class UI_TestWindow3D extends Base_DispWindow {
 		tmpUIObjArray.put(gIDX_IntVal3, new Object[]{new double[]{0,1000,1.0f}, 0.0, "Int Value 3", GUIObj_Type.IntVal, new boolean[]{true}} );   				//uiTrainDataFrmtIDX
 	}	
 	
+
+	@Override
+	protected void drawMe(float animTimeMod) {
+		ri.pushMatState();	
+			ri.drawCylinder_NoFill(startLoc,endLoc, 20.0f, IRenderInterface.gui_Red, IRenderInterface.gui_Green);
+		ri.popMatState();	
+	}
+	
+	protected void setEndAndScalePoints() {
+		float scale = 100.0f / (1.000000001f * startLoc._dist(0,0,0));
+		startLoc._mult(scale);		
+		endLoc.set(-startLoc.x, -startLoc.y, -startLoc.z);
+	}
+	
+	protected float nextVal_f() {return ThreadLocalRandom.current().nextFloat() *2.0f - 1.0f;}
+	protected void setPtNewRandVal(myPointf V) {V.set(nextVal_f(),nextVal_f(),nextVal_f());}
+	protected double nextVal() {return ThreadLocalRandom.current().nextDouble(-1.0, 1.0);}
+	protected void setPtNewRandVal(myPoint V) {V.set(nextVal(),nextVal(),nextVal());}
+	
+	protected void calcNewEndPoints() {
+		startLoc.set(nextVal_f(),nextVal_f(),nextVal_f());		
+		setEndAndScalePoints();
+	}
 	
 	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {
@@ -326,7 +355,7 @@ public class UI_TestWindow3D extends Base_DispWindow {
 
 	@Override
 	protected boolean simMe(float modAmtSec) {
-		// TODO Auto-generated method stub
+		calcNewEndPoints();
 		return false;
 	}
 
@@ -338,12 +367,6 @@ public class UI_TestWindow3D extends Base_DispWindow {
 
 	@Override
 	protected void setCamera_Indiv(float[] camVals) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void drawMe(float animTimeMod) {
 		// TODO Auto-generated method stub
 
 	}
