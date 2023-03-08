@@ -14,12 +14,9 @@ public class WinAppPrivStateFlags extends Base_BoolFlags {
 		owner = _owner;
 	}
 	
-	/**
-	 * Toggle the button represented by passed idx
-	 * @param idx
-	 */
-	public final void toggleButton(int idx) {
-		setFlag(idx, !getFlag(idx));
+	public WinAppPrivStateFlags(WinAppPrivStateFlags _otr) {
+		super(_otr);
+		owner = _otr.owner;
 	}
 	
 	/**

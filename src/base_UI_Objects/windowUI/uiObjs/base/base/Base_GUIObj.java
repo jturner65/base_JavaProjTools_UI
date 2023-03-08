@@ -1,8 +1,10 @@
 package base_UI_Objects.windowUI.uiObjs.base.base;
 
 import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_NoPrefixObj;
+import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_PrefixObj;
 import base_UI_Objects.windowUI.uiObjs.base.ornaments.base.Base_GUIPrefixObj;
-import base_Math_Objects.vectorObjs.floats.myVectorf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
 
 /**
  * Base class for interactable UI objects
@@ -33,11 +35,11 @@ public abstract class Base_GUIObj {
 	/**
 	 * x,y coords of top left corner for clickable region
 	 */
-	protected myVectorf start;
+	protected myPointf start;
 	/**
 	 * x,y coords of bottom right corner for clickable region
 	 */
-	protected myVectorf end;
+	protected myPointf end;
 	/**
 	 * Text to display as a label
 	 */
@@ -86,16 +88,13 @@ public abstract class Base_GUIObj {
 	 * @param _p render interface
 	 * @param _objID the index of the object in the managing container
 	 * @param _name the name/display label of the object
-	 * @param _xst the x value of the upper-left corner of the object's hot zone
-	 * @param _yst the y value of the upper-left corner of the object's hot zone
-	 * @param _xend the x value of the lower-right corner of the object's hot zone
-	 * @param _yend the y value of the lower-right corner of the object's hot zone
+	 * @param _start the upper left corner of the hot spot for this object
+	 * @param _end the lower right corner of the hot spot for this object
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset configuration flags
 	 * @param _off
 	 */
-	public Base_GUIObj(IRenderInterface _p, int _objID, String _name, 
-			double _xst, double _yst, double _xend, double _yend, 
+	public Base_GUIObj(IRenderInterface _p, int _objID, String _name, myPointf _start, myPointf _end, 
 			GUIObj_Type _objType, boolean[] _flags, double[] _off) {
 		ri=_p;
 		objID = _objID;
@@ -103,7 +102,8 @@ public abstract class Base_GUIObj {
 		name = _name;
 		dispText = name.length() > 0 ? name + " : " : ("");
 		//hotbox start and end x,y's
-		start = new myVectorf(_xst,_yst,0); end =  new myVectorf(_xend,_yend,0);
+		start = new myPointf(_start); 
+		end =  new myPointf(_end);
 		//type of object
 		objType = _objType;
 		//UI Object state
@@ -121,7 +121,10 @@ public abstract class Base_GUIObj {
 	 * Instance class should build an ornament object based on whether it should or should not have one
 	 * @return
 	 */
-	protected abstract Base_GUIPrefixObj _buildPrefixOrnament(double[] _off);
+	private final Base_GUIPrefixObj _buildPrefixOrnament(double[] _off) {
+		return _off == null ? new GUI_NoPrefixObj() : new GUI_PrefixObj(_off);
+	}
+
 	
 	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
 	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
@@ -176,7 +179,7 @@ public abstract class Base_GUIObj {
 	 * @param _clky
 	 * @return whether passed coords are within this object's modifiable zone
 	 */
-	public final boolean checkIn(float _clkx, float _clky){return (_clkx > start.x)&&(_clkx < end.x)&&(_clky > start.y)&&(_clky < end.y);}
+	public final boolean checkIn(float _clkx, float _clky){return (_clkx >= start.x)&&(_clkx <= end.x)&&(_clky >= start.y)&&(_clky <= end.y);}
 	
 	/**
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to

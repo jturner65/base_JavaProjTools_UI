@@ -19,6 +19,7 @@ import base_Utils_Objects.io.messaging.MessageObject;
 public class TrajectoryManager {
 	//owning window
 	public Base_DispWindow ownr;
+
 	/**
 	 * msg object for output to console or log
 	 */
@@ -85,7 +86,7 @@ public class TrajectoryManager {
 	 * @return
 	 */
 	protected DrawnSimpleTraj buildTraj(boolean _trajIsFlat) {
-		return new DrawnSimpleTraj(ownr, Base_DispWindow.AppMgr, this, Base_DispWindow.topOffY,trajFillClrCnst, trajStrkClrCnst, _trajIsFlat, !_trajIsFlat);		
+		return new DrawnSimpleTraj(ownr, Base_DispWindow.AppMgr, this, trajFillClrCnst, trajStrkClrCnst, _trajIsFlat, !_trajIsFlat);		
 	}
 	
 	/////////////////////
@@ -331,8 +332,22 @@ public class TrajectoryManager {
 		numTrajInSubScr = tmpNumTrajInSubScr;
 	}//rbldTrnsprtAras
 	
-	public float calcOffsetScale(double val, float sc, float off){float res =(float)val - off; res *=sc; return res+=off;}
-	public double calcDBLOffsetScale(double val, float sc, double off){double res = val - off; res *=sc; return res+=off;}
+	/**
+	 * Scale a value and add an offset
+	 * @param val
+	 * @param sc
+	 * @param off
+	 * @return
+	 */
+	public float calcOffsetScale_f(double val, float sc, float off){float res =(float)val - off; res *=sc; return res+=off;}
+	/**
+	 * 
+	 * @param val
+	 * @param sc
+	 * @param off
+	 * @return
+	 */
+	public double calcOffsetScale(double val, float sc, double off){double res = val - off; res *=sc; return res+=off;}
 	//finds closest point to p in sPts - put dist in d
 	public final int findClosestPt(myPoint p, double[] d, myPoint[] _pts){
 		int res = -1;
