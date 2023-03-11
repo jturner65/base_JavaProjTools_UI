@@ -1,7 +1,5 @@
 package base_UI_Objects;
 
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,11 +45,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * Reference to GL Window underlying IRenderInterface surface
 	 */
 	public GLWindow window;
-	
-	/**
-	 * physical display width and height this project is running on
-	 */
-	protected final int _displayWidth, _displayHeight;
 	
 	/**
 	 * Width and height of application window
@@ -336,12 +329,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	// code
 	
 	public GUI_AppManager() {
-		super(true);
-		//get primary monitor size
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		_displayWidth = gd.getDisplayMode().getWidth();
-		_displayHeight = gd.getDisplayMode().getHeight();	
-		
+		super(true);		
 		menuWidthMult = getMenuWidthMult();
 		hideWinWidthMult = getHideWinWidthMult();
 		hideWinHeightMult = getHideWinHeightMult();
@@ -1953,7 +1941,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			_list[i] = _list[j];
 			_list[j] = tmp;
 		}
-		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "shuffleStrList","String list of object " + type + " shuffled");
+		msgObj.dispInfoMessage(getPrjNmShrt(), "shuffleStrList","String list of object " + type + " shuffled");
 		return _list;
 	}//shuffleStrList
 	
@@ -2015,18 +2003,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}
 	
 	/**
-	 * Given the equation this will derive the planar origin and then calculate a set of points that make up the perimeter
-	 * of the plane within the defined bounding box.
-	 * @param eq
-	 * @return
-	 */
-	public final myPointf[] buildPlaneBoxBounds(float[] eq) {
-		//works because plane is built with unit normal in equation
-		myPointf planeOrigin = new myPointf(-eq[0]*eq[3],-eq[1]*eq[3],-eq[2]*eq[3]);
-		return calcPlaneWBBoxIntersectPoints(eq, planeOrigin);
-	}
-	/**
-	 * Find intersection of plane as described by passed coefficients  with ray
+	 * Find intersection of plane as described by passed coefficients with ray
 	 * @param eq Plane equation coefficients
 	 * @param RayOrig
 	 * @param RayDir
@@ -2038,6 +2015,19 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	    Float tVal = - (eq[0]* rayOrig.x +eq[1]* rayOrig.y+ eq[2]* rayOrig.z + eq[3]) / denomVal;
 	    if (tVal >= 0.f && tVal <= 1.f) {   	return (myPointf._add(rayOrig,tVal, rayDir));}
 	    return null;	
+	}
+	
+	
+	/**
+	 * Given the equation this will derive the planar origin and then calculate a set of points that make up the perimeter
+	 * of the plane within the defined bounding box.
+	 * @param eq
+	 * @return
+	 */
+	public final myPointf[] buildPlaneBoxBounds(float[] eq) {
+		//works because plane is built with unit normal in equation
+		myPointf planeOrigin = new myPointf(-eq[0]*eq[3],-eq[1]*eq[3],-eq[2]*eq[3]);
+		return calcPlaneWBBoxIntersectPoints(eq, planeOrigin);
 	}
 	
 	/**
@@ -2201,7 +2191,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		return pts;
 	}
 	
-	
+	/**
+	 * 
+	 * @param A
+	 * @param B
+	 * @param C
+	 * @param t
+	 * @return
+	 */
 	public final myPoint PtOnSpiral(myPoint A, myPoint B, myPoint C, double t) {
 		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
 		//so center will be coplanar to mp(A,B) and mp(B,C) - use mpCA midpoint to determine plane mpAB-mpBC plane?
@@ -2214,10 +2211,33 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//return new myPoint(G, Math.pow(s,t), R(A,t*a,mI,mJ,G));
 		return new myPoint(G, Math.pow(s,t), A.rotMeAroundPt(t*a,mI,mJ,G));
 	}	
+	/**
+	 * 
+	 * @param A
+	 * @param B
+	 * @param C
+	 * @param D
+	 * @return
+	 */
 	public double spiralAngle(myPoint A, myPoint B, myPoint C, myPoint D) {return myVector._angleBetween(new myVector(A,B),new myVector(C,D));}
+	/**
+	 * 
+	 * @param A
+	 * @param B
+	 * @param C
+	 * @param D
+	 * @return
+	 */
 	public double spiralScale(myPoint A, myPoint B, myPoint C, myPoint D) {return myPoint._dist(C,D)/ myPoint._dist(A,B);}
 
-	// spiral given 4 points, AB and CD are edges corresponding through rotation
+	/**
+	 * spiral given 4 points, AB and CD are edges corresponding through rotation
+	 * @param A
+	 * @param B
+	 * @param C
+	 * @param D
+	 * @return
+	 */
 	public final myPoint spiralCenter(myPoint A, myPoint B, myPoint C, myPoint D) {         // new spiral center
 		myVector AB=new myVector(A,B), CD=new myVector(C,D), AC=new myVector(A,C);
 		double m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
@@ -2228,7 +2248,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		double AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2, x=(a-m*( a*c+b*s)), y=(b-m*(-a*s+b*c)), d=1+m*(m-2*c);  if((c!=1)&&(m!=1)) { x/=d; y/=d; };
 		return new myPoint(new myPoint(A,x,AB),y,rAB);
 	}
-
+	/**
+	 * 
+	 * @param A
+	 * @param B
+	 * @param C
+	 * @param t
+	 * @return
+	 */
 	public final myPointf PtOnSpiral(myPointf A, myPointf B, myPointf C, float t) {
 		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
 		//so center will be coplanar to mp(A,B) and mp(B,C) - use mpCA midpoint to determine plane mpAB-mpBC plane?
@@ -2240,10 +2267,33 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		myPointf G = spiralCenter(A, mAB, B, mBC); 
 		return new myPointf(G, (float)Math.pow(s,t), A.rotMeAroundPt(t*a,mI,mJ,G));
 	}	
+	/**
+	 * 
+	 * @param A
+	 * @param B
+	 * @param C
+	 * @param D
+	 * @return
+	 */
 	public float spiralAngle(myPointf A, myPointf B, myPointf C, myPointf D) {return myVectorf._angleBetween(new myVectorf(A,B),new myVectorf(C,D));}
+	/**
+	 * 
+	 * @param A
+	 * @param B
+	 * @param C
+	 * @param D
+	 * @return
+	 */
 	public float spiralScale(myPointf A, myPointf B, myPointf C, myPointf D) {return myPointf._dist(C,D)/ myPointf._dist(A,B);}
 	
-	// spiral given 4 points, AB and CD are edges corresponding through rotation
+	/**
+	 * spiral given 4 points, AB and CD are edges corresponding through rotation
+	 * @param A
+	 * @param B
+	 * @param C
+	 * @param D
+	 * @return
+	 */
 	public final myPointf spiralCenter(myPointf A, myPointf B, myPointf C, myPointf D) {         // new spiral center
 		myVectorf AB=new myVectorf(A,B), CD=new myVectorf(C,D), AC=new myVectorf(A,C);
 		float m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
@@ -2398,8 +2448,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		}
 		return res.toArray(new myVectorf[0][]);
 	}//getRegularSphereList	
-	
-	
+		
 	public final myPoint bndChkInBox2D(myPoint p){p.set(MyMathUtils.max(0,MyMathUtils.min(p.x,grid2D_X)),MyMathUtils.max(0,MyMathUtils.min(p.y,grid2D_Y)),0);return p;}
 	public final myPoint bndChkInBox3D(myPoint p){p.set(MyMathUtils.max(0,MyMathUtils.min(p.x,gridDimX)), MyMathUtils.max(0,MyMathUtils.min(p.y,gridDimY)),MyMathUtils.max(0,MyMathUtils.min(p.z,gridDimZ)));return p;}	
 	public final myPoint bndChkInCntrdBox3D(myPoint p){
@@ -2408,19 +2457,20 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				MyMathUtils.max(-hGDimZ,MyMathUtils.min(p.z,hGDimZ)));return p;}	
 	
 	
-	//very fast mechanism for setting an array of doubles to a specific val - takes advantage of caching
-	public final void dAraFill(double[] ara, double val){
-		int len = ara.length;
-		if (len > 0){ara[0] = val; }
-		for (int i = 1; i < len; i += i){  System.arraycopy(ara, 0, ara, i, ((len - i) < i) ? (len - i) : i);  }		
-	}
-	
-	//convert a world location within the bounded cube region to be a 4-int color array
+	/**
+	 * convert a world location within the bounded cube region to be a 4-int color array
+	 * @param t
+	 * @return
+	 */
 	public final int[] getClrFromCubeLoc(float[] t){
 		return new int[]{(int)(255*(t[0]-cubeBnds[0][0])/cubeBnds[1][0]),(int)(255*(t[1]-cubeBnds[0][1])/cubeBnds[1][1]),(int)(255*(t[2]-cubeBnds[0][2])/cubeBnds[1][2]),255};
 	}
 	
-	//convert a world location within the bounded cube region to be a 4-int color array
+	/**
+	 * convert a world location within the bounded cube region to be a 4-int color array
+	 * @param t
+	 * @return
+	 */
 	public final int[] getClrFromCubeLoc(myPointf t){
 		return new int[]{(int)(255*(t.x-cubeBnds[0][0])/cubeBnds[1][0]),(int)(255*(t.y-cubeBnds[0][1])/cubeBnds[1][1]),(int)(255*(t.z-cubeBnds[0][2])/cubeBnds[1][2]),255};
 	}
@@ -2433,21 +2483,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public abstract int[] getClr_Custom(int colorVal, int alpha);
 
-	
-	/**
-	 * display the current memory setup
-	 */
-	public final void checkMemorySetup() {
-		Runtime runtime = Runtime.getRuntime();  
-		long maxMem = runtime.maxMemory(), allocMem = runtime.totalMemory(), freeMem = runtime.freeMemory();
-		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Free memory: " + freeMem / 1024.0f);  
-		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Allocated memory: " + allocMem / 1024.0f);  
-		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Max memory: " + maxMem /1024.0f);  
-		getCurFocusDispWindow().getMsgObj().dispInfoMessage(getPrjNmShrt(), "checkMemorySetup","Total free memory: " +  (freeMem + (maxMem - allocMem)) / 1024.0f);   
-	
-	}//checkMemorySetup
-	
-	
+
 	//		public final int  
 	//		  black=0xff000000, 
 	//		  white=0xffFFFFFF,
