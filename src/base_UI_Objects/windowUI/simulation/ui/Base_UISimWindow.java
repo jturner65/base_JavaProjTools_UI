@@ -10,6 +10,9 @@ import base_UI_Objects.windowUI.simulation.simExec.Base_UISimExec;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 
 public abstract class Base_UISimWindow extends Base_DispWindow {
+	/**
+	 * Executor for simulation functionality, owned by this Sim window.
+	 */
 	protected Base_UISimExec simExec;	
 	
 	///////////
@@ -106,8 +109,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		//set which simulator we should use		
 		setSimToUse(0);	
 	}//initSimExec
-	
-	
+		
 	/**
 	 * Simulation implementation specific initialization.
 	 */
@@ -126,12 +128,6 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 * @return
 	 */
 	protected abstract Base_UISimExec buildSimulationExecutive(String _simName, int _numSimulations);
-
-	@Override
-	protected void updateCalcObjUIVals() {
-		// TODO Auto-generated method stub
-
-	}
 
 	/**
 	 * UI code-level Debug mode functionality. Called only from flags structure
