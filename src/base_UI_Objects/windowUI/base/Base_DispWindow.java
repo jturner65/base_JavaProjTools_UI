@@ -21,7 +21,7 @@ import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Float;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Int;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_List;
-import base_Utils_Objects.io.FileIOManager;
+import base_Utils_Objects.io.file.FileIOManager;
 import base_Utils_Objects.io.messaging.MessageObject;
 import base_Utils_Objects.io.messaging.MsgCodes;
 import processing.core.*;
@@ -682,7 +682,7 @@ public abstract class Base_DispWindow {
 	 * @return
 	 */
 	public double getMinUIValue(int idx) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMinUIValue","get its min value")) {	return guiObjs_Numeric[idx].getMinVal();}
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMinUIValue","get its min value")) {return guiObjs_Numeric[idx].getMinVal();}
 		return Double.MAX_VALUE;
 	}
 	
@@ -693,7 +693,7 @@ public abstract class Base_DispWindow {
 	 */
 	public double getMaxUIValue(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMaxUIValue","get its max value")){return guiObjs_Numeric[idx].getMaxVal();}
-		return guiObjs_Numeric[idx].getMaxVal();
+		return -Double.MAX_VALUE;
 	}
 	
 	/**
@@ -712,7 +712,7 @@ public abstract class Base_DispWindow {
 	 * @return
 	 */
 	public double getUIValue(int idx) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getUIValue", "get its value")) {guiObjs_Numeric[idx].getVal();}
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getUIValue", "get its value")) {return guiObjs_Numeric[idx].getVal();}
 		return 0;
 	}
 	
