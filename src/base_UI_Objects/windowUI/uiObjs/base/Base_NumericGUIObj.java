@@ -3,12 +3,10 @@
  */
 package base_UI_Objects.windowUI.uiObjs.base;
 
+import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_NoPrefixObj;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_PrefixObj;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.base.Base_GUIPrefixObj;
 
 /**
  * Base class for UI objects that manage numeric or numerically-backed data (like a list/drop down)
@@ -35,22 +33,21 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	protected double minVal, maxVal;
 
 	/**
-	 * @param _ri
-	 * @param _objID
-	 * @param _name
-	 * @param _xst
-	 * @param _yst
-	 * @param _xend
-	 * @param _yend
-	 * @param _minMaxMod
-	 * @param _initVal
-	 * @param _objType
-	 * @param _flags
-	 * @param _off
+	 * Build a numeric value-based UI object
+	 * @param _ri render interface
+	 * @param _objID the index of the object in the managing container
+	 * @param _name the name/display label of the object
+	 * @param _start the upper left corner of the hot spot for this object
+	 * @param _end the lower right corner of the hot spot for this object
+	 * @param _minMaxMod the minimum and values this object can hold, and the base modifier amount
+	 * @param _initVal the initial value of this object
+	 * @param _objType the type of UI object this is
+	 * @param _flags any preset configuration flags
+	 * @param _off offset from label in x,y for placement of drawn ornamental box. make null for none
 	 */
-	public Base_NumericGUIObj(IRenderInterface _ri, int _objID, String _name, double _xst, double _yst, double _xend,
-			double _yend, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
-		super(_ri, _objID, _name, _xst, _yst, _xend, _yend, _objType, _flags, _off);
+	public Base_NumericGUIObj(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end,
+			double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
+		super(_ri, _objID, _name, _start, _end, _objType, _flags, _off);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
@@ -58,14 +55,6 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 		for(int i=0;i<_minMaxMod.length;++i) {initVals[i]=_minMaxMod[i];}
 		initVals[3] = _initVal;	
 	}
-
-
-	@Override
-	protected Base_GUIPrefixObj _buildPrefixOrnament(double[] _off) {
-		// TODO Auto-generated method stub
-		return _off == null ? new GUI_NoPrefixObj() : new GUI_PrefixObj(_off);
-	}
-
 	
 	/**
 	 * 

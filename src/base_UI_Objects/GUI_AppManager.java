@@ -895,7 +895,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * Get a reasonable initial camera setting, for windows with camera movement
 	 * @return
 	 */
-	protected float[] getInitCameraValues() {
+	public float[] getInitCameraValues() {
 		return new float[] {-0.06f*MyMathUtils.TWO_PI_F, -0.04f*MyMathUtils.TWO_PI_F, -200.0f};
 	}
 	
@@ -1312,7 +1312,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		}
 	}//	
 	
-	public final void drawUI(float modAmtMillis){					
+	/**
+	 * 
+	 * @param modAmtMillis
+	 */
+	private final void drawUI(float modAmtMillis){					
 		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
 		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
 		dispWinFrames[dispMenuIDX].drawHeader(modAmtMillis);
@@ -1322,8 +1326,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			dispWinFrames[curFocusWin].drawOnscreenText();
 		}
 		dispWinFrames[curFocusWin].updateConsoleStrs();	
-		
-		
 	}//drawUI
 	
 	
@@ -1782,7 +1784,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 	//base class flags init
 	protected final void initBaseFlags(){_baseFlags = new int[1 + numBaseFlags/32];for(int i =0; i<numBaseFlags;++i){forceBaseFlag(i,false);}}		
-	//set baseclass flags  //setBaseFlag(showIDX, 
+	/**
+	 * 
+	 * @param idx
+	 * @param val
+	 */
 	protected final void setBaseFlag(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		_baseFlags[flIDX] = (val ?  _baseFlags[flIDX] | mask : _baseFlags[flIDX] & ~mask);
@@ -1803,7 +1809,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			case clearBKG			: { break;}
 		}				
 	}//setBaseFlag
-	//force base flag - bypass any window setting
+	/**
+	 * force base flag - bypass any window setting
+	 * @param idx
+	 * @param val
+	 */
 	private void forceBaseFlag(int idx, boolean val) {		
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		_baseFlags[flIDX] = (val ?  _baseFlags[flIDX] | mask : _baseFlags[flIDX] & ~mask);

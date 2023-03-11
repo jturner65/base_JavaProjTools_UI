@@ -3,14 +3,14 @@ package base_UI_Objects.windowUI.uiData;
 import java.util.Map;
 
 import base_UI_Objects.windowUI.base.Base_DispWindow;
-import base_Utils_Objects.dataAdapter.Base_UIDataUpdater;
+import base_Utils_Objects.dataAdapter.Base_DataAdapter;
 
 /**
  * structure holding UI-derived/modified data used to update execution code
  * @author john
  */
 
-public class UIDataUpdater extends Base_UIDataUpdater {
+public class UIDataUpdater extends Base_DataAdapter {
 	/**
 	 * Owning UI Window
 	 */
@@ -26,7 +26,6 @@ public class UIDataUpdater extends Base_UIDataUpdater {
 		super(_otr);
 		win=_otr.win;
 	}
-
 	
 	/**
 	 * Boolean value updater - this will update the owning window's corresponding data values as well
@@ -51,6 +50,7 @@ public class UIDataUpdater extends Base_UIDataUpdater {
 	protected final void updateFloatValue_Indiv(int idx, Float value) {
 		win.updateFloatValFromExecCode(idx, value);		
 	}
+	
 	@Override
 	public String getName() {		return win.name;	}
 }//class base_UpdateFromUIData

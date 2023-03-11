@@ -21,7 +21,8 @@ public class DrawnSimpleTraj {
 	public int ID;
 
 	public Base_DrawnTrajectory drawnTraj;						//a drawable curve
-	public static float topOffY;
+	//offset in y from top of screen
+	public static final float topOffY = 40;
 	public int drawnTrajPickedIdx;						//idx of mouse-chosen point	in editable drawn trajectory		
 	public static final int drawnTrajEditWidth = 10;			//width in cntl points of the amount of the drawn trajectory deformed by dragging
 	public static final float trajDragScaleAmt = 100.0f;					//amt of displacement when dragging drawn trajectory to edit
@@ -48,13 +49,12 @@ public class DrawnSimpleTraj {
 	
 	public int ctlRad;
 	
-	public DrawnSimpleTraj(Base_DispWindow _win, GUI_AppManager _AppMgr, TrajectoryManager _trajMgr, float _topOffy, int[] _fillClrCnst, int[] _strkClrCnst, boolean _flat, boolean _smCntl){
+	public DrawnSimpleTraj(Base_DispWindow _win, GUI_AppManager _AppMgr, TrajectoryManager _trajMgr, int[] _fillClrCnst, int[] _strkClrCnst, boolean _flat, boolean _smCntl){
 		win = _win;AppMgr = _AppMgr; trajMgr=_trajMgr;
 		fillClrCnst = _fillClrCnst; 
 		strkClrCnst = _strkClrCnst;
 		
 		ID = trjCnt++;
-		topOffY = _topOffy;		//offset in y from top of screen
 		initTrajFlags();
 		initTrajStuff();		
 		trajFlags[flatPtIDX] = _flat;
@@ -88,7 +88,7 @@ public class DrawnSimpleTraj {
 	}
 	//scale edit points and cntl points
 	public void reCalcCntlPoints(float scale){
-		for(int i = 0; i<edtCrvEndPts.length; ++i){	edtCrvEndPts[i].y = trajMgr.calcOffsetScale(edtCrvEndPts[i].y,scale,topOffY);edtCrvEndPts[i].z = 0; }//edtCrvEndPts[curDrnTrajScrIDX][i].y -= topOffY; edtCrvEndPts[curDrnTrajScrIDX][i].y *= scale;edtCrvEndPts[curDrnTrajScrIDX][i].y += topOffY;	}	
+		for(int i = 0; i<edtCrvEndPts.length; ++i){	edtCrvEndPts[i].y = trajMgr.calcOffsetScale_f(edtCrvEndPts[i].y,scale,topOffY);edtCrvEndPts[i].z = 0; }//edtCrvEndPts[curDrnTrajScrIDX][i].y -= topOffY; edtCrvEndPts[curDrnTrajScrIDX][i].y *= scale;edtCrvEndPts[curDrnTrajScrIDX][i].y += topOffY;	}	
 		if(drawnTraj != null){
 			drawnTraj.scaleMeY(false,scale,topOffY);//only for display - rescaling changes the notes slightly so don't recalc notes
 		}
