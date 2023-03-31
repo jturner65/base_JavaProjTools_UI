@@ -83,7 +83,22 @@ public abstract class Base_DispWindow {
 	/**
 	 * Height of a line of text. Also used as a width of an average character
 	 */
-	public static final float txtHeightOff = 18.0f * (IRenderInterface.txtSz/12.0f);
+	public static final float txtHeightOff = 1.5f * (IRenderInterface.txtSz);
+	/**
+	 * Base right side text menu per-line height offset
+	 */
+	public static final float rtSideTxtHeightOff = txtHeightOff - 4.0f;
+	
+	/**
+	 * Right side menu y values
+	 * 		idx 0 : current y value for text (changes with each frame)
+	 * 		idx 1 : per-line y offset for grouped text
+	 * 		idx 2 : per-line y offset for title-to-group text (small space)
+	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
+	 */
+	protected final float[] rtSideYOffVals = new float[] {
+			0, rtSideTxtHeightOff, 1.2f * rtSideTxtHeightOff, 1.5f * rtSideTxtHeightOff
+	};
 	
 	protected static final float xOff = 20;
 	protected static final float btnLblYOff = 2 * txtHeightOff, rowStYOff = txtHeightOff*.15f;
@@ -1543,7 +1558,7 @@ public abstract class Base_DispWindow {
 			if(dispFlags.getShowRtSideMenu()) {				
 				ri.drawRect(UIRtSideRectBox);
 				//move to manage internal text display in owning window
-				ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+txtHeightOff-4,0);
+				ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+rtSideTxtHeightOff,0);
 				ri.setFill(255,255,255,255);	
 				 //instancing class implements this function
 				drawRightSideInfoBarPriv(modAmtMillis); 
