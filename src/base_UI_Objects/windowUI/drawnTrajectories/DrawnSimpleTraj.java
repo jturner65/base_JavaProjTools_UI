@@ -243,9 +243,8 @@ public class DrawnSimpleTraj {
 	/**
 	 * Draw trajectory.  use animTimeMod to animate/decay showing this traj TODO 
 	 * @param ri
-	 * @param animTimeMod
 	 */
-	public void drawMe(IRenderInterface ri, float animTimeMod){
+	public final void drawMe(IRenderInterface ri){
 		if(drawnTraj != null){
 			ri.setFill(fillClrCnst,255);
 			ri.setStroke(strkClrCnst,255);

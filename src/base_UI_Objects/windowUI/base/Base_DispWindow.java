@@ -1585,7 +1585,7 @@ public abstract class Base_DispWindow {
 	
 	public final void draw3D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){return;}
-		float animTimeMod = (modAmtMillis/1000.0f);//in seconds
+		float animTimeMod = modAmtMillis/1000.0f;
 		ri.pushMatState();	
 		winInitVals.setWinFillAndStroke(ri);
 		//draw instancing win-specific stuff
@@ -1612,7 +1612,6 @@ public abstract class Base_DispWindow {
 	
 	public final void draw2D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){drawSmall();return;}
-		float animTimeMod = (modAmtMillis/1000.0f);
 		ri.pushMatState();
 		//msgObj.dispDebugMessage("Base_DispWindow","draw2D","Hitting hint code draw2D");
 		ri.setBeginNoDepthTest();
@@ -1621,9 +1620,9 @@ public abstract class Base_DispWindow {
 		//main window drawing
 		winInitVals.drawRectDim(ri);
 		//draw instancing win-specific stuff
-		drawMe(animTimeMod);			//call instance class's draw
+		drawMe(modAmtMillis/1000.0f);			//call instance class's draw
 		//draw traj stuff if exists and appropriate
-		if(null!=trajMgr){		trajMgr.drawTraj_2d(ri, animTimeMod);}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		if(null!=trajMgr){		trajMgr.drawTraj_2d(ri);}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		ri.enableLights();
 		ri.setEndNoDepthTest();
 		ri.popMatState();

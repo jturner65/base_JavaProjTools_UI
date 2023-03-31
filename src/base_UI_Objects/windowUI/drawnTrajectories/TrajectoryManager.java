@@ -397,37 +397,36 @@ public class TrajectoryManager {
 	/**
 	 * draw a circle corresponding to a click location
 	 */
-	public void drawClkCircle(IRenderInterface pa){
-		pa.pushMatState();	
+	public void drawClkCircle(IRenderInterface ri){
+		ri.pushMatState();	
 		boolean doneDrawing = true;
-		pa.noStroke();
+		ri.noStroke();
 		for(int i =0; i<editCrcFillClrs.length;++i){
 			if(editCrcCurRads[i] <= 0){continue;}
-			pa.showPtAsCircle(editCrcCtrs[i], editCrcCurRads[i], editCrcFillClrs[i], -2);	
+			ri.showPtAsCircle(editCrcCtrs[i], editCrcCurRads[i], editCrcFillClrs[i], -2);	
 			editCrcCurRads[i] -= editCrcMods[i];
 			doneDrawing = false;
 		}
 		if(doneDrawing){setFlags(showTrajEditCrc, false);}
-		pa.popMatState();		
+		ri.popMatState();		
 	}
 	
 	/**
 	 * draw a trajectory
-	 * @param animTimeMod
 	 */	
-	public void drawTraj_2d(IRenderInterface pa, float animTimeMod){
+	public void drawTraj_2d(IRenderInterface ri){
 		if(!getFlags(canDrawTraj)) {return;}
-		pa.pushMatState();	
-		if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(pa, animTimeMod);}
+		ri.pushMatState();	
+		if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(ri);}
 		TreeMap<String,ArrayList<DrawnSimpleTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
 		if((tmpTreeMap != null) && (tmpTreeMap.size() != 0)) {
 			for(int i =0; i<tmpTreeMap.size(); ++i){
 				ArrayList<DrawnSimpleTraj> tmpAra = tmpTreeMap.get(getTrajAraKeyStr(i));			
-				if(null!=tmpAra){	for(int j =0; j<tmpAra.size();++j){tmpAra.get(j).drawMe(pa, animTimeMod);}}
+				if(null!=tmpAra){	for(int j =0; j<tmpAra.size();++j){tmpAra.get(j).drawMe(ri);}}
 			}	
 		}
-		pa.popMatState();	
-		if(getFlags(showTrajEditCrc)){drawClkCircle(pa);}
+		ri.popMatState();	
+		if(getFlags(showTrajEditCrc)){drawClkCircle(ri);}
 	}//drawTraj
 	
 	/**
@@ -435,12 +434,12 @@ public class TrajectoryManager {
 	 * @param animTimeMod
 	 * @param trans
 	 */
-	public void drawTraj_3d(IRenderInterface pa, float animTimeMod, myPoint trans){
+	public void drawTraj_3d(IRenderInterface ri, float modAmtMillis, myPoint trans){
 		if(!getFlags(canDrawTraj)) {return;}
-		pa.pushMatState();	
-		ownr.drawTraj3D(animTimeMod,trans);
-		pa.popMatState();	
-		if(getFlags(showTrajEditCrc)){drawClkCircle(pa);}
+		ri.pushMatState();	
+		ownr.drawTraj3D(modAmtMillis,trans);
+		ri.popMatState();	
+		if(getFlags(showTrajEditCrc)){drawClkCircle(ri);}
 	}//drawTraj
 	
 	/**
@@ -449,8 +448,8 @@ public class TrajectoryManager {
 	 * @param s
 	 * @param rad
 	 */
-	public void showKeyPt(IRenderInterface pa,myPoint a, String s, float rad){		
-		pa.showPtWithText(a,rad, s, new myVector(10,-5,0), IRenderInterface.gui_Cyan, getFlags(trajPointsAreFlat));	
+	public void showKeyPt(IRenderInterface ri,myPoint a, String s, float rad){		
+		ri.showPtWithText(a,rad, s, new myVector(10,-5,0), IRenderInterface.gui_Cyan, getFlags(trajPointsAreFlat));	
 	}	
 
 	//release shift/control/alt keys

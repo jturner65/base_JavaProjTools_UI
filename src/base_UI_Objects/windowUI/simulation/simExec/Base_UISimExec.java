@@ -129,11 +129,11 @@ public abstract class Base_UISimExec extends Base_SimExec {
 	 * @return whether sim is complete or not
 	 */
 	@Override
-	protected final boolean stepSimulation_Indiv(float modAmtMillis, float scaledMillisSinceLastFrame) {
-		boolean done = stepUISimulation_Indiv(modAmtMillis, scaledMillisSinceLastFrame); 
+	protected final boolean stepSimulation_Indiv(float modAmtMillis) {
+		boolean done = stepUISimulation_Indiv(modAmtMillis); 
 		//move objects in visualization - ignored if not using vis (checked in sim)
 		if(getSimFlag(Base_UISimExec.drawVisIDX)) {
-			((Base_UISimulator) currSim).simStepVisualization(scaledMillisSinceLastFrame);
+			((Base_UISimulator) currSim).simStepVisualization();
 		} else {			
 			msgObj.dispConsoleWarningMessage("SimExec("+name+") for "+currSim.getName(), "stepSimulation_Indiv", "Not stepping visualization.");	
 		}
@@ -144,5 +144,5 @@ public abstract class Base_UISimExec extends Base_SimExec {
 	 * @param modAmtMillis is milliseconds elapsed since last frame
 	 * @return whether sim is complete or not
 	 */
-	protected abstract boolean stepUISimulation_Indiv(float modAmtMillis, float scaledMillisSinceLastFrame);	
+	protected abstract boolean stepUISimulation_Indiv(float modAmtMillis);	
 }//Base_UISimExec
