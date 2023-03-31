@@ -16,7 +16,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	//ui vals
 
 	public final static int
-		gIDX_LayoutToUse			= 0,
+		gIDX_LayoutToUse			= 0,				//which layout/simulation world should be used
 		gIDX_TimeStep				= 1,				//delta t time step for simulation integration				 
 		gIDX_FrameTimeScale			= 2,				//scaled modAmtMillis to determine how much time the simulation should execute 
 		gIDX_ExpLength				= 3,				//length of time for experiment, in minutes
@@ -315,9 +315,11 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		rtSideYOffVals[0] = 0;
 		ri.popMatState();		
 	}//drawRightSideInfoBarPriv
-
+	
+	/**
+	 * animTimeMod is in seconds.
+	 */
 	@Override
-	//animTimeMod is in seconds.
 	protected final void drawMe(float animTimeMod) {
 		// draw current sim - TODO move to Base_DispWindow?
 		simExec.drawMe(animTimeMod);

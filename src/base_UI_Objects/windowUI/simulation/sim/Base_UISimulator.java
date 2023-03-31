@@ -55,11 +55,10 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	public final void setSimDrawVis(boolean val) {setSimFlag(Base_UISimExec.drawVisIDX, val);}
 	
 	/**
-	 * Evolve a simulation visualization
-	 * called in exec.simMe - evolve visualization. 
-	 * @param scaledMillisSinceLastFrame
+	 * Evolve a simulation visualization; called Base_UISimExec - evolve visualization.
+	 * Use timestep/frameTimeScale set in Base_Simulator 
 	 */
-	public abstract void simStepVisualization(float scaledMillisSinceLastFrame);
+	public abstract void simStepVisualization();
 	
 	/**
 	 * Consume the newly set data values from sim exec for specifically UI-based implementations
@@ -71,10 +70,22 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 * Render the pertinent data for this simulator
 	 * animTimeMod is in seconds, time that has passed since last draw call
 	 * @param ri
-	 * @param animTimeMod
+	 * @param modAmtMillis
 	 * @param win
 	 */
-	public abstract void drawMe(IRenderInterface ri, float animTimeMod, Base_DispWindow win);
+	public final void drawMe(IRenderInterface ri, float animTimeMod, Base_DispWindow win) {
+		//scale animation by frameTimeScale
+		drawMe_Indiv(ri,animTimeMod* frameTimeScale, win);
+	}
+	
+	/**
+	 * Render the pertinent data for this simulator
+	 * animTimeMod is in seconds, time that has passed since last draw call
+	 * @param ri
+	 * @param scaledAnimTimeMod
+	 * @param win
+	 */
+	protected abstract void drawMe_Indiv(IRenderInterface ri, float scaledAnimTimeMod, Base_DispWindow win);
 	
 	/**
 	 * draw result information on right sidebar, if gui-based sim
