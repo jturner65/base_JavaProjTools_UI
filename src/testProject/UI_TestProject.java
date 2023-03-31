@@ -309,4 +309,11 @@ public class UI_TestProject extends GUI_AppManager {
 	@Override
 	protected final MsgCodes getMinLogMsgCodes() {return null;}
 
+
+	@Override
+	protected boolean showMachineData() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
 }//UI_TestProject
