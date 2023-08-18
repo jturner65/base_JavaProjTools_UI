@@ -5,23 +5,20 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 
 public class ColorPoint extends myPoint{
-	private static IRenderInterface pa;	
 	public String name;
 	public float rad;
 	
-	public ColorPoint(IRenderInterface _pa, String _nm, double _red, double _green, double _blue, double r){
+	public ColorPoint(String _nm, double _red, double _green, double _blue, double r){
 		super(_red, _green, _blue);
-		pa = _pa;
 		name = _nm;
 		rad = (float)r;
 	}	
-	public ColorPoint(IRenderInterface _pa, String _nm, myPoint pt, double r){
+	public ColorPoint(String _nm, myPoint pt, double r){
 		super(pt);
-		pa = _pa;
 		name = _nm;
 		rad = (float)r;
 	}	
-	public void show(myPoint P, double r, String txt) {
+	public void show(IRenderInterface pa, myPoint P, double r, String txt) {
 		pa.pushMatState(); 
 		pa.setSphereDetail(5);
 		pa.translate((float)P.x,(float)P.y,(float)P.z); 
@@ -32,9 +29,9 @@ public class ColorPoint extends myPoint{
 		pa.popMatState();
 	} // render sphere of radius r and center P)
 
-	public void showColor(){
+	public void showColor(IRenderInterface pa ){
 		pa.setFill((int)x, (int)y, (int)z, 255); 
-		show(this,rad, toString());
+		show(pa, this,rad, toString());
 	}
 	public String toString(){
 		String res = ""+ name + " R :"+x+" G : " + y  + " B : " + z;

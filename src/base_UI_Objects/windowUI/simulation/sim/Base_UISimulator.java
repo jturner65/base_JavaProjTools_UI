@@ -6,7 +6,8 @@ import base_UI_Objects.windowUI.simulation.simExec.Base_UISimExec;
 import base_Utils_Objects.sim.Base_Simulator;
 
 /**
- * Class for UI-based simulations
+ * Class for UI-based simulations - adds handling for 
+ * result rendering and simulation-pertinent interactive value modification
  * @author John Turner
  *
  */
@@ -68,9 +69,8 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	
 	/**
 	 * Render the pertinent data for this simulator
-	 * animTimeMod is in seconds, time that has passed since last draw call
 	 * @param ri
-	 * @param modAmtMillis
+	 * @param animTimeMod in seconds, time that has passed since last draw call
 	 * @param win
 	 */
 	public final void drawMe(IRenderInterface ri, float animTimeMod, Base_DispWindow win) {
@@ -79,25 +79,25 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	}
 	
 	/**
-	 * Render the pertinent data for this simulator
-	 * animTimeMod is in seconds, time that has passed since last draw call
+	 * Render the pertinent data for the implementation simulator
 	 * @param ri
-	 * @param scaledAnimTimeMod
+	 * @param scaledAnimTimeMod time since last draw call, scaled by frameTimeScale
 	 * @param win
 	 */
 	protected abstract void drawMe_Indiv(IRenderInterface ri, float scaledAnimTimeMod, Base_DispWindow win);
 	
 	/**
-	 * draw result information on right sidebar, if gui-based sim
+	 * draw result information on right sidebar
 	 * @param ri
 	 * @param yVals float array holding : 
-	 * 		idx 0 : start y value for text
+	 * 		idx 0 : start y value for next text
 	 * 		idx 1 : per-line y offset for grouped text
 	 * 		idx 2 : per-line y offset for title-to-group text (small space)
 	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
 	 * 		
 	 */
 	public final void drawResultBar(IRenderInterface ri, float[] yVals) {
+		//TODO: Add any simulation-agnostic information to display here
 		yVals[0] = drawResultBar_Indiv(ri, yVals);
 		
 	}//drawResultBar
