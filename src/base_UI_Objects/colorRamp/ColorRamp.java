@@ -58,10 +58,10 @@ public class ColorRamp {
 		usrPts = new ArrayList<ColorPoint>();		
 		myPoint ptA =new myPoint(R0,G0,B0),
 		ptB= new myPoint(R1,G1,B1);
-		usrPts.add(new ColorPoint(pa, "Point A", ptA.x, ptA.y, ptA.z, userPtRad));
-		usrPts.add(new ColorPoint(pa, "Point B",  ptB.x, ptB.y, ptB.z, userPtRad));
+		usrPts.add(new ColorPoint( "Point A", ptA.x, ptA.y, ptA.z, userPtRad));
+		usrPts.add(new ColorPoint("Point B",  ptB.x, ptB.y, ptB.z, userPtRad));
 		//linear interp
-		usrPts.add(new ColorPoint(pa, "Point C", new myPoint(ptA, .5, ptB), userPtRad));	
+		usrPts.add(new ColorPoint( "Point C", new myPoint(ptA, .5, ptB), userPtRad));	
 		ptsChanged();
 	}
 
@@ -108,13 +108,13 @@ public class ColorRamp {
 		myVector test23, test33;
 		ColorPoint pt0,  pt4;
 	
-		ColorPoint bs01 = new ColorPoint(pa, "kn1",RGBrampPt(p1, p2, .33f) , userPtRad), 
-				bs02 = new ColorPoint(pa, "kn1",RGBrampPt(p1, p2, .66f) , userPtRad);
+		ColorPoint bs01 = new ColorPoint("kn1",RGBrampPt(p1, p2, .33f) , userPtRad), 
+				bs02 = new ColorPoint("kn1",RGBrampPt(p1, p2, .66f) , userPtRad);
 
-		pt0 = new ColorPoint(pa, "kn1",LCHrampPt(p1, p2, .33f) , userPtRad);
+		pt0 = new ColorPoint("kn1",LCHrampPt(p1, p2, .33f) , userPtRad);
 		test23 = new myVector(bs01,pt0);
 	
-		pt4 = new ColorPoint(pa, "kn2",LCHrampPt(p1, p2, .66f) , userPtRad);
+		pt4 = new ColorPoint("kn2",LCHrampPt(p1, p2, .66f) , userPtRad);
 		test33 = new myVector(bs02,pt4);
 
 		pt0._add(myVector._mult(test23, .5f));
@@ -124,7 +124,7 @@ public class ColorRamp {
 		for(float s = 0; s <= 1.0f; s+=sIncr){		
 			float t = (float) Math.pow(Math.sin(s*MyMathUtils.HALF_PI), 2);
 			ptu = pa.bezierPoint(new myPoint[] {new myPoint(p1),pt0,pt4,new myPoint(p2)}, t);
-			clrPtsArrays.add(new ColorPoint(pa, "USR3",ptu, clrPtRad));
+			clrPtsArrays.add(new ColorPoint("USR3",ptu, clrPtRad));
 		}	
 
 		//for(int i =0; i<numGrads; ++i){
@@ -147,9 +147,9 @@ public class ColorRamp {
                 mode.toUpperCase(),k,layer.l,R0,G0,B0,lab0[0],lab0[1],lab0[2],R1,G1,B1,lab1[0],lab1[1],lab1[2]));
 	}
 	
-	public ColorPoint XYZtoPoint(double X, double Y, double Z) {int [] C= XYZtoRGB(X,Y,Z); return new ColorPoint(pa, "XYZ_Pt",C[0],C[1],C[2],clrPtRad); }
-	public ColorPoint LCHtoPoint(double L, double c, double h) {int [] C= LCHtoRGB(L,c,h); return new ColorPoint(pa, "LCH_Pt",C[0],C[1],C[2],clrPtRad); }
-	public ColorPoint LABtoPoint(double L, double a, double b) {int [] C= LABtoRGB(L,a,b); return new ColorPoint(pa, "LAB_Pt",C[0],C[1],C[2],clrPtRad); }
+	public ColorPoint XYZtoPoint(double X, double Y, double Z) {int [] C= XYZtoRGB(X,Y,Z); return new ColorPoint("XYZ_Pt",C[0],C[1],C[2],clrPtRad); }
+	public ColorPoint LCHtoPoint(double L, double c, double h) {int [] C= LCHtoRGB(L,c,h); return new ColorPoint("LCH_Pt",C[0],C[1],C[2],clrPtRad); }
+	public ColorPoint LABtoPoint(double L, double a, double b) {int [] C= LABtoRGB(L,a,b); return new ColorPoint("LAB_Pt",C[0],C[1],C[2],clrPtRad); }
 	
 	public ColorPoint RGBrampPt(myPoint p1, myPoint p2, float s) {return RGBrampPt((int)p1.x, (int)p1.y, (int)p1.z,(int)p2.x, (int)p2.y, (int)p2.z,s); }
 	public ColorPoint XYZrampPt(myPoint p1, myPoint p2, float s) {return XYZrampPt((int)p1.x, (int)p1.y, (int)p1.z,(int)p2.x, (int)p2.y, (int)p2.z,s); }
@@ -159,7 +159,7 @@ public class ColorRamp {
 	public ColorPoint USR2rampPt(myPoint p1, myPoint p2, float s) {return USR2rampPt((int)p1.x, (int)p1.y, (int)p1.z,(int)p2.x, (int)p2.y, (int)p2.z,s); }
 	public ColorPoint USR3rampPt(myPoint p1, myPoint p2, float s) {return USR3rampPt((int)p1.x, (int)p1.y, (int)p1.z,(int)p2.x, (int)p2.y, (int)p2.z,s); }
 
-	public ColorPoint RGBrampPt(int R0, int G0, int B0, int R1, int G1, int B1, float s) {return new ColorPoint(pa, "RGB_Pt",(1.f-s)*R0+s*R1,(1.f-s)*G0+s*G1,(1.f-s)*B0+s*B1,clrPtRad); }
+	public ColorPoint RGBrampPt(int R0, int G0, int B0, int R1, int G1, int B1, float s) {return new ColorPoint("RGB_Pt",(1.f-s)*R0+s*R1,(1.f-s)*G0+s*G1,(1.f-s)*B0+s*B1,clrPtRad); }
 	public ColorPoint USR1rampPt(int R0, int G0, int B0, int R1, int G1, int B1, float s) {
 		double[] XYZ0 = RGBtoXYZ(R0, G0, B0), XYZ1 = RGBtoXYZ(R1, G1, B1);
 		return XYZtoPoint((1.f-s)*XYZ0[0]+s*XYZ1[0],(1.f-s)*XYZ0[1]+s*XYZ1[1],(1.f-s)*XYZ0[2]+s*XYZ1[2]); 
