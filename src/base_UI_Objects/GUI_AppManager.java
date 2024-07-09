@@ -402,7 +402,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			}			
 		}
 	}//getIdealAppWindowDims
-		
+	
 	/**
 	 * set level of smoothing to use for rendering (depending on rendering used, this may be ignored)
 	 */
@@ -425,9 +425,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param height height of the application window
 	 */
 	public final void setupApp(int width, int height) {
+		//set initial window location
+		ri.setLocation((int)((_displayWidth - width)*.5f), 0);
 		//potentially override setup variables on per-project basis
 		setupAppDims_Indiv();
-		
+
 		//for every window, load either window color or window Skybox, depending on 
 		//per-window specification
 		
