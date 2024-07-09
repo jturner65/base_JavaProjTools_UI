@@ -1124,6 +1124,16 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		if (smthLvl == 0) {	noSmooth();	}
 		else {			smooth(smthLvl);}
 	}
+	
+	/**
+	 * set initial window location
+	 * @param x
+	 * @param y
+	 */
+	@Override
+	public void setLocation(int x, int y) {
+		surface.setLocation(x, y);		
+	}
 	/**
 	 * set camera to passed 9-element values - should be called from window!
 	 * @param camVals
@@ -1328,5 +1338,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		if(null==picName) {return;}
 		save(picName);
 	}
+
 
 }//my_procApplet
