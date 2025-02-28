@@ -179,11 +179,11 @@ public abstract class Base_DispWindow {
 	public float[] uiClkCoords;												//
 											
 	/**
-	 * array lists of idxs for integer/list-based objects
+	 * array lists of idxs for float-based UI objects
 	 */
 	private ArrayList<Integer> guiFloatValIDXs;
 	/**
-	 * array lists of idxs for float-based UI objects
+	 * array lists of idxs for integer/list-based objects
 	 */
 	private ArrayList<Integer> guiIntValIDXs;
 	
@@ -240,7 +240,7 @@ public abstract class Base_DispWindow {
 	 * set this value to be different display center translations -to be used to calculate mouse offset in world for pick
 	 * and also as origin for 
 	 */
-	protected myPoint sceneCtrVal;							
+	protected myPoint sceneOriginVal;							
 	
 	//to control how much is shown in the window - if stuff extends off the screen and for 2d window
 	protected ScrollBars[] scbrs;
@@ -315,6 +315,10 @@ public abstract class Base_DispWindow {
 		msClkObj = -1;
 		msOvrObj = -1;
 		reInitInfoStr();
+		sceneOriginVal = new myPoint(winInitVals.sceneOriginVal);
+		focusTar = new myVector(winInitVals.initSceneFocusVal);
+		//initialize the camera
+		setInitCamView();
 	}//ctor
 	
 	/**
@@ -381,7 +385,24 @@ public abstract class Base_DispWindow {
 		mseClickCrnr[0] = 0;
 		mseClickCrnr[1] = 0;		
 		if((!_isMenu) && (dispFlags.getHasScrollBars())){scbrs = new ScrollBars[4];	for(int i =0; i<scbrs.length;++i){scbrs[i] = new ScrollBars(ri, this);}}
-	}//initThisWin	
+		dispFlags.setIs3DWin(winInitVals.dispWinIs3D());
+		dispFlags.setCanChgView(winInitVals.canMoveView());
+		if(winInitVals.canDrawInWin()) {
+			trajMgr = new TrajectoryManager(this,!winInitVals.dispWinIs3D());
+			trajMgr.setTrajColors(winInitVals.trajFillClr, winInitVals.trajStrkClr);
+		} else {
+			trajMgr = null;
+		}
+	}//initThisWin
+	
+	/**
+	 * Final initialization stuff, after window made, but necessary to make sure window displays correctly
+	 * @param _ctr
+	 * @param _baseFcs
+	 */
+	public final void finalInit(myPoint _ctr, myVector _baseFcs) {
+
+	}//finalInit	
 
 	/**
 	 * Build appropriate UIDataUpdater instance for application
@@ -816,27 +837,7 @@ public abstract class Base_DispWindow {
 	 * This function is called on ui value update, to pass new ui values on to window-owned consumers
 	 */
 	protected abstract void updateCalcObjUIVals();
-	
-	/**
-	 * Final initialization stuff, after window made, but necessary to make sure window displays correctly
-	 * @param _ctr
-	 * @param _baseFcs
-	 */
-	public final void finalInit(myPoint _ctr, myVector _baseFcs) {
-		dispFlags.setIs3DWin(winInitVals.dispWinIs3D());
-		dispFlags.setCanChgView(winInitVals.canMoveView());
-		sceneCtrVal = new myPoint(_ctr);
-		focusTar = new myVector(_baseFcs);
-		//initialize the camera
-		setInitCamView();
-		if(winInitVals.canDrawInWin()) {
-			trajMgr = new TrajectoryManager(this,!winInitVals.dispWinIs3D());
-			trajMgr.setTrajColors(winInitVals.trajFillClr, winInitVals.trajStrkClr);
-		} else {
-			trajMgr = null;
-		}
-	}//finalInit
-	
+		
 	/**
 	 * set up initial trajectories - 2d array, 1 per UI Page, 1 per modifiable construct within page.
 	 */
@@ -1353,7 +1354,16 @@ public abstract class Base_DispWindow {
 
 	
 	//////////////////////
-	//draw functions	
+	//draw functions
+	
+	/**
+	 * Entry point for draw functionality TODO
+	 */
+	public final void draw(float[] camvals, float modAmtMillis) {
+		
+		
+	}
+	
 	
 	/**
 	 * initial draw stuff for each frame draw
@@ -1592,23 +1602,17 @@ public abstract class Base_DispWindow {
 		drawMe(animTimeMod);			//call instance class's draw
 		//draw traj stuff if exists and appropriate - if this window 
 		//accepts a drawn trajectory, then allow it to be displayed
-		if(null!=trajMgr){		trajMgr.drawTraj_3d(ri, animTimeMod, myPoint._add(sceneCtrVal,focusTar));}				
+		if(null!=trajMgr){		trajMgr.drawTraj_3d(ri, animTimeMod, myPoint._add(sceneOriginVal,focusTar));}				
 		ri.popMatState();		
 	}//draw3D
+
+	/**
+	 *  Convenience for 2D windows to move origin to view center
+	 */
+	protected final void moveTo2DRectCenter() {
+		ri.translate(winInitVals.rectDim[0] + (winInitVals.rectDim[2]*.5f), winInitVals.rectDim[1] + (winInitVals.rectDim[3]*.5f));
+	}
 	
-	public void drawTraj3D(float animTimeMod,myPoint trans){
-		msgObj.dispWarningMessage("Base_DispWindow","drawTraj3D","I should be overridden in 3d instancing class");
-//			pa.pushMatState();	
-//			if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
-//			TreeMap<String,ArrayList<myDrawnNoteTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
-//			if((tmpTreeMap != null) && (tmpTreeMap.size() != 0)) {
-//				for(int i =0; i<tmpTreeMap.size(); ++i){
-//					ArrayList<myDrawnNoteTraj> tmpAra = tmpTreeMap.get(getTrajAraKeyStr(i));			
-//					if(null!=tmpAra){	for(int j =0; j<tmpAra.size();++j){tmpAra.get(j).drawMe(animTimeMod);}}
-//				}	
-//			}
-//			pa.popMatState();		
-	}//drawTraj3D
 	
 	public final void draw2D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){drawSmall();return;}
@@ -1628,6 +1632,21 @@ public abstract class Base_DispWindow {
 		ri.popMatState();
 	}
 
+	
+	public void drawTraj3D(float animTimeMod,myPoint trans){
+		msgObj.dispWarningMessage("Base_DispWindow","drawTraj3D","I should be overridden in 3d instancing class");
+//			pa.pushMatState();	
+//			if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
+//			TreeMap<String,ArrayList<myDrawnNoteTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
+//			if((tmpTreeMap != null) && (tmpTreeMap.size() != 0)) {
+//				for(int i =0; i<tmpTreeMap.size(); ++i){
+//					ArrayList<myDrawnNoteTraj> tmpAra = tmpTreeMap.get(getTrajAraKeyStr(i));			
+//					if(null!=tmpAra){	for(int j =0; j<tmpAra.size();++j){tmpAra.get(j).drawMe(animTimeMod);}}
+//				}	
+//			}
+//			pa.popMatState();		
+	}//drawTraj3D	
+	
 	/**
 	 * Decay this window's console strings
 	 */
@@ -1828,7 +1847,7 @@ public abstract class Base_DispWindow {
 			int idx = _checkInAllObjs(mouseX, mouseY);
 			if(idx >= 0) {	msOvrObj=idx;return true;	}
 		}
-		myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneCtrVal);
+		myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
 		if(hndlMouseMove_Indiv(mouseX, mouseY, mouseClickIn3D)){return true;}
 		msOvrObj = -1;
 		return false;
@@ -1883,7 +1902,7 @@ public abstract class Base_DispWindow {
 		//if nothing triggered yet, then specific instancing window implementation stuff
 		if(!mod){
 			//Get 3d point if appropriate
-			myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneCtrVal);
+			myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
 			mod = hndlMouseClick_Indiv(mouseX, mouseY, mouseClickIn3D, mseBtn);
 		}			
 		//if still nothing then check for trajectory handling
@@ -1932,7 +1951,7 @@ public abstract class Base_DispWindow {
 						//!MyMathUtils.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))
 						){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle
 				//msgObj.dispDebugMessage("Base_DispWindow","handleMouseDrag","before handle indiv drag traj for window : " + this.name);
-				myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneCtrVal);
+				myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
 				mod = hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);		//handle specific, non-trajectory functionality for implementation of window
 			}
 		}

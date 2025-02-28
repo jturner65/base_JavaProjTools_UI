@@ -70,7 +70,7 @@ public class GUI_AppWinVals {
 	/**
 	 * Scene center value, for drawing
 	 */
-	public final myPoint sceneCenterVal;
+	public final myPoint sceneOriginVal;
 	/**
 	 * Initial focus point for camera
 	 */
@@ -158,7 +158,7 @@ public class GUI_AppWinVals {
 			rtSideFillClr = new int[]{0,0,0,200};
 			rtSideStrkClr = new int[]{255,255,255,255};
 		}		
-		sceneCenterVal = new myPoint(_sceneCenterVal);
+		sceneOriginVal = new myPoint(_sceneCenterVal);
 		initSceneFocusVal = new myVector(_initSceneFocusVal);
 		//background and canvas colors
 		bGroundColor = new int[4];
