@@ -293,19 +293,19 @@ public class UI_TestWindow3D extends Base_DispWindow {
 	}
 
 	@Override
-	protected void endShiftKeyI() {
+	protected void endShiftKey_Indiv() {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	protected void endAltKeyI() {
+	protected void endAltKey_Indiv() {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	protected void endCntlKeyI() {
+	protected void endCntlKey_Indiv() {
 		// TODO Auto-generated method stub
 
 	}

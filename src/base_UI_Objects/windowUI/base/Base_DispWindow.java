@@ -380,7 +380,7 @@ public abstract class Base_DispWindow {
 		setCustMenuBtnLabels();
 		//pass all flag states to initialized structures in instancing window handler
 		privFlags.refreshAllFlags();
-		setClosedBox();
+		_setClosedBox();
 		mseClickCrnr = new float[2];		//this is offset for click to check buttons in x and y - since buttons for all menus will be in menubar, this should be the upper left corner of menubar - upper left corner of rect 
 		mseClickCrnr[0] = 0;
 		mseClickCrnr[1] = 0;		
@@ -429,7 +429,7 @@ public abstract class Base_DispWindow {
 		_initAllPrivButtons();
 		
 		// build instance-specific UI update communication object if exists
-		buildUIUpdateStruct();
+		_buildUIUpdateStruct();
 		
 	}//_initAllGUIObjs
 	
@@ -495,7 +495,7 @@ public abstract class Base_DispWindow {
 		// set instance-specific initial flags
 		int[] trueFlagIDXs = getFlagIDXsToInitToTrue();
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
-		if(null!=trueFlagIDXs) {initPassedPrivFlagsToTrue(trueFlagIDXs);}		
+		if(null!=trueFlagIDXs) {_initPassedPrivFlagsToTrue(trueFlagIDXs);}		
 	}
 	
 	
@@ -768,7 +768,7 @@ public abstract class Base_DispWindow {
 	 * This has to be called after UI structs are built and set - this creates and populates the 
 	 * structure that serves to communicate UI data to consumer from UI Window.
 	 */
-	private void buildUIUpdateStruct() {
+	private void _buildUIUpdateStruct() {
 		//set up UI->to->Consumer class communication object - only make instance of object here, 
 		//initialize it after private flags are built and initialized
 		uiUpdateData = buildUIDataUpdateObject();		
@@ -779,7 +779,7 @@ public abstract class Base_DispWindow {
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
 		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
-	}//buildUIUpdateStruct
+	}//_buildUIUpdateStruct
 	
 	/**
 	 * Called by privFlags bool struct, to update uiUpdateData when boolean flags have changed
@@ -887,9 +887,6 @@ public abstract class Base_DispWindow {
 	 */
 	protected void setButtonLabels(int idx, String tLbl, String fLbl) {truePrivFlagLabels[idx] = tLbl;falsePrivFlagLabels[idx] = fLbl;}
 	
-
-	
-	
 	/**
 	 * set up child class button rectangles. Overrideable for nested windows
 	 */
@@ -902,9 +899,9 @@ public abstract class Base_DispWindow {
 	 * calculate button length
 	 */
 	private static final float ltrLen = 5.0f;private static final int btnStep = 5;
-	private float calcBtnLength(String tStr, String fStr){return btnStep * (int)(((PApplet.max(tStr.length(),fStr.length())+4) * ltrLen)/btnStep);}
+	private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((PApplet.max(tStr.length(),fStr.length())+4) * ltrLen)/btnStep);}
 	
-	private void setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {uiClkCoords[0]+oldBtnLen, uiClkCoords[3], btnLen, txtHeightOff };}
+	private void _setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {uiClkCoords[0]+oldBtnLen, uiClkCoords[3], btnLen, txtHeightOff };}
 	
 	/**
 	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
@@ -937,7 +934,7 @@ public abstract class Base_DispWindow {
 		float oldBtnLen = 0;
 		boolean lastBtnHalfStLine = false, startNewLine = true;
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
-			float btnLen = calcBtnLength(truePrivFlagLabels[i].trim(),falsePrivFlagLabels[i].trim());
+			float btnLen = _calcBtnLength(truePrivFlagLabels[i].trim(),falsePrivFlagLabels[i].trim());
 			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
 			//pa.pr("_buildPrivBtnRects: i "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
 			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
@@ -946,7 +943,7 @@ public abstract class Base_DispWindow {
 					privFlagBtns[i-1][2] = maxBtnLen;
 					this.uiClkCoords[3] += txtHeightOff;
 				}
-				setBtnDims(i, 0, btnLen);
+				_setBtnDims(i, 0, btnLen);
 				//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-xOff), (float) uiClkCoords[3], btnLen, yOff };				
 				this.uiClkCoords[3] += txtHeightOff;
 				startNewLine = true;
@@ -955,11 +952,11 @@ public abstract class Base_DispWindow {
 				btnLen = halfBtnLen;
 				if(startNewLine){//button is starting new line
 					lastBtnHalfStLine = true;
-					setBtnDims(i, 0, btnLen);
+					_setBtnDims(i, 0, btnLen);
 					startNewLine = false;
 				} else {//should only get here if 2nd of two <1/2 width buttons in a row
 					lastBtnHalfStLine = false;
-					setBtnDims(i, oldBtnLen, btnLen);
+					_setBtnDims(i, oldBtnLen, btnLen);
 					this.uiClkCoords[3] += txtHeightOff;
 					startNewLine = true;					
 				}
@@ -995,7 +992,7 @@ public abstract class Base_DispWindow {
 	 */
 	public final void handleDispFlagsDebugMode(boolean val) {
 		msgObj.dispDebugMessage(className, "handleDispFlagsDebugMode", "Start UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
-		handlePrivFlagsDebugMode_Indiv(val);
+		handleDispFlagsDebugMode_Indiv(val);
 		msgObj.dispDebugMessage(className, "handleDispFlagsDebugMode", "End UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
 	}
 	protected abstract void handleDispFlagsDebugMode_Indiv(boolean val);
@@ -1030,7 +1027,7 @@ public abstract class Base_DispWindow {
 	 * @param val
 	 */
 	public void handleShowWinFromFlags(boolean val) {
-		setClosedBox();
+		_setClosedBox();
 		if(!val){		closeMe();}	//not showing window :specific instancing window implementation stuff to do when hidden/transitioning to another window (i.e. suspend stuff running outside draw loop, or release memory of unnecessary stuff)
 		else {			showMe();}	//specific instance window functionality to do when window is shown
 	}//handleShowWin	
@@ -1054,7 +1051,7 @@ public abstract class Base_DispWindow {
 	 * @param idxs
 	 * @param val
 	 */
-	private void initPassedPrivFlagsToTrue(int[] idxs) { 
+	private void _initPassedPrivFlagsToTrue(int[] idxs) { 
 		privFlags.setAllFlagsToTrue(idxs);
 	}
 	
@@ -1323,7 +1320,7 @@ public abstract class Base_DispWindow {
 	 */
 	public final float[] getRectDimClosed() {return winInitVals.rectDimClosed;}
 	
-	private final void setClosedBox(){
+	private final void _setClosedBox(){
 		if( dispFlags.getShowWin()){	
 			closeBox[0] = winInitVals.rectDim[0]+winInitVals.rectDim[2]-clkBxDim;
 			closeBox[1] = winInitVals.rectDim[1];	
@@ -1351,7 +1348,6 @@ public abstract class Base_DispWindow {
 	 * @return
 	 */
 	public final boolean chkDrawMseRet(){		return dispFlags.getDrawMseEdge();	}
-
 	
 	//////////////////////
 	//draw functions
@@ -1469,23 +1465,7 @@ public abstract class Base_DispWindow {
 		winInitVals.setWinFillWithStroke(ri);	
 		ri.showText(dispTxt, closeBox[0]-35, closeBox[1]+10);			
 	}
-	private final void drawSmall(){
-		ri.pushMatState();
-		//msgObj.dispDebugMessage("Base_DispWindow","drawSmall","Hitting hint code draw small");
-		ri.setBeginNoDepthTest();
-		ri.disableLights();		
-		winInitVals.setWinFillAndStroke(ri);
-		//main window drawing
-		winInitVals.drawRectDimClosed(ri);
-		winInitVals.setWinFillWithStroke(ri);
-		if(winInitVals.winDescr.trim() != ""){
-			ri.showText(winInitVals.winDescr.split(" ")[0], winInitVals.rectDimClosed[0]+10, winInitVals.rectDimClosed[1]+25);
-		}		
-		//close box drawing
-		if(dispFlags.getIsCloseable()){drawMouseBox();}
-		ri.setEndNoDepthTest();
-		ri.popMatState();		
-	}
+
 	/**
 	 * called by drawUI in IRenderInterface
 	 * @param modAmtMillis
@@ -1551,6 +1531,21 @@ public abstract class Base_DispWindow {
 		ri.popMatState();		
 	}//drawUIDebugMode
 	
+	private void drawRightSideMenu(float modAmtMillis) {
+		ri.setFill(winInitVals.rtSideFillClr, winInitVals.rtSideFillClr[3]);//transparent black
+		if(dispFlags.getShowRtSideMenu()) {				
+			ri.drawRect(UIRtSideRectBox);
+			//move to manage internal text display in owning window
+			ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+rtSideTxtHeightOff,0);
+			ri.setFill(255,255,255,255);	
+			 //instancing class implements this function
+			drawRightSideInfoBarPriv(modAmtMillis); 
+		} else {
+			//shows narrow rectangular reminder that window is there								 
+			ri.drawRect(closedUIRtSideRecBox);
+		}		
+	}//drawRightSideMenu
+	
 	/**
 	 * draw stuff on screen - start next to left-side menu
 	 * @param modAmtMillis
@@ -1562,20 +1557,9 @@ public abstract class Base_DispWindow {
 		ri.translate(winInitVals.rectDim[0],0,0);			
 		//draw onscreen stuff for main window
 		drawOnScreenStuffPriv(modAmtMillis);
-		//draw right side info display if relelvant
+		//draw right side info display if relevant
 		if(dispFlags.getHasRtSideMenu()) {
-			ri.setFill(winInitVals.rtSideFillClr, winInitVals.rtSideFillClr[3]);//transparent black
-			if(dispFlags.getShowRtSideMenu()) {				
-				ri.drawRect(UIRtSideRectBox);
-				//move to manage internal text display in owning window
-				ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+rtSideTxtHeightOff,0);
-				ri.setFill(255,255,255,255);	
-				 //instancing class implements this function
-				drawRightSideInfoBarPriv(modAmtMillis); 
-			} else {
-				//shows narrow rectangular reminder that window is there								 
-				ri.drawRect(closedUIRtSideRecBox);
-			}
+			drawRightSideMenu(modAmtMillis);
 		}
 		ri.popMatState();			
 	}//drawRtSideInfoBar
@@ -1613,6 +1597,24 @@ public abstract class Base_DispWindow {
 		ri.translate(winInitVals.rectDim[0] + (winInitVals.rectDim[2]*.5f), winInitVals.rectDim[1] + (winInitVals.rectDim[3]*.5f));
 	}
 	
+	
+	private final void drawSmall(){
+		ri.pushMatState();
+		//msgObj.dispDebugMessage("Base_DispWindow","drawSmall","Hitting hint code draw small");
+		ri.setBeginNoDepthTest();
+		ri.disableLights();		
+		winInitVals.setWinFillAndStroke(ri);
+		//main window drawing
+		winInitVals.drawRectDimClosed(ri);
+		winInitVals.setWinFillWithStroke(ri);
+		if(winInitVals.winDescr.trim() != ""){
+			ri.showText(winInitVals.winDescr.split(" ")[0], winInitVals.rectDimClosed[0]+10, winInitVals.rectDimClosed[1]+25);
+		}		
+		//close box drawing
+		if(dispFlags.getIsCloseable()){drawMouseBox();}
+		ri.setEndNoDepthTest();
+		ri.popMatState();		
+	}
 	
 	public final void draw2D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){drawSmall();return;}
@@ -1744,8 +1746,7 @@ public abstract class Base_DispWindow {
 	protected final void toggleWindowState(){
 		//msgObj.dispDebugMessage("Base_DispWindow","toggleWindowState","Attempting to close window : " + this.name);
 		dispFlags.toggleShowWin();
-		if(dispFlagWinIDX!= -1) {AppMgr.setVisFlag(dispFlagWinIDX, dispFlags.getShowWin());}	//value has been changed above by close box
-		
+		if(dispFlagWinIDX != -1) {AppMgr.setWinVisFlag(dispFlagWinIDX, dispFlags.getShowWin());}	//value has been changed above by close box	
 	}
 	
 	/**
@@ -1755,10 +1756,9 @@ public abstract class Base_DispWindow {
 	 * @return
 	 */
 	protected final boolean checkClsBox(int mouseX, int mouseY){
-		boolean res = false;
 		//if(MyMathUtils.ptInRange(mouseX, mouseY, closeBox[0], closeBox[1], closeBox[0]+closeBox[2], closeBox[1]+closeBox[3])){toggleWindowState(); res = true;}				
-		if(msePtInRect(mouseX, mouseY, closeBox)){toggleWindowState(); res = true;}				
-		return res;		
+		if(msePtInRect(mouseX, mouseY, closeBox)){toggleWindowState(); return true;}				
+		return false;		
 	}
 	/**
 	 * check if mouse location is in UI buttons, and handle button click if so
@@ -1882,8 +1882,12 @@ public abstract class Base_DispWindow {
 	 */
 	public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
 		boolean mod = false;
+		//check if trying to close or open the window via click, if possible
+		if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}		
 		boolean showWin = dispFlags.getShowWin();
-		if(showWin && (msePtInUIRect(mouseX, mouseY))){//in clickable region for UI interaction
+		if(!showWin){return mod;}
+		// this window is showing
+		if(msePtInUIRect(mouseX, mouseY)){//in clickable region for UI interaction
 			int idx = _checkInAllObjs(mouseX, mouseY);
 			if(idx >= 0) {
 				msBtnClcked = mseBtn;
@@ -1895,9 +1899,6 @@ public abstract class Base_DispWindow {
 				return true;	
 			}
 		}			
-		//check if trying to close or open the window via click, if possible
-		if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}
-		if(!showWin){return mod;}
 		if(!mod) {			mod = checkUIButtons(mouseX, mouseY);	}
 		//if nothing triggered yet, then specific instancing window implementation stuff
 		if(!mod){
@@ -2004,17 +2005,17 @@ public abstract class Base_DispWindow {
 	public final void endShiftKey(){
 		if(!dispFlags.getShowWin()){return;}
 		if(null!=trajMgr) {trajMgr.endShiftKey(getMsePoint(ri.getMouse_Raw()));}
-		endShiftKeyI();
+		endShiftKey_Indiv();
 	}
 	public final void endAltKey(){
 		if(!dispFlags.getShowWin()){return;}
 		if(null!=trajMgr) {trajMgr.endAltKey(getMsePoint(ri.getMouse_Raw()));}
-		endAltKeyI();
+		endAltKey_Indiv();
 	}	
 	public final void endCntlKey(){
 		if(!dispFlags.getShowWin()){return;}
 		if(null!=trajMgr) {trajMgr.endCntlKey(getMsePoint(ri.getMouse_Raw()));}
-		endCntlKeyI();
+		endCntlKey_Indiv();
 	}	
 	/**
 	 * Set the value of the key and keycode pressed, passed by GUI_AppMgr
@@ -2184,9 +2185,9 @@ public abstract class Base_DispWindow {
 	
 	protected abstract void hndlMouseRel_Indiv();
 	
-	protected abstract void endShiftKeyI();
-	protected abstract void endAltKeyI();
-	protected abstract void endCntlKeyI();
+	protected abstract void endShiftKey_Indiv();
+	protected abstract void endAltKey_Indiv();
+	protected abstract void endCntlKey_Indiv();
 	
 	/**
 	 * Modify the application-wide ui button labels based on context

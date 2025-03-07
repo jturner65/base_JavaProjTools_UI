@@ -147,7 +147,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * flags explicitly pertaining to window visibility.  1 flag per window in application - flags defined in child class
 	 */
-	private int[] _visFlags;		
+	private int[] _winVisFlags;		
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// program control variables
@@ -171,7 +171,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			altKeyPressed  		= 6,			//alt pressed
 			cntlKeyPressed  	= 7,			//cntrl pressed
 			mouseClicked 		= 8,			//mouse left button is held down	
-			drawing				= 9, 			//currently drawing  showSOMMapUI
+			drawing				= 9, 			//currently drawing a trajectory
 			modView	 			= 10,			//shift+mouse click+mouse move being used to modify the view
 			
 	//simulation
@@ -648,7 +648,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void initOnce() {
 		//1-time init for program and windows
 		//always default to showing left side input UI menu
-		setVisFlag(dispMenuIDX, true);
+		setWinVisFlag(dispMenuIDX, true);
 		//app-specific 1-time init
 		initOnce_Indiv();
 		//initProgram is called every time reinitialization is desired
@@ -1112,7 +1112,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//simulation section
 		if(isRunSim() ){
 			//run simulation
-			for(int i =1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getIsRunnable())){dispWinFrames[i].simulate(modAmtMillis);}}
+			for(int i = 1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getIsRunnable())){dispWinFrames[i].simulate(modAmtMillis);}}
 			if(isSingleStep()){setSimIsRunning(false);}
 			++simCycles;
 			return true;
@@ -1139,12 +1139,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			//if refreshing screen, this clears screen, sets background
 			if(getShouldClearBKG()) {
 				drawBackground(curFocusWin);				
-				draw3D_solve3D(modAmtMillis);
+				draw3D(modAmtMillis);
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}
 				if(dispWinFrames[curFocusWin].chkDrawMseRet()){			canvas.drawMseEdge(dispWinFrames[curFocusWin], is3DDraw);	}		
 				if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts(), winInitVals[curFocusWin].canvasColor);}
 			} else {
-				draw3D_solve3D(modAmtMillis);
+				draw3D(modAmtMillis);
 			}
 			ri.popMatState(); 
 		} else {	//either/or 2d window
@@ -1169,7 +1169,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * Draw 3d windows that are currently displayed
 	 * @param modAmtMillis
 	 */
-	private final void draw3D_solve3D(float modAmtMillis){
+	private final void draw3D(float modAmtMillis){
 		for(int i =1; i<numDispWins; ++i){
 			if((isShowingWindow(i)) && (dispWinFrames[i].getIs3DWindow())){	dispWinFrames[i].draw3D(modAmtMillis);}
 		}
@@ -1177,7 +1177,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		drawAxes(100,3, new myPoint(-viewWidth/2.0f+40,0.0f,0.0f), 200, false); 
 		//build target canvas
 		canvas.buildCanvas();
-	}//draw3D_solve3D
+	}//draw3D
 	
 	/**
 	 * Draw 2d windows that are currently displayed but not sidebar menu, which is drawn via drawUI()
@@ -1187,6 +1187,22 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void draw2D(float modAmtMillis) {
 		for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getIs3DWindow())){dispWinFrames[i].draw2D(modAmtMillis);}}
 	}
+	/**
+	 * 
+	 * @param modAmtMillis
+	 */
+	private final void drawUI(float modAmtMillis){					
+		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
+		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
+		dispWinFrames[dispMenuIDX].drawHeader(modAmtMillis);
+		if(isDebugMode()){
+			dispWinFrames[curFocusWin].drawUIDebugMode(dispWinFrames[dispMenuIDX].getDebugData());		
+		} else if(showInfo){
+			dispWinFrames[curFocusWin].drawOnscreenText();
+		}
+		dispWinFrames[curFocusWin].updateConsoleStrs();	
+	}//drawUI
+	
 	
 	/**
 	 * draw bounding box for 3d
@@ -1288,23 +1304,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			dispWinFrames[curFocusWin].drawWindowGuiObjs(animTimeMod);					//draw what user-modifiable fields are currently available
 			ri.popMatState();	
 		}
-	}//	
-	
-	/**
-	 * 
-	 * @param modAmtMillis
-	 */
-	private final void drawUI(float modAmtMillis){					
-		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
-		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
-		dispWinFrames[dispMenuIDX].drawHeader(modAmtMillis);
-		if(isDebugMode()){
-			dispWinFrames[curFocusWin].drawUIDebugMode(dispWinFrames[dispMenuIDX].getDebugData());		
-		} else if(showInfo){
-			dispWinFrames[curFocusWin].drawOnscreenText();
-		}
-		dispWinFrames[curFocusWin].updateConsoleStrs();	
-	}//drawUI
+	}//
 	
 	
 	/**
@@ -1553,12 +1553,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				if(winDispIdxXOR[i]!= idx){
 					dispWinFrames[winDispIdxXOR[i]].setShowWin(false);
 					handleShowWin(i ,0,false); 
-					forceVisFlag(winFlagsXOR[i], false);
+					forceWinVisFlag(winFlagsXOR[i], false);
 				}//not this window
 				else {//turning on this one
 					dispWinFrames[idx].setShowWin(true);
 					handleShowWin(i ,1,false); 
-					forceVisFlag(winFlagsXOR[i], true);
+					forceWinVisFlag(winFlagsXOR[i], true);
 					curFocusWin = winDispIdxXOR[i];
 					//setCamView();	//camera now handled by individual windows
 					//dispWinFrames[idx].setInitCamView();
@@ -1706,7 +1706,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	private final void initVisFlags(){
 		int numVisFlags = getNumVisFlags();
-		_visFlags = new int[1 + numVisFlags/32];for(int i =0; i<numVisFlags;++i){forceVisFlag(i,false);}	
+		_winVisFlags = new int[1 + numVisFlags/32];for(int i =0; i<numVisFlags;++i){forceWinVisFlag(i,false);}	
 	}		
 	
 	/**
@@ -1719,9 +1719,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param idx
 	 * @param val
 	 */
-	public final void setVisFlag(int idx, boolean val ){
+	public final void setWinVisFlag(int idx, boolean val ){
 		int flIDX = idx/32, mask = 1<<(idx%32);
-		_visFlags[flIDX] = (val ?  _visFlags[flIDX] | mask : _visFlags[flIDX] & ~mask);
+		_winVisFlags[flIDX] = (val ?  _winVisFlags[flIDX] | mask : _winVisFlags[flIDX] & ~mask);
 		switch (idx){
 			case dispMenuIDX 	: { dispWinFrames[dispMenuIDX].setShowWin(val);    break;}
 			default 			: {	setVisFlag_Indiv(idx, val);	}
@@ -1740,16 +1740,16 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param idx
 	 * @return
 	 */
-	public final boolean getVisFlag(int idx){int bitLoc = 1<<(idx%32);return (_visFlags[idx/32] & bitLoc) == bitLoc;}		
+	public final boolean getWinVisFlag(int idx){int bitLoc = 1<<(idx%32);return (_winVisFlags[idx/32] & bitLoc) == bitLoc;}		
 	
 	/**
 	 * this will not execute the code in setVisFlag, which might cause a loop
 	 * @param idx
 	 * @param val
 	 */
-	public final void forceVisFlag(int idx, boolean val) {
+	public final void forceWinVisFlag(int idx, boolean val) {
 		int flIDX = idx/32, mask = 1<<(idx%32);
-		_visFlags[flIDX] = (val ?  _visFlags[flIDX] | mask : _visFlags[flIDX] & ~mask);
+		_winVisFlags[flIDX] = (val ?  _winVisFlags[flIDX] | mask : _winVisFlags[flIDX] & ~mask);
 		//doesn't perform any other ops - to prevent looping
 	}
 	
@@ -1758,7 +1758,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param i
 	 * @return
 	 */
-	public final boolean isShowingWindow(int i){return getVisFlag(i);}//showUIMenu is first flag of window showing flags, visFlags are defined in instancing class
+	public final boolean isShowingWindow(int i){return getWinVisFlag(i);}//showUIMenu is first flag of window showing flags, visFlags are defined in instancing class
 
 	//base class flags init
 	protected final void initBaseFlags(){_baseFlags = new int[1 + numBaseFlags/32];for(int i =0; i<numBaseFlags;++i){forceBaseFlag(i,false);}}		
