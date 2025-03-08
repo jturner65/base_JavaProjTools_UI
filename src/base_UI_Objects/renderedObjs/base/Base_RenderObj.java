@@ -7,6 +7,8 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import processing.core.PShape;
 import processing.core.PConstants;
+import processing.core.PMatrix3D;
+import processing.core.PImage;
 
 /**
  * Base class describing a rendered mesh object
@@ -24,11 +26,6 @@ public abstract class Base_RenderObj {
 		pi6ths = .5f*MyMathUtils.THIRD_PI_F;
 	
 	/**
-	 * individual static object representation. Any animation will be owned by the instancing class
-	 */
-	private PShape objRep;
-
-	/**
 	 * Type of object this represents
 	 */
 	protected int type;
@@ -36,12 +33,19 @@ public abstract class Base_RenderObj {
 	/**
 	 * color defined for this particular object - also query for UI menu color
 	 */
-	private RenderObj_Clr objectColor;
+	protected RenderObj_Clr objectColor;
 	
 	/**
 	 * # of animation frames to use for this rendered object
 	 */
 	public int numAnimFrames = 90;	
+	
+	protected PImage[] textures;
+	
+	/**
+	 * # of types of this kind of render object
+	 */
+	protected int numTypes;
 	
 	/**
 	 * Class to allow for prebuilding complex rendered representations of objects as pshapes
@@ -50,9 +54,15 @@ public abstract class Base_RenderObj {
 	 * @param _type
 	 * @param _numAnimFrames # of frames for a single cycle of repeated animation
 	 */
-	public Base_RenderObj(IRenderInterface _p, int _type, int _numAnimFrames, RenderObj_ClrPalette _clrPalette) {
-		p=_p; type = _type; numAnimFrames = _numAnimFrames;
-		setObjMade(initGeometry(_clrPalette));
+	public Base_RenderObj(IRenderInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette, PImage[] _textures) {
+		p=_p; type = _type; numTypes=_numTypes; numAnimFrames = _numAnimFrames;
+		textures = _textures;
+		initObjMadeForTypeAndObjReps(numTypes);
+		setObjMadeForType(initGeometry(_clrPalette),type);
+	}
+	
+	public Base_RenderObj(IRenderInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette) {
+		this(_p, _type, _numTypes, _numAnimFrames, _clrPalette, new PImage[0]);
 	}
 	
 	/**
@@ -61,12 +71,18 @@ public abstract class Base_RenderObj {
 	 */
 	protected final boolean initGeometry(RenderObj_ClrPalette _clrPalette){
 		//global setup for instance class object type
-		if(!getObjMade()){	
+		if(!getObjMadeForType(type)){
 			//perform this only once for all types of render objects
 			//base colors for all objects of this species
 			setMainColorPalette(_clrPalette);
 			//set up species-wide render object geometry
-			initObjGeometry();
+			initObjGeometry(); 
+			//set per-type color 
+			objectColor = getObjTypeColor();
+			//any per-type (child class) setup required	
+			initInstObjGeometryIndiv();
+			//create object/objRep for this type
+			buildObj();			
 		}//if not made yet initialize geometry to build this object
 		//individual per-instance/type setup - need to not be static since window can change
 		initInstObjGeometry();		
@@ -74,17 +90,22 @@ public abstract class Base_RenderObj {
 	}
 	
 	/**
-	 * Get per-species boolean defining whether or not species-wide geometry has been completed. 
+	 * Initialize the Object Made array of per-type booleans for instancing species
+	 * @param _type
+	 */
+	protected abstract void initObjMadeForTypeAndObjReps(int _numTypes);
+	/**
+	 * Get per-species per subtype boolean defining whether or not species-wide geometry has been completed. 
 	 * Each species should (class inheriting from this class) should have its own static 'made' boolean,
 	 * which this provides access to.
 	 */
-	protected abstract boolean getObjMade();
+	protected abstract boolean getObjMadeForType(int _type);
 	/**
 	 * Set per-species boolean defining whether or not species-wide geometry has been completed. 
 	 * Each species should (class inheriting from this class) should have its own static 'made' boolean,
 	 * which this provides access to.
 	 */
-	protected abstract void setObjMade(boolean isMade);
+	protected abstract void setObjMadeForType(boolean isMade, int _type);
 
 	/**
 	 * initialize base colors for this object - only perform once per object type/species  
@@ -95,19 +116,24 @@ public abstract class Base_RenderObj {
 	 * Builds geometry for species of object to be instanced - only perform once per object type/species 
 	 */
 	protected abstract void initObjGeometry();
-
 	
+	/**
+	 * Set a texture to use for the passed shape via texture array index. Call between beginShape and endShape
+	 */
+	protected void setObjTexture(PShape sh, int idx) {
+		//sh.texture(textures[idx]);
+	}
 	/**
 	 * Builds instance of rendered object
 	 */
 	protected final void initInstObjGeometry(){
-		objRep = createObjRepForType();//createBaseShape(getMainMeshType()); 
-		//set per-type color 
-		objectColor = getObjTypeColor();
-		//any per-type (child class) setup required	
-		initInstObjGeometryIndiv();
-		//create object/objRep
-		buildObj(objRep);			
+//		objRep = createObjRepForType();//createBaseShape(getMainMeshType()); 
+//		//set per-type color 
+//		objectColor = getObjTypeColor();
+//		//any per-type (child class) setup required	
+//		initInstObjGeometryIndiv();
+//		//create object/objRep
+//		buildObj(objRep);			
 	}//	initInstObjGeometry
 	
 	/**
@@ -129,15 +155,7 @@ public abstract class Base_RenderObj {
 	/**
 	 * build the instance of a particular object
 	 */
-	protected abstract void buildObj(PShape _objRep);
-	
-	/**
-	 * Set the various colors of the objRep based on the specified object color.
-	 */
-	protected void setObjRepClrsFromObjClr() {
-		//call shSetShapeColors since we need to use set<type> style functions of Pshape when outside beginShape-endShape
-		objectColor.shSetShapeColors(objRep);
-	}
+	protected abstract void buildObj();
 	
 	/**
 	 * Create and return a processing shape (PShape) with passed arg list. 
@@ -177,18 +195,6 @@ public abstract class Base_RenderObj {
 	}
 	
 	/**
-	 * create an individual shape at a particular location and 
-	 * set up initial configuration - also perform any universal initial shape code
-	 * @param initTransVec initial translation
-	 * @return
-	 */
-	protected PShape makeShape(myPointf initTransVec){
-		PShape sh = createBaseShape();
-		sh.translate(initTransVec.x,initTransVec.y,initTransVec.z);		
-		return sh;
-	}//makeShape
-	
-	/**
 	 * build quad shape from object points using object base color
 	 * @param transVec
 	 * @param numX
@@ -197,7 +203,8 @@ public abstract class Base_RenderObj {
 	 * @return
 	 */
 	protected int buildQuadShape(PShape _objRep, myPointf transVec, int numX, int btPt, myPointf[][] objRndr){
-		PShape sh = makeShape(transVec);
+		PShape sh = createBaseShape();
+		sh.translate(transVec.x,transVec.y,transVec.z);
 		sh.beginShape(PConstants.QUAD);
 			objectColor.shPaintColors(sh);
 			for(int i = 0; i < numX; ++i){
@@ -207,9 +214,32 @@ public abstract class Base_RenderObj {
 		_objRep.addChild(sh);		
 		return btPt;
 	}
+		
+	/**
+	 * Create a PShape transform matrix. Necessary because post 3.3.3 processing got rid of pshape matrix stack
+	 * @param transVec First applied transform - initial translation
+	 * @param scaleVec Scale applied after translate
+	 * @param rotAra First applied rotation
+	 * @param trans2Vec 2nd Applied translation
+	 * @param rotAra2 2nd Applied rotation
+	 * @param trans3Vec 3rd Applied translation
+	 * @param rotAra3 3rd Applied rotation
+	 * @return PShape created and transformed using passed transforms
+	 */
+	protected PMatrix3D buildMatrixTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3) {
+		PMatrix3D mat = new PMatrix3D();
+		mat.translate(transVec.x, transVec.y, transVec.z);
+		mat.scale(scaleVec.x,scaleVec.y,scaleVec.z);
+		mat.rotate(rotAra[0],rotAra[1],rotAra[2],rotAra[3]);
+		mat.translate(trans2Vec.x, trans2Vec.y, trans2Vec.z);
+		mat.rotate(rotAra2[0],rotAra2[1],rotAra2[2],rotAra2[3]);
+		mat.translate(trans3Vec.x, trans3Vec.y, trans3Vec.z);
+		mat.rotate(rotAra3[0],rotAra3[1],rotAra3[2],rotAra3[3]);	
+		return mat;
+	}
 	
 	/**
-	 * Create a PShape and set it's initial transformations.
+	 * Create a PShape and set its initial transformations.
 	 * @param transVec First applied transform - initial translation
 	 * @param scaleVec Scale applied after translate
 	 * @param rotAra First applied rotation
@@ -220,13 +250,9 @@ public abstract class Base_RenderObj {
 	 * @return PShape created and transformed using passed transforms
 	 */
 	protected PShape createAndSetInitialTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3){	
-		PShape sh = makeShape(transVec);			
-		sh.scale(scaleVec.x,scaleVec.y,scaleVec.z);
-		sh.rotate(rotAra[0],rotAra[1],rotAra[2],rotAra[3]);
-		sh.translate(trans2Vec.x, trans2Vec.y, trans2Vec.z);
-		sh.rotate(rotAra2[0],rotAra2[1],rotAra2[2],rotAra2[3]);
-		sh.translate(trans3Vec.x, trans3Vec.y, trans3Vec.z);
-		sh.rotate(rotAra3[0],rotAra3[1],rotAra3[2],rotAra3[3]);		
+		PShape sh = createBaseShape();
+		PMatrix3D mat = buildMatrixTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
+		sh.applyMatrix(mat);
 		return sh;
 	}
 	
@@ -326,7 +352,7 @@ public abstract class Base_RenderObj {
 	 * @param objID
 	 */
 	public final void drawMe(double animPhase, int objID){
-		((my_procApplet) p).shape(objRep);
+		//my_procApplet.AppMgr.drawAxes(10.0, 2.0f, new myPoint(), 255, false);
 		drawMeIndiv((int)(animPhase * numAnimFrames));
 	}
 	/**
