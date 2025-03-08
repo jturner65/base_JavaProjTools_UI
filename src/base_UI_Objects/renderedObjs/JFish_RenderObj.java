@@ -15,9 +15,14 @@ import processing.core.PShape;
  *
  */
 public class JFish_RenderObj extends Base_RenderObj {
-	//static vals set in here because we want boid "species"-wide color settings
-	//if overall geometry has been made or not
-	private static boolean made;
+	/**
+	 * if overall geometry has been made or not
+	 */
+	private static boolean[] madeForType = null;
+	/**
+	 * individual static object representation. Any animation will be owned by the instancing class
+	 */
+	private static PShape[] objReps = null;
 	
 	private static PShape[][] bodyAra = new PShape[5][];
 	//private int numTentacles = 5;
@@ -30,17 +35,33 @@ public class JFish_RenderObj extends Base_RenderObj {
 	private static double maxAnimCntr = 1000.0;
 
 	
-	public JFish_RenderObj(IRenderInterface _p, int _type, int _numAnimFrames, RenderObj_ClrPalette _clrPalette)  {	
-		super(_p, _type, _numAnimFrames, _clrPalette);
+	public JFish_RenderObj(IRenderInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette)  {	
+		super(_p, _type, _numTypes, _numAnimFrames, _clrPalette);
 	}//ctor
 	
 	/**
-	 * Get per-species boolean defining whether or not species-wide geometry has been completed. 
+	 * Initialize the Object Made array of per-type booleans for instancing species
+	 * @param _type
+	 */
+	@Override
+	protected  void initObjMadeForTypeAndObjReps(int _numTypes) {
+		if(madeForType == null) {
+			madeForType = new boolean[_numTypes];
+			for(int i=0;i<_numTypes;++i) {madeForType[i]=false;}
+		}
+		if(objReps == null) {
+			objReps = new PShape[_numTypes];
+			for(int i=0;i<_numTypes;++i) {objReps[i]=createObjRepForType();}
+		}
+	}
+	
+	/**
+	 * Get per-species per subtype boolean defining whether or not species-wide geometry has been completed. 
 	 * Each species should (class inheriting from this class) should have its own static 'made' boolean,
 	 * which this provides access to.
 	 */
 	@Override
-	protected boolean getObjMade() {return made;}
+	protected boolean getObjMadeForType(int _type) {return madeForType[_type];}
 
 	/**
 	 * Set per-species boolean defining whether or not species-wide geometry has been completed. 
@@ -48,7 +69,7 @@ public class JFish_RenderObj extends Base_RenderObj {
 	 * which this provides access to.
 	 */
 	@Override
-	protected void setObjMade(boolean isMade) {made = isMade;}
+	protected void setObjMadeForType(boolean isMade, int _type) {madeForType[_type] = isMade;}
 	
 	/**
 	 * Instantiate objRep object
@@ -107,13 +128,14 @@ public class JFish_RenderObj extends Base_RenderObj {
 	}//initInstObjGeometry
 
 	@Override
-	protected void buildObj(PShape _objRep) {
+	protected void buildObj() {
 		//build the boid's body geometry here - called at end of initInstObjGeometry
 	}
 
 	@Override
 	protected void drawMeIndiv(int animIDX) {
 		//draw animation index-specified deformed "jellyfish"
+		((my_procApplet) p).shape(objReps[type]);		
 		((my_procApplet) p).shape(bodyAra[type][animIDX]);
 	}
 	@Override
