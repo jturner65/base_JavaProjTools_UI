@@ -439,9 +439,7 @@ public class SidebarMenu extends Base_DispWindow{
 		ri.showText("Boolean Flags",0,txtHeightOff*.20f);
 		ri.translate(0,clkFlgsStY);
 		AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
-	}//drawSideBarBooleans
-
-	
+	}//drawSideBarBooleans	
 	/**
 	 * draw UI buttons that control functions, debug and global load/save stubs
 	 */

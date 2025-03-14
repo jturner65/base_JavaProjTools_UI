@@ -523,6 +523,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		canvas = new Disp3DCanvas(this, ri, viewWidth, viewHeight);	
 	}//setAppWindowWidth
 
+
+	public final float getMenuWidth() {return menuWidth;}
 	/**
 	 * Override if want to resize menu width fraction. Needs to be [0,1]
 	 * @return
@@ -1863,12 +1865,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void toggleSaveAnim() {setBaseFlag(saveAnim, !getBaseFlag(saveAnim));}
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Top-level UI flags to show
-//	protected final void setBaseFlagToShow_debugMode(int winIdx, boolean val) {_setBaseFlagToShow(debugMode, val);}
-//	protected final void setBaseFlagToShow_saveAnim(int winIdx, boolean val) {_setBaseFlagToShow(saveAnim, val);}
-//	protected final void setBaseFlagToShow_runSim(int winIdx, boolean val) {_setBaseFlagToShow(runSim, val);}
-//	protected final void setBaseFlagToShow_singleStep(int winIdx, boolean val) {_setBaseFlagToShow(singleStep, val);}
-//	protected final void setBaseFlagToShow_showRtSideMenu(int winIdx, boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}	
-//	protected final void setBaseFlagToShow_showDrawableCanvas(int winIdx, boolean val) {_setBaseFlagToShow(showCanvas, val);}	
 
 	protected final void setBaseFlagToShow_debugMode(boolean val) {_setBaseFlagToShow(debugMode, val);}
 	protected final void setBaseFlagToShow_saveAnim(boolean val) {_setBaseFlagToShow(saveAnim, val);}
@@ -1902,8 +1898,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	public abstract double clickValModMult();
 	public abstract boolean isClickModUIVal();
-
-	public float getMenuWidth() {return menuWidth;}
 	
 	public Base_DispWindow getCurFocusDispWindow() {return dispWinFrames[curFocusWin];}	
 
