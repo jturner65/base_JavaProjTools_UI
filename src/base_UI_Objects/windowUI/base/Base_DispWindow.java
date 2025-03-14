@@ -74,40 +74,10 @@ public abstract class Base_DispWindow {
 	 */
 	protected final GUI_AppWinVals winInitVals;
 	
-	public final String name;
-	
 	public float[] closeBox, mseClickCrnr;	
 	//current visible screen width and height
 	public float[] curVisScrDims;
 	
-	/**
-	 * Height of a line of text. Also used as a width of an average character
-	 */
-	public static final float txtHeightOff = 1.5f * (IRenderInterface.txtSz);
-	/**
-	 * Base right side text menu per-line height offset
-	 */
-	public static final float rtSideTxtHeightOff = txtHeightOff - 4.0f;
-	
-	/**
-	 * Right side menu y values
-	 * 		idx 0 : current y value for text (changes with each frame)
-	 * 		idx 1 : per-line y offset for grouped text
-	 * 		idx 2 : per-line y offset for title-to-group text (small space)
-	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
-	 */
-	protected final float[] rtSideYOffVals = new float[] {
-			0, rtSideTxtHeightOff, 1.2f * rtSideTxtHeightOff, 1.5f * rtSideTxtHeightOff
-	};
-	
-	protected static final float xOff = 20;
-	protected static final float btnLblYOff = 2 * txtHeightOff, rowStYOff = txtHeightOff*.15f;
-	protected static final float xOffHalf = .5f*xOff, txtHeightOffHalf = .5f*txtHeightOff;
-	
-	//size of interaction/close window box in pxls
-	private static final float clkBxDim = 10;
-	//array of x,y offsets for UI objects that have a prefix graphical element
-	private static final double[] UI_off = new double[] { xOff, txtHeightOff };
 	
 	/**
 	 * the window list idx in the App Manager that controls this window - use -1 for none.
@@ -299,11 +269,10 @@ public abstract class Base_DispWindow {
 		className = this.getClass().getSimpleName();
 		ID = winCnt++;
 		dispFlagWinIDX = _winIdx;
-		winInitVals = _winInitVals;			
-		name = winInitVals.winName;
-		fileIO = new FileIOManager(msgObj, name);
+		winInitVals = _winInitVals;	
+		fileIO = new FileIOManager(msgObj, winInitVals.winName);
 		//base screenshot path based on launch time
-		ssFolderDir = name+"_"+getNowDateTimeString();
+		ssFolderDir = winInitVals.winName+"_"+getNowDateTimeString();
 		ssPathBase = AppMgr.getApplicationPath() +File.separatorChar + ssFolderDir + File.separatorChar;
 
 		closeBox = new float[4]; uiClkCoords = new float[4];
@@ -524,7 +493,7 @@ public abstract class Base_DispWindow {
 		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
 		myPointf[][] corners = new myPointf[numGUIObjs][2];
 		myPointf stPt = new myPointf(uiClkCoords[0], uiClkCoords[1], 0);
-		myPointf endPt = new myPointf(uiClkCoords[2], uiClkCoords[1]+txtHeightOff, 0);
+		myPointf endPt = new myPointf(uiClkCoords[2], uiClkCoords[1]+winInitVals.getTextHeightOffset(), 0);
 			
 		for (int i = 0; i < numGUIObjs; ++i) {
 			Object[] obj = tmpUIObjArray.get(i);
@@ -546,14 +515,14 @@ public abstract class Base_DispWindow {
 				guiBoolVals[i][idx++] = val;
 			}
 			//move box down by text height
-			stPt._add(0, txtHeightOff, 0);
-			endPt._add(0, txtHeightOff, 0);
+			stPt._add(0, winInitVals.getTextHeightOffset(), 0);
+			endPt._add(0, winInitVals.getTextHeightOffset(), 0);
 		}
 		//Make a smaller padding amount for final row
-		uiClkCoords[3] =  stPt.y - .5f*txtHeightOff;
+		uiClkCoords[3] =  stPt.y - .5f*winInitVals.getTextHeightOffset();
 		
-		//build all objects using these values
-		_buildAllObjects(guiObjNames, corners, guiMinMaxModVals, guiStVals, guiBoolVals, guiObjTypes, tmpListObjVals, UI_off);
+		//build all objects using these values 
+		_buildAllObjects(guiObjNames, corners, guiMinMaxModVals, guiStVals, guiBoolVals, guiObjTypes, tmpListObjVals, winInitVals.getUIOffset());
 	}//_buildGUIObjsFromMaps
 	
 	/**
@@ -899,7 +868,7 @@ public abstract class Base_DispWindow {
 	private static final float ltrLen = 5.0f;private static final int btnStep = 5;
 	private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((PApplet.max(tStr.length(),fStr.length())+4) * ltrLen)/btnStep);}
 	
-	private void _setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {uiClkCoords[0]+oldBtnLen, uiClkCoords[3], btnLen, txtHeightOff };}
+	private void _setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {uiClkCoords[0]+oldBtnLen, uiClkCoords[3], btnLen, winInitVals.getTextHeightOffset() };}
 	
 	/**
 	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
@@ -928,7 +897,7 @@ public abstract class Base_DispWindow {
 		privFlagBtns = new float[numBtns][];
 		if (numBtns == 0) {	return;	}
 		float maxBtnLen = 0.95f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
-		this.uiClkCoords[3] += txtHeightOff;
+		this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
 		float oldBtnLen = 0;
 		boolean lastBtnHalfStLine = false, startNewLine = true;
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
@@ -939,11 +908,11 @@ public abstract class Base_DispWindow {
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
 					privFlagBtns[i-1][2] = maxBtnLen;
-					this.uiClkCoords[3] += txtHeightOff;
+					this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
 				}
 				_setBtnDims(i, 0, btnLen);
-				//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-xOff), (float) uiClkCoords[3], btnLen, yOff };				
-				this.uiClkCoords[3] += txtHeightOff;
+				//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-winInitVals.getXOffset()), (float) uiClkCoords[3], btnLen, yOff };				
+				this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
 				startNewLine = true;
 				lastBtnHalfStLine = false;
 			} else {//button len should be half width unless this button started a new line
@@ -955,7 +924,7 @@ public abstract class Base_DispWindow {
 				} else {//should only get here if 2nd of two <1/2 width buttons in a row
 					lastBtnHalfStLine = false;
 					_setBtnDims(i, oldBtnLen, btnLen);
-					this.uiClkCoords[3] += txtHeightOff;
+					this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
 					startNewLine = true;					
 				}
 			}			
@@ -963,9 +932,9 @@ public abstract class Base_DispWindow {
 		}
 		if(lastBtnHalfStLine){//set last button full length if starting new line
 			privFlagBtns[numBtns-1][2] = maxBtnLen;
-			this.uiClkCoords[3] += txtHeightOff;
+			this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
 		}
-		this.uiClkCoords[3] += rowStYOff;
+		this.uiClkCoords[3] += winInitVals.getRowStYOffset();
 		initPrivFlagColors();
 	}//_buildPrivBtnRects
 	/**
@@ -1233,7 +1202,7 @@ public abstract class Base_DispWindow {
 	protected final void hndlFileLoad_GUI(String[] vals, int[] stIdx) {
 		++stIdx[0];
 		//set values for ui sliders
-		while(!vals[stIdx[0]].contains(name + "_custUIComps")){
+		while(!vals[stIdx[0]].contains(winInitVals.winName + "_custUIComps")){
 			if(vals[stIdx[0]].trim() != ""){	setValFromFileStr(vals[stIdx[0]]);	}
 			++stIdx[0];
 		}
@@ -1246,10 +1215,10 @@ public abstract class Base_DispWindow {
 	 */
 	protected final ArrayList<String> hndlFileSave_GUI(){
 		ArrayList<String> res = new ArrayList<String>();
-		res.add(name);
+		res.add(winInitVals.winName);
 		for(int i=0;i<guiObjs_Numeric.length;++i){	res.add(guiObjs_Numeric[i].getStrFromUIObj(i));}		
 		//bound for custom components
-		res.add(name + "_custUIComps");
+		res.add(winInitVals.winName + "_custUIComps");
 		//add blank space
 		res.add("");
 		return res;
@@ -1319,6 +1288,7 @@ public abstract class Base_DispWindow {
 	public final float[] getRectDimClosed() {return winInitVals.rectDimClosed;}
 	
 	private final void _setClosedBox(){
+		float clkBxDim = winInitVals.getClkBoxDim();
 		if( dispFlags.getShowWin()){	
 			closeBox[0] = winInitVals.rectDim[0]+winInitVals.rectDim[2]-clkBxDim;
 			closeBox[1] = winInitVals.rectDim[1];	
@@ -1476,8 +1446,11 @@ public abstract class Base_DispWindow {
 		ri.disableLights();		
 		winInitVals.setWinStroke(ri);
 		winInitVals.setWinFillWithStroke(ri);
-		if(winInitVals.winDescr.trim() != ""){	dispMultiLineText(winInitVals.winDescr,  winInitVals.rectDim[0]+10,  winInitVals.rectDim[1]+10);}
-		if(null!=trajMgr){	trajMgr.drawNotifications(ri, xOffHalf, txtHeightOffHalf);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		if(winInitVals.winDescr.trim() != ""){	
+			float yOffset = dispMultiLineText(winInitVals.winDescr,  winInitVals.rectDim[0]+10, winInitVals.rectDim[1]+12); 
+			ri.translate(winInitVals.rectDim[0]+10,yOffset);
+		}
+		if(null!=trajMgr){	trajMgr.drawNotifications(ri, winInitVals.getXOffset() *.5f, winInitVals.getTextHeightOffset() *.5f);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		if(dispFlags.getIsCloseable()){drawMouseBox();}
 		//TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
 		if(dispFlags.getHasScrollBars() && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe();}
@@ -1507,7 +1480,7 @@ public abstract class Base_DispWindow {
 	 */
 	protected void drawSepBar(double uiClkCoords2) {
 		ri.pushMatState();
-			ri.translate(0,uiClkCoords2 + (.5*IRenderInterface.txtSz),0);
+			ri.translate(0,uiClkCoords2 + (.5f*winInitVals.getClkBoxDim()),0);
 			ri.setFill(0,0,0,255);
 			ri.setStrokeWt(1.0f);
 			ri.setStroke(0,0,0,255);
@@ -1521,11 +1494,11 @@ public abstract class Base_DispWindow {
 	 */
 	public final void drawUIDebugMode(String[] res) {
 		ri.pushMatState();			
-		reInitInfoStr();
-		addInfoStr(0,AppMgr.getMseEyeInfoString(getCamDisp()));
-		int numToPrint = MyMathUtils.min(res.length,80);
-		for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
-		drawInfoStr(1.0f, winInitVals.strkClr); 	
+			reInitInfoStr();
+			addInfoStr(0,AppMgr.getMseEyeInfoString(getCamDisp()));
+			int numToPrint = MyMathUtils.min(res.length,80);
+			for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
+			drawInfoStr(1.0f, winInitVals.strkClr); 	
 		ri.popMatState();		
 	}//drawUIDebugMode
 	
@@ -1534,7 +1507,7 @@ public abstract class Base_DispWindow {
 		if(dispFlags.getShowRtSideMenu()) {				
 			ri.drawRect(UIRtSideRectBox);
 			//move to manage internal text display in owning window
-			ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+rtSideTxtHeightOff,0);
+			ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+winInitVals.getRtSideTxtHeightOffset(),0);
 			ri.setFill(255,255,255,255);	
 			 //instancing class implements this function
 			drawRightSideInfoBarPriv(modAmtMillis); 
@@ -1670,22 +1643,26 @@ public abstract class Base_DispWindow {
 	public final void setInfoStr(int idx, String str){DebugInfoAra.set(idx,str);	}
 	public final void drawInfoStr(float sc, int clr){drawInfoStr(sc, ri.getClr(clr,255));}
 	public final void drawInfoStr(float sc, int[] fillClr){//draw text on main part of screen
+		float yOff = winInitVals.getTextHeightOffset();
 		ri.pushMatState();		
 			ri.setFill(fillClr,fillClr[3]);
 			ri.translate((AppMgr.getMenuWidth()),0);
 			ri.scale(sc,sc);
-			for(int i = 0; i < DebugInfoAra.size(); ++i){		ri.showText((AppMgr.isDebugMode()?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(10+(12*i)));	}
+			for(int i = 0; i < DebugInfoAra.size(); ++i){		
+				ri.showText((AppMgr.isDebugMode()?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(yOff+(yOff*i)));	}
 		ri.popMatState();
 	}		
 	
-	//print out multiple-line text to screen
-	public final void dispMultiLineText(String str, float x, float y){
+	// print out multiple-line text to screen
+	// returns total displacement
+	private final float dispMultiLineText(String str, float x, float y){
 		String[] res = str.split("\\r?\\n");
-		float disp = 0;
+		float disp = y;
 		for(int i =0; i<res.length; ++i){
-			ri.showText(res[i],x, y+disp);		//add console string output to screen display- decays over time
-			disp += 12;
+			ri.showText(res[i],x, disp);		//add console string output to screen display- decays over time
+			disp += winInitVals.getTextHeightOffset();
 		}
+		return disp;
 	}
 	
 	
@@ -1861,6 +1838,7 @@ public abstract class Base_DispWindow {
 	public final boolean pointInRectDim(int x, int y){return winInitVals.pointInRectDim(x, y);	}
 	public final boolean pointInRectDim(myPoint pt){return winInitVals.pointInRectDim(pt);}	
 	public final boolean pointInRectDim(myPointf pt){return winInitVals.pointInRectDim(pt);}
+	public final float getTextHeightOffset() {return winInitVals.getTextHeightOffset();}
 	
 	/**
 	 * Handle ticks from mouse wheel
@@ -2079,11 +2057,11 @@ public abstract class Base_DispWindow {
 		
 	public final void setThisWinDebugState(int btn,int val) {
 		if(val==0) {//turning on
-			msgObj.dispMessage(className, "handleSideMenuDebugSelEnable","Click Debug functionality on in " + name + " : btn : " + btn, MsgCodes.debug1);
+			msgObj.dispMessage(className, "handleSideMenuDebugSelEnable","Click Debug functionality on in " + winInitVals.winName + " : btn : " + btn, MsgCodes.debug1);
 			handleSideMenuDebugSelEnable(btn);
 			msgObj.dispMessage(className, "handleSideMenuDebugSelEnable", "End Debug functionality on selection.",MsgCodes.debug1);
 		} else {
-			msgObj.dispMessage(className, "handleSideMenuDebugSelDisable","Click Debug functionality off in " + name + " : btn : " + btn, MsgCodes.debug1);
+			msgObj.dispMessage(className, "handleSideMenuDebugSelDisable","Click Debug functionality off in " + winInitVals.winName + " : btn : " + btn, MsgCodes.debug1);
 			handleSideMenuDebugSelDisable(btn);			
 			msgObj.dispMessage(className, "handleSideMenuDebugSelDisable", "End Debug functionality off selection.",MsgCodes.debug1);
 		}
@@ -2103,9 +2081,9 @@ public abstract class Base_DispWindow {
 		int row = curCstBtnRow-curCstFuncBtnOffset;
 		int col = curCustBtn[curCstBtnRow];
 		String label = AppMgr.getSidebarMenuButtonLabel(curCstBtnRow,col);
-		msgObj.dispDebugMessage(className, "launchMenuBtnHndlr", "Begin requested action : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + name);
+		msgObj.dispDebugMessage(className, "launchMenuBtnHndlr", "Begin requested action : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + winInitVals.winName);
 		launchMenuBtnHndlr(row, col, label);
-		msgObj.dispDebugMessage(className,"launchMenuBtnHndlr", "End requested action (multithreaded actions may still be working) : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + name);
+		msgObj.dispDebugMessage(className,"launchMenuBtnHndlr", "End requested action (multithreaded actions may still be working) : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + winInitVals.winName);
 		custFuncDoLaunch=false;
 	}//checkCustMenuUIObjs
 
@@ -2247,7 +2225,7 @@ public abstract class Base_DispWindow {
 	 */
 	public final MessageObject getMsgObj() {return msgObj;}
 	
-	public final String getName() {return name;}
+	public final String getName() {return winInitVals.winName;}
 	public final int getID() {return ID;}
 	
 	public String toString(){

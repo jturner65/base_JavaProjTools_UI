@@ -37,6 +37,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * rendering engine interface, providing expected methods.
 	 */
 	protected static IRenderInterface ri = null;
+	
+	/**
+	 * point size of text; is some multiple of screen height. Should be able to support modification
+	 */	
+	protected int _txtSize;
+	
 	/**
 	 * 3d interaction stuff and mouse tracking
 	 */
@@ -343,7 +349,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		dispWinFrames = new Base_DispWindow[numDispWins];
 		//whether each 3D window uses Skybox or color background 
 		_useSkyboxBKGndAra= new boolean[numDispWins];
-		
+		// set initial text size
+		_txtSize = (int) (_displayHeight * IRenderInterface.fontSizeScale);
 		//initialize grid dim structs
 		setGridDimStructs();
 	}//	
@@ -397,7 +404,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				return new int[] {(int)(newWidth*.95f), (int)(_displayHeight*.92f)};
 			}
 			default :{//unsupported winSizeCntrl setting >= 2
-				System.out.println("Unsupported value from setAppWindowDimRestrictions(). Defaulting to 0.");
+				msgObj.dispConsoleWarningMessage("GUI_AppManager", "getIdealAppWindowDims","Unsupported value from setAppWindowDimRestrictions(). Defaulting to 0.");
 				return new int[] {(int)(_displayWidth*.95f), (int)(_displayHeight*.92f)};
 			}			
 		}
@@ -525,6 +532,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 
 
 	public final float getMenuWidth() {return menuWidth;}
+	
+	/**
+	 * Get size of text as fraction of display height.
+	 * @return
+	 */
+	public final int getTextSize() {return _txtSize;}
+	
 	/**
 	 * Override if want to resize menu width fraction. Needs to be [0,1]
 	 * @return
@@ -776,7 +790,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _inclMseOvValues include a row for possible mouse over values
 	 */
 	public final void buildSideBarMenu(String[] _winTitles, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
-		winInitVals[dispMenuIDX] = new GUI_AppWinVals(dispMenuIDX, new String[] {"UI Window", "User Controls"}, new boolean[4],
+		winInitVals[dispMenuIDX] = new GUI_AppWinVals(this, dispMenuIDX, new String[] {"UI Window", "User Controls"}, new boolean[4],
 				new float[][] {new float[]{0,0, menuWidth, viewHeight}, new float[]{0,0, hideWinWidth, viewHeight},getInitCameraValues()},
 				new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,200},new int[]{255,255,255,255}},
 				sceneOriginValsBase[0], sceneFcsValsBase[0]);
@@ -825,7 +839,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	protected final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
-		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+		winInitVals[_winIdx] = new GUI_AppWinVals(this, _winIdx, new String[] {_title, _descr}, _dispFlags,
 				_floatVals, _intClrVals, _sceneCenterVal, _initSceneFocusVal);
 	
 	}//setInitDispWinVals
@@ -855,7 +869,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals) {
 		int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
-		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+		winInitVals[_winIdx] = new GUI_AppWinVals(this, _winIdx, new String[] {_title, _descr}, _dispFlags,
 				_floatVals, _intClrVals, sceneOriginValsBase[scIdx], sceneFcsValsBase[scIdx]);
 	
 	}//setInitDispWinVals
@@ -960,11 +974,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				case 0 : {
 					//processing provided custom selectInput and selectOutput windows that had call 
 					//back functionality.  this cannot be delineated in an interface, so this needs to be coded separately
-					System.out.println("Selecting input not implemented currently.");
+					msgObj.dispConsoleErrorMessage("GUI_AppManager", "handleFileCmd", "Selecting input not implemented currently.");
 					//selectInput("Select a file to load from : ", "loadFromFile", currFileIOLoc);
 					break;}
 				case 1 : {
-					System.out.println("Selecting Output not implemented currently.");
+					msgObj.dispConsoleErrorMessage("GUI_AppManager", "handleFileCmd", "Selecting Output not implemented currently.");
 					//selectOutput("Select a file to save to : ", "saveToFile", currFileIOLoc);
 					break;}
 			}
@@ -1021,7 +1035,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	public final void loadFromFile(File file){
 		if (file == null) {
-			System.out.println("AppMgr :: loadFromFile ::Load was cancelled.");
+			msgObj.dispConsoleWarningMessage("GUI_AppManager", "loadFromFile", "Load was cancelled.");
 		    return;
 		} 		
 		//reset to match navigation in file IO window
@@ -1032,7 +1046,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	public final void saveToFile(File file){
 		if (file == null) {
-			System.out.println("AppMgr :: saveToFile ::Save was cancelled.");
+			msgObj.dispConsoleWarningMessage("GUI_AppManager", "saveToFile", "Save was cancelled.");
 		    return;
 		} 
 		//reset to match navigation in file IO window
@@ -2467,21 +2481,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public abstract int[] getClr_Custom(int colorVal, int alpha);
 
-
-	//		public final int  
-	//		  black=0xff000000, 
-	//		  white=0xffFFFFFF,
-	//		  red=0xffFF0000, 
-	//		  green=0xff00FF00, 
-	//		  blue=0xff0000FF, 
-	//		  yellow=0xffFFFF00, 
-	//		  cyan=0xff00FFFF, 
-	//		  magenta=0xffFF00FF,
-	//		  grey=0xff818181, 
-	//		  orange=0xffFFA600, 
-	//		  brown=0xffB46005, 
-	//		  metal=0xffB5CCDE, 
-	//		  dgreen=0xff157901;
 	//set color based on passed point r= x, g = z, b=y
 	public final void fillAndShowLineByRBGPt(myPoint p, float x,  float y, float w, float h){
 		ri.setFill((int)p.x,(int)p.y,(int)p.z, 255);
