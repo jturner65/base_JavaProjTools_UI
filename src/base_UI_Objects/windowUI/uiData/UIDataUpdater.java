@@ -52,5 +52,5 @@ public class UIDataUpdater extends Base_DataAdapter {
 	}
 	
 	@Override
-	public String getName() {		return win.name;	}
+	public String getName() {		return win.getName();	}
 }//class base_UpdateFromUIData

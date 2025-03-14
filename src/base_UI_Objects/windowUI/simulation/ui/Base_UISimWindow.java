@@ -96,7 +96,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 * Initialize the sim exec this window manages and set up its simulations
 	 */
 	private final void initSimExec() {
-		simExec = buildSimulationExecutive(name, getSimLayoutToUseList().length);
+		simExec = buildSimulationExecutive(getName(), getSimLayoutToUseList().length);
 		//Initialize the simulation executive
 		boolean riExists = (ri != null);
 		//specify whether visualizations should be available to be drawn based on wither a render interface exists

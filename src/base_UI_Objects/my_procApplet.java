@@ -134,7 +134,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		colorMode(RGB, 255, 255, 255, 255);
 		//setup default stroke ends.  ROUND is very slow, SQUARE  makes points invisible	
 		strokeCap(PROJECT);
-		textSize(txtSz);
+		textSize(AppMgr.getTextSize());
 		textureMode(NORMAL);			
 		rectMode(CORNER);	
 		sphereDetail(4);
