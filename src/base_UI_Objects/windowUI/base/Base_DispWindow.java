@@ -477,8 +477,7 @@ public abstract class Base_DispWindow {
 	 */
 	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
 		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.ListVal,boolVals};	
-	}
-	
+	}	
 	
 	/**
 	 * Initialize instancing window's private buttons and state flags
@@ -497,7 +496,6 @@ public abstract class Base_DispWindow {
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
 		if(null!=trueFlagIDXs) {_initPassedPrivFlagsToTrue(trueFlagIDXs);}		
 	}
-	
 	
 	/**
 	 * build ui objects from maps, keyed by ui object idx, with value being data
