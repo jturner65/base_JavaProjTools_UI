@@ -493,7 +493,7 @@ public abstract class Base_DispWindow {
 		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
 		myPointf[][] corners = new myPointf[numGUIObjs][2];
 		myPointf stPt = new myPointf(uiClkCoords[0], uiClkCoords[1], 0);
-		myPointf endPt = new myPointf(uiClkCoords[2], uiClkCoords[1]+winInitVals.getTextHeightOffset(), 0);
+		myPointf endPt = new myPointf(uiClkCoords[2], uiClkCoords[1]+getTextHeightOffset(), 0);
 			
 		for (int i = 0; i < numGUIObjs; ++i) {
 			Object[] obj = tmpUIObjArray.get(i);
@@ -515,11 +515,11 @@ public abstract class Base_DispWindow {
 				guiBoolVals[i][idx++] = val;
 			}
 			//move box down by text height
-			stPt._add(0, winInitVals.getTextHeightOffset(), 0);
-			endPt._add(0, winInitVals.getTextHeightOffset(), 0);
+			stPt._add(0, getTextHeightOffset(), 0);
+			endPt._add(0, getTextHeightOffset(), 0);
 		}
 		//Make a smaller padding amount for final row
-		uiClkCoords[3] =  stPt.y - .5f*winInitVals.getTextHeightOffset();
+		uiClkCoords[3] =  stPt.y - .5f*getTextHeightOffset();
 		
 		//build all objects using these values 
 		_buildAllObjects(guiObjNames, corners, guiMinMaxModVals, guiStVals, guiBoolVals, guiObjTypes, tmpListObjVals, winInitVals.getUIOffset());
@@ -868,7 +868,7 @@ public abstract class Base_DispWindow {
 	private static final float ltrLen = 5.0f;private static final int btnStep = 5;
 	private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((PApplet.max(tStr.length(),fStr.length())+4) * ltrLen)/btnStep);}
 	
-	private void _setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {uiClkCoords[0]+oldBtnLen, uiClkCoords[3], btnLen, winInitVals.getTextHeightOffset() };}
+	private void _setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {uiClkCoords[0]+oldBtnLen, uiClkCoords[3], btnLen, getTextHeightOffset() };}
 	
 	/**
 	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
@@ -897,7 +897,7 @@ public abstract class Base_DispWindow {
 		privFlagBtns = new float[numBtns][];
 		if (numBtns == 0) {	return;	}
 		float maxBtnLen = 0.95f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
-		this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
+		this.uiClkCoords[3] += getTextHeightOffset();
 		float oldBtnLen = 0;
 		boolean lastBtnHalfStLine = false, startNewLine = true;
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
@@ -908,11 +908,11 @@ public abstract class Base_DispWindow {
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
 					privFlagBtns[i-1][2] = maxBtnLen;
-					this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
+					this.uiClkCoords[3] += getTextHeightOffset();
 				}
 				_setBtnDims(i, 0, btnLen);
 				//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-winInitVals.getXOffset()), (float) uiClkCoords[3], btnLen, yOff };				
-				this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
+				this.uiClkCoords[3] += getTextHeightOffset();
 				startNewLine = true;
 				lastBtnHalfStLine = false;
 			} else {//button len should be half width unless this button started a new line
@@ -924,7 +924,7 @@ public abstract class Base_DispWindow {
 				} else {//should only get here if 2nd of two <1/2 width buttons in a row
 					lastBtnHalfStLine = false;
 					_setBtnDims(i, oldBtnLen, btnLen);
-					this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
+					this.uiClkCoords[3] += getTextHeightOffset();
 					startNewLine = true;					
 				}
 			}			
@@ -932,7 +932,7 @@ public abstract class Base_DispWindow {
 		}
 		if(lastBtnHalfStLine){//set last button full length if starting new line
 			privFlagBtns[numBtns-1][2] = maxBtnLen;
-			this.uiClkCoords[3] += winInitVals.getTextHeightOffset();
+			this.uiClkCoords[3] += getTextHeightOffset();
 		}
 		this.uiClkCoords[3] += winInitVals.getRowStYOffset();
 		initPrivFlagColors();
@@ -1446,18 +1446,18 @@ public abstract class Base_DispWindow {
 		ri.disableLights();		
 		winInitVals.setWinStroke(ri);
 		winInitVals.setWinFillWithStroke(ri);
+		float yOffset = 0;
 		if(winInitVals.winDescr.trim() != ""){	
-			float yOffset = dispMultiLineText(winInitVals.winDescr,  winInitVals.rectDim[0]+10, winInitVals.rectDim[1]+12); 
-			ri.translate(winInitVals.rectDim[0]+10,yOffset);
+			yOffset = dispMultiLineText(winInitVals.winDescr,  winInitVals.rectDim[0]+10, winInitVals.rectDim[1]+12); 
 		}
-		if(null!=trajMgr){	trajMgr.drawNotifications(ri, winInitVals.getXOffset() *.5f, winInitVals.getTextHeightOffset() *.5f);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		if(null!=trajMgr){	trajMgr.drawNotifications(ri, winInitVals.getXOffset() *.5f, getTextHeightOffset() *.5f);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		if(dispFlags.getIsCloseable()){drawMouseBox();}
 		//TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
 		if(dispFlags.getHasScrollBars() && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe();}
 		
 		//if(dispFlags.getDrawRtSideMenu()) {drawOnScreenStuff(modAmtMillis);	}
 		//draw stuff on screen, including rightSideMenu stuff, if this window supports it
-		drawOnScreenStuff(modAmtMillis);	
+		drawOnScreenStuff(modAmtMillis, yOffset);	
 		ri.enableLights();	
 		ri.setEndNoDepthTest();
 		ri.popMatState();	
@@ -1492,19 +1492,24 @@ public abstract class Base_DispWindow {
 	 * Draw UI data debug info
 	 * @param res UI debug data from dispMenu window
 	 */
-	public final void drawUIDebugMode(String[] res) {
+	public final void drawOnScreenText(String[] res, boolean isDebug) {
 		ri.pushMatState();			
 			reInitInfoStr();
-			addInfoStr(0,AppMgr.getMseEyeInfoString(getCamDisp()));
+			if(isDebug) {
+				addInfoStr(0,AppMgr.getMseEyeInfoString(getCamDisp()));
+			} else {
+				res = msgObj.getConsoleStringsAsArray();
+			}
 			int numToPrint = MyMathUtils.min(res.length,80);
 			for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
+			ri.translate(winInitVals.getXOffset(), 0.0f);
 			drawInfoStr(1.0f, winInitVals.strkClr); 	
 		ri.popMatState();		
-	}//drawUIDebugMode
+	}//drawOnScreenText
 	
 	private void drawRightSideMenu(float modAmtMillis) {
 		ri.setFill(winInitVals.rtSideFillClr, winInitVals.rtSideFillClr[3]);//transparent black
-		if(dispFlags.getShowRtSideMenu()) {				
+		if(dispFlags.getShowRtSideMenu()) {
 			ri.drawRect(UIRtSideRectBox);
 			//move to manage internal text display in owning window
 			ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+winInitVals.getRtSideTxtHeightOffset(),0);
@@ -1521,32 +1526,22 @@ public abstract class Base_DispWindow {
 	 * draw stuff on screen - start next to left-side menu
 	 * @param modAmtMillis
 	 */
-	private void drawOnScreenStuff(float modAmtMillis) {
+	private void drawOnScreenStuff(float modAmtMillis, float yOffset) {
 		ri.pushMatState();
 		//move to upper right corner of sidebar menu - cannot draw over leftside menu, use drawCustMenuObjs() instead to put UI objects there
 		//this side window is for information display
-		ri.translate(winInitVals.rectDim[0],0,0);			
+		ri.translate(winInitVals.rectDim[0],yOffset);			
 		//draw onscreen stuff for main window
 		drawOnScreenStuffPriv(modAmtMillis);
 		//draw right side info display if relevant
 		if(dispFlags.getHasRtSideMenu()) {
-			drawRightSideMenu(modAmtMillis);
+			ri.pushMatState();
+				ri.translate(0, -yOffset);
+				drawRightSideMenu(modAmtMillis);
+			ri.popMatState();	
 		}
 		ri.popMatState();			
 	}//drawRtSideInfoBar
-	
-	/**
-	 * Called by Appmgr to display window instance-specify Console Strings
-	 */
-	public final void drawOnscreenText() {
-		ri.pushMatState();			
-		reInitInfoStr();	
-		String[] res = msgObj.getConsoleStringsAsArray();
-		int dispNum = MyMathUtils.min(res.length, 80);
-		for(int i=0;i<dispNum;++i){addInfoStr(res[i]);}
-	    drawInfoStr(1.1f,winInitVals.strkClr); 
-	    ri.popMatState();
-	}
 	
 	public final void draw3D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){return;}
@@ -1566,8 +1561,7 @@ public abstract class Base_DispWindow {
 	 */
 	protected final void moveTo2DRectCenter() {
 		ri.translate(winInitVals.rectDim[0] + (winInitVals.rectDim[2]*.5f), winInitVals.rectDim[1] + (winInitVals.rectDim[3]*.5f));
-	}
-	
+	}	
 	
 	private final void drawSmall(){
 		ri.pushMatState();
@@ -1643,7 +1637,7 @@ public abstract class Base_DispWindow {
 	public final void setInfoStr(int idx, String str){DebugInfoAra.set(idx,str);	}
 	public final void drawInfoStr(float sc, int clr){drawInfoStr(sc, ri.getClr(clr,255));}
 	public final void drawInfoStr(float sc, int[] fillClr){//draw text on main part of screen
-		float yOff = winInitVals.getTextHeightOffset();
+		float yOff = getTextHeightOffset();
 		ri.pushMatState();		
 			ri.setFill(fillClr,fillClr[3]);
 			ri.translate((AppMgr.getMenuWidth()),0);
@@ -1660,11 +1654,10 @@ public abstract class Base_DispWindow {
 		float disp = y;
 		for(int i =0; i<res.length; ++i){
 			ri.showText(res[i],x, disp);		//add console string output to screen display- decays over time
-			disp += winInitVals.getTextHeightOffset();
+			disp += getTextHeightOffset();
 		}
 		return disp;
-	}
-	
+	}	
 	
 	//////////////////
 	// Simulation

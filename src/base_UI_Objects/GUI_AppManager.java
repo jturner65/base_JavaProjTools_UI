@@ -1211,10 +1211,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
 		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
 		dispWinFrames[dispMenuIDX].drawHeader(modAmtMillis);
-		if(isDebugMode()){
-			dispWinFrames[curFocusWin].drawUIDebugMode(dispWinFrames[dispMenuIDX].getDebugData());		
-		} else if(showInfo){
-			dispWinFrames[curFocusWin].drawOnscreenText();
+		if(isDebugMode() || showInfo){
+			dispWinFrames[curFocusWin].drawOnScreenText(dispWinFrames[dispMenuIDX].getDebugData(), isDebugMode());		
 		}
 		dispWinFrames[curFocusWin].updateConsoleStrs();	
 	}//drawUI
