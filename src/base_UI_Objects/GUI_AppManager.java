@@ -38,6 +38,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	protected static IRenderInterface ri = null;
 	
+	
+	/**
+	 * Multiple of screen height that font size should be
+	 */
+	public static final float fontSizeScale = .0075f;
+	
 	/**
 	 * point size of text; is some multiple of screen height. Should be able to support modification
 	 */	
@@ -350,7 +356,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//whether each 3D window uses Skybox or color background 
 		_useSkyboxBKGndAra= new boolean[numDispWins];
 		// set initial text size
-		_txtSize = (int) (_displayHeight * IRenderInterface.fontSizeScale);
+		_txtSize = (int) (_displayHeight * fontSizeScale);
 		//initialize grid dim structs
 		setGridDimStructs();
 	}//	
@@ -1699,7 +1705,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	public final float[] getUIRectVals(int idx) {
 		switch(idx){
-			//sidebar menu synthesizes it's uiClickCoords in its constructor
+			//sidebar menu synthesizes its uiClickCoords in its constructor
 			case dispMenuIDX 		: {return new float[0];}			
 			default 	:{
 				return getUIRectVals_Indiv(idx, dispWinFrames[dispMenuIDX].uiClkCoords);
