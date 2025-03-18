@@ -149,8 +149,6 @@ public abstract class Base_GUIObj {
 		case explicitUIDataUpdateIDX 	:{break;}
 		}
 	}//setFlag	
-
-	
 	
 	public final String getName(){return name;}
 	

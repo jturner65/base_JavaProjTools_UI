@@ -5,10 +5,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import base_Math_Objects.MyMathUtils;
-import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Math_Objects.vectorObjs.floats.myVectorf;
+import base_Math_Objects.vectorObjs.doubles.*;
+import base_Math_Objects.vectorObjs.floats.*;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
@@ -24,7 +22,6 @@ import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_List;
 import base_Utils_Objects.io.file.FileIOManager;
 import base_Utils_Objects.io.messaging.MessageObject;
 import base_Utils_Objects.io.messaging.MsgCodes;
-import processing.core.*;
 
 /**
  * abstract class to hold base code for a menu/display window (2D for gui, etc), 
@@ -393,7 +390,7 @@ public abstract class Base_DispWindow {
 		//initialized for sidebar menu as well as for display windows
 		guiObjs_Numeric = new Base_NumericGUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
 		//build ui objects
-		_buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals);	
+		uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals);	
 		//build UI boolean buttons
 		_initAllPrivButtons();
 		
@@ -479,7 +476,7 @@ public abstract class Base_DispWindow {
 	 *           	changes to value must be explicitly sent to consumer (are not automatically sent)}    
 	 * @param tmpListObjVals
 	 */
-	private void _buildGUIObjsForMenu(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
+	private float _buildGUIObjsForMenu(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
 		int numGUIObjs = tmpUIObjArray.size();
 		
 		double[][] guiMinMaxModVals = new double[numGUIObjs][3];			//min max mod values
@@ -503,6 +500,11 @@ public abstract class Base_DispWindow {
 			guiObjTypes[i] = (GUIObj_Type)obj[3];
 			if(guiObjTypes[i] == GUIObj_Type.FloatVal) {
 				guiFloatValIDXs.add(i);
+			} if(guiObjTypes[i] == GUIObj_Type.Button) {
+				msgObj.dispConsoleErrorMessage(
+						"BaseDispWIndow", "_buildGUIObjsForMenu", 
+						"Attempting to add unsupported gui obj type : `"+guiObjTypes[i].toStrBrf() + "` at idx : "+i);
+			
 			} else {
 				//int and list values are considered ints
 				guiIntValIDXs.add(i);
@@ -523,6 +525,8 @@ public abstract class Base_DispWindow {
 		
 		//build all objects using these values 
 		_buildAllObjects(guiObjNames, corners, guiMinMaxModVals, guiStVals, guiBoolVals, guiObjTypes, tmpListObjVals, winInitVals.getUIOffset());
+		// return final y coordinate
+		return uiClkCoords[3];
 	}//_buildGUIObjsFromMaps
 	
 	/**
@@ -563,7 +567,7 @@ public abstract class Base_DispWindow {
 					break;}
 				case Button  :{
 					//TODO
-					msgObj.dispWarningMessage(className, "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
+					msgObj.dispWarningMessage(className, "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
 					break;
 				}
 				default : {
@@ -866,7 +870,7 @@ public abstract class Base_DispWindow {
 	 * calculate button length
 	 */
 	private static final float ltrLen = 5.0f;private static final int btnStep = 5;
-	private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((PApplet.max(tStr.length(),fStr.length())+4) * ltrLen)/btnStep);}
+	private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((MyMathUtils.max(tStr.length(), fStr.length())+4) * ltrLen)/btnStep);}
 	
 	private void _setBtnDims(int idx, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {uiClkCoords[0]+oldBtnLen, uiClkCoords[3], btnLen, getTextHeightOffset() };}
 	
@@ -889,7 +893,7 @@ public abstract class Base_DispWindow {
 	}//_buildAllPrivButtons
 	
 	/**
-	 * set up child class boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
+	 * set up boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
 	 * @param yDisp displacement for button to be drawn
 	 * @param numBtns number of buttons to make
 	 */
