@@ -35,6 +35,6 @@ public class MenuGUIObj_Int extends Base_NumericGUIObj {
 	}
 	
 	@Override
-	protected final void _drawObject_Indiv() {	ri.showText(dispText + String.format("%.0f",val), 0,0);}
+	protected final void _drawObject_Indiv() {	ri.showText(label + String.format("%.0f",val), 0,0);}
 
 }//class myGUIObj_Int
