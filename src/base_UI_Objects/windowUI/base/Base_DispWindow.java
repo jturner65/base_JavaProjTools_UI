@@ -45,7 +45,7 @@ public abstract class Base_DispWindow {
 	protected MessageObject msgObj;
 
 	/**
-	 * enable drawing dbug info onto app canvas	
+	 * enable drawing debug info onto app canvas	
 	 */
 	private ArrayList<String> DebugInfoAra;	
 	//count of draw cycles for consoleString decay
@@ -189,25 +189,25 @@ public abstract class Base_DispWindow {
 	/**
 	 * Camera x rotation for this window
 	 */
-	protected float rx;
+	private float rx;
 	/**
 	 * Camera y rotation
 	 */
-	protected float ry;		
+	private float ry;		
 	/**
 	 * Distance to camera. Manipulated with wheel or shift-rt mse btn
 	 */
-	protected float dz;	
+	private float dz;	
 
 	/**
 	 * target of focus - used in translate to set where the camera is looking - allow for modification
 	 */
-	protected myVector focusTar;							
+	private myVector focusTar;							
 	/**
 	 * set this value to be different display center translations -to be used to calculate mouse offset in world for pick
 	 * and also as origin for 
 	 */
-	protected myPoint sceneOriginVal;							
+	private myPoint sceneOriginVal;							
 	
 	//to control how much is shown in the window - if stuff extends off the screen and for 2d window
 	protected ScrollBars[] scbrs;
@@ -651,11 +651,11 @@ public abstract class Base_DispWindow {
 	 */
 	public void setNewUIDispText(int idx, boolean isNumeric, String str) {
 		if (isNumeric) {
-			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setNewDispText(str);}
+			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setNewLabel(str);}
 			return;
 		} else {
 			//TODO support boolean UI objects
-			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setNewDispText(str);}
+			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setNewLabel(str);}
 			return;
 		}
 	}
@@ -1240,16 +1240,20 @@ public abstract class Base_DispWindow {
 		dz = winInitVals.initCameraVals[2];	
 		resetViewFocus();
 	}//setCamView()	
-
+	public final float getCamRotX() {return rx;}
+	public final float getCamRotY() {return ry;}
+	public final float getCamDist() {return dz;}	
+	
+	protected final void setCameraBase(float[] camVals) {
+		ri.setCameraWinVals(camVals);  
+		//if(this.flags[this.debugMode]){outStr2Scr("rx :  " + rx + " ry : " + ry + " dz : " + dz);}
+		// puts origin of all drawn objects at screen center and moves forward/away by dz
+		ri.translate(camVals[0],camVals[1],(float)dz); 
+	    setCamOrient();	
+	}
 	public final void setCamera(float[] camVals){
 		if(dispFlags.getUseCustCam()){setCamera_Indiv(camVals);}//individual window camera handling
-		else {
-			ri.setCameraWinVals(camVals);  
-			//if(this.flags[this.debugMode]){outStr2Scr("rx :  " + rx + " ry : " + ry + " dz : " + dz);}
-			// puts origin of all drawn objects at screen center and moves forward/away by dz
-			ri.translate(camVals[0],camVals[1],(float)dz); 
-		    setCamOrient();	
-		}
+		else {						setCameraBase(camVals);	}
 	}//setCamera
 
 	/**
