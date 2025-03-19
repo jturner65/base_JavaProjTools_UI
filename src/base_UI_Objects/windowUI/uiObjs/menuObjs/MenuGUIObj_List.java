@@ -49,7 +49,7 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 
 	@Override
 	protected final void _drawObject_Indiv() {
-		ri.showText(dispText + listVals[(((int)val) % listVals.length)], 0,0);		
+		ri.showText(label + listVals[(((int)val) % listVals.length)], 0,0);		
 	}
 	
 	

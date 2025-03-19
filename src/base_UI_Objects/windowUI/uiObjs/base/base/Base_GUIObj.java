@@ -43,7 +43,7 @@ public abstract class Base_GUIObj {
 	/**
 	 * Text to display as a label
 	 */
-	protected String dispText;
+	protected String label;
 	/**
 	 * Type of this object
 	 */
@@ -100,7 +100,7 @@ public abstract class Base_GUIObj {
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
-		dispText = name.length() > 0 ? name + " : " : ("");
+		label = name.length() > 0 ? name + " : " : ("");
 		//hotbox start and end x,y's
 		start = new myPointf(_start); 
 		end =  new myPointf(_end);
@@ -218,7 +218,7 @@ public abstract class Base_GUIObj {
 	 * set new display text for this UI object - doesn't change name
 	 * @param _str
 	 */
-	public final void setNewDispText(String _str) {	dispText = new String(""+_str + " : ");	}
+	public final void setNewLabel(String _str) {	label = new String(""+_str + " : ");	}
 	
 	/**
 	 * Return the type of this object as defined in GUIObj_Type enum
@@ -298,7 +298,7 @@ public abstract class Base_GUIObj {
 		String[] valResAra = getStrDataForVal();
 		String[] tmpRes = new String[valResAra.length+4];
 		int idx = 0;
-		tmpRes[idx++] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " distText : " + dispText;
+		tmpRes[idx++] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " label : " + label;
 		tmpRes[idx++] = "Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";
 		tmpRes[idx++] = "Treat as Int  : " + (objType == GUIObj_Type.IntVal);
 		for (String valStr : valResAra) {tmpRes[idx++] = valStr;}
