@@ -121,6 +121,7 @@ public abstract class Base_RenderObj {
 	 * Set a texture to use for the passed shape via texture array index. Call between beginShape and endShape
 	 */
 	protected void setObjTexture(PShape sh, int idx) {
+		if((textures==null) || (idx >= textures.length)) {return;}
 		//sh.texture(textures[idx]);
 	}
 	/**
