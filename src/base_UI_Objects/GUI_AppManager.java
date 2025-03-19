@@ -1138,6 +1138,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		if(is3DDraw){	//allow for single window to have focus, but display multiple windows	
 			//if refreshing screen, this clears screen, sets background
 			if(getShouldClearBKG()) {
+				msgObj.dispConsoleDebugMessage("GUI_AppManager", "drawMainWinAndCanvas", "should clear bkg : "+ (getShouldClearBKG() ? "true":"false"));
 				drawBackground(curFocusWin);				
 				draw3D(modAmtMillis);
 				if(curDispWinCanShow3dbox()){drawBoxBnds();}

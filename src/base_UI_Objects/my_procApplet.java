@@ -120,9 +120,10 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void drawBkgndSphere(int winIdx) {
 		PShape shape = bgrndSphereAra.get(winIdx);
+		drawRenderBackground(winIdx);
 		if(shape==null) {
 			AppMgr.msgObj.dispErrorMessage("my_procApplet","drawBkgndSphere","ERROR! No background sphere specified for window idx :"+winIdx);
-			drawRenderBackground(winIdx);
+			return;
 		}
 		shape(shape);	
 	}
