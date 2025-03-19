@@ -10,7 +10,7 @@ import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Render_Interface.IRenderInterface;
 
 /**
- * Class to manage display canvas and reticle
+ * Class to manage display canvas and reticle for 3d windows
  * @author John Turner
  *
  */
@@ -85,9 +85,9 @@ public class Disp3DCanvas {
 	 */
 	public void buildCanvas(){	
 		//float rawCtrDepth = p.getDepth(viewDimW2, viewDimH2);
-		myPoint rawScrCtrInWorld = p.getWorldLoc(viewDimW2, viewDimH2,rawCtrDepth);		
-		myVector A = new myVector(rawScrCtrInWorld,  p.getWorldLoc(viewDimW-10, 10,rawCtrDepth)),
-				B = new myVector(rawScrCtrInWorld,  p.getWorldLoc(viewDimW-10, viewDimH-10,rawCtrDepth));	//ctr to upper right, ctr to lower right
+		myPoint rawScrCtrInWorld = p.getWorldLoc(viewDimW2, viewDimH2, rawCtrDepth);		
+		myVector A = new myVector(rawScrCtrInWorld,  p.getWorldLoc(viewDimW-10, 10, rawCtrDepth)),
+				B = new myVector(rawScrCtrInWorld,  p.getWorldLoc(viewDimW-10, viewDimH-10, rawCtrDepth));	//ctr to upper right, ctr to lower right
 		drawSNorm = myVector._cross(A,B)._normalize();
 		//build plane using norm - have canvas go through canvas ctr in 3d
 		myVector planeTan = myVector._cross(drawSNorm, myVector._normalize(new myVector(drawSNorm.x+10000,drawSNorm.y+10,drawSNorm.z+10)))._normalize();			//result of vector crossed with normal will be in plane described by normal

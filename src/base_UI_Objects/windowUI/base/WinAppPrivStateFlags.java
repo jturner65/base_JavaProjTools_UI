@@ -25,7 +25,6 @@ public class WinAppPrivStateFlags extends Base_BoolFlags {
 	@Override
 	protected void handleSettingDebug(boolean val) {
 		owner.handlePrivFlagsDebugMode(val);
-
 	}
 
 	/**

@@ -189,7 +189,7 @@ public class UI_TestProject extends GUI_AppManager {
 
 	@Override
 	protected void initOnce_Indiv() {
-		setVisFlag(disp3DRes1IDX, true);
+		setWinVisFlag(disp3DRes1IDX, true);
 	}
 	@Override
 	protected void initProgram_Indiv() {	}
@@ -268,7 +268,7 @@ public class UI_TestProject extends GUI_AppManager {
 			//val is btn state before transition 
 			boolean bVal = (val == 1?  false : true);
 			//each entry in this array should correspond to a clickable window
-			setVisFlag(winFlagsXOR[btn], bVal);
+			setWinVisFlag(winFlagsXOR[btn], bVal);
 		}
 	}
 	

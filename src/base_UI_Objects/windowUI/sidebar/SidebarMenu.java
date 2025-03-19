@@ -516,11 +516,11 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected myPoint getMsePtAs3DPt(myPoint mseLoc){return new myPoint(mseLoc.x,mseLoc.y,0);}
 	@Override
-	protected final void endShiftKeyI() {}
+	protected final void endShiftKey_Indiv() {}
 	@Override
-	protected final void endAltKeyI() {}
+	protected final void endAltKey_Indiv() {}
 	@Override
-	protected final void endCntlKeyI() {}
+	protected final void endCntlKey_Indiv() {}
 	@Override
 	protected final void closeMe() {}
 	@Override

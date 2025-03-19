@@ -121,7 +121,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void drawBkgndSphere(int winIdx) {
 		PShape shape = bgrndSphereAra.get(winIdx);
 		if(shape==null) {
-			System.out.println("ERROR! No background sphere specified for window idx :"+winIdx);
+			AppMgr.msgObj.dispErrorMessage("my_procApplet","drawBkgndSphere","ERROR! No background sphere specified for window idx :"+winIdx);
 			drawRenderBackground(winIdx);
 		}
 		shape(shape);	
@@ -227,7 +227,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		setNoStroke();
 		gl_normal(eyeToMse);
         for(int i =canvas3D.length-1;i>=0;--i){		//build invisible canvas to draw upon
-     		//p.line(canvas3D[i], canvas3D[(i+1)%canvas3D.length]);
      		gl_vertex(canvas3D[i]);
      	}
      	gl_endShape(true);
