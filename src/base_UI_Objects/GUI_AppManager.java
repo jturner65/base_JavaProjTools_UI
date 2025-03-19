@@ -71,8 +71,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * time that this application started
 	 */
-	protected int glblStartSimFrameTime,			//begin of draw(sim)
-			glblLastSimFrameTime;					//begin of last draw(sim)
+	private int _glblStartSimFrameTime,			//begin of draw(sim)
+			_glblLastSimFrameTime;					//begin of last draw(sim)
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Display Window-based values
@@ -132,7 +132,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * Whether or not this application uses a sphere background for each window
 	 */
-	protected boolean[] useSkyboxBKGndAra;
+	private boolean[] _useSkyboxBKGndAra;
 	
 	/**
 	 * specify windows that cannot be shown simultaneously here and their flags
@@ -294,7 +294,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * 2D, 3D
 	 */
-	private myPoint[] sceneCtrValsBase;
+	private myPoint[] sceneOriginValsBase;
 	
 	//3D box stuff
 	public myVector[] boxNorms = new myVector[] {new myVector(1,0,0),new myVector(-1,0,0),new myVector(0,1,0),new myVector(0,-1,0),new myVector(0,0,1),new myVector(0,0,-1)};//normals to 3 d bounding boxes
@@ -342,7 +342,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//display window initialization
 		dispWinFrames = new Base_DispWindow[numDispWins];
 		//whether each 3D window uses Skybox or color background 
-		useSkyboxBKGndAra= new boolean[numDispWins];
+		_useSkyboxBKGndAra= new boolean[numDispWins];
 		
 		//initialize grid dim structs
 		setGridDimStructs();
@@ -435,8 +435,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		
 		int[][] bkGrndColors = new int[numDispWins][];
 		for(int i=0;i<numDispWins;++i) {
-			useSkyboxBKGndAra[i] = getUseSkyboxBKGnd(i);
-			if (useSkyboxBKGndAra[i]) {
+			_useSkyboxBKGndAra[i] = getUseSkyboxBKGnd(i);
+			if (_useSkyboxBKGndAra[i]) {
 				ri.loadBkgndSphere(i, getSkyboxFilename(i));
 			}
 			int[] bGroundClr = getBackgroundColor(i);
@@ -449,10 +449,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		window = ri.getGLWindow();
 		//init internal state flags structure
 		initBaseFlags();
+		
+		initPFlagColors();
 		//Set dimensions for application based on applet window size and rebuild canvas
 		setAppWindowDims(width, height);
 		
-		//called after windows are built
+		//called after window dims are set
 		initBaseFlags_Indiv();
 		//instancing class version
 		initAllDispWindows();
@@ -460,10 +462,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		for (int i=0; i< winInitVals.length;++i) {
 			winInitVals[i].setBackgrndColor(bkGrndColors[i]);
 		}
-		
-		initPFlagColors();		
-		//after all display windows are created
-		finalDispWinInit();
 		
 		//set clearing the background to be true
 		setBaseFlag(clearBKG,true);
@@ -473,9 +471,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		initVisFlags();
 		
 		// set milli time tracking
-		glblStartSimFrameTime = timeSinceStart();
-		glblLastSimFrameTime =  glblStartSimFrameTime;	
-		
+		_glblStartSimFrameTime = timeSinceStart();
+		_glblLastSimFrameTime =  _glblStartSimFrameTime;
 		
 		//call this in first draw loop also, if not setup yet
 		initOnce();
@@ -747,7 +744,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				new myVector(0,0,0)
 		};
 		//2D, 3D
-		sceneCtrValsBase = new myPoint[]{				//set these values to be different display center translations -
+		sceneOriginValsBase = new myPoint[]{				//set these values to be different display center translations -
 			new myPoint(0,0,0),										// to be used to calculate mouse offset in world for pick
 			new myPoint(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
 		};
@@ -780,7 +777,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		winInitVals[dispMenuIDX] = new GUI_AppWinVals(dispMenuIDX, new String[] {"UI Window", "User Controls"}, new boolean[4],
 				new float[][] {new float[]{0,0, menuWidth, viewHeight}, new float[]{0,0, hideWinWidth, viewHeight},getInitCameraValues()},
 				new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,200},new int[]{255,255,255,255}},
-				sceneCtrValsBase[0], sceneFcsValsBase[0]);
+				sceneOriginValsBase[0], sceneFcsValsBase[0]);
 		_winTitles[0] = "UI Window";
 		int wIdx = dispMenuIDX;
 		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _winTitles, _inclWinNames, _inclMseOvValues);
@@ -857,7 +854,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			float[][] _floatVals, int[][] _intClrVals) {
 		int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
 		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
-				_floatVals, _intClrVals, sceneCtrValsBase[scIdx], sceneFcsValsBase[scIdx]);
+				_floatVals, _intClrVals, sceneOriginValsBase[scIdx], sceneFcsValsBase[scIdx]);
 	
 	}//setInitDispWinVals
 	
@@ -888,14 +885,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public float[] getInitCameraValues() {
 		return new float[] {-0.06f*MyMathUtils.TWO_PI_F, -0.04f*MyMathUtils.TWO_PI_F, -200.0f};
 	}
-	
-	private void finalDispWinInit() {
-		for(int i =0; i < numDispWins; ++i){
-			int scIdx = winInitVals[i].dispWinIs3D() ? 1 : 0;//whether or not is 3d
-			dispWinFrames[i].finalInit(sceneCtrValsBase[scIdx], sceneFcsValsBase[scIdx]);
-		}	
-	
-	}//finalDispWinInit	
+
 	
 	public Base_DispWindow getCurrentWindow() {return dispWinFrames[curFocusWin];}
 	
@@ -1068,7 +1058,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param winIdx
 	 */
 	private final void drawBackground(int winIdx) {
-		if(useSkyboxBKGndAra[winIdx]) {	ri.drawBkgndSphere(winIdx);} 
+		if(_useSkyboxBKGndAra[winIdx]) {	ri.drawBkgndSphere(winIdx);} 
 		else {					ri.drawRenderBackground(winIdx);}
 	}
 
@@ -1089,9 +1079,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	private float getModAmtMillis() {
-		glblStartSimFrameTime = timeSinceStart();
-		float modAmtMillis = (glblStartSimFrameTime - glblLastSimFrameTime);
-		glblLastSimFrameTime = timeSinceStart();
+		_glblStartSimFrameTime = timeSinceStart();
+		float modAmtMillis = (_glblStartSimFrameTime - _glblLastSimFrameTime);
+		_glblLastSimFrameTime = timeSinceStart();
 		return modAmtMillis;
 	}
 	
@@ -1132,7 +1122,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * setup 
 	 */
-	protected void drawSetup(){
+	private void _drawSetup(){
 		ri.setPerspective(MyMathUtils.THIRD_PI_F, aspectRatio, .5f, camVals[2]*100.0f);
 		ri.enableLights(); 	
 		dispWinFrames[curFocusWin].drawSetupWin(camVals);
@@ -1143,7 +1133,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void drawMainWinAndCanvas(float modAmtMillis){
 		ri.pushMatState();
-		drawSetup();
+		_drawSetup();
 		boolean is3DDraw = (curFocusWin == -1) || (curDispWinIs3D()); 
 		if(is3DDraw){	//allow for single window to have focus, but display multiple windows	
 			//if refreshing screen, this clears screen, sets background
@@ -1180,11 +1170,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param modAmtMillis
 	 */
 	private final void draw3D_solve3D(float modAmtMillis){
-		ri.pushMatState();
 		for(int i =1; i<numDispWins; ++i){
 			if((isShowingWindow(i)) && (dispWinFrames[i].getIs3DWindow())){	dispWinFrames[i].draw3D(modAmtMillis);}
 		}
-		ri.popMatState();
 		//fixed xyz rgb axes for visualisation purposes and to show movement and location in otherwise empty scene
 		drawAxes(100,3, new myPoint(-viewWidth/2.0f+40,0.0f,0.0f), 200, false); 
 		//build target canvas
@@ -1192,7 +1180,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}//draw3D_solve3D
 	
 	/**
-	 * Draw 2d windows that are currently displayed
+	 * Draw 2d windows that are currently displayed but not sidebar menu, which is drawn via drawUI()
 	 * @param modAmtMillis
 	 */
 	
@@ -1659,7 +1647,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		setBaseFlag(mouseClicked, true);
 		if(isLeft){							myMouseClicked(mouseX, mouseY,0);} 
 		else if (isRight) {						myMouseClicked(mouseX, mouseY,1);}
-		//for(int i =0; i<numDispWins; ++i){	if (dispWinFrames[i].handleMouseClick(mouseX, mouseY,c.getMseLoc(sceneCtrVals[sceneIDX]))){	return;}}
+		//for(int i =0; i<numDispWins; ++i){	if (dispWinFrames[i].handleMouseClick(mouseX, mouseY,c.getMseLoc(sceneOriginVals[sceneIDX]))){	return;}}
 	}// mousepressed		
 	private void myMouseClicked(int mouseX, int mouseY, int mseBtn){ 	for(int i =0; i<numDispWins; ++i){if (dispWinFrames[i].handleMouseClick(mouseX, mouseY,mseBtn)){return;}}}
 	

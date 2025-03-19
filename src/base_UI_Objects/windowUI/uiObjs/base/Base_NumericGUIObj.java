@@ -39,7 +39,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param _name the name/display label of the object
 	 * @param _start the upper left corner of the hot spot for this object
 	 * @param _end the lower right corner of the hot spot for this object
-	 * @param _minMaxMod the minimum and values this object can hold, and the base modifier amount
+	 * @param _minMaxMod the minimum and maximum values this object can hold, and the base modifier amount
 	 * @param _initVal the initial value of this object
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset configuration flags
@@ -180,7 +180,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	}
 	
 	/**
-	 * Get string data aarray representing the value this UI object holds
+	 * Get string data array representing the value this UI object holds
 	 * @return
 	 */
 	protected final String[] getStrDataForVal() {

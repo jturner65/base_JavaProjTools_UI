@@ -42,7 +42,7 @@ public class DrawnSimpleTraj {
 	
 	public boolean[] trajFlags;
 	public static final int 
-				flatPtIDX 		= 0,						//whether this should draw plat circles or spheres for its points
+				flatPtIDX 		= 0,						//whether this should draw flat circles or spheres for its points
 				smCntlPtsIDX 	= 1,						//whether the 4 cntl points should be as small as regular points or larger
 				ownrWinIs3dIDX 	= 2;					
 	public static final int numTrajFlags = 3;

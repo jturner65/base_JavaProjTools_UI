@@ -62,10 +62,13 @@ public class UI_TestWindow2D extends Base_DispWindow {
 
 	protected static final int numBasePrivFlags = 11;
 	
+	protected myPoint circleCenter;
 	
 	public UI_TestWindow2D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
 		super(_p, _AppMgr, _winIdx);
 		super.initThisWin(false);
+		// Initially center circle in display screen
+		circleCenter = new myPoint();
 	}
 
 	@Override
@@ -130,6 +133,24 @@ public class UI_TestWindow2D extends Base_DispWindow {
 		return new UITestDataUpdater_2D(this);
 	}
 
+
+	@Override
+	protected void drawMe(float animTimeMod) {
+		ri.pushMatState();
+			moveTo2DRectCenter();
+			ri.setFill(new int[] {255,255,255}, 255);
+			ri.setStroke(new int[] {255,255,255}, 255);
+			ri.setStrokeWt(3.0f);
+			ri.drawEllipse2D(circleCenter, 100);
+		ri.popMatState();	
+	}
+	
+	@Override
+	protected boolean simMe(float modAmtSec) {
+		//calc new circle center
+		return false;
+	}
+	
 	@Override
 	protected void updateCalcObjUIVals() {
 		// TODO Auto-generated method stub
@@ -342,12 +363,6 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	}
 
 	@Override
-	protected boolean simMe(float modAmtSec) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	protected void stopMe() {
 		// TODO Auto-generated method stub
 
@@ -355,12 +370,6 @@ public class UI_TestWindow2D extends Base_DispWindow {
 
 	@Override
 	protected void setCamera_Indiv(float[] camVals) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void drawMe(float animTimeMod) {
 		// TODO Auto-generated method stub
 
 	}

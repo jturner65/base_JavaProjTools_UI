@@ -159,12 +159,16 @@ public abstract class Base_DrawnTrajectory {
 		
 		//edge params		
 		myVector drawnAxis = new myVector(cntlPts[0], cntlPts[numPoints - 1]);
-		myVector edgeAxis =  new myVector(startPt, endPt);		//angle between these two is the angle to rotate everyone
+		//angle between these two is the angle to rotate everyone
+		myVector edgeAxis =  new myVector(startPt, endPt);		
 		
 		//transformation params
-		myVector dispToStart = new myVector(cntlPts[0], startPt);			//displacement myVectortor between start of drawn curve and edge 1.
-		double alpha =  -myVector._angleBetween(drawnAxis,edgeAxis);			//angle to rotate everyone
-		double scaleRatio = edgeAxis._mag()/drawnAxis._mag();	//ratio of distance from start to finish of drawn traj to distance between edges - multiply all elements in drawn traj by this
+		//displacement myVectortor between start of drawn curve and edge 1.
+		myVector dispToStart = new myVector(cntlPts[0], startPt);
+		//displacement myVectortor between start of drawn curve and edge 1.
+		double alpha =  -myVector._angleBetween(drawnAxis,edgeAxis);
+		//ratio of distance from start to finish of drawn traj to distance between edges - multiply all elements in drawn traj by this
+		double scaleRatio = edgeAxis._mag()/drawnAxis._mag();
 
 		//displace to align with start
 		movePoints(dispToStart, cntlPts);
@@ -178,7 +182,8 @@ public abstract class Base_DrawnTrajectory {
 			myVector udAxis = myVector._unit(drawnAxis);
 			myVector normPt, tanPt;
 			for(int myPointItr = 1; myPointItr < numPoints ; ++myPointItr){
-				tanPt = myVector._mult(udAxis, dispVecAra[myPointItr]._dot(udAxis));			//component in udAxis dir
+				//component in udAxis dir
+				tanPt = myVector._mult(udAxis, dispVecAra[myPointItr]._dot(udAxis));
 				normPt = myVector._sub(dispVecAra[myPointItr],tanPt);
 				normPt._mult(2);
 				dispVecAra[myPointItr]._sub(normPt);
@@ -188,7 +193,8 @@ public abstract class Base_DrawnTrajectory {
 
 		//displace every point to be scaled distance from start of curve equivalent to scale of edge distances to drawn curve
 		for(int myPointItr = 1; myPointItr < numPoints ; ++myPointItr){
-			cntlPts[myPointItr].set(new myPoint(cntlPts[0],scaleRatio, dispVecAra[myPointItr]));//start point displaced by scaleRatio * myVectortor from start to original location of myPoint
+			//start point displaced by scaleRatio * myVectortor from start to original location of myPoint
+			cntlPts[myPointItr].set(new myPoint(cntlPts[0],scaleRatio, dispVecAra[myPointItr]));
 		}
 		//rotate every point around destCurve[0] by alpha
 		for(int myPointItr = 1; myPointItr < numPoints ; ++myPointItr){
@@ -215,7 +221,8 @@ public abstract class Base_DrawnTrajectory {
 	 */
 	public final void processCntlPts(int numPts, int numReps){
 		double origLen = cntl_len;
-		setCPts(procCntlPt(_subdivide, cntlPts, 2, origLen));										//makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
+		//makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
+		setCPts(procCntlPt(_subdivide, cntlPts, 2, origLen));										
 		for(int i = 0; i < numReps; ++i){
 			//setCPts(procCntlPt(_subdivide, cntlPts, 2, origLen));
 			setCPts(procCntlPt(_tuck, cntlPts, .5f, origLen));
@@ -238,7 +245,8 @@ public abstract class Base_DrawnTrajectory {
 	 */
 	public final void processPts(myPoint[] pts, int numPts, int numReps){
 		boolean isClosed = trajFlags.getIsClosed();
-		setPts(procPts(_subdivide, pts, 2, len, isClosed));										//makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
+		//makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
+		setPts(procPts(_subdivide, pts, 2, len, isClosed));
 		for(int i = 0; i < numReps; ++i){
 			setPts(procPts(_subdivide, pts, 2, len, isClosed));
 			setPts(procPts(_tuck, pts, .5f, len, isClosed));
@@ -289,12 +297,14 @@ public abstract class Base_DrawnTrajectory {
 		    	if(wrap){tmp.add(makeNewPoint(_pts,new int[]{_pts.length-1,_pts.length-2,0}, val));} else {tmp.add(_pts[_pts.length-1]);}			
 		    	return tmp;}
 			case _equaldist	:{
-				double ratio = _len/(1.0f * _pts.length),curDist = 0;					 //new distance between each vertex, iterative dist travelled so far			 
+				//new distance between each vertex, iterative dist travelled so far
+				double ratio = _len/(1.0f * _pts.length),curDist = 0;					 			 
 				for(int i =0; i<_pts.length; ++i){tmp.add(at(curDist/_len));curDist+=ratio;}	
 				tmp.add(_pts[_pts.length-1]);				
 				return tmp;}	
 			case _resample	:{
-				double ratio = _pts.length/(1.0f * (val-1)),f;					//distance between each vertex		 
+				//distance between each vertex
+				double ratio = _pts.length/(1.0f * (val-1)),f;							 
 				int idx, newIdx=0;		
 				for(double i = 0; i<_pts.length-1; i+=ratio){idx = (int)i;	f = i-idx;tmp.add(newIdx++,makeNewPoint(_pts,new int[]{idx,idx+1},f));}
 				if(wrap) {
@@ -302,8 +312,7 @@ public abstract class Base_DrawnTrajectory {
 				} else {		tmp.add(_pts[_pts.length-1]);}			//always add another point if open line/loop - want to preserve end point
 				break;}	
 			default :
-		}
-		
+		}		
 		return tmp;
 	}
 		
@@ -405,15 +414,22 @@ public abstract class Base_DrawnTrajectory {
 	 * @param t fraction of curve length we are interested in returning a point - should be 0-1
 	 * @return point @t along curve
 	 */
-	public myPoint at(double t){return at(t,new double[1], len, pts, dpts);}//put interpolant between adjacent axis points in s ara if needed
-	public myPoint at(double t, double[] s){return at(t,s, len, pts, dpts);}//put interpolant between adjacent axis points in s ara if needed
-	public myPoint at(double t, double[] s, double _len, myPoint[] pts, double[] _dpts){//call directly if wanting interpolant between adj axis points too
+	//put interpolant between adjacent axis points in s ara if needed
+	public myPoint at(double t){return at(t,new double[1], len, pts, dpts);}
+	//put interpolant between adjacent axis points in s ara if needed
+	public myPoint at(double t, double[] s){return at(t,s, len, pts, dpts);}
+	//call directly if wanting interpolant between adj axis points too
+	public myPoint at(double t, double[] s, double _len, myPoint[] pts, double[] _dpts){
 		if(t<0){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[0];} else if (t>1){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[pts.length-1];}
 		double dist = t * _len;
-		for(int i=0; i<_dpts.length-1; ++i){										//built off dpts so that it will get wrap for closed curve
+		//built off dpts so that it will get wrap for closed curve
+		for(int i=0; i<_dpts.length-1; ++i){										
 			if(_dpts[i+1] >= dist){
-				s[0] = ((dist-_dpts[i])/(_dpts[i+1]-_dpts[i]));					//needs to stay between 0 and 1 (since interpolation functions between pts will be 0-1 based), so normalize by distance dpts[i]
-				return makeNewPoint(pts,new int[]{i,((i+1)%pts.length)}, s[0]);		//put interpolant between adjacent axis points in s ara if needed		
+				//needs to stay between 0 and 1 (since interpolation functions between 
+				//pts will be 0-1 based), so normalize by distance dpts[i]
+				s[0] = ((dist-_dpts[i])/(_dpts[i+1]-_dpts[i]));		
+				//put interpolant between adjacent axis points in s ara if needed
+				return makeNewPoint(pts,new int[]{i,((i+1)%pts.length)}, s[0]);		
 			}					
 		}		
 		return pts[0];
