@@ -125,7 +125,7 @@ public class UI_TestProject extends GUI_AppManager {
 				_winDescr = new String[] {"", "Light Background Test 3D Window 1","Dark Background Test 3D Window 2","Test 2D Window"};
 
 		//instanced window dims when open and closed - only showing 1 open at a time - and init cam vals
-		float[][] _floatDims  = new float[][] {getDefaultWinDimOpen(), getDefaultWinDimClosed(), getInitCameraValues()};	
+		float[][] _floatDims  = getDefaultWinAndCameraDims();	
 
 		//Builds sidebar menu button config - application-wide menu button bar titles and button names
 		String[] menuBtnTitles = new String[]{"Functions 1","Functions 2","Functions 3"};

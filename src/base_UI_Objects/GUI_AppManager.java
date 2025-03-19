@@ -629,7 +629,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		return MyMathUtils.inRange(retVal, 0.0f, 1.0f) ? retVal : _dfltPopUpWinOpenFraction;
 	}
 	
-	
+	/**
+	 * Retrieves the default window dimensions and camera initial values
+	 * @return
+	 */	
+	public float[][] getDefaultWinAndCameraDims(){
+		return new float[][] {getDefaultWinDimOpen(), getDefaultWinDimClosed(), getInitCameraValues()};
+	}
 	/**
 	 * Retrieves reasonable default window open dims
 	 * @return
