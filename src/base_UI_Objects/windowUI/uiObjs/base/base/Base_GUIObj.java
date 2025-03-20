@@ -75,6 +75,7 @@ public abstract class Base_GUIObj {
 	 * Fill color value for main UI object
 	 */
 	protected int[] _fillClr = new int[] {0,0,0,255};
+	
 	/**
 	 * Stroke color value for main UI object
 	 */

@@ -407,9 +407,11 @@ public abstract class Base_DispWindow {
 	 *           the 3rd elem is label for object                                                                       
 	 *           the 4th element is object type (GUIObj_Type enum)
 	 *           the 5th element is boolean array of : (unspecified values default to false)
-	 *           	{value is sent to owning window, 
-	 *           	value is sent on any modifications (while being modified, not just on release), 
-	 *           	changes to value must be explicitly sent to consumer (are not automatically sent)}    
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           	idx 3: if true, do not build prefix ornament
+	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
 	 * @param tmpListObjVals
 	 */
 	protected abstract void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);		
@@ -420,9 +422,11 @@ public abstract class Base_DispWindow {
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
-	 * 		idx 0 : value is sent to owning window
-	 * 		idx 1 : value is sent on modification, not mouse release
-	 * 		idx 2 : changes must be explicitly sent to consumer (not automatically sent)	 * 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           	idx 3: if true, do not build prefix ornament
+	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
 	 * @return
 	 */
 	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
@@ -435,9 +439,11 @@ public abstract class Base_DispWindow {
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
-	 * 		idx 0 : value is sent to owning window
-	 * 		idx 1 : value is sent on modification, not mouse release
-	 * 		idx 2 : changes must be explicitly sent to consumer (not automatically sent)	 * 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           	idx 3: if true, do not build prefix ornament
+	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
 	 * @return
 	 */
 	protected final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
@@ -450,9 +456,11 @@ public abstract class Base_DispWindow {
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
-	 * 		idx 0 : value is sent to owning window
-	 * 		idx 1 : value is sent on modification, not mouse release
-	 * 		idx 2 : changes must be explicitly sent to consumer (not automatically sent)	 * 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           	idx 3: if true, do not build prefix ornament
+	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
 	 * @return
 	 */
 	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
@@ -529,17 +537,7 @@ public abstract class Base_DispWindow {
 						{0,0,0,255}, //stroke
 						{0,0,0,255}, // fill
 					};
-			if(guiObjTypes[i] == GUIObj_Type.FloatVal) {
-				guiFloatValIDXs.add(i);
-			} if(guiObjTypes[i] == GUIObj_Type.Button) {
-				msgObj.dispConsoleErrorMessage(
-						"Base_uiObjectManager", "_buildGUIObjsForMenu", 
-						"Attempting to add unsupported gui obj type : `"+guiObjTypes[i].toStrBrf() + "` at idx : "+i);
-			
-			} else {
-				//int and list values are considered ints
-				guiIntValIDXs.add(i);
-			}
+
 			corners[i] = new myPointf[] {new myPointf(stPt), new myPointf(endPt)};
 			boolean[] tmpAra = (boolean[])obj[4];
 			guiBoolVals[i] = new boolean[(tmpAra.length < 5 ? 5 : tmpAra.length)];
@@ -588,16 +586,19 @@ public abstract class Base_DispWindow {
 			switch(guiObjTypes[i]) {
 				case IntVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Int(ri, i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);					
+							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					guiIntValIDXs.add(i);
 					break;}
 				case ListVal : {
 					++numListObjs;
 					guiObjs_Numeric[i] = new MenuGUIObj_List(ri, i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
+					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Float(ri, i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);					
+							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					guiFloatValIDXs.add(i);
 					break;}
 				case Button  :{
 					//TODO
