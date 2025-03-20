@@ -170,7 +170,7 @@ public abstract class Base_GUIObj {
 	 */
 	public abstract void resetToInit();
 	/**
-	 * Whether this object was intialized to update the owning window every time it was changed
+	 * Whether this object was initialized to update the owning window every time it was changed
 	 * @param isRelease
 	 * @return
 	 */
@@ -218,11 +218,14 @@ public abstract class Base_GUIObj {
 			ri.setFill(_fillClr,_fillClr[3]);
 			ri.setStroke(_strkClr,_strkClr[3]);	
 			//draw specifics for this UI object
-			_drawObject_Indiv();
+			_drawUIData();
 		ri.popMatState();
 	}//draw
 
-	protected abstract void _drawObject_Indiv();
+	/**
+	 * Draw UI Data String - usually {label}{data value}
+	 */
+	protected abstract void _drawUIData();
 	
 	/**
 	 * set new display text for this UI object - doesn't change name

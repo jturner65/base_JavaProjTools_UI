@@ -1455,8 +1455,7 @@ public abstract class Base_DispWindow {
 	 * @param tmpBtnNamesArray ArrayList of Object arrays to be built containing all button definitions. 
 	 * @return count of -all- booleans to be managed by privFlags
 	 */
-	public abstract int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray);
-	
+	public abstract int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray);	
 	
 	/**
 	 * draw box to hide window

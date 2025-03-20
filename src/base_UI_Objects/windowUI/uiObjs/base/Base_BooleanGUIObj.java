@@ -12,6 +12,7 @@ import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
  */
 public abstract class Base_BooleanGUIObj extends Base_GUIObj {
 	
+	protected int state = 0;
 	/**
 	 * Build a boolean/multi-state button
 	 * @param _ri render interface
@@ -37,7 +38,7 @@ public abstract class Base_BooleanGUIObj extends Base_GUIObj {
 	}
 
 	@Override
-	protected void _drawObject_Indiv() {
+	protected void _drawUIData() {
 
 	}
 
@@ -47,8 +48,7 @@ public abstract class Base_BooleanGUIObj extends Base_GUIObj {
 
 	@Override
 	protected String getValueAsString() {
-		// TODO Auto-generated method stub
-		return null;
+		return "" + state;
 	}
 
 	@Override
