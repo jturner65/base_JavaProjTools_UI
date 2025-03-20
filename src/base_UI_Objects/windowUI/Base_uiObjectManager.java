@@ -103,17 +103,7 @@ public class Base_uiObjectManager {
 						{0,0,0,255}, //stroke
 						{0,0,0,255}, // fill
 					};
-			if(guiObjTypes[i] == GUIObj_Type.FloatVal) {
-				guiFloatValIDXs.add(i);
-			} if(guiObjTypes[i] == GUIObj_Type.Button) {
-				msgObj.dispConsoleErrorMessage(
-						"Base_uiObjectManager", "_buildGUIObjsForMenu", 
-						"Attempting to add unsupported gui obj type : `"+guiObjTypes[i].toStrBrf() + "` at idx : "+i);
-			
-			} else {
-				//int and list values are considered ints
-				guiIntValIDXs.add(i);
-			}
+
 			corners[i] = new myPointf[] {new myPointf(stPt), new myPointf(endPt)};
 			boolean[] tmpAra = (boolean[])obj[4];
 			guiBoolVals[i] = new boolean[(tmpAra.length < 5 ? 5 : tmpAra.length)];
@@ -147,7 +137,7 @@ public class Base_uiObjectManager {
 	 * @param tmpListObjVals map keyed by object idx where the value is a string array of elements to put in a list object
 	 * @parram UI_Off Either the ui offset to use for a prefixing ornament before the object's label, or null
 	 */
-	public void _buildAllObjects(
+	private void _buildAllObjects(
 			String[] guiObjNames, 
 			myPointf[][] corners, 
 			double[][] guiMinMaxModVals, 
@@ -162,16 +152,19 @@ public class Base_uiObjectManager {
 			switch(guiObjTypes[i]) {
 				case IntVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Int(ri, i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);					
+							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					guiIntValIDXs.add(i);
 					break;}
 				case ListVal : {
 					++numListObjs;
 					guiObjs_Numeric[i] = new MenuGUIObj_List(ri, i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
+					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Float(ri, i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);					
+							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					guiFloatValIDXs.add(i);
 					break;}
 				case Button  :{
 					//TODO
