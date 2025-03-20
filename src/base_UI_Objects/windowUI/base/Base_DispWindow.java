@@ -972,7 +972,7 @@ public abstract class Base_DispWindow {
 			privFlagBtns[numBtns-1][2] = maxBtnLen;
 			this.uiClkCoords[3] += getTextHeightOffset();
 		}
-		this.uiClkCoords[3] += winInitVals.getRowStYOffset();
+		this.uiClkCoords[3] += AppMgr.getRowStYOffset();
 		initPrivFlagColors();
 	}//_buildPrivBtnRects
 	/**
@@ -1330,7 +1330,7 @@ public abstract class Base_DispWindow {
 	public final float[] getRectDimClosed() {return winInitVals.rectDimClosed;}
 	
 	private final void _setClosedBox(){
-		float clkBxDim = winInitVals.getClkBoxDim();
+		float clkBxDim = AppMgr.getClkBoxDim();
 		if( dispFlags.getShowWin()){	
 			closeBox[0] = winInitVals.rectDim[0]+winInitVals.rectDim[2]-clkBxDim;
 			closeBox[1] = winInitVals.rectDim[1];	
@@ -1492,7 +1492,7 @@ public abstract class Base_DispWindow {
 		if(winInitVals.winDescr.trim() != ""){	
 			yOffset = dispMultiLineText(winInitVals.winDescr,  winInitVals.rectDim[0]+10, winInitVals.rectDim[1]+12); 
 		}
-		if(null!=trajMgr){	trajMgr.drawNotifications(ri, winInitVals.getXOffset() *.5f, getTextHeightOffset() *.5f);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
+		if(null!=trajMgr){	trajMgr.drawNotifications(ri, AppMgr.getXOffset() *.5f, getTextHeightOffset() *.5f);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		if(dispFlags.getIsCloseable()){drawMouseBox();}
 		//TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
 		if(dispFlags.getHasScrollBars() && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe();}
@@ -1522,7 +1522,7 @@ public abstract class Base_DispWindow {
 	 */
 	protected void drawSepBar(double uiClkCoords2) {
 		ri.pushMatState();
-			ri.translate(0,uiClkCoords2 + (.5f*winInitVals.getClkBoxDim()),0);
+			ri.translate(0,uiClkCoords2 + (.5f*AppMgr.getClkBoxDim()),0);
 			ri.setFill(0,0,0,255);
 			ri.setStrokeWt(1.0f);
 			ri.setStroke(0,0,0,255);
@@ -1544,7 +1544,7 @@ public abstract class Base_DispWindow {
 			}
 			int numToPrint = MyMathUtils.min(res.length,80);
 			for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
-			ri.translate(winInitVals.getXOffset(), 0.0f);
+			ri.translate(AppMgr.getXOffset(), 0.0f);
 			drawInfoStr(1.0f, winInitVals.strkClr); 	
 		ri.popMatState();		
 	}//drawOnScreenText
@@ -1554,7 +1554,7 @@ public abstract class Base_DispWindow {
 		if(dispFlags.getShowRtSideMenu()) {
 			ri.drawRect(UIRtSideRectBox);
 			//move to manage internal text display in owning window
-			ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+winInitVals.getRtSideTxtHeightOffset(),0);
+			ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+AppMgr.getRtSideTxtHeightOffset(),0);
 			ri.setFill(255,255,255,255);	
 			 //instancing class implements this function
 			drawRightSideInfoBarPriv(modAmtMillis); 
@@ -1873,7 +1873,7 @@ public abstract class Base_DispWindow {
 	public final boolean pointInRectDim(int x, int y){return winInitVals.pointInRectDim(x, y);	}
 	public final boolean pointInRectDim(myPoint pt){return winInitVals.pointInRectDim(pt);}	
 	public final boolean pointInRectDim(myPointf pt){return winInitVals.pointInRectDim(pt);}
-	public final float getTextHeightOffset() {return winInitVals.getTextHeightOffset();}
+	public final float getTextHeightOffset() {return AppMgr.getTextHeightOffset();}
 	
 	/**
 	 * Handle ticks from mouse wheel

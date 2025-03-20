@@ -6,7 +6,6 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.GUI_AppManager;
 
 /**
  * Struct holding per-window object dims and colors, consumed by Base_DispWindow to create 
@@ -15,10 +14,6 @@ import base_UI_Objects.GUI_AppManager;
  *
  */
 public class GUI_AppWinVals {
-	/**
-	 * Gui-based application manager
-	 */
-	private static GUI_AppManager AppMgr;
 	/**
 	 * Window index to be created
 	 */
@@ -130,8 +125,7 @@ public class GUI_AppWinVals {
 	 * @param _sceneCenterVal center of scene, for drawing objects
 	 * @param _initSceneFocusVal initial focus target for camera
 	 */
-	public GUI_AppWinVals(GUI_AppManager _AppMgr, int _winIdx, String[] _strVals, boolean[] _flags, float[][] _floatVals, int[][] _intVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
-		AppMgr = _AppMgr;
+	public GUI_AppWinVals(int _winIdx, String[] _strVals, boolean[] _flags, float[][] _floatVals, int[][] _intVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
 		winIdx = _winIdx;
 		winName = _strVals[0];
 		winDescr = _strVals[1];
@@ -177,71 +171,7 @@ public class GUI_AppWinVals {
 		}
 		canvasColor[3] = 80;
 	}//setBackgrndColor
-		
-	/**
-	 * Height of a line of text. Also used as a width of an average character
-	 */
-	public final float getTextHeightOffset() {
-		return 1.5f * AppMgr.getTextSize();
-	}
-	
-	/**
-	 * Base right side text menu per-line height offset
-	 */
-	public final float getRtSideTxtHeightOffset(){
-		return getTextHeightOffset() - 4.0f;
-	}
-	
-	/**
-	 * Right side menu y values
-	 * 		idx 0 : current y value for text (changes with each frame)
-	 * 		idx 1 : per-line y offset for grouped text
-	 * 		idx 2 : per-line y offset for title-to-group text (small space)
-	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
-	 */
-	public final float[] getRtSideYOffVals() {
-		float rtSideTxtHeightOff = getRtSideTxtHeightOffset();
-		return new float[] {0, rtSideTxtHeightOff, 1.2f * rtSideTxtHeightOff, 1.5f * rtSideTxtHeightOff};
-	}
-	
-	/**
-	 * X Dimension offset for text
-	 */
-	public final float getXOffset() {
-		return 2.0f * AppMgr.getTextSize();
-	}
-	
-	/**
-	 * Offset for starting a new row in Y
-	 */
-	public final float getRowStYOffset() {
-		return 0.15f * getTextHeightOffset();
-	}
-	
-	/**
-	 * The Y distance between 2 successive buttons
-	 * @return
-	 */
-	public final float getBtnLabelYOffset() {
-		return 3.0f * AppMgr.getTextSize(); 
-	}
-	
-	/**
-	 * size of interaction/close window box in pxls
-	 * @return
-	 */
-	public final float getClkBoxDim() {
-		return AppMgr.getTextSize();
-	}
-	
-	/**
-	 * array of x,y offsets for UI objects that have a prefix graphical element
-	 * @return
-	 */
-	public final double[] getUIOffset() {
-		return new double[] { getXOffset(), getTextHeightOffset() };
-	}
-	
+			
 	/**
 	 * Window can be drawn in
 	 * @return

@@ -545,6 +545,75 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final int getTextSize() {return _txtSize;}
 	
+	///////////////////////////////////////
+	// UI text/display dims based on text size
+	/**
+	 * size of interaction/close window box in pxls
+	 * @return
+	 */
+	public final float getClkBoxDim() {
+		return getTextSize();
+	}
+	
+	/**
+	 * Height of a line of text. Also used as a width of an average character
+	 */
+	public final float getTextHeightOffset() {
+		return 1.5f * getClkBoxDim();
+	}
+	
+	/**
+	 * Base right side text menu per-line height offset
+	 */
+	public final float getRtSideTxtHeightOffset(){
+		return getTextHeightOffset() - 4.0f;
+	}
+	
+	/**
+	 * Right side menu y values
+	 * 		idx 0 : current y value for text (changes with each frame)
+	 * 		idx 1 : per-line y offset for grouped text
+	 * 		idx 2 : per-line y offset for title-to-group text (small space)
+	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
+	 */
+	public final float[] getRtSideYOffVals() {
+		float rtSideTxtHeightOff = getRtSideTxtHeightOffset();
+		return new float[] {0, rtSideTxtHeightOff, 1.2f * rtSideTxtHeightOff, 1.5f * rtSideTxtHeightOff};
+	}
+	
+	/**
+	 * X Dimension offset for text
+	 */
+	public final float getXOffset() {
+		return getTextHeightOffset();
+	}
+	
+	/**
+	 * Offset for starting a new row in Y
+	 */
+	public final float getRowStYOffset() {
+		return 0.15f * getTextHeightOffset();
+	}
+	
+	/**
+	 * The Y distance between 2 successive buttons
+	 * @return
+	 */
+	public final float getBtnLabelYOffset() {
+		return 2.0f * getTextHeightOffset(); 
+	}
+
+	/**
+	 * array of x,y offsets for UI objects that have a prefix graphical element
+	 * @return
+	 */
+	public final double[] getUIOffset() {
+		return new double[] { getXOffset(), getTextHeightOffset() };
+	}	
+	
+	///////////////////////////////////////
+	//End UI text/display dims based on text size	
+	
 	/**
 	 * Override if want to resize menu width fraction. Needs to be [0,1]
 	 * @return
@@ -802,7 +871,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _inclMseOvValues include a row for possible mouse over values
 	 */
 	public final void buildSideBarMenu(String[] _winTitles, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
-		winInitVals[dispMenuIDX] = new GUI_AppWinVals(this, dispMenuIDX, new String[] {"UI Window", "User Controls"}, new boolean[4],
+		winInitVals[dispMenuIDX] = new GUI_AppWinVals(dispMenuIDX, new String[] {"UI Window", "User Controls"}, new boolean[4],
 				new float[][] {new float[]{0,0, menuWidth, viewHeight}, new float[]{0,0, hideWinWidth, viewHeight},getInitCameraValues()},
 				new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,200},new int[]{255,255,255,255}},
 				sceneOriginValsBase[0], sceneFcsValsBase[0]);
@@ -851,7 +920,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	protected final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
-		winInitVals[_winIdx] = new GUI_AppWinVals(this, _winIdx, new String[] {_title, _descr}, _dispFlags,
+		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
 				_floatVals, _intClrVals, _sceneCenterVal, _initSceneFocusVal);
 	
 	}//setInitDispWinVals
@@ -881,7 +950,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals) {
 		int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
-		winInitVals[_winIdx] = new GUI_AppWinVals(this, _winIdx, new String[] {_title, _descr}, _dispFlags,
+		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
 				_floatVals, _intClrVals, sceneOriginValsBase[scIdx], sceneFcsValsBase[scIdx]);
 	
 	}//setInitDispWinVals

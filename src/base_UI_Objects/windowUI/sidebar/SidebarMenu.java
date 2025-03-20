@@ -135,10 +135,10 @@ public class SidebarMenu extends Base_DispWindow{
 		super(_p, _AppMgr, _winIdx);
 		btnConfig=_c;
 		
-		clkFlgsStY = (int) winInitVals.getClkBoxDim();
-		initTextHeightOff = winInitVals.getTextHeightOffset();
-		initBtnLblYOff = winInitVals.getBtnLabelYOffset();
-		initRowStYOff = winInitVals.getRowStYOffset();
+		clkFlgsStY = (int) AppMgr.getClkBoxDim();
+		initTextHeightOff = AppMgr.getTextHeightOffset();
+		initBtnLblYOff = AppMgr.getBtnLabelYOffset();
+		initRowStYOff = AppMgr.getRowStYOffset();
 		
 		//set up side bar menu buttons with format specific to instancing application
 		setBtnData();
@@ -502,11 +502,11 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void drawMe(float animTimeMod) {
 		float txtHeightOffHalf = 0.5f * initTextHeightOff;
-		float xOff = winInitVals.getXOffset();
+		float xOff = AppMgr.getXOffset();
 		float xOffHalf = xOff * .5f;
 		ri.pushMatState();
 			drawSideBarBooleans(
-					winInitVals.getBtnLabelYOffset(), 
+					AppMgr.getBtnLabelYOffset(), 
 					xOffHalf, 
 					txtHeightOffHalf);				//toggleable booleans 
 		ri.popMatState();	
@@ -515,10 +515,10 @@ public class SidebarMenu extends Base_DispWindow{
 		ri.popMatState();	
 		ri.pushMatState();			
 			drawSideBarButtons(
-					winInitVals.getBtnLabelYOffset(),
+					AppMgr.getBtnLabelYOffset(),
 					xOff, 
 					xOffHalf,
-					winInitVals.getRowStYOffset());						//draw buttons
+					AppMgr.getRowStYOffset());						//draw buttons
 		ri.popMatState();	
 		ri.pushMatState();
 			drawGUIObjs(animTimeMod);					//draw what global user-modifiable fields are currently available 
