@@ -304,7 +304,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	
 	@Override
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {
-		float[] rtSideYOffVals = winInitVals.getRtSideYOffVals();
+		float[] rtSideYOffVals = AppMgr.getRtSideYOffVals();
 		ri.pushMatState();
 		//display current simulation variables and data on right side menu
 		simExec.drawRightSideInfoBar(modAmtMillis, rtSideYOffVals);
@@ -327,7 +327,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	public final void drawCustMenuObjs(float animTimeMod){
 		ri.pushMatState();
 		//all sub menu drawing within push mat call
-		ri.translate(0,custMenuOffset+winInitVals.getTextHeightOffset());		
+		ri.translate(0,custMenuOffset+AppMgr.getTextHeightOffset());		
 		//draw any custom menu stuff here
 		drawSimCustMenuObjs(animTimeMod);
 		ri.popMatState();	
