@@ -173,11 +173,20 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	public final float valAsFloat(){return (float)( val);}
 	
 	/**
-	 * Get this UI object's value as a string
+	 * Get this UI object's value as a string with appropriate format
 	 * @return
 	 */
 	protected final String getValueAsString() {
-		return ""+ getVal();
+		return getValueAsString(val);
+	}
+	protected abstract String getValueAsString(double _val);
+	
+	/**
+	 * Draw UI Data
+	 */
+	@Override
+	protected final void _drawUIData() {
+		ri.showText(label + getValueAsString(), 0,0);		
 	}
 	
 	/**

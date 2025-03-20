@@ -559,14 +559,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * Height of a line of text. Also used as a width of an average character
 	 */
 	public final float getTextHeightOffset() {
-		return 1.5f * getClkBoxDim();
+		return 1.25f * getTextSize();
 	}
 	
 	/**
 	 * Base right side text menu per-line height offset
 	 */
 	public final float getRtSideTxtHeightOffset(){
-		return getTextHeightOffset() - 4.0f;
+		return getTextHeightOffset();// - 4.0f;
 	}
 	
 	/**

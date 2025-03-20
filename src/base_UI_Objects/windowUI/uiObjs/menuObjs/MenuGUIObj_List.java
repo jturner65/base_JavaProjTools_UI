@@ -41,19 +41,23 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 	}
 	
 	/**
+	 * Get this UI object's value as a string
+	 * @return
+	 */
+	@Override
+	protected String getValueAsString(double _val) {
+		return listVals[(((int)_val) % listVals.length)];
+	}
+	
+	/**
 	 * return the string representation corresponding to the passed index in the list of this object's values, if any exist
 	 * @param idx index in list of value to retrieve
 	 * @return
 	 */
 	public final String getListValStr(int idx) {
-		return listVals[(idx % listVals.length)];
+		return getValueAsString(idx);
 	}// getListValStr
 
-	@Override
-	protected final void _drawObject_Indiv() {
-		ri.showText(label + listVals[(((int)val) % listVals.length)], 0,0);		
-	}
-	
 	
 	/**
 	 * Set this list object's list of values

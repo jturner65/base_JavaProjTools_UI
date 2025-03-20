@@ -36,6 +36,6 @@ public class MenuGUIObj_Float extends Base_NumericGUIObj {
 	}
 
 	@Override
-	protected final void _drawObject_Indiv() {		ri.showText(label + String.format("%.5f",val), 0,0);	}
+	protected String getValueAsString(double _val) {	return String.format("%.5f",_val);}
 
 }//class myGUIObj_Float

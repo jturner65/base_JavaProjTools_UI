@@ -89,6 +89,7 @@ public class Base_uiObjectManager {
 		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
 		myPointf[][] corners = new myPointf[numGUIObjs][2];
 		float textHeightOffset = AppMgr.getTextHeightOffset();
+		// first object's start and end point
 		myPointf stPt = new myPointf(uiClkCoords[0], uiClkCoords[1], 0);
 		myPointf endPt = new myPointf(uiClkCoords[2], uiClkCoords[1]+textHeightOffset, 0);
 			
