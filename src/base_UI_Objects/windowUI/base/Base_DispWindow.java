@@ -474,7 +474,7 @@ public abstract class Base_DispWindow {
 		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
 		//  set up all window-specific boolean buttons for this window
 		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
-		int _numPrivFlags = initAllPrivBtns(tmpBtnNamesArray);
+		int _numPrivFlags = initAllUIButtons(tmpBtnNamesArray);
 		//initialize all private buttons based on values put in arraylist
 		_buildAllPrivButtons(tmpBtnNamesArray);
 		// init specific sim flags
@@ -1455,7 +1455,7 @@ public abstract class Base_DispWindow {
 	 * @param tmpBtnNamesArray ArrayList of Object arrays to be built containing all button definitions. 
 	 * @return count of -all- booleans to be managed by privFlags
 	 */
-	public abstract int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray);
+	public abstract int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray);
 	
 	
 	/**

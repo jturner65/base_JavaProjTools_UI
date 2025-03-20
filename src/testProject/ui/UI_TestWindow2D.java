@@ -85,7 +85,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	
 
 	@Override
-	public int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray) {
+	public int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
 		tmpBtnNamesArray.add(new Object[] {"Debugging", "Enable Debug", Base_BoolFlags.debugIDX});
 		tmpBtnNamesArray.add(new Object[] {"Button 1 On", "Button 1 Off", button1_IDX});
 		tmpBtnNamesArray.add(new Object[] {"Button 2 On", "Button 2 Off", button2_IDX});

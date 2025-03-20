@@ -303,7 +303,7 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	@Override
 	//initialize all private-flag based UI buttons here - called by base class
-	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
+	public final int initAllUIButtons(ArrayList<Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
 	
 	@Override
 	protected final void initDispFlags() {}
