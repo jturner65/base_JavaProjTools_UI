@@ -18,10 +18,12 @@ public class MenuGUIObj_Float extends Base_NumericGUIObj {
 	 * @param _initVal the initial value of this object
 	 * @param _flags any preset configuration flags
 	 * @param _off offset from label in x,y for placement of drawn ornamental box. make null for none
+	 * @param strkClr stroke color of text
+	 * @param fillClr fill color around text
 	 */
 	public MenuGUIObj_Float(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end,
-			double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _Off) {
-		super(_ri, _objID, _name, _start, _end, _minMaxMod, _initVal, GUIObj_Type.FloatVal, _flags, _Off);
+			double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _Off, int[] strkClr, int[] fillClr) {
+		super(_ri, _objID, _name, _start, _end, _minMaxMod, _initVal, GUIObj_Type.FloatVal, _flags, _Off, strkClr, fillClr);
 	}
 	
 	@Override

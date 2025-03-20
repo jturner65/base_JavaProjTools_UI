@@ -21,10 +21,12 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 	 * @param _flags any preset configuration flags
 	 * @param _off offset from label in x,y for placement of drawn ornamental box. make null for none
 	 * @param _listVals
+	 * @param strkClr stroke color of text
+	 * @param fillClr fill color around text
 	 */
 	public MenuGUIObj_List(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end,
-			double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off, String[] _listVals) {
-		super(_ri, _objID, _name, _start, _end, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, _off);
+			double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off, String[] _listVals, int[] strkClr, int[] fillClr) {
+		super(_ri, _objID, _name, _start, _end, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, _off, strkClr, fillClr);
 		setListVals(_listVals);
 	}
 	

@@ -23,12 +23,13 @@ public abstract class Base_BooleanGUIObj extends Base_GUIObj {
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset configuration flags
 	 * @param _off offset from label in x,y for placement of drawn ornamental box. make null for none
+	 * @param strkClr stroke color of text
+	 * @param fillClr fill color around text
 	 */
 	public Base_BooleanGUIObj(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end,
-			double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
-		super(_ri, _objID, _name, _start, _end, _objType, _flags, _off);
+			double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] strkClr, int[] fillClr) {
+		super(_ri, _objID, _name, _start, _end, _objType, _flags, _off, strkClr, fillClr);
 	}//ctor
-
 	
 	@Override
 	public void resetToInit() {

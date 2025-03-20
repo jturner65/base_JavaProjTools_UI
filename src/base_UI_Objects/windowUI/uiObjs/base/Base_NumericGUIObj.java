@@ -44,17 +44,19 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset configuration flags
 	 * @param _off offset from label in x,y for placement of drawn ornamental box. make null for none
+	 * @param strkClr stroke color of text
+	 * @param fillClr fill color around text
 	 */
 	public Base_NumericGUIObj(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end,
-			double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off) {
-		super(_ri, _objID, _name, _start, _end, _objType, _flags, _off);
+			double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] strkClr, int[] fillClr) {
+		super(_ri, _objID, _name, _start, _end, _objType, _flags, _off, strkClr, fillClr);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
 		initVals = new double[4];
 		for(int i=0;i<_minMaxMod.length;++i) {initVals[i]=_minMaxMod[i];}
 		initVals[3] = _initVal;	
-	}
+	}//ctor
 	
 	/**
 	 * 
@@ -158,8 +160,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 		double uiVal = Double.parseDouble(str);	
 		setVal(uiVal);
 	}
-	
-	
+		
 	/**
 	 * Get this object's value as an int
 	 * @return
