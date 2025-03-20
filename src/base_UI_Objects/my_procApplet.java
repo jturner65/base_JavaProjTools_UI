@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
@@ -1225,15 +1226,20 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		if(depthValue == -1){depthValue = getDepth(x, y); }	
 		//get 3d transform matrices
 		PGraphics3D p3d = (PGraphics3D)g;
+		// build normalized x,y prenormalized depth homogeneous screen point
+		float[] normalized = new float[] {
+				(x/(width * 0.5f)) - 1.0f, 
+				(newY/(height* 0.5f)) - 1.0f, 
+				depthValue * 2.0f - 1.0f, 
+				1.0f};
+		
+		// Get projection matrix
 		PMatrix3D modelViewProjInv = p3d.projection.get(),
 				modelView = p3d.modelview.get(); 
+		// multiply projection by model view
 		modelViewProjInv.apply( modelView ); 
 		modelViewProjInv.invert();	  
-		float[] normalized = new float[] {
-						(x/(width * 0.5f)) - 1.0f, 
-						(newY/(height* 0.5f)) - 1.0f, 
-						depthValue * 2.0f - 1.0f, 
-						1.0f};	  
+	  
 		//destination
 		float[] unprojected = new float[4];	  
 		modelViewProjInv.mult(normalized, unprojected);
@@ -1252,6 +1258,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public myPoint getWorldLoc(int x, int y, float depthValue){ 
 		//destination
 		float[] unprojected = _getWorldLocFromScreenLoc(x,y,depthValue);
+		//normalize by projected depth
 		return new myPoint(unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3]);
 	}
 	
@@ -1318,14 +1325,19 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public int[] getClr_Custom(int colorVal, int alpha) {return AppMgr.getClr_Custom(colorVal, alpha); }		
 	@Override
-	public final int[] getRndClr(int alpha){return new int[]{(int)random(0,255),(int)random(0,255),(int)random(0,255),alpha};	}
+	public final int[] getRndClr(int alpha){
+		return new int[]{ThreadLocalRandom.current().nextInt(256),
+					ThreadLocalRandom.current().nextInt(256),
+					ThreadLocalRandom.current().nextInt(256),alpha};	}
 	@Override
-	public final int[] getRndClrBright(int alpha){return new int[]{(int)random(50,255),(int)random(25,200),(int)random(80,255),alpha};	}
+	public final int[] getRndClrBright(int alpha){
+		return new int[]{ThreadLocalRandom.current().nextInt(50,256),
+				ThreadLocalRandom.current().nextInt(25,256),
+				ThreadLocalRandom.current().nextInt(80,256),alpha};	}
 	
 	@Override
-	public final int getRndClrIndex(){return (int)random(0,IRenderInterface.gui_nextColorIDX);}		//return a random color flag value from IRenderInterface
-	 
-	
+	public final int getRndClrIndex(){return ThreadLocalRandom.current().nextInt(0,IRenderInterface.gui_nextColorIDX);}		//return a random color flag value from IRenderInterface
+		
 	@Override
 	public final Integer[] getClrMorph(int[] a, int[] b, double t){
 		if(t==0){return new Integer[]{a[0],a[1],a[2],a[3]};} else if(t==1){return new Integer[]{b[0],b[1],b[2],b[3]};}

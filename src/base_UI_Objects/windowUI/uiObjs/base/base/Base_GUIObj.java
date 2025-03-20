@@ -64,10 +64,12 @@ public abstract class Base_GUIObj {
 	private int[] uiConfigFlags;
 	protected static final int 
 			//config flags
-			usedByWinsIDX	= 0, 				//value is sent to window
-			updateWhileModIDX = 1,				//value is sent to window on any change, not just release
-			explicitUIDataUpdateIDX = 2;		//if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
-	protected static final int numConfigFlags = 3;			// # of config flags		
+			usedByWinsIDX	= 0, 				// value is sent to window
+			updateWhileModIDX = 1,				// value is sent to window on any change, not just release
+			explicitUIDataUpdateIDX = 2,		// if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
+			skipPrefixOrnament = 3,				// if true do not build prefix ornament before label
+			matchLabelClrForPrefix = 4;			// if true make prefix ornament same color as label fill color
+	protected static final int numConfigFlags = 5;			// # of config flags		
 
 	/**
 	 * Fill color value for main UI object
@@ -85,18 +87,20 @@ public abstract class Base_GUIObj {
 	
 	/**
 	 * Builds a UI object
-	 * @param _p render interface
+	 * @param _ri render interface
 	 * @param _objID the index of the object in the managing container
 	 * @param _name the name/display label of the object
 	 * @param _start the upper left corner of the hot spot for this object
 	 * @param _end the lower right corner of the hot spot for this object
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset configuration flags
-	 * @param _off
+	 * @param _off offset before text
+	 * @param strkClr stroke color of text
+	 * @param fillClr fill color around text
 	 */
-	public Base_GUIObj(IRenderInterface _p, int _objID, String _name, myPointf _start, myPointf _end, 
-			GUIObj_Type _objType, boolean[] _flags, double[] _off) {
-		ri=_p;
+	public Base_GUIObj(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end, 
+			GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] strkClr, int[] fillClr){
+		ri=_ri;
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
@@ -110,21 +114,23 @@ public abstract class Base_GUIObj {
 		initStateFlags();
 		//UI Object configuration
 		initConfigFlags();
-		//build prefix ornament to display
-		_ornament = _buildPrefixOrnament(_off);
+		// stroke color and fill color of text
+		_strkClr = strkClr;
+		_fillClr = fillClr;
 		
 		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
 		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}
-	}
+		
+		//build prefix ornament to display
+		//TODO control this via boolean
+		if (shouldBuildPrefixOrnament() && (_off != null)) {
+			int[] prefixClr = (shouldMatchLabelColorForOrnament() ? _fillClr : ri.getRndClr());
+			_ornament = new GUI_PrefixObj(_off, prefixClr);
+		} else {
+			_ornament = new GUI_NoPrefixObj();
+		}	
+	}	
 	
-	/**
-	 * Instance class should build an ornament object based on whether it should or should not have one
-	 * @return
-	 */
-	private final Base_GUIPrefixObj _buildPrefixOrnament(double[] _off) {
-		return _off == null ? new GUI_NoPrefixObj() : new GUI_PrefixObj(_off);
-	}
-
 	
 	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
 	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
@@ -154,6 +160,9 @@ public abstract class Base_GUIObj {
 	
 	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
 	public boolean shouldUpdateConsumer() {return !getConfigFlags(explicitUIDataUpdateIDX);}
+	
+	protected boolean shouldBuildPrefixOrnament() {return !getConfigFlags(skipPrefixOrnament);}
+	private boolean shouldMatchLabelColorForOrnament() {return getConfigFlags(matchLabelClrForPrefix);}
 	
 	/**
 	 * Reset this object's value to its initial value
