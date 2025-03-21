@@ -1,7 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.base.base;
 
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
-import base_Math_Objects.vectorObjs.floats.myPointf;
 
 /**
  * Base class for interactable UI objects
@@ -24,15 +23,7 @@ public abstract class Base_GUIObj {
 	/**
 	 * UI Object ID from owning window (index in holding container)
 	 */
-	protected final int objID;			
-	/**
-	 * x,y coords of top left corner for clickable region
-	 */
-	protected final myPointf start;
-	/**
-	 * x,y coords of bottom right corner for clickable region
-	 */
-	protected final myPointf end;
+	protected final int objID;
 	/**
 	 * Text to display as a label
 	 */
@@ -72,23 +63,17 @@ public abstract class Base_GUIObj {
 	 * Builds a UI object
 	 * @param _objID the index of the object in the managing container
 	 * @param _name the name/display label of the object
-	 * @param _start the upper left corner of the hot spot for this object
-	 * @param _end the lower right corner of the hot spot for this object
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset configuration flags
 	 * @param _off offset before text
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public Base_GUIObj(int _objID, String _name, myPointf _start, myPointf _end, 
-			GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] _strkClr, int[] _fillClr){
+	public Base_GUIObj(int _objID, String _name, GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] _strkClr, int[] _fillClr){
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
 		label = name.length() > 0 ? name + " : " : ("");
-		//hotbox start and end x,y's
-		start = new myPointf(_start); 
-		end =  new myPointf(_end);
 		//type of object
 		objType = _objType;
 		//UI Object state
@@ -98,8 +83,6 @@ public abstract class Base_GUIObj {
 		
 		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
 		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}
-		// Renderer
-		//renderer = buildRenderer(_ri, start, end, _off, _strkClr, _fillClr, shouldBuildPrefixOrnament(), shouldMatchLabelColorForOrnament());	
 	}	
 	
 	public final void setRenderer(Base_GUIObjRenderer _renderer) {
@@ -154,12 +137,14 @@ public abstract class Base_GUIObj {
 	}
 	
 	/**
-	 * Verify passed coordinates are within this object's modifiable zone. If true then this object will be modified by UI actions
+	 * Verify passed coordinates are within this object's modifiable zone. 
+	 * If true then this object will be modified by UI actions
+	 * Renderer Manages hotspot. -sigh-.
 	 * @param _clkx
 	 * @param _clky
 	 * @return whether passed coords are within this object's modifiable zone
 	 */
-	public final boolean checkIn(float _clkx, float _clky){return (_clkx >= start.x)&&(_clkx <= end.x)&&(_clky >= start.y)&&(_clky <= end.y);}
+	public final boolean checkIn(float _clkx, float _clky){return renderer.checkIn(_clkx, _clky);}
 	
 	/**
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
@@ -183,7 +168,7 @@ public abstract class Base_GUIObj {
 	 * @return
 	 */
 	public final GUIObj_Type getObjType() {return objType;}
-		
+
 	/**
 	 * Set this UI object's value based on string tokens from file
 	 * @param toks
@@ -262,7 +247,7 @@ public abstract class Base_GUIObj {
 		String[] tmpRes = new String[valResAra.length+4];
 		int idx = 0;
 		tmpRes[idx++] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " label : " + label;
-		tmpRes[idx++] = "Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";
+		tmpRes[idx++] = renderer.getHotBoxLocString();
 		tmpRes[idx++] = "Treat as Int  : " + (objType == GUIObj_Type.IntVal);
 		for (String valStr : valResAra) {tmpRes[idx++] = valStr;}
 		tmpRes[idx++] = "Is Dirty :"+getStateFlags(valChangedIDX);
