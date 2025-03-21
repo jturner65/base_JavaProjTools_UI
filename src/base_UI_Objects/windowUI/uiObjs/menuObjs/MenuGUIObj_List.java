@@ -1,7 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
 
@@ -24,9 +23,9 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public MenuGUIObj_List(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end,
+	public MenuGUIObj_List(int _objID, String _name, myPointf _start, myPointf _end,
 			double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off, String[] _listVals, int[] strkClr, int[] fillClr) {
-		super(_ri, _objID, _name, _start, _end, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, _off, strkClr, fillClr);
+		super(_objID, _name, _start, _end, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, _off, strkClr, fillClr);
 		setListVals(_listVals);
 	}
 	

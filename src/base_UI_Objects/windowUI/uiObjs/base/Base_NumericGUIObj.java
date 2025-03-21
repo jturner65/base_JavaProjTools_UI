@@ -4,7 +4,6 @@
 package base_UI_Objects.windowUI.uiObjs.base;
 
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
 
@@ -47,9 +46,9 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public Base_NumericGUIObj(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end,
+	public Base_NumericGUIObj(int _objID, String _name, myPointf _start, myPointf _end,
 			double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] strkClr, int[] fillClr) {
-		super(_ri, _objID, _name, _start, _end, _objType, _flags, _off, strkClr, fillClr);
+		super(_objID, _name, _start, _end, _objType, _flags, _off, strkClr, fillClr);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;
@@ -176,19 +175,12 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * Get this UI object's value as a string with appropriate format
 	 * @return
 	 */
-	protected final String getValueAsString() {
+	@Override
+	public final String getValueAsString() {
 		return getValueAsString(val);
 	}
 	protected abstract String getValueAsString(double _val);
-	
-	/**
-	 * Draw UI Data
-	 */
-	@Override
-	protected final void _drawUIData() {
-		ri.showText(label + getValueAsString(), 0,0);		
-	}
-	
+
 	/**
 	 * Get string data array representing the value this UI object holds
 	 * @return

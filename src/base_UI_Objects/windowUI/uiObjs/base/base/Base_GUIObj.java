@@ -1,9 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.base.base;
 
-import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_NoPrefixObj;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_PrefixObj;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.base.Base_GUIPrefixObj;
+import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 
 /**
@@ -12,10 +9,6 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
  *
  */
 public abstract class Base_GUIObj {
-	/**
-	 * Interface to drawing/graphics engine
-	 */
-	protected static IRenderInterface ri;
 	/**
 	 * Internal object ID
 	 */
@@ -35,11 +28,11 @@ public abstract class Base_GUIObj {
 	/**
 	 * x,y coords of top left corner for clickable region
 	 */
-	protected myPointf start;
+	protected final myPointf start;
 	/**
 	 * x,y coords of bottom right corner for clickable region
 	 */
-	protected myPointf end;
+	protected final myPointf end;
 	/**
 	 * Text to display as a label
 	 */
@@ -53,42 +46,30 @@ public abstract class Base_GUIObj {
 	 */
 	private int[] uiStateFlags;
 	protected static final int 
-		debugIDX 		= 0,
-		showIDX			= 1,					//show this component
-		valChangedIDX   = 2;					//object value is dirty/clean
-	protected static final int numStateFlags = 3;	// # of internal state booleans
+		debugIDX 			= 0,
+		showIDX				= 1,					//show this component
+		valChangedIDX   	= 2,					//object value is dirty/clean
+		rendererSetIDX 	= 3;					//whether or not the renderer has been built and assigned
+	protected static final int numStateFlags = 4;	// # of internal state booleans
 	
 	/**
 	 * Flags structure to monitor/manage configurable behavior. No child class should access these directly
 	 */
 	private int[] uiConfigFlags;
 	protected static final int 
-			//config flags
-			usedByWinsIDX	= 0, 				// value is sent to window
-			updateWhileModIDX = 1,				// value is sent to window on any change, not just release
-			explicitUIDataUpdateIDX = 2,		// if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
-			skipPrefixOrnament = 3,				// if true do not build prefix ornament before label
-			matchLabelClrForPrefix = 4;			// if true make prefix ornament same color as label fill color
-	protected static final int numConfigFlags = 5;			// # of config flags		
-
-	/**
-	 * Fill color value for main UI object
-	 */
-	protected int[] _fillClr = new int[] {0,0,0,255};
+		//config flags
+		usedByWinsIDX			= 0, 				// value is sent to window
+		updateWhileModIDX 		= 1,				// value is sent to window on any change, not just release
+		explicitUIDataUpdateIDX = 2;				// if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
+	protected static final int numConfigFlags = 3;			// # of config flags		
 	
 	/**
-	 * Stroke color value for main UI object
+	 * Renderer for this object
 	 */
-	protected int[] _strkClr = new int[] {0,0,0,255};
-	
-	/**
-	 * Object to either manage and display or not show an ornamental box in front of a UI element
-	 */
-	private final Base_GUIPrefixObj _ornament;
+	protected Base_GUIObjRenderer renderer;
 	
 	/**
 	 * Builds a UI object
-	 * @param _ri render interface
 	 * @param _objID the index of the object in the managing container
 	 * @param _name the name/display label of the object
 	 * @param _start the upper left corner of the hot spot for this object
@@ -99,9 +80,8 @@ public abstract class Base_GUIObj {
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public Base_GUIObj(IRenderInterface _ri, int _objID, String _name, myPointf _start, myPointf _end, 
-			GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] strkClr, int[] fillClr){
-		ri=_ri;
+	public Base_GUIObj(int _objID, String _name, myPointf _start, myPointf _end, 
+			GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] _strkClr, int[] _fillClr){
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
@@ -115,23 +95,17 @@ public abstract class Base_GUIObj {
 		initStateFlags();
 		//UI Object configuration
 		initConfigFlags();
-		// stroke color and fill color of text
-		_strkClr = strkClr;
-		_fillClr = fillClr;
 		
 		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
 		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}
-		
-		//build prefix ornament to display
-		//TODO control this via boolean
-		if (shouldBuildPrefixOrnament() && (_off != null)) {
-			int[] prefixClr = (shouldMatchLabelColorForOrnament() ? _fillClr : ri.getRndClr());
-			_ornament = new GUI_PrefixObj(_off, prefixClr);
-		} else {
-			_ornament = new GUI_NoPrefixObj();
-		}	
+		// Renderer
+		//renderer = buildRenderer(_ri, start, end, _off, _strkClr, _fillClr, shouldBuildPrefixOrnament(), shouldMatchLabelColorForOrnament());	
 	}	
 	
+	public final void setRenderer(Base_GUIObjRenderer _renderer) {
+		renderer = _renderer;
+		setStateFlags(rendererSetIDX, true);
+	}
 	
 	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
 	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
@@ -139,9 +113,10 @@ public abstract class Base_GUIObj {
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		uiStateFlags[flIDX] = (val ?  uiStateFlags[flIDX] | mask : uiStateFlags[flIDX] & ~mask);
 		switch (idx) {//special actions for each flag
-		case debugIDX 					:{break;}
-		case showIDX					:{break;}
-		case valChangedIDX 				:{break;}
+		case debugIDX 				:{break;}
+		case showIDX				:{break;}
+		case valChangedIDX 			:{break;}
+		case rendererSetIDX			:{break;}
 		}
 	}//setFlag	
 	
@@ -153,7 +128,7 @@ public abstract class Base_GUIObj {
 		switch (idx) {//special actions for each flag
 		case usedByWinsIDX				:{break;}
 		case updateWhileModIDX			:{break;}
-		case explicitUIDataUpdateIDX 	:{break;}
+		case explicitUIDataUpdateIDX 	:{break;}		
 		}
 	}//setFlag	
 	
@@ -161,9 +136,6 @@ public abstract class Base_GUIObj {
 	
 	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
 	public boolean shouldUpdateConsumer() {return !getConfigFlags(explicitUIDataUpdateIDX);}
-	
-	protected boolean shouldBuildPrefixOrnament() {return !getConfigFlags(skipPrefixOrnament);}
-	private boolean shouldMatchLabelColorForOrnament() {return getConfigFlags(matchLabelClrForPrefix);}
 	
 	/**
 	 * Reset this object's value to its initial value
@@ -193,39 +165,12 @@ public abstract class Base_GUIObj {
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
 	 * @param animTimeMod animation time modifier to enable this object to blink
 	 */
-	private int _animCount = 0;
-	private boolean _cyanStroke = false;
-	public final void drawDebug() {
-		ri.pushMatState();
-			ri.setStrokeWt(1.0f);
-			++_animCount;
-			if(_animCount>20) {_animCount = 0; _cyanStroke = !_cyanStroke;}
-			if(_cyanStroke) {ri.setStroke(0, 255, 255,255);} else {	ri.setStroke(255, 0, 255,255);}
-			ri.noFill();
-			//Draw rectangle around this object denoting active zone
-			ri.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);
-		ri.popMatState();
-		draw();
-	}
+	public final void drawDebug() {			renderer.drawDebug();}
 	
 	/**
 	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
-	public final void draw() {
-		ri.pushMatState();
-			ri.translate(start.x,start.y,0);
-			_ornament.drawPrefixObj(ri);
-			ri.setFill(_fillClr,_fillClr[3]);
-			ri.setStroke(_strkClr,_strkClr[3]);	
-			//draw specifics for this UI object
-			_drawUIData();
-		ri.popMatState();
-	}//draw
-
-	/**
-	 * Draw UI Data String - usually {label}{data value}
-	 */
-	protected abstract void _drawUIData();
+	public final void draw() {				renderer.draw();}//draw
 	
 	/**
 	 * set new display text for this UI object - doesn't change name
@@ -295,13 +240,18 @@ public abstract class Base_GUIObj {
 	 * Get this UI object's value as a string
 	 * @return
 	 */
-	protected abstract String getValueAsString();
+	public abstract String getValueAsString();
 	
 	/**
 	 * Get string data aarray representing the value this UI object holds
 	 * @return
 	 */
 	protected abstract String[] getStrDataForVal();
+	
+	/**
+	 * Return this object's label
+	 */
+	public final String getLabel() {return label;}
 	
 	/**
 	 * Retrive an array of string debug data
