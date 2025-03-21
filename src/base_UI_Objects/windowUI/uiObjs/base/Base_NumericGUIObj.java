@@ -1,9 +1,5 @@
-/**
- * 
- */
 package base_UI_Objects.windowUI.uiObjs.base;
 
-import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
 
@@ -46,9 +42,9 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public Base_NumericGUIObj(int _objID, String _name, myPointf _start, myPointf _end,
+	public Base_NumericGUIObj(int _objID, String _name,
 			double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] strkClr, int[] fillClr) {
-		super(_objID, _name, _start, _end, _objType, _flags, _off, strkClr, fillClr);
+		super(_objID, _name, _objType, _flags, _off, strkClr, fillClr);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
 		val = _initVal;

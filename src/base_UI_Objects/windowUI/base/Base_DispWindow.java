@@ -509,7 +509,10 @@ public abstract class Base_DispWindow {
 	 * @return y coordinate for end of ui region
 	 * 
 	 */
-	private float _buildGUIObjsForMenu(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, float[] uiClkCoords) {
+	private float _buildGUIObjsForMenu(
+			TreeMap<Integer, Object[]> tmpUIObjArray, 
+			TreeMap<Integer, String[]> tmpListObjVals, 
+			float[] uiClkCoords) {
 		int numGUIObjs = tmpUIObjArray.size();
 		
 		double[][] guiMinMaxModVals = new double[numGUIObjs][3];			//min max mod values
@@ -532,8 +535,8 @@ public abstract class Base_DispWindow {
 		float textHeightOffset = AppMgr.getTextHeightOffset();
 		// first object's start and end point
 		myPointf stPt = new myPointf(uiClkCoords[0], uiClkCoords[1], 0);
-		myPointf endPt = new myPointf(uiClkCoords[2], uiClkCoords[1]+textHeightOffset, 0);
-			
+		myPointf endPt = new myPointf(uiClkCoords[2], uiClkCoords[1]+textHeightOffset, 0);		
+		
 		for (int i = 0; i < numGUIObjs; ++i) {
 			Object[] obj = tmpUIObjArray.get(i);
 			boolean[] formatAra;
@@ -554,7 +557,6 @@ public abstract class Base_DispWindow {
 						{0,0,0,255}, // fill
 					};
 
-			corners[i] = new myPointf[] {new myPointf(stPt), new myPointf(endPt)};
 			boolean[] tmpAra = (boolean[])obj[4];
 			guiBoolVals[i] = new boolean[(tmpAra.length < 5 ? 5 : tmpAra.length)];
 			int idx = 0;
@@ -566,7 +568,9 @@ public abstract class Base_DispWindow {
 			for (boolean val : formatAra) {
 				guiFormatBoolVals[i][idx++] = val;
 			}
-			//move box down by text height
+			
+			corners[i] = new myPointf[] {new myPointf(stPt), new myPointf(endPt)};
+			//move box corners by appropriate amount
 			stPt._add(0, textHeightOffset, 0);
 			endPt._add(0, textHeightOffset, 0);
 		}
@@ -574,18 +578,24 @@ public abstract class Base_DispWindow {
 		uiClkCoords[3] =  stPt.y - .5f*textHeightOffset;
 		
 		//build all objects using these values 
-		_buildAllObjects(guiObjNames, corners, guiMinMaxModVals, guiStVals, guiBoolVals, guiFormatBoolVals, guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset());
+		_buildAllObjects(
+				guiObjNames, corners, guiMinMaxModVals, 
+				guiStVals, guiBoolVals, guiFormatBoolVals, 
+				guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkCoords[2]);
 
 		// return final y coordinate
 		return uiClkCoords[3];
-	}//_buildGUIObjsForMenu	
+	}//_buildGUIObjsForMenu
+	
 	
 	/**
-	 * 
+	 * Build the renderer for a UI object 
 	 * @param _owner
+	 * @param _corners upper left (idx0) and lower right (idx1) corners of clickable hotspot
 	 * @param _start
 	 * @param _end
 	 * @param _off
+	 * @param _menuWidth max width of menu
 	 * @param _strkClr
 	 * @param _fillClr
 	 * @param guiFormatBoolVals array of boolean flags describing how the object should be constructed
@@ -594,12 +604,18 @@ public abstract class Base_DispWindow {
 	 * 				idx 2 : Ornament color should match label color 
 	 * @return
 	 */
-	private Base_GUIObjRenderer buildRenderer(Base_GUIObj _owner, myPointf _start, myPointf _end,
-			double[] _off, int[] _strkClr, int[] _fillClr, boolean[] guiFormatBoolVals) {	
+	private Base_GUIObjRenderer buildRenderer(
+			Base_GUIObj _owner, 
+			myPointf[] _corners,
+			double[] _off,
+			float _menuWidth,
+			int[] _strkClr, 
+			int[] _fillClr, 
+			boolean[] guiFormatBoolVals) {	
 		if (guiFormatBoolVals[0]) {
-			return new MultiLineGUIObjRenderer(ri, _owner, _start, _end, _off, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
+			return new MultiLineGUIObjRenderer(ri, _owner, _corners[0], _corners[1], _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
 		} else {
-			return new SingleLineGUIObjRenderer(ri, _owner, _start, _end, _off, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);			
+			return new SingleLineGUIObjRenderer(ri, _owner, _corners[0], _corners[1], _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);			
 		}
 	}
 	
@@ -617,7 +633,8 @@ public abstract class Base_DispWindow {
 	 * @param guiObjTypes array of per-object types
 	 * @param guiColors 2-element array of int colors, idx0 == stroke, idx1 == fill
 	 * @param tmpListObjVals map keyed by object idx where the value is a string array of elements to put in a list object
-	 * @parram UI_Off Either the ui offset to use for a prefixing ornament before the object's label, or null
+	 * @param UI_Off Either the ui offset to use for a prefixing ornament before the object's label, or null
+	 * @param menuWidth Width of left side menu bar 
 	 */
 	private void _buildAllObjects(
 			String[] guiObjNames, 
@@ -629,47 +646,46 @@ public abstract class Base_DispWindow {
 			GUIObj_Type[] guiObjTypes, 
 			int[][][] guiColors,
 			TreeMap<Integer, String[]> tmpListObjVals, 
-			double[] UI_off) {
+			double[] UI_off,
+			float menuWidth) {
 		int numListObjs = 0;
 		for(int i =0; i< guiObjNames.length; ++i){
 			switch(guiObjTypes[i]) {
 				case IntVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i][0], corners[i][1], UI_off, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case ListVal : {
 					++numListObjs;
-					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
+					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i][0], corners[i][1], UI_off, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], corners[i][0], corners[i][1], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i][0], corners[i][1], UI_off, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
 				case Button  :{
 					//TODO
-					msgObj.dispWarningMessage("Base_DispWindow", "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
+					msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
 					break;
 				}
 				default : {
-					msgObj.dispWarningMessage("Base_DispWindow", "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
+					msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
 					break;				
 				}
 			}
 		}
 		if(numListObjs != tmpListObjVals.size()) {
-			msgObj.dispWarningMessage("Base_DispWindow", "_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
+			msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
 		}	
-	}//_buildAllObjects		
+	}//_buildAllObjects	
 	
 	/**
 	 * 

@@ -22,8 +22,8 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * @param matchLabelColor
 	 */
 	public MultiLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, myPointf _start, myPointf _end,
-			double[] _off, int[] _strkClr, int[] _fillClr, boolean buildPrefix, boolean matchLabelColor) {
-		super(_ri, _owner, _start, _end, _off, _strkClr, _fillClr, buildPrefix, matchLabelColor);
+			double[] _offset, float _menuWidth, int[] _strkClr, int[] _fillClr, boolean buildPrefix, boolean matchLabelColor) {
+		super(_ri, _owner, _start, _end, _offset, _menuWidth, _strkClr, _fillClr, buildPrefix, matchLabelColor);
 	}
 
 	@Override
