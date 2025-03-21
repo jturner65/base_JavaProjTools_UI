@@ -70,15 +70,16 @@ public abstract class Base_RenderObj {
 	 * @return true, denoting 1-time setup is complete
 	 */
 	protected final boolean initGeometry(RenderObj_ClrPalette _clrPalette){
+		//base colors for all objects of this species
+		setMainColorPalette(_clrPalette);
+		//set per-type color 
+		objectColor = getObjTypeColor();
 		//global setup for instance class object type
 		if(!getObjMadeForType(type)){
 			//perform this only once for all types of render objects
-			//base colors for all objects of this species
-			setMainColorPalette(_clrPalette);
+
 			//set up species-wide render object geometry
 			initObjGeometry(); 
-			//set per-type color 
-			objectColor = getObjTypeColor();
 			//any per-type (child class) setup required	
 			initInstObjGeometryIndiv();
 			//create object/objRep for this type
