@@ -965,13 +965,23 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
  	 * @param txtAra string array to display
 	 */
 	@Override
-	public void showOffsetTextAra(float d, int tclr, String[] txtAra){
-		setColorValFill(tclr, 255);setColorValStroke(tclr, 255);
+	public void showTextAra(float d, String[] txtAra){
 		float y = d;
 		for (String txt : txtAra) {
 			showText(txt, d, y, d);
 			y+=10;
 		}
+	}	
+	/**
+	 * display an array of text at a location on screen
+	 * @param d initial y location
+	 * @param tclr text color
+ 	 * @param txtAra string array to display
+	 */
+	@Override
+	public void showTextAra(float d, int tclr, String[] txtAra){
+		setColorValFill(tclr, 255);setColorValStroke(tclr, 255);
+		showTextAra(d, txtAra);
 	}	
 
 	/**
@@ -989,7 +999,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		setColorValStroke(clrs[1],255);
 		drawSphere(P, rad, det);
 		translate(P.x,P.y,P.z); 
-		showOffsetTextAra(1.2f * rad, clrs[2], txtAra);
+		showTextAra(1.2f * rad, clrs[2], txtAra);
 		popMatState();
 	} // render sphere of radius r and center P)
 	
@@ -1018,7 +1028,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 				setStrokeWt(2.5f);
 				drawRect(rectDims);
 				translate(rectDims[0],0,0);
-				showOffsetTextAra(1.2f * rad, clrs[2], txtAra);
+				showTextAra(1.2f * rad, clrs[2], txtAra);
 			 popMatState();
 		 popMatState();
 	} // render sphere of radius r and center P)
