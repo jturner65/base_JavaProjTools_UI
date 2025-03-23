@@ -2,11 +2,15 @@ package base_UI_Objects.windowUI;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.windowUI.base.IUIManagerOwner;
+import base_UI_Objects.windowUI.base.WinAppPrivStateFlags;
+import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.base.*;
 import base_UI_Objects.windowUI.uiObjs.base.base.*;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.*;
@@ -26,6 +30,8 @@ public class UIObjectManager {
 	 * Used to render objects
 	 */
 	public static IRenderInterface ri;
+	
+	private final IUIManagerOwner owner;
 	/**
 	 * Gui-based application manager
 	 */
@@ -43,17 +49,104 @@ public class UIObjectManager {
 	*/
 	private ArrayList<Integer> guiIntValIDXs;	
 	
-	//UI objects in this window
-	//GUI Objects
+	/**
+	 * Numeric Gui Objects
+	 */
 	private Base_NumericGUIObj[] guiObjs_Numeric;	
+
+	/**
+	 * structure to facilitate communicating UI changes with functional code
+	 */
+	protected UIDataUpdater uiUpdateData;
 	
-	public UIObjectManager(GUI_AppManager _AppMgr, IRenderInterface _ri, MessageObject _msgObj) {
+	
+	////////////////////////
+	/// owner's private state/functionality flags, (displayed in grid of 2-per-column buttons)
+	
+	/**
+	 * UI Application-specific flags and UI components (buttons)
+	 */	
+	protected WinAppPrivStateFlags privFlags;		
+	/**
+	 * Button labels for true value buttons
+	 */
+	private String[] truePrivFlagLabels; //needs to be in order of flags
+	/**
+	 * Button labels for false value buttons
+	 */
+	private String[] falsePrivFlagLabels;//needs to be in order of flags	
+	/**
+	 * Colors for boolean buttons set to True based on child-class window specific values
+	 */
+	private int[][] privFlagTrueColors;
+	/**
+	 * Colors for boolean buttons set to False based on child-class window specific values
+	 */
+	private int[][] privFlagFalseColors;
+	/**
+	 * Non random true button color
+	 */
+	private final int[] trueBtnClr = new int[]{220,255,220,255};
+	/**
+	 * Non-random false button color
+	 */
+	private final int[] falseBtnClr = new int[]{255,215,215,255};
+	
+	/**
+	 * False button color to use if button labels are the same and using random colors
+	 */
+	private static final int[] baseBtnFalseClr = new int[]{180,180,180, 255};
+	
+	/**
+	 * only modifiable idx's will be shown as buttons - this needs to be in order of flag names
+	 */
+	private int[] privModFlgIdxs;
+	/**
+	 * Click dimensions for each button
+	 */
+	private float[][] privFlagBtns;	
+	/**
+	 * array of priv buttons to be cleared next frame - 
+	 * should always be empty except when buttons need to be cleared
+	 */
+	private ArrayList<Integer> privBtnsToClear;
+	
+	public UIObjectManager(IRenderInterface _ri, IUIManagerOwner _owner, GUI_AppManager _AppMgr, MessageObject _msgObj) {
 		ri = _ri;
+		owner = _owner;
 		AppMgr = _AppMgr;
 		msgObj = _msgObj;
 	}
-
+	
+	/**
+	 * Set a reference to the Owner's UIDataUpdater
+	 * @param _uiUpdateData
+	 */
+	public void setUIDataUpdater(UIDataUpdater _uiUpdateData) {
+		uiUpdateData = _uiUpdateData;
+	}
+	
 	// UI object creation
+	
+	/**
+	 * Build UI Objects from passed arrays of configurations
+	 * @param tmpUIObjArray map of per-object configuration arrays
+	 * @param tmpListObjVals mapping of objects to string values for list objects
+	 * @param uiClkCoords
+	 * @return
+	 */
+	public float initNumericUIObjs(
+			TreeMap<Integer, Object[]> tmpUIObjArray, 
+			TreeMap<Integer, String[]> tmpListObjVals, 
+			float[] uiClkCoords) {
+		//initialize arrays to hold idxs of int and float items being created.
+		guiFloatValIDXs = new ArrayList<Integer>();
+		guiIntValIDXs = new ArrayList<Integer>();	
+		//initialized for sidebar menu as well as for display windows
+		guiObjs_Numeric = new Base_NumericGUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
+		//build ui objects, return uiClkCoords[3] (lowest y extent of UI objects)
+		return _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, uiClkCoords);	
+	}
 	
 	/**
 	 * build ui objects from maps, keyed by ui object idx, with value being data
@@ -76,7 +169,7 @@ public class UIObjectManager {
 	 * @return y coordinate for end of ui region
 	 * 
 	 */
-	public float _buildGUIObjsForMenu(
+	private float _buildGUIObjsForMenu(
 			TreeMap<Integer, Object[]> tmpUIObjArray, 
 			TreeMap<Integer, String[]> tmpListObjVals, 
 			float[] uiClkCoords) {
@@ -141,8 +234,6 @@ public class UIObjectManager {
 			stPt._add(0, textHeightOffset, 0);
 			endPt._add(0, textHeightOffset, 0);
 		}
-		//Make a smaller padding amount for final row
-		uiClkCoords[3] =  stPt.y - .5f*textHeightOffset;
 		
 		//build all objects using these values 
 		_buildAllObjects(
@@ -150,6 +241,10 @@ public class UIObjectManager {
 				guiStVals, guiBoolVals, guiFormatBoolVals, 
 				guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkCoords[2]);
 
+		
+		
+		//Make a smaller padding amount for final row
+		uiClkCoords[3] =  stPt.y - .5f*textHeightOffset;
 		// return final y coordinate
 		return uiClkCoords[3];
 	}//_buildGUIObjsForMenu
@@ -252,10 +347,264 @@ public class UIObjectManager {
 		if(numListObjs != tmpListObjVals.size()) {
 			msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
 		}	
-	}//_buildAllObjects	
+	}//_buildAllObjects
+	
+
+	/**
+	 * calculate button length
+	 */
+	private static final float ltrLen = 5.0f;private static final int btnStep = 5;
+	private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((MyMathUtils.max(tStr.length(), fStr.length())+4) * ltrLen)/btnStep);}
+	
+	private void _setBtnDims(int idx, float xStart, float yEnd, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {xStart+oldBtnLen, yEnd, btnLen, AppMgr.getTextHeightOffset() };}
+	
+	/**
+	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
+	 * @param tmpBtnNamesArray arraylist of object arrays, each entry in object array holding a true string, a false string and an integer idx for the button
+	 */	
+	private float _buildAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray, float[] uiClkCoords) {
+		// finalize setup for UI toggle buttons - convert to arrays
+		truePrivFlagLabels = new String[tmpBtnNamesArray.size()];
+		falsePrivFlagLabels = new String[truePrivFlagLabels.length];
+		privModFlgIdxs = new int[truePrivFlagLabels.length];
+		for (int i = 0; i < truePrivFlagLabels.length; ++i) {
+			Object[] tmpAra = tmpBtnNamesArray.get(i);
+			truePrivFlagLabels[i] = (String) tmpAra[0];
+			falsePrivFlagLabels[i] = (String) tmpAra[1];
+			privModFlgIdxs[i] = (int) tmpAra[2];
+		}
+		return _buildPrivBtnRects(0, truePrivFlagLabels.length, uiClkCoords);
+	}//_buildAllPrivButtons
+	
+	/**
+	 * set up boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
+	 * @param yDisp displacement for button to be drawn
+	 * @param numBtns number of buttons to make
+	 */
+	private float _buildPrivBtnRects(float yDisp, int numBtns, float[] uiClkCoords){
+		privFlagBtns = new float[numBtns][];
+		float yOffset = AppMgr.getTextHeightOffset();
+		if (numBtns == 0) {	return uiClkCoords[3];	}
+		float maxBtnLen = 0.95f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
+		uiClkCoords[3] += yOffset;
+		float oldBtnLen = 0;
+		boolean lastBtnHalfStLine = false, startNewLine = true;
+		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
+			float btnLen = _calcBtnLength(truePrivFlagLabels[i].trim(),falsePrivFlagLabels[i].trim());
+			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
+			//pa.pr("_buildPrivBtnRects: i "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
+			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
+				btnLen = maxBtnLen;
+				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
+					privFlagBtns[i-1][2] = maxBtnLen;
+					uiClkCoords[3] += yOffset;
+				}
+				_setBtnDims(i, uiClkCoords[0], uiClkCoords[3], 0, btnLen);
+				//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-winInitVals.getXOffset()), (float) uiClkCoords[3], btnLen, yOff };				
+				uiClkCoords[3] += yOffset;
+				startNewLine = true;
+				lastBtnHalfStLine = false;
+			} else {//button len should be half width unless this button started a new line
+				btnLen = halfBtnLen;
+				if(startNewLine){//button is starting new line
+					lastBtnHalfStLine = true;
+					_setBtnDims(i, uiClkCoords[0], uiClkCoords[3], 0, btnLen);
+					startNewLine = false;
+				} else {//should only get here if 2nd of two <1/2 width buttons in a row
+					lastBtnHalfStLine = false;
+					_setBtnDims(i, uiClkCoords[0], uiClkCoords[3], oldBtnLen, btnLen);
+					uiClkCoords[3] += yOffset;
+					startNewLine = true;					
+				}
+			}			
+			oldBtnLen = btnLen;
+		}
+		if(lastBtnHalfStLine){//set last button full length if starting new line
+			privFlagBtns[numBtns-1][2] = maxBtnLen;
+			uiClkCoords[3] += yOffset;
+		}
+		uiClkCoords[3] += AppMgr.getRowStYOffset();
+		initPrivFlagColors();
+		return uiClkCoords[3];
+	}//_buildPrivBtnRects
+	
+	/**
+	 * set up initial colors for sim specific flags for display
+	 */
+	protected void initPrivFlagColors(){
+		privFlagTrueColors = new int[truePrivFlagLabels.length][4];
+		privFlagFalseColors = new int[privFlagTrueColors.length][4];
+		ThreadLocalRandom tr = ThreadLocalRandom.current();
+		for (int i = 0; i < privFlagTrueColors.length; ++i) { 
+			privFlagTrueColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150), 255};
+			if(truePrivFlagLabels[i].equals(falsePrivFlagLabels[i])) {
+				privFlagFalseColors[i] = baseBtnFalseClr;
+			} else {
+				privFlagFalseColors[i] = new int[]{0,255-privFlagTrueColors[i][1],255-privFlagTrueColors[i][2], 255};
+			}
+		}			
+	}	
+	
+	/**
+	 * set labels of boolean buttons for both true state and false state. Will be updated on next draw
+	 * @param idx idx of button label to set
+	 * @param tLbl new 
+	 * @param fLbl
+	 */
+	public void setButtonLabels(int idx, String tLbl, String fLbl) {truePrivFlagLabels[idx] = tLbl;falsePrivFlagLabels[idx] = fLbl;}
+	
 	
 	///////////////////////////////
 	// UI object interaction
+	
+	/**
+	 * This has to be called after UI structs are built and set - this creates and populates the 
+	 * structure that serves to communicate UI data to consumer from UI Window.
+	 */
+	private void _buildUIUpdateStruct() {
+		//set up UI->to->Consumer class communication object - only make instance of object here, 
+		//initialize it after private flags are built and initialized
+		uiUpdateData = owner.buildOwnerUIDataUpdateObject();
+		if (uiUpdateData == null) {return;}
+		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
+		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, guiObjs_Numeric[idx].valAsInt());}		
+		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
+		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjs_Numeric[idx].valAsFloat());}
+		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
+		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
+		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
+	}//_buildUIUpdateStruct
+	
+	
+	/**
+	 * call after single draw - will clear window-based priv buttons that are momentary
+	 */
+	protected final void clearAllPrivBtns() {
+		if(privBtnsToClear.size() == 0) {return;}
+		//only clear button if button is currently set to true, otherwise concurrent modification error
+		for (Integer idx : privBtnsToClear) {if (privFlags.getFlag(idx)) {privFlags.setFlag(idx, false);}}
+		privBtnsToClear.clear();
+	}//clearPrivBtns()
+
+	
+	/**
+	 * Called by privFlags bool struct, to update uiUpdateData when boolean flags have changed
+	 * @param idx
+	 * @param val
+	 */
+	public final void checkSetBoolAndUpdate(int idx, boolean val) {
+		if((uiUpdateData != null) && uiUpdateData.checkAndSetBoolValue(idx, val)) {
+			owner.updateOwnerCalcObjUIVals();
+		}
+	}
+
+	/**
+	 * This will check if boolean value is different than previous value, and if so will change it
+	 * @param idx of value
+	 * @param val value to verify
+	 * @return whether new value was modified
+	 */
+	protected final boolean checkAndSetBoolValue(int idx, boolean value) {return uiUpdateData.checkAndSetBoolValue(idx, value);}
+	/**
+	 * This will check if Integer value is different than previous value, and if so will change it
+	 * @param idx of value
+	 * @param val value to verify
+	 * @return whether new value was modified
+	 */
+	protected final boolean checkAndSetIntVal(int idx, int value) {return uiUpdateData.checkAndSetIntVal(idx, value);}
+	/**
+	 * This will check if float value is different than previous value, and if so will change it
+	 * @param idx of value
+	 * @param val value to verify
+	 * @return whether new value was modified
+	 */
+	protected final boolean checkAndSetFloatVal(int idx, float value) {return uiUpdateData.checkAndSetFloatVal(idx, value);}
+	
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
+	public final void updateBoolValFromExecCode(int idx, boolean value) {privFlags.setFlag(idx, value);uiUpdateData.setBoolValue(idx, value);}
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
+	public final void updateIntValFromExecCode(int idx, int value) {guiObjs_Numeric[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
+	public final void updateFloatValFromExecCode(int idx, float value) {guiObjs_Numeric[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
+	
+	
+	/**
+	 * Set UI values by object type, sending value to 
+	 * @param UIidx
+	 */
+	protected final void setUIWinVals(int UIidx) {
+		//Determine whether int (int or list) or float
+		GUIObj_Type objType = guiObjs_Numeric[UIidx].getObjType();
+		switch (objType) {
+			case IntVal : {
+				int ival = guiObjs_Numeric[UIidx].valAsInt();
+				int origVal = uiUpdateData.getIntValue(UIidx);
+				if(checkAndSetIntVal(UIidx, ival)) {
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
+					//Special per-obj int handling, if pertinent
+					owner.setUI_OwnerIntValsCustom(UIidx, ival, origVal);
+				}
+				break;}
+			case ListVal : {
+				int ival = guiObjs_Numeric[UIidx].valAsInt();
+				int origVal = uiUpdateData.getIntValue(UIidx);
+				if(checkAndSetIntVal(UIidx, ival)) {
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
+					//Special per-obj int (list idx)-related handling, if pertinent
+					owner.setUI_OwnerIntValsCustom(UIidx, ival, origVal);
+				}
+				break;}
+			case FloatVal : {
+				float val = guiObjs_Numeric[UIidx].valAsFloat();
+				float origVal = uiUpdateData.getFloatValue(UIidx);
+				if(checkAndSetFloatVal(UIidx, val)) {
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
+					//Special per-obj float handling, if pertinent
+					owner.setUI_OwnerFloatValsCustom(UIidx, val, origVal);
+				}
+				break;}
+			case Button : {
+				msgObj.dispWarningMessage(owner.getClassName(), "setUIWinVals", "Attempting to set a value for an unsupported Button UI object : " + objType.toStrBrf());
+				break;}
+			default : {
+				msgObj.dispWarningMessage(owner.getClassName(), "setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
+				break;}
+			
+		}//switch on obj type
+	}//setUIWinVals	
+	
+	
+	
+		
+	/**
+	 * clear button next frame - to act like momentary switch.  will also clear UI object
+	 * @param idx
+	 */
+	protected final void clearBtnNextFrame(int idx) {addPrivBtnToClear(idx);		checkAndSetBoolValue(idx, false);}
+		
+	/**
+	 * add a button to clear after next draw
+	 * @param idx index of button to clear
+	 */
+	protected final void addPrivBtnToClear(int idx) {
+		privBtnsToClear.add(idx);
+	}
+
+	
+	
+	
 	
 	/**
 	 * 
@@ -408,11 +757,83 @@ public class UIObjectManager {
 		if ((!_validateUIObjectIdx(UIidx, guiObjs_Numeric.length, "getListValStr", "get a list value at specified idx")) || 
 				(!_validateIdxIsListObj(guiObjs_Numeric[UIidx], "getListValStr", "get a list value at specified idx"))){return "";}
 		return ((MenuGUIObj_List) guiObjs_Numeric[UIidx]).getListValStr(listIdx);
-	}
-	
+	}	
 	
 	
 	// UI object rendering
+	
+	
+	/**
+	 * Draw this window's gui objects in sidebar menu
+	 * @param animTimeMod
+	 */
+	public final void drawWindowGuiObjs(boolean isDebug, boolean usRndBtnClrs, float animTimeMod) {
+		//draw UI Objs
+		drawGUIObjs(isDebug, animTimeMod);
+		//draw all boolean-based buttons for this window
+		drawAppFlagButtons(usRndBtnClrs);
+	}//drawWindowGuiObjs	
+	
+	
+	/**
+	 * Draw UI Objs
+	 * @param animTimeMod for potential future animated UI Objects
+	 */
+	public final void drawGUIObjs(boolean isDebug, float animTimeMod) {
+		ri.pushMatState();	
+		if (isDebug) { 	for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}}
+		else {			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}}
+		ri.popMatState();	
+	}
+	
+	//draw a series of strings in a row
+	protected final void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
+		ri.setFill(clrAra, clrAra[3]);
+		ri.setColorValStroke(IRenderInterface.gui_Black,255);
+		ri.drawRect(loc);		
+		ri.setColorValFill(IRenderInterface.gui_Black,255);
+		//pa.translate(-xOff*.5f,-yOff*.5f);
+		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
+		//pa.translate(width, 0);
+	}
+	
+	/**
+	 * Draw application-specific flag buttons
+	 * @param useRandBtnClrs
+	 */
+	private final void drawAppFlagButtons(boolean useRandBtnClrs) {
+		ri.pushMatState();	
+		ri.setColorValFill(IRenderInterface.gui_Black,255);
+		String label;
+		int[] clr;
+//		if(useRandBtnClrs){
+//			for(int i =0; i<privModFlgIdxs.length; ++i){
+//				if(privFlags.getFlag(privModFlgIdxs[i])){
+//					label = truePrivFlagLabels[i];
+//					clr = privFlagTrueColors[i];		
+//				} else {
+//					label = falsePrivFlagLabels[i];
+//					clr = privFlagFalseColors[i];
+//				}	
+//				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+//			}
+//		} else {
+//			for(int i =0; i<privModFlgIdxs.length; ++i){
+//				if(privFlags.getFlag(privModFlgIdxs[i])){
+//					label = truePrivFlagLabels[i];
+//					clr = trueBtnClr;
+//				} else {																
+//					label = falsePrivFlagLabels[i];
+//					clr = falseBtnClr;
+//				}
+//				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+//			}	
+//		}		
+		ri.popMatState();	
+	}//drawAppFlagButtons
+	
+	
+	
 	
 	
 }//class uiObjectManager
