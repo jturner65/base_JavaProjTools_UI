@@ -180,7 +180,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * structure to facilitate communicating UI changes with functional code
 	 */
-	protected UIDataUpdater uiUpdateData;
+	private UIDataUpdater uiUpdateData;
 		
 	//key pressed
 	protected char keyPressed = ' ';
@@ -376,10 +376,22 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final void finalInit(myPoint _ctr, myVector _baseFcs) {
 
-	}//finalInit	
+	}//finalInit
 	
+	/**
+	 * Build appropriate UIDataUpdater instance for application
+	 * @return
+	 */	
 	@Override
 	public UIDataUpdater buildOwnerUIDataUpdateObject() {return buildUIDataUpdateObject();}
+	
+	/**
+	 * Retrieve the Owner's UIDataUpdater
+	 * @return
+	 */
+	@Override
+	public UIDataUpdater getUIDataUpdater() {return uiUpdateData;}
+	
 	/**
 	 * Build appropriate UIDataUpdater instance for application
 	 * @return
@@ -440,6 +452,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
 	 * @param tmpListObjVals
 	 */
+	@Override
+	public void setupOwnerGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
+		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);					
+	}
 	protected abstract void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);		
 	
 	/**
@@ -871,6 +887,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param idx
 	 * @param val
 	 */
+	@Override
 	public final void checkSetBoolAndUpdate(int idx, boolean val) {
 		if((uiUpdateData != null) && uiUpdateData.checkAndSetBoolValue(idx, val)) {
 			updateCalcObjUIVals();
@@ -1093,6 +1110,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
 	 * @param val
 	 */
+	@Override
 	public final void handlePrivFlagsDebugMode(boolean val) {
 		msgObj.dispDebugMessage(className, "handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ val +".");
 		handlePrivFlagsDebugMode_Indiv(val);
@@ -1111,6 +1129,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param val new value for this index
 	 * @param oldVal previous value for this index
 	 */
+	@Override
+	public void handleOwnerPrivFlags(int idx, boolean val, boolean oldVal) {
+		handlePrivFlags_Indiv(idx, val, oldVal);
+	}
 	protected abstract void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal);
 
 	
@@ -1133,6 +1155,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		setVisScreenWidth(visWidth);
 	}
 	
+	/**
+	 * set initial values for private flags for instancing window - set before initMe is called
+	 */	
+	public int[] getOwnerFlagIDXsToInitToTrue() {return getFlagIDXsToInitToTrue();}
 	/**
 	 * set initial values for private flags for instancing window - set before initMe is called
 	 */
@@ -1569,6 +1595,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param tmpBtnNamesArray ArrayList of Object arrays to be built containing all button definitions. 
 	 * @return count of -all- booleans to be managed by privFlags
 	 */
+	@Override
+	public int initAllOwnerUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
+		return initAllUIButtons(tmpBtnNamesArray);
+	}
 	protected abstract int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray);	
 	
 	/**
