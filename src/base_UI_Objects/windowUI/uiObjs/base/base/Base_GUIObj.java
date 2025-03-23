@@ -19,7 +19,7 @@ public abstract class Base_GUIObj {
 	/**
 	 * Name/display label of object
 	 */
-	protected final String name;	
+	protected String name;	
 	/**
 	 * UI Object ID from owning window (index in holding container)
 	 */
@@ -114,9 +114,7 @@ public abstract class Base_GUIObj {
 		case explicitUIDataUpdateIDX 	:{break;}		
 		}
 	}//setFlag	
-	
-	public final String getName(){return name;}
-	
+		
 	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
 	public boolean shouldUpdateConsumer() {return !getConfigFlags(explicitUIDataUpdateIDX);}
 	
@@ -139,7 +137,7 @@ public abstract class Base_GUIObj {
 	/**
 	 * Verify passed coordinates are within this object's modifiable zone. 
 	 * If true then this object will be modified by UI actions
-	 * Renderer Manages hotspot. -sigh-.
+	 * Renderer Manages hotspot. -sigh- might be better if this object owned this data.
 	 * @param _clkx
 	 * @param _clky
 	 * @return whether passed coords are within this object's modifiable zone
@@ -156,13 +154,7 @@ public abstract class Base_GUIObj {
 	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
 	public final void draw() {				renderer.draw();}//draw
-	
-	/**
-	 * set new display text for this UI object - doesn't change name
-	 * @param _str
-	 */
-	public final void setNewLabel(String _str) {	label = new String(""+_str + " : ");	}
-	
+		
 	/**
 	 * Return the type of this object as defined in GUIObj_Type enum
 	 * @return
@@ -187,12 +179,6 @@ public abstract class Base_GUIObj {
 			setConfigFlags(i, Boolean.parseBoolean(toks[5].split("\\s")[i].trim()));
 		}	
 	}//setValFromStrTokens
-	
-	/**
-	 * Set this UI object's value from a string
-	 * @param str
-	 */
-	protected abstract void setValueFromString(String str);
 	
 	/**
 	 * Builds a string to save the value from this UI Object
@@ -222,6 +208,25 @@ public abstract class Base_GUIObj {
 	}//getStrFromUIObj
 	
 	/**
+	 * Return this object's label
+	 */
+	public final String getLabel() {return label;}
+	
+	/**
+	 * set new display text for this UI object - doesn't change name
+	 * @param _str
+	 */
+	public final void setLabel(String _str) {	label = new String(""+_str + " : ");	}
+
+	public final String getName(){return name;}
+	
+	/**
+	 * Set this UI object's value from a string
+	 * @param str
+	 */
+	protected abstract void setValueFromString(String str);
+
+	/**
 	 * Get this UI object's value as a string
 	 * @return
 	 */
@@ -232,11 +237,6 @@ public abstract class Base_GUIObj {
 	 * @return
 	 */
 	protected abstract String[] getStrDataForVal();
-	
-	/**
-	 * Return this object's label
-	 */
-	public final String getLabel() {return label;}
 	
 	/**
 	 * Retrive an array of string debug data
