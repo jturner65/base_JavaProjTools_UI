@@ -52,6 +52,8 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	protected Base_GUIObj owner;
 	
+	private final String rendererType;
+	
 	/**
 	 * @param _ri render interface
 	 * @param _start the upper left corner of the hot spot for this object
@@ -74,7 +76,8 @@ public abstract class Base_GUIObjRenderer {
 			int[] _strkClr,
 			int[] _fillClr,  
 			boolean buildPrefix, 
-			boolean matchLabelColor) {
+			boolean matchLabelColor,
+			String _rendererType) {
 		ri=_ri;	
 		owner = _owner;
 		menuWidth = _menuWidth;
@@ -90,7 +93,8 @@ public abstract class Base_GUIObjRenderer {
 			_ornament = new GUI_PrefixObj(_off, prefixClr);
 		} else {
 			_ornament = new GUI_NoPrefixObj();
-		}			
+		}
+		rendererType = _rendererType;
 	}
 	
 	/**
@@ -137,8 +141,25 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	protected abstract void _drawUIData();
 	
+	/**
+	 * Recalculate the lower right locations of the hotspot for the owning UI object
+	 * @param newStartPoint new upper left point
+	 * @param lineHeight the height of a single line of text
+	 * @param menuStart the x coord of the start of the menu region
+	 * @param menuWidth the possible display with for the object
+	 * @return the next object's new start location
+	 */
+	public abstract myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth);
+	
+	/**
+	 * Return the maximum width of the owning UI object in the display.
+	 * @return
+	 */
+	public abstract float getMaxWidth();
+	
+	
 	public final String getHotBoxLocString() {
-		return "Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";
+		return  rendererType+ " Rendered : Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";
 	}
 	
 
