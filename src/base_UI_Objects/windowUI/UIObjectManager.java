@@ -117,36 +117,46 @@ public class UIObjectManager {
 		AppMgr = _AppMgr;
 		msgObj = _msgObj;
 	}
-	
-	/**
-	 * Set a reference to the Owner's UIDataUpdater
-	 * @param _uiUpdateData
-	 */
-	public void setUIDataUpdater(UIDataUpdater _uiUpdateData) {
-		uiUpdateData = _uiUpdateData;
-	}
-	
-	// UI object creation
-	
-	/**
-	 * Build UI Objects from passed arrays of configurations
-	 * @param tmpUIObjArray map of per-object configuration arrays
-	 * @param tmpListObjVals mapping of objects to string values for list objects
-	 * @param uiClkCoords
-	 * @return
-	 */
-	public float initNumericUIObjs(
-			TreeMap<Integer, Object[]> tmpUIObjArray, 
-			TreeMap<Integer, String[]> tmpListObjVals, 
-			float[] uiClkCoords) {
+		
+	// UI object creation	
+	public void initAllGUIObjs(boolean isMenu, float[] uiClkCoords) {
 		//initialize arrays to hold idxs of int and float items being created.
 		guiFloatValIDXs = new ArrayList<Integer>();
-		guiIntValIDXs = new ArrayList<Integer>();	
-		//initialized for sidebar menu as well as for display windows
-		guiObjs_Numeric = new Base_NumericGUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
-		//build ui objects, return uiClkCoords[3] (lowest y extent of UI objects)
-		return _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, uiClkCoords);	
-	}
+		guiIntValIDXs = new ArrayList<Integer>();
+		if (!isMenu) {
+			// list box values - keyed by list obj IDX, value is string array of list obj values
+			TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
+			// ui object values - keyed by object idx, value is object array of describing values
+			TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
+			//  set up all gui objects for this window
+			//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
+			owner.setupOwnerGUIObjsAras(tmpUIObjArray,tmpListObjVals);					
+			//initialized for sidebar menu as well as for display windows
+			guiObjs_Numeric = new Base_NumericGUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
+			//build ui objects
+			uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, uiClkCoords);	
+		} else {
+			//no guiObjs for menu
+			guiObjs_Numeric = new Base_NumericGUIObj[0];
+		}
+		//build UI boolean buttons
+		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
+		//  set up all window-specific boolean buttons for this window
+		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
+		int _numPrivFlags = owner.initAllOwnerUIButtons(tmpBtnNamesArray);
+		//initialize all private buttons based on values put in arraylist
+		uiClkCoords[3] = _buildAllPrivButtons(tmpBtnNamesArray, uiClkCoords);
+		// init specific sim flags
+		privFlags = new WinAppPrivStateFlags(owner,_numPrivFlags);
+		// set instance-specific initial flags
+		int[] trueFlagIDXs = owner.getOwnerFlagIDXsToInitToTrue();
+		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
+		if(null!=trueFlagIDXs) {_initPassedPrivFlagsToTrue(trueFlagIDXs);}	
+		
+		// build instance-specific UI update communication object if exists
+		_buildUIUpdateStruct();
+		
+	}//_initAllGUIObjs
 	
 	/**
 	 * build ui objects from maps, keyed by ui object idx, with value being data
@@ -592,19 +602,24 @@ public class UIObjectManager {
 	 * clear button next frame - to act like momentary switch.  will also clear UI object
 	 * @param idx
 	 */
-	protected final void clearBtnNextFrame(int idx) {addPrivBtnToClear(idx);		checkAndSetBoolValue(idx, false);}
+	public final void clearBtnNextFrame(int idx) {_addPrivBtnToClear(idx);		checkAndSetBoolValue(idx, false);}
 		
 	/**
 	 * add a button to clear after next draw
 	 * @param idx index of button to clear
 	 */
-	protected final void addPrivBtnToClear(int idx) {
+	private final void _addPrivBtnToClear(int idx) {
 		privBtnsToClear.add(idx);
 	}
 
-	
-	
-	
+	/**
+	 * sets flag values without calling instancing window flag handler - only for init!
+	 * @param idxs
+	 * @param val
+	 */
+	private void _initPassedPrivFlagsToTrue(int[] idxs) { 
+		privFlags.setAllFlagsToTrue(idxs);
+	}	
 	
 	/**
 	 * 
@@ -806,29 +821,29 @@ public class UIObjectManager {
 		ri.setColorValFill(IRenderInterface.gui_Black,255);
 		String label;
 		int[] clr;
-//		if(useRandBtnClrs){
-//			for(int i =0; i<privModFlgIdxs.length; ++i){
-//				if(privFlags.getFlag(privModFlgIdxs[i])){
-//					label = truePrivFlagLabels[i];
-//					clr = privFlagTrueColors[i];		
-//				} else {
-//					label = falsePrivFlagLabels[i];
-//					clr = privFlagFalseColors[i];
-//				}	
-//				dispBttnAtLoc(label,privFlagBtns[i],clr);	
-//			}
-//		} else {
-//			for(int i =0; i<privModFlgIdxs.length; ++i){
-//				if(privFlags.getFlag(privModFlgIdxs[i])){
-//					label = truePrivFlagLabels[i];
-//					clr = trueBtnClr;
-//				} else {																
-//					label = falsePrivFlagLabels[i];
-//					clr = falseBtnClr;
-//				}
-//				dispBttnAtLoc(label,privFlagBtns[i],clr);	
-//			}	
-//		}		
+		if(useRandBtnClrs){
+			for(int i =0; i<privModFlgIdxs.length; ++i){
+				if(privFlags.getFlag(privModFlgIdxs[i])){
+					label = truePrivFlagLabels[i];
+					clr = privFlagTrueColors[i];		
+				} else {
+					label = falsePrivFlagLabels[i];
+					clr = privFlagFalseColors[i];
+				}	
+				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+			}
+		} else {
+			for(int i =0; i<privModFlgIdxs.length; ++i){
+				if(privFlags.getFlag(privModFlgIdxs[i])){
+					label = truePrivFlagLabels[i];
+					clr = trueBtnClr;
+				} else {																
+					label = falsePrivFlagLabels[i];
+					clr = falseBtnClr;
+				}
+				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+			}	
+		}		
 		ri.popMatState();	
 	}//drawAppFlagButtons
 	

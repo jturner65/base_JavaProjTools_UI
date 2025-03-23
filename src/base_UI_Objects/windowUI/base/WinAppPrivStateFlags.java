@@ -6,10 +6,10 @@ public class WinAppPrivStateFlags extends Base_BoolFlags {
 	/**
 	 * Owning display window
 	 */
-	private final Base_DispWindow owner;
+	private final IUIManagerOwner owner;
 	
 	
-	public WinAppPrivStateFlags(Base_DispWindow _owner, int _numFlags) {
+	public WinAppPrivStateFlags(IUIManagerOwner _owner, int _numFlags) {
 		super(_numFlags);
 		owner = _owner;
 	}
@@ -34,7 +34,7 @@ public class WinAppPrivStateFlags extends Base_BoolFlags {
 	protected void handleFlagSet_Indiv(int idx, boolean val, boolean oldVal) {
 		//update consumers of UI struct
 		owner.checkSetBoolAndUpdate(idx, val);
-		owner.handlePrivFlags_Indiv(idx, val, oldVal);
+		owner.handleOwnerPrivFlags(idx, val, oldVal);
 	}
 
 }//class WinAppPrivStateFlags

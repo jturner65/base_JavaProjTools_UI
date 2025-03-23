@@ -155,7 +155,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 				//if wanting to conduct exp need to stop current experimet, reset environment, and then launch experiment
 				if(val) {
 					simExec.setConductSweepExperiment(true);
-					simExec.initializeTrials(uiUpdateData.getIntValue(gIDX_ExpLength), uiUpdateData.getIntValue(gIDX_NumExpTrials));
+					simExec.initializeTrials(getUIDataUpdater().getIntValue(gIDX_ExpLength), getUIDataUpdater().getIntValue(gIDX_NumExpTrials));
 					AppMgr.setSimIsRunning(true);
 					addPrivBtnToClear(conductExpIDX);
 				} 
@@ -164,7 +164,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 				//if wanting to conduct exp need to stop current experiment, reset environment, and then launch experiment
 				if(val) {
 					simExec.setConductSweepExperiment(false);
-					simExec.initializeTrials(uiUpdateData.getIntValue(gIDX_ExpLength), uiUpdateData.getIntValue(gIDX_NumExpTrials));
+					simExec.initializeTrials(getUIDataUpdater().getIntValue(gIDX_ExpLength), getUIDataUpdater().getIntValue(gIDX_NumExpTrials));
 					AppMgr.setSimIsRunning(true);
 					addPrivBtnToClear(conductSweepExpIDX);
 				} 
