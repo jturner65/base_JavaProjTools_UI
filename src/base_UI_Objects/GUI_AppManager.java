@@ -265,8 +265,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		drawing, 					//currently drawing
 		modView	 					//shift+mouse click+mouse move being used to modify the view					
 			);
-	public final int numStFlagsToShow = stateFlagsToShow.size();
-	
+	private final int numStFlagsToShow = stateFlagsToShow.size();
+	/**
+	 * Distance to translate each state flag in x
+	 */
+	private float stateFlagTransX;
 	
 	private final String[] stateFlagDispNames = {"Shift","Alt","Cntl","Click", "Draw","View"};
 	/**
@@ -277,8 +280,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * multiplier for displacement to display text label for stateFlagDispNames
 	 */
-	private final float[] StrWdMult = new float[]{-3.0f,-3.0f,-3.0f,-3.2f,-3.5f,-2.5f};
-
+	private final float[] stateFlagWidthMult = new float[]{-3.0f,-3.0f,-3.0f,-3.2f,-3.5f,-2.5f};
+	private float[] stateFlagWidth = new float[stateFlagWidthMult.length];
 	
 	public int animCounter = 0;
 	/**
@@ -523,7 +526,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		msSclX = MyMathUtils.PI_F/viewWidth;
 		msSclY = MyMathUtils.PI_F/viewHeight;
 
-		menuWidth = viewWidth * menuWidthMult;						
+		menuWidth = viewWidth * menuWidthMult;	
+		
+		// Translation amount for each state flag display "light"
+		stateFlagTransX = menuWidth / (1.0f*numStFlagsToShow+ 1);
+		for(int i=0;i<stateFlagDispNames.length;++i) {
+			stateFlagWidth[i] = stateFlagDispNames[i].length() * stateFlagWidthMult[i];
+		}
 		
 		hideWinWidth = viewWidth * hideWinWidthMult;				//dims for hidden windows
 		//popup/hidden window height to use when hidden 
@@ -580,13 +589,21 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		float rtSideTxtHeightOff = getRtSideTxtHeightOffset();
 		return new float[] {0, rtSideTxtHeightOff, 1.2f * rtSideTxtHeightOff, 1.5f * rtSideTxtHeightOff};
 	}
-	
+
 	/**
 	 * X Dimension offset for text
 	 */
 	public final float getXOffset() {
 		return getTextHeightOffset();
 	}
+
+	/**
+	 * Half of X Dimension offset for text
+	 */
+	public final float getXOffsetHalf() {
+		return 0.5f * getXOffset();
+	}
+	
 	
 	/**
 	 * Offset for starting a new row in Y
@@ -1288,13 +1305,19 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * 
 	 * @param modAmtMillis
 	 */
-	private final void drawUI(float modAmtMillis){					
-		for(int i =1; i<numDispWins; ++i){dispWinFrames[i].drawHeader(modAmtMillis);}
+	private final void drawUI(float modAmtMillis){	
+		boolean shouldDrawOnscreenText = (isDebugMode() || showInfo);
+		for(int i =1; i<numDispWins; ++i){
+			dispWinFrames[i].drawHeader(
+					dispWinFrames[dispMenuIDX].getDebugData(),
+					(shouldDrawOnscreenText && (i==curFocusWin)), 
+					isDebugMode(), 
+					modAmtMillis);}
 		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
-		dispWinFrames[dispMenuIDX].drawHeader(modAmtMillis);
-		if(isDebugMode() || showInfo){
-			dispWinFrames[curFocusWin].drawOnScreenText(dispWinFrames[dispMenuIDX].getDebugData(), isDebugMode());		
-		}
+		dispWinFrames[dispMenuIDX].drawHeader(new String[0], false, isDebugMode(), modAmtMillis);
+//		if(isDebugMode() || showInfo){
+//			dispWinFrames[curFocusWin].drawOnScreenText(dispWinFrames[dispMenuIDX].getDebugData(), isDebugMode());		
+//		}
 		dispWinFrames[curFocusWin].updateConsoleStrs();	
 	}//drawUI
 	
@@ -1365,7 +1388,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param stMult
 	 * @param yOff
 	 */
-	protected void dispBoolStFlag(String txt, int[] clrAra, boolean state, float stMult, float yOff){
+	protected void dispBoolStFlag(String txt, int[] clrAra, boolean state, float txtXOff, float yOff){
 		if(state){
 			ri.setFill(clrAra, 255); 
 			ri.setStroke(clrAra, 255);
@@ -1375,18 +1398,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		}
 		ri.drawSphere(5);
 		//text(""+txt,-xOff,yOff*.8f);	
-		ri.showText(""+txt,stMult*txt.length(),yOff*.8f);	
+		ri.showText(""+txt,txtXOff,yOff*.8f);	
 	}	
 	
 	/**
 	 * draw state booleans at top of screen and their state
 	 */
 	public final void drawSideBarStateBools(float yOff){ //numStFlagsToShow
-		ri.translate(110,10);
-		float xTrans = (int)((getMenuWidth()-100) / (1.0f*numStFlagsToShow));
+		ri.translate(1.5f*stateFlagTransX, yOff);		
 		for(int idx =0; idx<numStFlagsToShow; ++idx){
-			dispBoolStFlag(stateFlagDispNames[idx],stateFlagColors[idx], getStateFlagState(stateFlagsToShow.get(idx)), StrWdMult[idx], yOff);			
-			ri.translate(xTrans,0);
+			dispBoolStFlag(stateFlagDispNames[idx], stateFlagColors[idx], getStateFlagState(stateFlagsToShow.get(idx)), stateFlagWidth[idx], yOff);			
+			ri.translate(stateFlagTransX,0);
 		}
 	}
 	
