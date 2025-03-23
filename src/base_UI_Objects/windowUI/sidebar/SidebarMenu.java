@@ -67,10 +67,6 @@ public class SidebarMenu extends Base_DispWindow{
 
 	private String[] guiBtnRowNames;
 	/**
-	 * This is the y distance taken up by the guiBtnRows
-	 */
-	private float guiBtnRowsEndY;
-	/**
 	 * names for each row of buttons - idx 1 is name of row
 	 */
 	private String[][] guiBtnLabels;
@@ -140,14 +136,16 @@ public class SidebarMenu extends Base_DispWindow{
 		initBtnLblYOff = AppMgr.getBtnLabelYOffset();
 		initRowStYOff = AppMgr.getRowStYOffset();
 		
-		//set up side bar menu buttons with format specific to instancing application
-		setBtnData();
+		// build all side bar menu buttons with format specific to instancing application
+		// returns the y location of where the UI clickable region for the display window should start
+		float guiBtnRowsEndY = buildBtnData();
 		//these have to be set before setupGUIObjsAras is called from initThisWin
 		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
 
 		this.msgObj.dispConsoleDebugMessage("SidebarMenu", "ctor", "clkFlgsStY : " + clkFlgsStY+ "|initTextHeightOff : " + initTextHeightOff + "|initBtnLblYOff : "+initBtnLblYOff+"| initRowStYOff : "+initRowStYOff);
 		minBtnClkY = (numMainFlagsToShow+3) * initTextHeightOff + clkFlgsStY;										//start of buttons from under boolean flags
-		//all ui objects for all windows will follow this format and share the x[0] value
+		// build uiClkCoords
+		//all ui objects for all windows will follow this format and share the uiClkCoords[0] value
 		initUIClickCoords(winInitVals.rectDim[0] + .02f * winInitVals.rectDim[2], 
 				minBtnClkY + guiBtnRowsEndY,
 				winInitVals.rectDim[0] + .99f * winInitVals.rectDim[2],
@@ -186,7 +184,7 @@ public class SidebarMenu extends Base_DispWindow{
 	 * Set values for ui action buttons, based on specifications of @class mySidebarMenuBtnConfig
 	 * Parameters user defined in main as window is specified, individual button names can be overridden in individual app windows
 	 */
-	private final void setBtnData() {
+	private float buildBtnData() {
 		ArrayList<String> tmpGuiBtnRowNames = new ArrayList<String>();
 		ArrayList<String[]> tmpBtnLabels = new ArrayList<String[]>();
 		ArrayList<String[]> tmpDfltBtnLabels = new ArrayList<String[]>();
@@ -262,8 +260,6 @@ public class SidebarMenu extends Base_DispWindow{
 		guiBtnWaitForProc = tmpBtnWaitForProc.toArray(new Boolean[0][]);
 		
 		guiBtnSt = new int[guiBtnRowNames.length][];
-		//set y span of the buttons
-		guiBtnRowsEndY = (guiBtnRowNames.length * 2.0f) * initTextHeightOff;
 		for(int i=0;i<guiBtnSt.length;++i) {guiBtnSt[i] = new int[guiBtnLabels[i].length];}
 		
 		//set button names
@@ -271,8 +267,10 @@ public class SidebarMenu extends Base_DispWindow{
 		//set debug button names from valus specified in btnConfig, if any provided
 		if (_initBtnDBGSelCmp) {
 			setAllFuncBtnLabels(debugBtnRowIDX, btnConfig.debugBtnLabels);
-		}		
-	}//setBtnData
+		}	
+		// y span of the buttons
+		return (guiBtnRowNames.length * 2.0f) * initTextHeightOff;
+	}//buildBtnData
 	
 	/**
 	 * Return the label on the sidebar button specified by the passed row and column
@@ -462,16 +460,16 @@ public class SidebarMenu extends Base_DispWindow{
 
 	private void drawSideBarBooleans(float btnLblYOff, float xOffHalf, float txtHeightOffHalf){
 		//draw main booleans and their state
-		ri.translate(10,btnLblYOff);
+		ri.translate(xOffHalf,btnLblYOff);
 		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		ri.showText("Boolean Flags",0,initTextHeightOff*.20f);
+		ri.showText("Boolean Flags",0,txtHeightOffHalf);
 		ri.translate(0,clkFlgsStY);
 		AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
 	}//drawSideBarBooleans	
 	/**
 	 * draw UI buttons that control functions, debug and global load/save stubs
 	 */
-	private void drawSideBarButtons(float btnLblYOff, float xOff, float xOffHalf, float rowStYOff){
+	private void drawSideBarButtons(float btnLblYOff, float xOffHalf, float rowStYOff){
 		ri.translate(xOffHalf,(float)minBtnClkY);
 		ri.setFill(new int[]{0,0,0}, 255);
 		for(int row=0; row<guiBtnRowNames.length;++row){
@@ -482,7 +480,7 @@ public class SidebarMenu extends Base_DispWindow{
 			ri.setStrokeWt(1.0f);
 			ri.setColorValStroke(IRenderInterface.gui_Black,255);
 			ri.noFill();
-			ri.translate(-xOff*.5f, 0);
+			ri.translate(-xOffHalf, 0);
 			for(int col =0; col<guiBtnLabels[row].length;++col){
 				halfWay = (xWidthOffset - ri.textWidth(guiBtnLabels[row][col]))/2.0f;
 				ri.setColorValFill(guiBtnStFillClr[guiBtnSt[row][col]+1],255);
@@ -502,30 +500,30 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void drawMe(float animTimeMod) {
 		float txtHeightOffHalf = 0.5f * initTextHeightOff;
-		float xOff = AppMgr.getXOffset();
-		float xOffHalf = xOff * .5f;
+		float xOffHalf = AppMgr.getXOffsetHalf();
 		ri.pushMatState();
-			drawSideBarBooleans(
-					AppMgr.getBtnLabelYOffset(), 
-					xOffHalf, 
-					txtHeightOffHalf);				//toggleable booleans 
-		ri.popMatState();	
-		ri.pushMatState();
-			AppMgr.drawSideBarStateBools(initTextHeightOff);				//lights that reflect various states
-		ri.popMatState();	
-		ri.pushMatState();			
-			drawSideBarButtons(
-					AppMgr.getBtnLabelYOffset(),
-					xOff, 
-					xOffHalf,
-					AppMgr.getRowStYOffset());						//draw buttons
-		ri.popMatState();	
-		ri.pushMatState();
-			drawGUIObjs(animTimeMod);					//draw what global user-modifiable fields are currently available 
-		ri.popMatState();			
-		ri.pushMatState();
-			AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus
-		ri.popMatState();	
+			ri.pushMatState();
+				AppMgr.drawSideBarStateBools(initTextHeightOff);				//lights that reflect various states
+			ri.popMatState();		
+			ri.pushMatState();
+				drawSideBarBooleans(
+						AppMgr.getBtnLabelYOffset(), 
+						xOffHalf, 
+						txtHeightOffHalf);				//toggleable booleans 
+			ri.popMatState();	
+			ri.pushMatState();			
+				drawSideBarButtons(
+						AppMgr.getBtnLabelYOffset(),
+						xOffHalf,
+						AppMgr.getRowStYOffset());						//draw buttons
+			ri.popMatState();	
+			ri.pushMatState();
+				drawGUIObjs(animTimeMod);					//draw what global user-modifiable fields are currently available 
+			ri.popMatState();			
+			ri.pushMatState();
+				AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus
+			ri.popMatState();	
+		ri.popMatState();
 	}
 	
 	@Override

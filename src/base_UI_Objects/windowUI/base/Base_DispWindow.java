@@ -574,8 +574,6 @@ public abstract class Base_DispWindow {
 			stPt._add(0, textHeightOffset, 0);
 			endPt._add(0, textHeightOffset, 0);
 		}
-		//Make a smaller padding amount for final row
-		uiClkCoords[3] =  stPt.y - .5f*textHeightOffset;
 		
 		//build all objects using these values 
 		_buildAllObjects(
@@ -583,6 +581,10 @@ public abstract class Base_DispWindow {
 				guiStVals, guiBoolVals, guiFormatBoolVals, 
 				guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkCoords[2]);
 
+		
+		
+		//Make a smaller padding amount for final row
+		uiClkCoords[3] =  stPt.y - .5f*textHeightOffset;
 		// return final y coordinate
 		return uiClkCoords[3];
 	}//_buildGUIObjsForMenu
@@ -757,11 +759,11 @@ public abstract class Base_DispWindow {
 	 */
 	public void setNewUIDispText(int idx, boolean isNumeric, String str) {
 		if (isNumeric) {
-			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setNewLabel(str);}
+			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setLabel(str);}
 			return;
 		} else {
 			//TODO support boolean UI objects
-			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setNewLabel(str);}
+			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setLabel(str);}
 			return;
 		}
 	}
@@ -1546,34 +1548,66 @@ public abstract class Base_DispWindow {
 		winInitVals.setWinFillWithStroke(ri);	
 		ri.showText(dispTxt, closeBox[0]-35, closeBox[1]+10);			
 	}
+	
+	private final void drawSmall(){
+		ri.pushMatState();
+		ri.setBeginNoDepthTest();
+		ri.disableLights();		
+		winInitVals.setWinFillAndStroke(ri);
+		//main window drawing
+		winInitVals.drawRectDimClosed(ri);
+		winInitVals.setWinFillWithStroke(ri);
+		//close box drawing
+		if(dispFlags.getIsCloseable()){drawMouseBox();}
+		if(winInitVals.winDescr.trim() != ""){	
+			ri.showText(winInitVals.winDescr.split(" ")[0], winInitVals.rectDim[0]+AppMgr.getXOffsetHalf(), winInitVals.rectDim[1]+AppMgr.getTextHeightOffset()); 
+		}
+		ri.setEndNoDepthTest();
+		ri.popMatState();		
+	}
 
 	/**
 	 * called by drawUI in IRenderInterface
 	 * @param modAmtMillis
 	 */
-	public final void drawHeader(float modAmtMillis){
+	public final void drawHeader(String[] res, boolean shouldDrawOnScreenText, boolean isDebug, float modAmtMillis){
 		if(!dispFlags.getShowWin()){return;}
 		ri.pushMatState();		
-		//msgObj.dispDebugMessage("Base_DispWindow","drawHeader","Hitting hint code drawHeader");
 		ri.setBeginNoDepthTest();
-		ri.disableLights();		
+		ri.disableLights();	
 		winInitVals.setWinStroke(ri);
 		winInitVals.setWinFillWithStroke(ri);
-		float yOffset = 0;
-		if(winInitVals.winDescr.trim() != ""){	
-			yOffset = dispMultiLineText(winInitVals.winDescr,  winInitVals.rectDim[0]+10, winInitVals.rectDim[1]+12); 
-		}
-		if(null!=trajMgr){	trajMgr.drawNotifications(ri, AppMgr.getXOffset() *.5f, getTextHeightOffset() *.5f);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		if(dispFlags.getIsCloseable()){drawMouseBox();}
+		// Move to beginning of screen display
+		ri.translate(winInitVals.rectDim[0], winInitVals.rectDim[1]);
+		if(winInitVals.winDescr.trim() != ""){	
+			ri.showText(winInitVals.winDescr, AppMgr.getXOffsetHalf(), winInitVals.rectDim[1]+AppMgr.getTextHeightOffset()); 
+		}	
+		if(null!=trajMgr){	trajMgr.drawNotifications(ri, AppMgr.getXOffsetHalf(), getTextHeightOffset() *.5f);	}				//if this window accepts a drawn trajectory, then allow it to be displayed
 		//TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
 		if(dispFlags.getHasScrollBars() && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe();}
-		
-		//if(dispFlags.getDrawRtSideMenu()) {drawOnScreenStuff(modAmtMillis);	}
+		float yOffset = AppMgr.getTextHeightOffset();
 		//draw stuff on screen, including rightSideMenu stuff, if this window supports it
-		drawOnScreenStuff(modAmtMillis, yOffset);	
+		ri.translate(0.0f,yOffset);			
+		//draw onscreen stuff for main window
+		drawOnScreenStuffPriv(modAmtMillis);
+		//draw right side info display if relevant
+		if(dispFlags.getHasRtSideMenu()) {
+			ri.pushMatState();
+				ri.translate(0, -yOffset);
+				drawRightSideMenu(modAmtMillis);
+			ri.popMatState();	
+		}
+		if (shouldDrawOnScreenText) {		
+			ri.pushMatState();
+				ri.translate(AppMgr.getXOffsetHalf(),0.0f);
+				drawOnScreenDebugText(res, isDebug);
+			ri.popMatState();
+		}
 		ri.enableLights();	
-		ri.setEndNoDepthTest();
-		ri.popMatState();	
+		ri.setEndNoDepthTest();		
+		ri.popMatState();
+		//cleanup after drawing
 		postDraw();
 	}//drawHeader
 	
@@ -1605,7 +1639,7 @@ public abstract class Base_DispWindow {
 	 * Draw UI data debug info
 	 * @param res UI debug data from dispMenu window
 	 */
-	public final void drawOnScreenText(String[] res, boolean isDebug) {
+	private final void drawOnScreenDebugText(String[] res, boolean isDebug) {
 		ri.pushMatState();			
 			reInitInfoStr();
 			if(isDebug) {
@@ -1615,7 +1649,6 @@ public abstract class Base_DispWindow {
 			}
 			int numToPrint = MyMathUtils.min(res.length,80);
 			for(int s=0;s<numToPrint;++s) {	addInfoStr(res[s]);}				//add info to string to be displayed for debug
-			ri.translate(AppMgr.getXOffset(), 0.0f);
 			drawInfoStr(1.0f, winInitVals.strkClr); 	
 		ri.popMatState();		
 	}//drawOnScreenText
@@ -1634,28 +1667,7 @@ public abstract class Base_DispWindow {
 			ri.drawRect(closedUIRtSideRecBox);
 		}		
 	}//drawRightSideMenu
-	
-	/**
-	 * draw stuff on screen - start next to left-side menu
-	 * @param modAmtMillis
-	 */
-	private void drawOnScreenStuff(float modAmtMillis, float yOffset) {
-		ri.pushMatState();
-		//move to upper right corner of sidebar menu - cannot draw over leftside menu, use drawCustMenuObjs() instead to put UI objects there
-		//this side window is for information display
-		ri.translate(winInitVals.rectDim[0],yOffset);			
-		//draw onscreen stuff for main window
-		drawOnScreenStuffPriv(modAmtMillis);
-		//draw right side info display if relevant
-		if(dispFlags.getHasRtSideMenu()) {
-			ri.pushMatState();
-				ri.translate(0, -yOffset);
-				drawRightSideMenu(modAmtMillis);
-			ri.popMatState();	
-		}
-		ri.popMatState();			
-	}//drawRtSideInfoBar
-	
+
 	public final void draw3D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){return;}
 		float animTimeMod = modAmtMillis/1000.0f;
@@ -1675,25 +1687,7 @@ public abstract class Base_DispWindow {
 	protected final void moveTo2DRectCenter() {
 		ri.translate(winInitVals.rectDim[0] + (winInitVals.rectDim[2]*.5f), winInitVals.rectDim[1] + (winInitVals.rectDim[3]*.5f));
 	}	
-	
-	private final void drawSmall(){
-		ri.pushMatState();
-		//msgObj.dispDebugMessage("Base_DispWindow","drawSmall","Hitting hint code draw small");
-		ri.setBeginNoDepthTest();
-		ri.disableLights();		
-		winInitVals.setWinFillAndStroke(ri);
-		//main window drawing
-		winInitVals.drawRectDimClosed(ri);
-		winInitVals.setWinFillWithStroke(ri);
-		if(winInitVals.winDescr.trim() != ""){
-			ri.showText(winInitVals.winDescr.split(" ")[0], winInitVals.rectDimClosed[0]+10, winInitVals.rectDimClosed[1]+25);
-		}		
-		//close box drawing
-		if(dispFlags.getIsCloseable()){drawMouseBox();}
-		ri.setEndNoDepthTest();
-		ri.popMatState();		
-	}
-	
+		
 	public final void draw2D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){drawSmall();return;}
 		ri.pushMatState();
@@ -1753,24 +1747,11 @@ public abstract class Base_DispWindow {
 		float yOff = getTextHeightOffset();
 		ri.pushMatState();		
 			ri.setFill(fillClr,fillClr[3]);
-			ri.translate((AppMgr.getMenuWidth()),0);
 			ri.scale(sc,sc);
 			for(int i = 0; i < DebugInfoAra.size(); ++i){		
 				ri.showText((AppMgr.isDebugMode()?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(yOff+(yOff*i)));	}
 		ri.popMatState();
 	}		
-	
-	// print out multiple-line text to screen
-	// returns total displacement
-	private final float dispMultiLineText(String str, float x, float y){
-		String[] res = str.split("\\r?\\n");
-		float disp = y;
-		for(int i =0; i<res.length; ++i){
-			ri.showText(res[i],x, disp);		//add console string output to screen display- decays over time
-			disp += getTextHeightOffset();
-		}
-		return disp;
-	}	
 	
 	//////////////////
 	// Simulation
