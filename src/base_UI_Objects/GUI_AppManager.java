@@ -1404,7 +1404,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * draw state booleans at top of screen and their state
 	 */
-	public final void drawSideBarStateBools(float yOff){ //numStFlagsToShow
+	public final void drawSideBarStateLights(float yOff){ //numStFlagsToShow
 		ri.translate(1.5f*stateFlagTransX, yOff);		
 		for(int idx =0; idx<numStFlagsToShow; ++idx){
 			dispBoolStFlag(stateFlagDispNames[idx], stateFlagColors[idx], getStateFlagState(stateFlagsToShow.get(idx)), stateFlagWidth[idx], yOff);			
@@ -1418,7 +1418,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void drawWindowGuiObjs(float animTimeMod){
 		if(curFocusWin != -1){
 			ri.pushMatState();
-			dispWinFrames[curFocusWin].drawWindowGuiObjs(animTimeMod);					//draw what user-modifiable fields are currently available
+			dispWinFrames[curFocusWin].drawWindowGuiObjs(isDebugMode(), animTimeMod);					//draw what user-modifiable fields are currently available
 			ri.popMatState();	
 		}
 	}//
