@@ -503,7 +503,7 @@ public class SidebarMenu extends Base_DispWindow{
 		float xOffHalf = AppMgr.getXOffsetHalf();
 		ri.pushMatState();
 			ri.pushMatState();
-				AppMgr.drawSideBarStateBools(initTextHeightOff);				//lights that reflect various states
+				AppMgr.drawSideBarStateLights(initTextHeightOff);				//lights that reflect various states
 			ri.popMatState();		
 			ri.pushMatState();
 				drawSideBarBooleans(
@@ -518,7 +518,7 @@ public class SidebarMenu extends Base_DispWindow{
 						AppMgr.getRowStYOffset());						//draw buttons
 			ri.popMatState();	
 			ri.pushMatState();
-				drawGUIObjs(animTimeMod);					//draw what global user-modifiable fields are currently available 
+				drawGUIObjs(AppMgr.isDebugMode(), animTimeMod);					//draw what global user-modifiable fields are currently available 
 			ri.popMatState();			
 			ri.pushMatState();
 				AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus
