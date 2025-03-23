@@ -1833,7 +1833,20 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected final void addPrivBtnToClear(int idx) {
 		privBtnsToClear.add(idx);
 	}
-
+	
+	/**
+	 * Access private flag values
+	 * @param idx
+	 * @return
+	 */
+	public final boolean getPrivFlag(int idx) {
+		return privFlags.getFlag(idx);
+	}
+	
+	public final void setPrivFlag(int idx, boolean val) {
+		privFlags.setFlag(idx, val);
+	}
+	
 	/**
 	 * Whether this window manages a simulator or some other runnable construct
 	 * @return
