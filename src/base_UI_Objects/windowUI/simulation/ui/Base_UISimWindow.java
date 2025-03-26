@@ -61,7 +61,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	
 
 	@Override
-	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray) {
+	protected final int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
 		// add an entry for each button, in the order they are wished to be displayed
 		// true tag, false tag, btn IDX
 		tmpBtnNamesArray.add(new Object[] {"Visualization Debug", "Enable Debug", Base_BoolFlags.debugIDX});  
