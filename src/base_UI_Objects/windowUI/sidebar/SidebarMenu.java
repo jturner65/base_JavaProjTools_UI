@@ -121,14 +121,13 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	/**
 	 * 
-	 * @param _p
+	 * @param _ri
 	 * @param _AppMgr
 	 * @param _winIdx
 	 * @param _c
 	 */
-
-	public SidebarMenu(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
-		super(_p, _AppMgr, _winIdx);
+	public SidebarMenu(IRenderInterface _ri, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
+		super(_ri, _AppMgr, _winIdx);
 		btnConfig=_c;
 		
 		clkFlgsStY = (int) AppMgr.getClkBoxDim();
@@ -142,14 +141,14 @@ public class SidebarMenu extends Base_DispWindow{
 		//these have to be set before setupGUIObjsAras is called from initThisWin
 		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
 
-		this.msgObj.dispConsoleDebugMessage("SidebarMenu", "ctor", "clkFlgsStY : " + clkFlgsStY+ "|initTextHeightOff : " + initTextHeightOff + "|initBtnLblYOff : "+initBtnLblYOff+"| initRowStYOff : "+initRowStYOff);
 		minBtnClkY = (numMainFlagsToShow+3) * initTextHeightOff + clkFlgsStY;										//start of buttons from under boolean flags
+		//msgObj.dispConsoleDebugMessage("SidebarMenu", "ctor", "clkFlgsStY : " + clkFlgsStY+ "|initTextHeightOff : " + initTextHeightOff + "|initBtnLblYOff : "+initBtnLblYOff+"| initRowStYOff : "+initRowStYOff+"| minBtnClkY : "+minBtnClkY);
 		// build uiClkCoords
 		//all ui objects for all windows will follow this format and share the uiClkCoords[0] value
-		initUIClickCoords(winInitVals.rectDim[0] + .02f * winInitVals.rectDim[2], 
-				minBtnClkY + guiBtnRowsEndY,
-				winInitVals.rectDim[0] + .99f * winInitVals.rectDim[2],
-				minBtnClkY + guiBtnRowsEndY);
+		float uiClickStX = winInitVals.rectDim[0] + .01f * winInitVals.rectDim[2];
+		float uiClickStY = winInitVals.rectDim[1] + .01f * winInitVals.rectDim[3];
+		float uiClickEndX = winInitVals.rectDim[0] + .99f * winInitVals.rectDim[2];
+		initUIClickCoords(uiClickStX, uiClickStY,uiClickEndX, minBtnClkY + guiBtnRowsEndY);
 		//make a little space below debug buttons
 		uiClkCoords[3] += initRowStYOff;
 		//standard init
@@ -356,10 +355,12 @@ public class SidebarMenu extends Base_DispWindow{
 	 * @return
 	 */
 	private boolean checkButtons(int mseX, int mseY){
-		double stY = minBtnClkY + initRowStYOff, endY = stY+initTextHeightOff, stX = 0, endX, widthX; //btnLblYOff			
+		double stY = minBtnClkY + initRowStYOff, endY = 0, 
+				stX = 0, endX, widthX; //btnLblYOff			
 		for(int row=0; row<guiBtnRowNames.length;++row){
+			endY = stY + initTextHeightOff;	
 			widthX = winInitVals.rectDim[2]/(1.0f * guiBtnLabels[row].length);
-			stX =0;	endX = widthX;
+			stX = 0;	endX = widthX;
 			for(int col =0; col<guiBtnLabels[row].length;++col){	
 				if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (guiBtnSt[row][col] != -1)){
 					handleButtonClick(row,col);
@@ -367,7 +368,8 @@ public class SidebarMenu extends Base_DispWindow{
 				}					
 				stX += widthX;	endX += widthX; 
 			}
-			stY = endY + initTextHeightOff+ initRowStYOff; endY = stY + initTextHeightOff;				
+			//add initTextHeightOff for button row offset
+			stY = endY + initTextHeightOff + initRowStYOff;		
 		}
 		return false;
 	}//handleButtonClick	
@@ -440,10 +442,11 @@ public class SidebarMenu extends Base_DispWindow{
 	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
 		if(!pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
 		int i = (int)((mouseY-(initBtnLblYOff + clkFlgsStY))/(initTextHeightOff));					//TODO Awful - needs to be recalced, dependent on menu being on left
-		//msgObj.dispInfoMessage(className, "hndlMouseClick_Indiv", "uiClkCoords[1] = "+uiClkCoords[1]+" | minBtnClkY :"+minBtnClkY);
+		//msgObj.dispInfoMessage(className, "hndlMouseClick_Indiv", "Clicked on disp windows : i : " + i+"|uiClkCoords[1] = "+uiClkCoords[1]+" | minBtnClkY :"+minBtnClkY);
+		
 		if((i>=0) && (i<numMainFlagsToShow)){
 			AppMgr.flipMainFlag(i);return true;	
-		} else if(MyMathUtils.ptInRange(mouseX, mouseY, uiClkCoords[0], minBtnClkY, uiClkCoords[2], uiClkCoords[1])){
+		} else if(MyMathUtils.ptInRange(mouseX, mouseY, uiClkCoords[0], minBtnClkY, uiClkCoords[2], uiClkCoords[3])){
 			boolean clkInBtnRegion = checkButtons(mouseX, mouseY);
 			if(clkInBtnRegion) { privFlags.setFlag(mseClickedInBtnsIDX, true);}
 			return clkInBtnRegion;
@@ -497,6 +500,10 @@ public class SidebarMenu extends Base_DispWindow{
 	protected final void drawOnScreenStuffPriv(float modAmtMillis) {}
 	@Override//for windows to draw on screen
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {}
+	/**
+	 * Draw window/application-specific functionality
+	 * @param animTimeMod # of milliseconds since last frame dividied by 1000
+	 */
 	@Override
 	protected final void drawMe(float animTimeMod) {
 		float txtHeightOffHalf = 0.5f * initTextHeightOff;

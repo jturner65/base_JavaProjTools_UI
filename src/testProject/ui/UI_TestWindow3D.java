@@ -73,7 +73,7 @@ public class UI_TestWindow3D extends Base_DispWindow {
 	
 
 	@Override
-	public int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray) {
+	public int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
 		tmpBtnNamesArray.add(new Object[] {"Debugging", "Enable Debug", Base_BoolFlags.debugIDX});
 		tmpBtnNamesArray.add(new Object[] {"Button 1 On", "Button 1 Off", button1_IDX});
 		tmpBtnNamesArray.add(new Object[] {"Button 2 On", "Button 2 Off", button2_IDX});
@@ -105,11 +105,11 @@ public class UI_TestWindow3D extends Base_DispWindow {
 		
 		tmpListObjVals.put(gIDX_ListVal1, listOfNames);
 			
-		tmpUIObjArray.put(gIDX_FloatVal1, uiObjInitAra_Float(new double[]{0,1.0f,.0001f}, floatVal1, "Float Value 1", new boolean[]{true}));   				//uiTrainDataFrmtIDX                                                                        
-		tmpUIObjArray.put(gIDX_IntVal1, uiObjInitAra_Int(new double[]{1,10,1.0f}, 1.0, "Int Value 1", new boolean[]{true}));   				//uiTrainDataFrmtIDX                                                                        
-		tmpUIObjArray.put(gIDX_ListVal1, uiObjInitAra_List(new double[]{0,listOfNames.length-1,1.1f}, 0.0, "List of Names", new boolean[]{true}));   				//uiTrainDataFrmtIDX                                                                        
-		tmpUIObjArray.put(gIDX_IntVal2, uiObjInitAra_Int(new double[]{-50,50,1.0f}, 0.0, "Int Value 2", new boolean[]{true}));   				//uiTrainDataFrmtIDX                                                                        
-		tmpUIObjArray.put(gIDX_IntVal3, uiObjInitAra_Int(new double[]{0,1000,1.0f}, 0.0, "Int Value 3", new boolean[]{true}));   				//uiTrainDataFrmtIDX
+		tmpUIObjArray.put(gIDX_FloatVal1, uiObjInitAra_Float(new double[]{0,1.0f,.0001f}, floatVal1, "Float Value 1"));   				//uiTrainDataFrmtIDX                                                                        
+		tmpUIObjArray.put(gIDX_IntVal1, uiObjInitAra_Int(new double[]{1,10,1.0f}, 1.0, "Int Value 1"));   				//uiTrainDataFrmtIDX                                                                        
+		tmpUIObjArray.put(gIDX_ListVal1, uiObjInitAra_List(new double[]{0,listOfNames.length-1,1.1f}, 0.0, "List of Names"));   				//uiTrainDataFrmtIDX                                                                        
+		tmpUIObjArray.put(gIDX_IntVal2, uiObjInitAra_Int(new double[]{-50,50,1.0f}, 0.0, "Int Value 2"));   				//uiTrainDataFrmtIDX                                                                        
+		tmpUIObjArray.put(gIDX_IntVal3, uiObjInitAra_Int(new double[]{0,1000,1.0f}, 0.0, "Int Value 3"));   				//uiTrainDataFrmtIDX
 	}	
 	
 

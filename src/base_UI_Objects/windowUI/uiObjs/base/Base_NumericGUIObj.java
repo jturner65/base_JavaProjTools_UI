@@ -9,15 +9,18 @@ import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
  *
  */
 public abstract class Base_NumericGUIObj extends Base_GUIObj {	
-
+	/**
+	 * String format to display value
+	 */
+	protected String formatStr;	
+	/**
+	 * Original string format
+	 */
+	private final String origFormatStr;
 	/**
 	 * Initial values for min, max, mod and val
 	 */
 	protected double[] initVals;	
-	/**
-	 * Multiplier for modification
-	 */
-	protected double modMult;
 	/**
 	 * Value for this numeric object
 	 */
@@ -26,7 +29,10 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * Min and max values allowed for this numeric object
 	 */
 	protected double minVal, maxVal;
-
+	/**
+	 * Multiplier for modification
+	 */
+	protected double modMult;
 	/**
 	 * Build a numeric value-based UI object
 	 * @param _ri render interface
@@ -46,12 +52,26 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 			double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] strkClr, int[] fillClr) {
 		super(_objID, _name, _objType, _flags, _off, strkClr, fillClr);
 		
-		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; modMult = _minMaxMod[2];
+		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; setNewMod(_minMaxMod[2]);
+		origFormatStr = formatStr;
 		val = _initVal;
 		initVals = new double[4];
 		for(int i=0;i<_minMaxMod.length;++i) {initVals[i]=_minMaxMod[i];}
 		initVals[3] = _initVal;	
 	}//ctor
+
+	/**
+	 * Reset this UI component to its initialization values
+	 */
+	@Override
+	public final void resetToInit() {		
+		setNewMin(initVals[0]);
+		setNewMax(initVals[1]);
+		setNewMod(initVals[2]);
+		setVal(initVals[3]);
+		label = origLabel;
+		formatStr = origFormatStr;
+	}
 	
 	/**
 	 * 
@@ -109,15 +129,12 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 		if (oldVal != val) {setIsDirty(true);}		
 	}
 	/**
-	 * Set a new modifier value to use for this object
+	 * Set a new modifier value `modMult` to use for this object, and use the modifier to
+	 * derive the `formatStr` used to display this object's data.
 	 * @param _newval
 	 */
-	public final void setNewMod(double _newval){	
-		if (_newval > (maxVal-minVal)) {
-			_newval = (maxVal-minVal);
-		}
-		modMult = _newval;	
-	}
+	public abstract void setNewMod(double _newval);
+	
 	/**
 	 * Set the value explicitly that we want to have for this object, subject to bounds.
 	 * @param _newVal
@@ -135,17 +152,13 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @return
 	 */
 	public abstract double modVal(double mod);
-
+	
 	/**
-	 * Reset this UI component to its initialization values
+	 * set new display text for this UI object - doesn't change name
+	 * @param _str
 	 */
 	@Override
-	public final void resetToInit() {		
-		setNewMin(initVals[0]);
-		setNewMax(initVals[1]);
-		setNewMod(initVals[2]);
-		setVal(initVals[3]);
-	}
+	public final void setLabel(String _str) {	label = (_str.length() > 0 ? _str + " : " : "");	}
 	
 	/**
 	 * Set this UI object's value from a string
@@ -177,14 +190,24 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	}
 	protected abstract String getValueAsString(double _val);
 
+
+	@Override
+	protected boolean checkUIObjectStatus_Indiv() {
+		// TODO add any object instance-specific checks that might be required here
+		return true;
+	}
+	
 	/**
 	 * Get string data array representing the value this UI object holds
 	 * @return
 	 */
 	protected final String[] getStrDataForVal() {
 		String[] tmpRes = new String[2];
-		tmpRes[0] = "Value : "+ val +" Max Val : "+ maxVal + " Min Val : " + minVal+ " Mod multiplier : " + modMult;
-		tmpRes[1] = "Init Value : "+ initVals[3] +"|Init Max Val : "+ initVals[1] + "|Init Min Val : " + initVals[0]+ "|Init Mod : " + initVals[2];
+		tmpRes[0] = "Value : "+ getValueAsString() +" Max Val : " + getValueAsString(maxVal) 
+		+ " Min Val : " + getValueAsString(minVal)+ " Mod multiplier : " +getValueAsString(modMult);
+		tmpRes[1] = "Init Value : "+ getValueAsString(initVals[3]) +"|Init Max Val : "
+		+ getValueAsString(initVals[1]) + "|Init Min Val : " + getValueAsString(initVals[0])
+		+ "|Init Mod : " + getValueAsString(initVals[2]);
 		return tmpRes;
 	}
 	

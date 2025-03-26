@@ -51,7 +51,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * Manager of all UI objects in this window
 	 */
-	protected UIObjectManager uiManager;
+	protected UIObjectManager uiMgr;
 	
 	/**
 	 * enable drawing debug info onto app canvas	
@@ -122,6 +122,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * only modifiable idx's will be shown as buttons - this needs to be in order of flag names
 	 */
 	private int[] privModFlgIdxs;
+	
 	/**
 	 * Click dimensions for each button
 	 */
@@ -140,10 +141,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Base_GUIObj that was clicked on for modification
 	 */
 	protected int msClkObj;
+	
 	/**
 	 * object mouse moved over
 	 */
-	protected int msOvrObj;												
+	protected int msOvrObj;		
+	
 	/**
 	 * mouse button clicked - consumed for individual click mod
 	 */
@@ -151,6 +154,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 
 	/**
 	 * subregion of window where UI objects may be found
+	 * Idx 0,1 : Upper left corner x,y
+	 * Idx 2,3 : Lower right corner x,y
 	 */
 	public float[] uiClkCoords;												//
 											
@@ -158,10 +163,27 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * array lists of idxs for float-based UI objects
 	 */
 	private ArrayList<Integer> guiFloatValIDXs;
+	
 	/**
 	 * array lists of idxs for integer/list-based objects
 	 */
 	private ArrayList<Integer> guiIntValIDXs;
+	
+	/**
+	 * Boolean array of default behavior boolean values, if formatting is not otherwise specified
+	 *  idx 0: value is sent to owning window,  
+	 *  idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *  idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 */
+	protected final boolean[] dfltUIBehaviorVals = new boolean[]{true, false, false};
+	/**
+	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
+	 *  idx 0: whether multi-line(stacked) or not                                                  
+	 *  idx 1: if true, build prefix ornament                                                      
+	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 */
+	protected final boolean[] dfltUIFmtVals =  new boolean[] {false, true, false};	
+	
 	
 	
 	/**
@@ -223,7 +245,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected ScrollBars[] scbrs;
 	
 	/**
-	 * Non random true button colotr
+	 * Non random true button color
 	 */
 	private final int[] trueBtnClr = new int[]{220,255,220,255};
 	/**
@@ -273,7 +295,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		ri=_p;
 		AppMgr = _AppMgr;
 		msgObj = AppMgr.msgObj;
-		uiManager = new UIObjectManager(ri, this, AppMgr, msgObj);
+		uiMgr = new UIObjectManager(ri, this, AppMgr, msgObj);
 		
 		className = this.getClass().getSimpleName();
 		ID = winCnt++;
@@ -326,8 +348,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param _isMenu whether this window is the side-bar menu window or not
 	 */
 	public final void initThisWin(boolean _isMenu){
-		dispFlags = new WinDispStateFlags(this);
-		
+		dispFlags = new WinDispStateFlags(this);		
 		privBtnsToClear = new ArrayList<Integer>();
 		
 		//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
@@ -370,15 +391,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}//initThisWin
 	
 	/**
-	 * Final initialization stuff, after window made, but necessary to make sure window displays correctly
-	 * @param _ctr
-	 * @param _baseFcs
-	 */
-	public final void finalInit(myPoint _ctr, myVector _baseFcs) {
-
-	}//finalInit
-	
-	/**
 	 * Build appropriate UIDataUpdater instance for application
 	 * @return
 	 */	
@@ -398,7 +410,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	protected abstract UIDataUpdater buildUIDataUpdateObject();
 	
-	private void _initAllGUIObjs(boolean isMenu, float[] uiClkCoords) {
+	private void _initAllGUIObjs(boolean isMenu, float[] uiClkRect) {
 		//initialize arrays to hold idxs of int and float items being created.
 		guiFloatValIDXs = new ArrayList<Integer>();
 		guiIntValIDXs = new ArrayList<Integer>();
@@ -413,7 +425,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			//initialized for sidebar menu as well as for display windows
 			guiObjs_Numeric = new Base_NumericGUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
 			//build ui objects
-			uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, uiClkCoords);	
+			uiClkRect[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, uiClkRect);	
 		} else {
 			//no guiObjs for menu
 			guiObjs_Numeric = new Base_NumericGUIObj[0];
@@ -424,19 +436,18 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
 		int _numPrivFlags = initAllUIButtons(tmpBtnNamesArray);
 		//initialize all private buttons based on values put in arraylist
-		uiClkCoords[3] = _buildAllPrivButtons(tmpBtnNamesArray, uiClkCoords);
+		uiClkRect[3] = _buildAllPrivButtons(tmpBtnNamesArray, uiClkRect);
 		// init specific sim flags
 		privFlags = new WinAppPrivStateFlags(this,_numPrivFlags);
 		// set instance-specific initial flags
 		int[] trueFlagIDXs = getFlagIDXsToInitToTrue();
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
 		if(null!=trueFlagIDXs) {_initPassedPrivFlagsToTrue(trueFlagIDXs);}	
-		
 		// build instance-specific UI update communication object if exists
 		_buildUIUpdateStruct();
 		
 	}//_initAllGUIObjs
-
+	
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
 	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
@@ -448,15 +459,63 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *           	idx 3: if true, do not build prefix ornament
-	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
+	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 * @param tmpListObjVals
 	 */
 	@Override
 	public void setupOwnerGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
 		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);					
 	}
+	
+	/**
+	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 *           the first element double array of min/max/mod values                                                   
+	 *           the 2nd element is starting value                                                                      
+	 *           the 3rd elem is label for object                                                                       
+	 *           the 4th element is object type (GUIObj_Type enum)
+	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param tmpListObjVals
+	 */	
 	protected abstract void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);		
+	
+	/**
+	 * Build the object array that describes a integer object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default behavior and UI format boolean values
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name) {
+		return uiObjInitAra_Int(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
+	}	
+		
+	/**
+	 * Build the object array that describes a integer object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 * NOTE : this method uses the default UI format boolean values
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+		return uiObjInitAra_Int(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
+	}	
 	
 	/**
 	 * Build the object array that describes a integer object
@@ -467,12 +526,26 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *           	idx 3: if true, do not build prefix ornament
-	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
+	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.IntVal,boolVals};	
+	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
+		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.IntVal,boolVals, boolFmtVals};	
+	}
+	
+	/**
+	 * Build the object array that describes a float object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default behavior and UI format boolean values
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name) {
+		return uiObjInitAra_Float(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}
 	
 	/**
@@ -484,14 +557,41 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *           	idx 3: if true, do not build prefix ornament
-	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
+	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
 	protected final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.FloatVal,boolVals};	
+		return uiObjInitAra_Float(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
 	}
-			
+	
+	/**
+	 * Build the object array that describes a float object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 * NOTE : this method uses the default UI format boolean values
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
+		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.FloatVal,boolVals, boolFmtVals};	
+	}
+
+	/**
+	 * Build the object array that describes a list object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default behavior and UI format boolean values
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name) {
+		return uiObjInitAra_List(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
+	}
+	
 	/**
 	 * Build the object array that describes a list object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
@@ -501,12 +601,27 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *           	idx 3: if true, do not build prefix ornament
-	 *              idx 4: if true and prefix ornament is built, make it the same color as the text fill color. 
+	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
 	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.ListVal,boolVals};	
+		return uiObjInitAra_List(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
+	}	
+	
+	/**
+	 * Build the object array that describes a list object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 * NOTE : this method uses the default UI format boolean values
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
+		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.ListVal,boolVals, boolFmtVals};	
 	}	
 	
 	/**
@@ -526,14 +641,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 *           }    
 	 * @param tmpListObjVals : map of list object data
-	 * @param uiClkCoords : 4-element array of upper corner x,y lower corner x,y coordinates for ui rectangular region
+	 * @param uiClkRect : 4-element array of upper corner x,y lower corner x,y coordinates for ui rectangular region
 	 * @return y coordinate for end of ui region
-	 * 
 	 */
 	private float _buildGUIObjsForMenu(
 			TreeMap<Integer, Object[]> tmpUIObjArray, 
 			TreeMap<Integer, String[]> tmpListObjVals, 
-			float[] uiClkCoords) {
+			float[] uiClkRect) {
 		int numGUIObjs = tmpUIObjArray.size();
 		
 		double[][] guiMinMaxModVals = new double[numGUIObjs][3];			//min max mod values
@@ -552,12 +666,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		boolean[][] guiFormatBoolVals = new boolean[numGUIObjs][];		
 				
 		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
-		myPointf[][] corners = new myPointf[numGUIObjs][2];
 		float textHeightOffset = AppMgr.getTextHeightOffset();
-		// first object's start and end point
-		myPointf stPt = new myPointf(uiClkCoords[0], uiClkCoords[1], 0);
-		myPointf endPt = new myPointf(uiClkCoords[2], uiClkCoords[1]+textHeightOffset, 0);		
-		
+	
 		for (int i = 0; i < numGUIObjs; ++i) {
 			Object[] obj = tmpUIObjArray.get(i);
 			boolean[] formatAra;
@@ -589,32 +699,28 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			for (boolean val : formatAra) {
 				guiFormatBoolVals[i][idx++] = val;
 			}
-			
-			corners[i] = new myPointf[] {new myPointf(stPt), new myPointf(endPt)};
-			//move box corners by appropriate amount
-			stPt._add(0, textHeightOffset, 0);
-			endPt._add(0, textHeightOffset, 0);
-		}
-		
+		}		
 		//build all objects using these values 
-		_buildAllObjects(
-				guiObjNames, corners, guiMinMaxModVals, 
+		_buildAllObjects(guiObjNames, guiMinMaxModVals, 
 				guiStVals, guiBoolVals, guiFormatBoolVals, 
-				guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkCoords[2]);
-
-		
-		
+				guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkRect[2]);
+		//Objects are created by here and assigned renderers
+		// Assign hotspots
+		myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
+		for (int i = 0; i < guiObjs_Numeric.length; ++i) {
+			// Get next newStPt as we calculate the hotspot region for every UI object
+			newStPt = guiObjs_Numeric[i].reCalcHotSpot(newStPt, textHeightOffset, uiClkRect[0], uiClkRect[2]);			
+		}
 		//Make a smaller padding amount for final row
-		uiClkCoords[3] =  stPt.y - .5f*textHeightOffset;
+		uiClkRect[3] =  newStPt.y - .5f*textHeightOffset;
 		// return final y coordinate
-		return uiClkCoords[3];
+		return uiClkRect[3];
 	}//_buildGUIObjsForMenu
 	
 	
 	/**
 	 * Build the renderer for a UI object 
 	 * @param _owner
-	 * @param _corners upper left (idx0) and lower right (idx1) corners of clickable hotspot
 	 * @param _start
 	 * @param _end
 	 * @param _off
@@ -629,16 +735,15 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	private Base_GUIObjRenderer buildRenderer(
 			Base_GUIObj _owner, 
-			myPointf[] _corners,
 			double[] _off,
 			float _menuWidth,
 			int[] _strkClr, 
 			int[] _fillClr, 
 			boolean[] guiFormatBoolVals) {	
 		if (guiFormatBoolVals[0]) {
-			return new MultiLineGUIObjRenderer(ri, _owner, _corners[0], _corners[1], _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
+			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
 		} else {
-			return new SingleLineGUIObjRenderer(ri, _owner, _corners[0], _corners[1], _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);			
+			return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);			
 		}
 	}
 	
@@ -661,7 +766,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	private void _buildAllObjects(
 			String[] guiObjNames, 
-			myPointf[][] corners, 
 			double[][] guiMinMaxModVals, 
 			double[] guiStVals, 
 			boolean[][] guiBoolVals,
@@ -676,7 +780,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			switch(guiObjTypes[i]) {
 				case IntVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
@@ -684,13 +788,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 					++numListObjs;
 					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], 
 							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i],corners[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
@@ -1005,8 +1109,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * calculate button length
 	 */
-	private static final float ltrLen = 5.0f;private static final int btnStep = 5;
-	private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((MyMathUtils.max(tStr.length(), fStr.length())+4) * ltrLen)/btnStep);}
+	//private static final float ltrLen = 5.0f;private static final int btnStep = 5;
+	//private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((MyMathUtils.max(tStr.length(), fStr.length())+4) * ltrLen)/btnStep);}
+	private float _calcBtnLength(String tStr, String fStr){return MyMathUtils.max(ri.textWidth(tStr), ri.textWidth(fStr));}
 	
 	private void _setBtnDims(int idx, float xStart, float yEnd, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {xStart+oldBtnLen, yEnd, btnLen, AppMgr.getTextHeightOffset() };}
 	
@@ -1014,7 +1119,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
 	 * @param tmpBtnNamesArray arraylist of object arrays, each entry in object array holding a true string, a false string and an integer idx for the button
 	 */	
-	private float _buildAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray, float[] uiClkCoords) {
+	private float _buildAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray, float[] uiClkRect) {
 		// finalize setup for UI toggle buttons - convert to arrays
 		truePrivFlagLabels = new String[tmpBtnNamesArray.size()];
 		falsePrivFlagLabels = new String[truePrivFlagLabels.length];
@@ -1025,7 +1130,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			falsePrivFlagLabels[i] = (String) tmpAra[1];
 			privModFlgIdxs[i] = (int) tmpAra[2];
 		}
-		return _buildPrivBtnRects(0, truePrivFlagLabels.length, uiClkCoords);
+		return _buildPrivBtnRects(0, truePrivFlagLabels.length, uiClkRect);
 	}//_buildAllPrivButtons
 	
 	/**
@@ -1033,11 +1138,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param yDisp displacement for button to be drawn
 	 * @param numBtns number of buttons to make
 	 */
-	private float _buildPrivBtnRects(float yDisp, int numBtns, float[] uiClkCoords){
+	private float _buildPrivBtnRects(float yDisp, int numBtns, float[] uiClkRect){
 		privFlagBtns = new float[numBtns][];
-		if (numBtns == 0) {	return uiClkCoords[3];	}
+		if (numBtns == 0) {	return uiClkRect[3];	}
 		float maxBtnLen = 0.95f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
-		uiClkCoords[3] += getTextHeightOffset();
+		uiClkRect[3] += getTextHeightOffset();
 		float oldBtnLen = 0;
 		boolean lastBtnHalfStLine = false, startNewLine = true;
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
@@ -1048,23 +1153,23 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
 					privFlagBtns[i-1][2] = maxBtnLen;
-					uiClkCoords[3] += getTextHeightOffset();
+					uiClkRect[3] += getTextHeightOffset();
 				}
-				_setBtnDims(i, uiClkCoords[0], uiClkCoords[3], 0, btnLen);
-				//privFlagBtns[i]= new float[] {(float)(uiClkCoords[0]-winInitVals.getXOffset()), (float) uiClkCoords[3], btnLen, yOff };				
-				uiClkCoords[3] += getTextHeightOffset();
+				_setBtnDims(i, uiClkRect[0], uiClkRect[3], 0, btnLen);
+				//privFlagBtns[i]= new float[] {(float)(uiClkRect[0]-winInitVals.getXOffset()), (float) uiClkRect[3], btnLen, yOff };				
+				uiClkRect[3] += getTextHeightOffset();
 				startNewLine = true;
 				lastBtnHalfStLine = false;
 			} else {//button len should be half width unless this button started a new line
 				btnLen = halfBtnLen;
 				if(startNewLine){//button is starting new line
 					lastBtnHalfStLine = true;
-					_setBtnDims(i, uiClkCoords[0], uiClkCoords[3], 0, btnLen);
+					_setBtnDims(i, uiClkRect[0], uiClkRect[3], 0, btnLen);
 					startNewLine = false;
 				} else {//should only get here if 2nd of two <1/2 width buttons in a row
 					lastBtnHalfStLine = false;
-					_setBtnDims(i, uiClkCoords[0], uiClkCoords[3], oldBtnLen, btnLen);
-					uiClkCoords[3] += getTextHeightOffset();
+					_setBtnDims(i, uiClkRect[0], uiClkRect[3], oldBtnLen, btnLen);
+					uiClkRect[3] += getTextHeightOffset();
 					startNewLine = true;					
 				}
 			}			
@@ -1072,11 +1177,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		}
 		if(lastBtnHalfStLine){//set last button full length if starting new line
 			privFlagBtns[numBtns-1][2] = maxBtnLen;
-			uiClkCoords[3] += getTextHeightOffset();
+			uiClkRect[3] += getTextHeightOffset();
 		}
-		uiClkCoords[3] += AppMgr.getRowStYOffset();
+		uiClkRect[3] += AppMgr.getRowStYOffset();
 		initPrivFlagColors();
-		return uiClkCoords[3];
+		return uiClkRect[3];
 	}//_buildPrivBtnRects
 	
 	/**
@@ -1243,6 +1348,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 					//Special per-obj float handling, if pertinent
 					setUI_FloatValsCustom(UIidx, val, origVal);
 				}
+				break;}
+			case labelVal : {
+				msgObj.dispWarningMessage(className, "setUIWinVals", "Attempting to process the value `" + guiObjs_Numeric[UIidx].getValueAsString()+"` from the `" + guiObjs_Numeric[UIidx].getName()+ "` label object.");				
 				break;}
 			case Button : {
 				msgObj.dispWarningMessage(className, "setUIWinVals", "Attempting to set a value for an unsupported Button UI object : " + objType.toStrBrf());
@@ -1578,7 +1686,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	protected final void drawGUIObjs(boolean isDebug, float animTimeMod) {
 		ri.pushMatState();	
-		if (isDebug) { 	for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}}
+		if (isDebug) { 	
+			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}
+			ri.setStrokeWt(2.0f);
+			ri.setNoFill();
+			ri.setColorValStroke(this.ID * 10, 255);
+			ri.drawRect(uiClkCoords[0], uiClkCoords[1], uiClkCoords[2]-uiClkCoords[0], uiClkCoords[3]-uiClkCoords[1]);
+		}
 		else {			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}}
 		ri.popMatState();	
 	}
@@ -1619,7 +1733,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		winInitVals.setWinFillWithStroke(ri);	
 		ri.showText(dispTxt, closeBox[0]-35, closeBox[1]+10);			
 	}
-	
+
+	/**
+	 * Draw the window minimized. Will show a bit of the window description along with the close/open box if available.
+	 */
 	private final void drawSmall(){
 		ri.pushMatState();
 		ri.setBeginNoDepthTest();
@@ -1694,11 +1811,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	/**
 	 * separating bar for menu
-	 * @param uiClkCoords2
+	 * @param uiClkRect
 	 */
-	protected void drawSepBar(double uiClkCoords2) {
+	protected void drawSepBar(double uiClkRect) {
 		ri.pushMatState();
-			ri.translate(0,uiClkCoords2 + (.5f*AppMgr.getClkBoxDim()),0);
+			ri.translate(0,uiClkRect + (.5f*AppMgr.getClkBoxDim()),0);
 			ri.setFill(0,0,0,255);
 			ri.setStrokeWt(1.0f);
 			ri.setStroke(0,0,0,255);
@@ -1709,6 +1826,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * Draw UI data debug info
 	 * @param res UI debug data from dispMenu window
+	 * @param whether or not the global debug is enabled
 	 */
 	private final void drawOnScreenDebugText(String[] res, boolean isDebug) {
 		ri.pushMatState();			
@@ -1724,6 +1842,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		ri.popMatState();		
 	}//drawOnScreenText
 	
+	/**
+	 * Draw Right side menu text
+	 * @param modAmtMillis milliseconds since last frame started
+	 */
 	private void drawRightSideMenu(float modAmtMillis) {
 		ri.setFill(winInitVals.rtSideFillClr, winInitVals.rtSideFillClr[3]);//transparent black
 		if(dispFlags.getShowRtSideMenu()) {
@@ -1738,7 +1860,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			ri.drawRect(closedUIRtSideRecBox);
 		}		
 	}//drawRightSideMenu
-
+	
+	/**
+	 * Draw 3d windows that are currently displayed
+	 * @param modAmtMillis milliseconds since last frame started
+	 */
 	public final void draw3D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){return;}
 		float animTimeMod = modAmtMillis/1000.0f;
@@ -1758,7 +1884,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected final void moveTo2DRectCenter() {
 		ri.translate(winInitVals.rectDim[0] + (winInitVals.rectDim[2]*.5f), winInitVals.rectDim[1] + (winInitVals.rectDim[3]*.5f));
 	}	
-		
+	
+	/**
+	 * Draw 2d windows that are currently displayed
+	 * @param modAmtMillis milliseconds since last frame started
+	 */	
 	public final void draw2D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){drawSmall();return;}
 		ri.pushMatState();
@@ -1778,7 +1908,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 
 	
-	public void drawTraj3D(float animTimeMod,myPoint trans){
+	public void drawTraj3D(float animTimeMod, myPoint trans){
 		msgObj.dispWarningMessage("Base_DispWindow","drawTraj3D","I should be overridden in 3d instancing class");
 //			pa.pushMatState();	
 //			if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
@@ -2029,6 +2159,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
 		boolean mod = false;
+		//msgObj.dispConsoleDebugMessage(className, "handleMouseClick", String.format("Mouse click location @ [%d , %d]", mouseX, mouseY));
 		//check if trying to close or open the window via click, if possible
 		if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}		
 		boolean showWin = dispFlags.getShowWin();
@@ -2371,6 +2502,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected abstract boolean simMe(float modAmtSec);
 	protected abstract void stopMe();
 	protected abstract void setCamera_Indiv(float[] camVals);
+	/**
+	 * Draw window/application-specific functionality
+	 * @param animTimeMod # of milliseconds since last frame dividied by 1000
+	 */
 	protected abstract void drawMe(float animTimeMod);	
 	protected abstract void drawRightSideInfoBarPriv(float modAmtMillis);
 	protected abstract void drawOnScreenStuffPriv(float modAmtMillis);

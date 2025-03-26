@@ -28,11 +28,11 @@ public class GUI_AppWinVals {
 	public final String winDescr;
 	
 	/**
-	 * Window dimension when open
+	 * Window dimension when open - upper left x,y; width, height
 	 */
 	public float[] rectDim;
 	/**
-	 * Window dimension when closed
+	 * Window dimension when closed - upper left x,y; width, height
 	 */
 	public float[] rectDimClosed;	
 	/**

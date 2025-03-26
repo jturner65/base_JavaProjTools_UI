@@ -193,11 +193,11 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		String[] simLayoutToUseList = getSimLayoutToUseList();
 		tmpListObjVals.put(gIDX_LayoutToUse, simLayoutToUseList);	
 		
-		tmpUIObjArray.put(gIDX_LayoutToUse, uiObjInitAra_List(new double[]{0,simLayoutToUseList.length-1, 1.0f}, 0.0, "Sim Layout To Use", new boolean[]{true}));          				
-		tmpUIObjArray.put(gIDX_TimeStep, uiObjInitAra_Float(new double[]{0.00001f,10.0f,0.00001f}, 1.0*initDeltaT, "Sim Time Step", new boolean[]{true}));  
-		tmpUIObjArray.put(gIDX_FrameTimeScale, uiObjInitAra_Float(new double[]{1.0f,10000.0f,1.0f}, 1.0*initFrameTimeScale, "Sim Speed Multiplier", new boolean[]{true}));  
-		tmpUIObjArray.put(gIDX_ExpLength, uiObjInitAra_Int(new double[]{1.0f, 1440, 1.0f}, 720.0, "Experiment Duration", new boolean[]{true}));    
-		tmpUIObjArray.put(gIDX_NumExpTrials, uiObjInitAra_Int(new double[]{1.0f, 100, 1.0f}, 1.0, "# Experimental Trials", new boolean[]{true}));  
+		tmpUIObjArray.put(gIDX_LayoutToUse, uiObjInitAra_List(new double[]{0,simLayoutToUseList.length-1, 1.0f}, 0.0, "Sim Layout To Use"));          				
+		tmpUIObjArray.put(gIDX_TimeStep, uiObjInitAra_Float(new double[]{0.00001f,10.0f,0.00001f}, 1.0*initDeltaT, "Sim Time Step"));  
+		tmpUIObjArray.put(gIDX_FrameTimeScale, uiObjInitAra_Float(new double[]{1.0f,10000.0f,1.0f}, 1.0*initFrameTimeScale, "Sim Speed Multiplier"));  
+		tmpUIObjArray.put(gIDX_ExpLength, uiObjInitAra_Int(new double[]{1.0f, 1440, 1.0f}, 720.0, "Experiment Duration"));    
+		tmpUIObjArray.put(gIDX_NumExpTrials, uiObjInitAra_Int(new double[]{1.0f, 100, 1.0f}, 1.0, "# Experimental Trials"));  
 		
 		setupGUIObjsAras_Sim(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras

@@ -30,8 +30,18 @@ public class MenuGUIObj_Int extends Base_NumericGUIObj {
 		if (oldVal != val) {setIsDirty(true);}		
 		return val;		
 	}
-
+	
+	/**
+	 * Set a new modifier value to use for this object : Mod values for list objects will always be 1
+	 * @param _unused
+	 */
 	@Override
-	protected String getValueAsString(double _val) {	return String.format("%.0f",_val);}
+	public final void setNewMod(double _unused){	
+		modMult = 1.0;
+		formatStr = "%.0f";
+	}
+	
+	@Override
+	protected final String getValueAsString(double _val) {	return String.format(formatStr,_val);}
 
 }//class myGUIObj_Int

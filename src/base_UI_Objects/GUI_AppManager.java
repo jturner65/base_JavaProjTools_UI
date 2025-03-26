@@ -888,14 +888,34 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _inclMseOvValues include a row for possible mouse over values
 	 */
 	public final void buildSideBarMenu(String[] _winTitles, String[] _funcRowNames, String[][] _funcBtnNames, String[] _dbgBtnNames, boolean _inclWinNames, boolean _inclMseOvValues){
+		 /** @param _winIdx the window's idx
+		 * @param _strVals an array holding the window title(idx 0) and the window description(idx 1)
+		 * @param _flags an array holding boolean values for idxs : 
+		 * 		0 : dispWinIs3d, 
+		 * 		1 : canDrawInWin; 
+		 * 		2 : canShow3dbox (only supported for 3D); 
+		 * 		3 : canMoveView
+		 * @param _floatVals an array holding float arrays for 
+		 * 				rectDimOpen(idx 0),
+		 * 				rectDimClosed(idx 1),
+		 * 				initCameraVals(idx 2)
+		 * @param _intVals and array holding int arrays for
+		 * 				winFillClr (idx 0),
+		 * 				winStrkClr (idx 1),
+		 * 				winTrajFillClr(idx 2),
+		 * 				winTrajStrkClr(idx 3),
+		 * 				rtSideFillClr(idx 4),
+		 * 				rtSideStrkClr(idx 5)
+		 * @param _sceneCenterVal center of scene, for drawing objects
+		 * @param _initSceneFocusVal initial focus target for camera
+		 */
 		winInitVals[dispMenuIDX] = new GUI_AppWinVals(dispMenuIDX, new String[] {"UI Window", "User Controls"}, new boolean[4],
 				new float[][] {new float[]{0,0, menuWidth, viewHeight}, new float[]{0,0, hideWinWidth, viewHeight},getInitCameraValues()},
 				new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,200},new int[]{255,255,255,255}},
 				sceneOriginValsBase[0], sceneFcsValsBase[0]);
 		_winTitles[0] = "UI Window";
-		int wIdx = dispMenuIDX;
 		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(_funcRowNames, _funcBtnNames, _dbgBtnNames, _winTitles, _inclWinNames, _inclMseOvValues);
-		dispWinFrames[wIdx] = new SidebarMenu(ri, this, wIdx, sideBarConfig);		
+		dispWinFrames[dispMenuIDX] = new SidebarMenu(ri, this, dispMenuIDX, sideBarConfig);		
 	}
 	
 	/**
@@ -1220,7 +1240,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	/**
 	 * sim loop, called from IRenderInterface draw method
-	 * @param modAmtMillis
+	 * @param modAmtMillis milliseconds since last frame started
 	 */
 	public boolean execSimDuringDrawLoop(float modAmtMillis) {
 		//simulation section
@@ -1244,6 +1264,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	/**
 	 * main draw loop
+	 @param modAmtMillis milliseconds since last frame started
 	 */
 	public final void drawMainWinAndCanvas(float modAmtMillis){
 		ri.pushMatState();
@@ -1274,14 +1295,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	/**
 	 * Individual extending Application Manager post-drawMe functions
-	 * @param modAmtMillis
+	 * @param modAmtMillis milliseconds since last frame started
 	 * @param is3DDraw
 	 */
 	protected abstract void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw);
 
 	/**
 	 * Draw 3d windows that are currently displayed
-	 * @param modAmtMillis
+	 * @param modAmtMillis milliseconds since last frame started
 	 */
 	private final void draw3D(float modAmtMillis){
 		for(int i =1; i<numDispWins; ++i){
@@ -1295,15 +1316,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	/**
 	 * Draw 2d windows that are currently displayed but not sidebar menu, which is drawn via drawUI()
-	 * @param modAmtMillis
+	 * @param modAmtMillis milliseconds since last frame started
 	 */
 	
 	public final void draw2D(float modAmtMillis) {
 		for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(dispWinFrames[i].getIs3DWindow())){dispWinFrames[i].draw2D(modAmtMillis);}}
 	}
 	/**
-	 * 
-	 * @param modAmtMillis
+	 * Draw UI components on screen surface
+	 * @param modAmtMillis milliseconds since last frame started
 	 */
 	private final void drawUI(float modAmtMillis){	
 		boolean shouldDrawOnscreenText = (isDebugMode() || showInfo);
@@ -1315,9 +1336,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 					modAmtMillis);}
 		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
 		dispWinFrames[dispMenuIDX].drawHeader(new String[0], false, isDebugMode(), modAmtMillis);
-//		if(isDebugMode() || showInfo){
-//			dispWinFrames[curFocusWin].drawOnScreenText(dispWinFrames[dispMenuIDX].getDebugData(), isDebugMode());		
-//		}
 		dispWinFrames[curFocusWin].updateConsoleStrs();	
 	}//drawUI
 	
