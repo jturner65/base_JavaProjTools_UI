@@ -440,7 +440,7 @@ public class SidebarMenu extends Base_DispWindow{
 	protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld){		return false;	}
 	@Override
 	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
-		if(!pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
+		if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
 		int i = (int)((mouseY-(initBtnLblYOff + clkFlgsStY))/(initTextHeightOff));					//TODO Awful - needs to be recalced, dependent on menu being on left
 		//msgObj.dispInfoMessage(className, "hndlMouseClick_Indiv", "Clicked on disp windows : i : " + i+"|uiClkCoords[1] = "+uiClkCoords[1]+" | minBtnClkY :"+minBtnClkY);
 		

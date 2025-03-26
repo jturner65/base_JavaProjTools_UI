@@ -17,6 +17,7 @@ import base_UI_Objects.windowUI.uiObjs.ScrollBars;
 import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_DispValue;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Float;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Int;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_List;
@@ -70,7 +71,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * class name of instancing class
 	 */
-	public final String className;
+	protected final String className;
 	
 	public final int ID;	
 	private static int winCnt = 0;
@@ -160,7 +161,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public float[] uiClkCoords;												//
 											
 	/**
-	 * array lists of idxs for float-based UI objects
+	 * array lists of idxs for float-based UI objects.
 	 */
 	private ArrayList<Integer> guiFloatValIDXs;
 	
@@ -168,6 +169,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * array lists of idxs for integer/list-based objects
 	 */
 	private ArrayList<Integer> guiIntValIDXs;
+	/**
+	 * array lists of idxs for label/read-only objects
+	 */	
+	private ArrayList<Integer> guiLabelValIDXs;
 	
 	/**
 	 * Boolean array of default behavior boolean values, if formatting is not otherwise specified
@@ -414,6 +419,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//initialize arrays to hold idxs of int and float items being created.
 		guiFloatValIDXs = new ArrayList<Integer>();
 		guiIntValIDXs = new ArrayList<Integer>();
+		guiLabelValIDXs = new ArrayList<Integer>();
 		if (!isMenu) {
 			// list box values - keyed by list obj IDX, value is string array of list obj values
 			TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
@@ -798,6 +804,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
+				case labelVal :{
+					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], UI_off, guiColors[i][0], guiColors[i][1]);					
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i].setRenderer(renderer);
+					guiLabelValIDXs.add(i);
+					break;}
 				case Button  :{
 					//TODO
 					msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
@@ -824,9 +836,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	private boolean _validateUIObjectIdx(int idx, int len, String calFunc, String desc) {
 		if (!MyMathUtils.inRange(idx, 0, len)){
-		msgObj.dispErrorMessage(className, calFunc, 
+			msgObj.dispErrorMessage(className, calFunc, 
 				"Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
-		return false;
+			return false;
 		}		
 		return true;
 	}
@@ -994,7 +1006,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	@Override
 	public final void checkSetBoolAndUpdate(int idx, boolean val) {
 		if((uiUpdateData != null) && uiUpdateData.checkAndSetBoolValue(idx, val)) {
-			updateCalcObjUIVals();
+			updateOwnerCalcObjUIVals();
 		}
 	}
 
@@ -1099,7 +1111,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected void setButtonLabels(int idx, String tLbl, String fLbl) {truePrivFlagLabels[idx] = tLbl;falsePrivFlagLabels[idx] = fLbl;}
 	
 	/**
-	 * set up child class button rectangles. Overrideable for nested windows
+	 * set up child class button rectangles. Override-able for nested windows
 	 */
 	protected void initUIBox(){		
 		float [] menuUIClkCoords = AppMgr.getUIRectVals(ID); 
@@ -1148,7 +1160,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
 			float btnLen = _calcBtnLength(truePrivFlagLabels[i].trim(),falsePrivFlagLabels[i].trim());
 			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
-			//pa.pr("_buildPrivBtnRects: i "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
+			//msgObj.dispDebugMessage(className, "_buildPrivBtnRects","i: "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
 			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
@@ -1326,7 +1338,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				int ival = guiObjs_Numeric[UIidx].valAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
-					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
 					//Special per-obj int handling, if pertinent
 					setUI_IntValsCustom(UIidx, ival, origVal);
 				}
@@ -1335,7 +1347,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				int ival = guiObjs_Numeric[UIidx].valAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
-					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
 					//Special per-obj int (list idx)-related handling, if pertinent
 					setUI_IntValsCustom(UIidx, ival, origVal);
 				}
@@ -1344,7 +1356,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				float val = guiObjs_Numeric[UIidx].valAsFloat();
 				float origVal = uiUpdateData.getFloatValue(UIidx);
 				if(checkAndSetFloatVal(UIidx, val)) {
-					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateCalcObjUIVals();}
+					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
 					//Special per-obj float handling, if pertinent
 					setUI_FloatValsCustom(UIidx, val, origVal);
 				}
@@ -1366,9 +1378,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Reset guiObj given by passed index to starting value
 	 * @param uiIdx
 	 */
-	protected final void resetUIObj(int uiIdx) {guiObjs_Numeric[uiIdx].resetToInit();setUIWinVals(uiIdx);}
-	
-	
+	protected final void resetUIObj(int uiIdx) {guiObjs_Numeric[uiIdx].resetToInit();setUIWinVals(uiIdx);}	
 	
 	/**
 	 * Called if int-handling guiObjs[UIidx] (int or list) has new data which updated UI adapter. 
@@ -2185,7 +2195,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			mod = hndlMouseClick_Indiv(mouseX, mouseY, mouseClickIn3D, mseBtn);
 		}			
 		//if still nothing then check for trajectory handling
-		if((!mod) && (pointInRectDim(mouseX, mouseY)) && (trajMgr != null)){ 
+		if((!mod) && (winInitVals.pointInRectDim(mouseX, mouseY)) && (trajMgr != null)){ 
 			mod = trajMgr.handleMouseClick_Traj(AppMgr.altIsPressed(), getMsePoint(mouseX, mouseY));
 		}			//click + alt for traj drawing : only allow drawing trajectory if it can be drawn and no other interaction has occurred
 		return mod;
@@ -2226,9 +2236,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			
 			if(null!=trajMgr) {	mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn);		}
 			if(!mod) {
-				if(!pointInRectDim(mouseX, mouseY)	
-						//!MyMathUtils.ptInRange(mouseX, mouseY, rectDim[0], rectDim[1], rectDim[0]+rectDim[2], rectDim[1]+rectDim[3]))
-						){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle
+				if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle	
 				//msgObj.dispDebugMessage("Base_DispWindow","handleMouseDrag","before handle indiv drag traj for window : " + this.name);
 				myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
 				mod = hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);		//handle specific, non-trajectory functionality for implementation of window
