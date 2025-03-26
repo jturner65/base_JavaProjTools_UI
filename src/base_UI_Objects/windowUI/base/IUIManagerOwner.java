@@ -16,7 +16,6 @@ public interface IUIManagerOwner {
 	 */
 	public String getClassName();
 	
-	
 	/**
 	 * This function is called on ui value update, to pass new ui values on to window-owned consumers
 	 */

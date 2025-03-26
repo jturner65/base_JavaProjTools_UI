@@ -132,6 +132,7 @@ public abstract class Base_GUIObj {
 		
 	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
 	public boolean shouldUpdateConsumer() {return !getConfigFlags(explicitUIDataUpdateIDX);}
+	protected boolean isUsedByWindow() {return getConfigFlags(usedByWinsIDX);}
 	
 	/**
 	 * Reset this object's value to its initial value
@@ -146,7 +147,7 @@ public abstract class Base_GUIObj {
 		boolean isDirty = getStateFlags(valChangedIDX);
 		//only clear once processed
 		if (isRelease){	setIsDirty(false);	}
-		return isDirty && ((isRelease || getConfigFlags(updateWhileModIDX)) && getConfigFlags(usedByWinsIDX));
+		return isDirty && ((isRelease || getConfigFlags(updateWhileModIDX)) && isUsedByWindow());
 	}
 	
 	/**

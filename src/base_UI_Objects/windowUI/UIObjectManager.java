@@ -734,7 +734,20 @@ public class UIObjectManager {
 		}//switch on obj type
 	}//setUIWinVals	
 	
-	
+	/**
+	 * Reset all values to be initial values. 
+	 * @param forceVals If true, this will bypass setUIWinVals, if false, will call set vals, to propagate changes to window vars 
+	 */
+	public final void resetUIVals(boolean forceVals){
+		for(int i=0; i<guiObjs_Numeric.length;++i){				guiObjs_Numeric[i].resetToInit();		}
+		if (!forceVals) {
+			setAllUIWinVals();
+		}
+	}//resetUIVals
+	/**
+	 * set all window values for UI objects
+	 */
+	protected final void setAllUIWinVals() {for(int i=0;i<guiObjs_Numeric.length;++i){if(guiObjs_Numeric[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
 	
 		
 	/**
