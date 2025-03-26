@@ -36,6 +36,16 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 	}
 	
 	/**
+	 * Set a new modifier value to use for this object : Mod values for list objects will always be 1
+	 * @param _unused
+	 */
+	@Override
+	public final void setNewMod(double _unused){	
+		modMult = 1.0;
+		formatStr = "%.0f";
+	}
+	
+	/**
 	 * Get this UI object's value as a string
 	 * @return
 	 */
@@ -52,7 +62,6 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 	public final String getListValStr(int idx) {
 		return getValueAsString(idx);
 	}// getListValStr
-
 	
 	/**
 	 * Set this list object's list of values
@@ -77,7 +86,6 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 			if(listVals[i].trim().equals(tok.trim())) {return i;}
 		}return -1;
 	}//getIDXofStringInArray
-	
 	
 	/**
 	 * set list to display passed token, if it exists, otherwise return -1

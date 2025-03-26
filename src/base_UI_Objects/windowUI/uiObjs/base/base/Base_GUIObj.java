@@ -1,9 +1,10 @@
 package base_UI_Objects.windowUI.uiObjs.base.base;
 
+import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 
 /**
- * Base class for interactable UI objects
+ * Base class for interactive UI objects
  * @author John Turner
  *
  */
@@ -19,7 +20,7 @@ public abstract class Base_GUIObj {
 	/**
 	 * Name/display label of object
 	 */
-	protected String name;	
+	protected final String name;	
 	/**
 	 * UI Object ID from owning window (index in holding container)
 	 */
@@ -29,6 +30,10 @@ public abstract class Base_GUIObj {
 	 */
 	protected String label;
 	/**
+	 * Original label given to object (for reset)
+	 */
+	protected final String origLabel;
+	/**
 	 * Type of this object
 	 */
 	protected final GUIObj_Type objType;	
@@ -36,23 +41,24 @@ public abstract class Base_GUIObj {
 	 * Flags structure to monitor/manage internal UI object state. No child class should access these directly
 	 */
 	private int[] uiStateFlags;
-	protected static final int 
+	private static final int 
 		debugIDX 			= 0,
 		showIDX				= 1,					//show this component
 		valChangedIDX   	= 2,					//object value is dirty/clean
-		rendererSetIDX 	= 3;					//whether or not the renderer has been built and assigned
-	protected static final int numStateFlags = 4;	// # of internal state booleans
+		rendererSetIDX 		= 3;					//whether or not the renderer has been built and assigned
+	private static final int numStateFlags = 4;	// # of internal state booleans
 	
 	/**
 	 * Flags structure to monitor/manage configurable behavior. No child class should access these directly
 	 */
 	private int[] uiConfigFlags;
-	protected static final int 
+	private static final int 
 		//config flags
 		usedByWinsIDX			= 0, 				// value is sent to window
 		updateWhileModIDX 		= 1,				// value is sent to window on any change, not just release
-		explicitUIDataUpdateIDX = 2;				// if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
-	protected static final int numConfigFlags = 3;			// # of config flags		
+		explicitUIDataUpdateIDX = 2,				// if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
+		objectIsReadOnlyIDX		= 3;			 	// ui object is not user-modifiable, just read only
+	private static final int numConfigFlags = 4;			// # of config flags		
 	
 	/**
 	 * Renderer for this object
@@ -73,7 +79,8 @@ public abstract class Base_GUIObj {
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
-		label = name.length() > 0 ? name + " : " : ("");
+		setLabelFromName();
+		origLabel = label;
 		//type of object
 		objType = _objType;
 		//UI Object state
@@ -83,12 +90,19 @@ public abstract class Base_GUIObj {
 		
 		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
 		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}
-	}	
-	
-	public final void setRenderer(Base_GUIObjRenderer _renderer) {
-		renderer = _renderer;
-		setStateFlags(rendererSetIDX, true);
 	}
+	
+	/**
+	 * Returns whether this UI object is ready to be used
+	 */
+	public boolean checkUIObjectStatus(){ 
+		return getStateFlags(rendererSetIDX) && checkUIObjectStatus_Indiv();
+	}
+	
+	/**
+	 * Instance-specific check for whether this UI object is ready to be used
+	 */
+	protected abstract boolean checkUIObjectStatus_Indiv();
 	
 	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
 	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
@@ -111,7 +125,8 @@ public abstract class Base_GUIObj {
 		switch (idx) {//special actions for each flag
 		case usedByWinsIDX				:{break;}
 		case updateWhileModIDX			:{break;}
-		case explicitUIDataUpdateIDX 	:{break;}		
+		case explicitUIDataUpdateIDX 	:{break;}	
+		case objectIsReadOnlyIDX		:{break;}
 		}
 	}//setFlag	
 		
@@ -160,6 +175,20 @@ public abstract class Base_GUIObj {
 	 * @return
 	 */
 	public final GUIObj_Type getObjType() {return objType;}
+	
+	/**
+	 * Recalculate the renderer-managed interactive hotspot for this object
+	 * @param newStart the currently appropriate start location (upper left corner) for this hotspot
+	 * @param lineHeight the height of a line of text
+	 * @param menuStartX the x location on the screen for the beginning of the "menu" (i.e. UI region). 
+	 * For multi-line UI objects that may need to pop down to the next line
+	 * @param menuWidth the width of the "menu" (i.e. UI region). Used to test if a multi-line UI object will
+	 * fit in the desired menu area.
+	 * @return the next object's new start location
+	 */
+	public final myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {
+		return renderer.reCalcHotSpot(newStart, lineHeight, menuStartX, menuWidth);
+	}
 
 	/**
 	 * Set this UI object's value based on string tokens from file
@@ -208,6 +237,15 @@ public abstract class Base_GUIObj {
 	}//getStrFromUIObj
 	
 	/**
+	 * Assign the renderer to use to render this UI object (i.e. single line or multi-line)
+	 * @param _renderer
+	 */
+	public final void setRenderer(Base_GUIObjRenderer _renderer) {
+		renderer = _renderer;
+		setStateFlags(rendererSetIDX, true);
+	}
+		
+	/**
 	 * Return this object's label
 	 */
 	public final String getLabel() {return label;}
@@ -216,8 +254,37 @@ public abstract class Base_GUIObj {
 	 * set new display text for this UI object - doesn't change name
 	 * @param _str
 	 */
-	public final void setLabel(String _str) {	label = new String(""+_str + " : ");	}
+	public abstract void setLabel(String _str);
+	
+	/**
+	 * What to display if this UI object is single line
+	 * @return
+	 */
+	public final String getUIDispAsSingleLine() {
+		return label + getValueAsString();		
+	}
+	
+	/**
+	 * What to display if this UI object is multi line
+	 * @return
+	 */
+	public final String[] getUIDispAsMultiLine() {
+		return new String[] {label, getValueAsString()};		
+	}	
+	
+	/**
+	 * Standard label = name + ':' + value (added by instancing class)
+	 * TODO Change this format for multi-line UI objs?
+	 * @return
+	 */
+	public void setLabelFromName() {
+		setLabel(name);
+		//name.trim().length() > 0 ?(name + " : ") : ("");
+	}
 
+	/**
+	 * Return the constant name assigned to this object on creation
+	 */
 	public final String getName(){return name;}
 	
 	/**
@@ -246,7 +313,7 @@ public abstract class Base_GUIObj {
 		String[] valResAra = getStrDataForVal();
 		String[] tmpRes = new String[valResAra.length+4];
 		int idx = 0;
-		tmpRes[idx++] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " label : " + label;
+		tmpRes[idx++] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " label : `" + label+"`";
 		tmpRes[idx++] = renderer.getHotBoxLocString();
 		tmpRes[idx++] = "Treat as Int  : " + (objType == GUIObj_Type.IntVal);
 		for (String valStr : valResAra) {tmpRes[idx++] = valStr;}

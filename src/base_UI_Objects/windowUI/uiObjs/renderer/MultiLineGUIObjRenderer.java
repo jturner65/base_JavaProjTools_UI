@@ -13,22 +13,20 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	/**
 	 * @param _ri
 	 * @param _owner
-	 * @param _start
-	 * @param _end
 	 * @param _off
 	 * @param _strkClr
 	 * @param _fillClr
 	 * @param buildPrefix
 	 * @param matchLabelColor
 	 */
-	public MultiLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, myPointf _start, myPointf _end,
-			double[] _offset, float _menuWidth, int[] _strkClr, int[] _fillClr, boolean buildPrefix, boolean matchLabelColor) {
-		super(_ri, _owner, _start, _end, _offset, _menuWidth, _strkClr, _fillClr, buildPrefix, matchLabelColor, "Multi-Line");
+	public MultiLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, double[] _offset, 
+			float _menuWidth, int[] _strkClr, int[] _fillClr, boolean buildPrefix, boolean matchLabelColor) {
+		super(_ri, _owner, _offset, _menuWidth, _strkClr, _fillClr, buildPrefix, matchLabelColor, "Multi-Line");
 	}
 
 	@Override
 	protected void _drawUIData() {
-		ri.showTextAra(0,new String[] {owner.getLabel(), owner.getValueAsString()});	
+		ri.showTextAra(0, owner.getUIDispAsMultiLine());	
 	}
 	/**
 	 * Return the maximum width of the owning UI object in the display.
@@ -45,7 +43,7 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	}	
 	
 	/**
-	 * Recalculate the lower right locations of the hotspot for the owning UI object
+	 * Recalculate the lower right location of the hotspot for the owning UI object
 	 * Multi-line will be the width of the longest of either the label or the data, and 2 text lines high. 
 	 * Needs to be moved to a new line if will not fit in currently specified menuWidth
 	 * @param newStartPoint new upper left point proposal. Might be changed if moved to a new line

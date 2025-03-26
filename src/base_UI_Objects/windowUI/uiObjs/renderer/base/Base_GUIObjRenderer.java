@@ -68,9 +68,7 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	public Base_GUIObjRenderer (
 			IRenderInterface _ri,
-			Base_GUIObj _owner, 
-			myPointf _start, 
-			myPointf _end, 
+			Base_GUIObj _owner,
 			double[] _off,
 			float _menuWidth,
 			int[] _strkClr,
@@ -81,9 +79,6 @@ public abstract class Base_GUIObjRenderer {
 		ri=_ri;	
 		owner = _owner;
 		menuWidth = _menuWidth;
-		// upper left/lower right corners of hotbox for the owning UI object 
-		start = _start;
-		end = _end;
 		// stroke color and fill color of text
 		strkClr = _strkClr;
 		fillClr = _fillClr;
@@ -142,7 +137,7 @@ public abstract class Base_GUIObjRenderer {
 	protected abstract void _drawUIData();
 	
 	/**
-	 * Recalculate the lower right locations of the hotspot for the owning UI object
+	 * Recalculate the lower right location of the hotspot for the owning UI object
 	 * @param newStartPoint new upper left point
 	 * @param lineHeight the height of a single line of text
 	 * @param menuStart the x coord of the start of the menu region

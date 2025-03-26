@@ -21,14 +21,14 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * @param buildPrefix
 	 * @param matchLabelColor
 	 */
-	public SingleLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, myPointf _start, myPointf _end,
+	public SingleLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner,
 			double[] _offset, float _menuWidth, int[] _strkClr, int[] _fillClr, boolean buildPrefix, boolean matchLabelColor) {
-		super(_ri, _owner, _start, _end, _offset, _menuWidth, _strkClr, _fillClr, buildPrefix, matchLabelColor, "Single Line");
+		super(_ri, _owner, _offset, _menuWidth, _strkClr, _fillClr, buildPrefix, matchLabelColor, "Single Line");
 	}
 
 	@Override
 	protected void _drawUIData() {
-		ri.showText(owner.getLabel() + owner.getValueAsString(), 0,0);
+		ri.showText(owner.getUIDispAsSingleLine(), 0,0);
 	}
 		
 	/**
@@ -40,7 +40,7 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	}
 	
 	/**
-	 * Recalculate the lower right locations of the hotspot for the owning UI object.
+	 * Recalculate the lower right location of the hotspot for the owning UI object.
 	 * Single line always has same width.
 	 * @param newStartPoint new upper left point
 	 * @param lineHeight the height of a single line of text
@@ -51,7 +51,7 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	@Override
 	public myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {
 		start = new myPointf(newStart);
-		end = new myPointf(start.x + menuWidth, start.y + lineHeight, start.z);
+		end = new myPointf(menuWidth, start.y + lineHeight, start.z);
 		// return the next object's start location
 		return new myPointf(start.x, end.y, start.z);	
 	}
