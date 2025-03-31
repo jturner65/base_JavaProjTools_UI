@@ -496,6 +496,31 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected abstract void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);		
 	
 	/**
+	 * Build the object array that describes a label object
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Label(double initVal, String name) {
+		return uiObjInitAra_Label(initVal, name, dfltUIFmtVals);
+	}		
+	
+	/**
+	 * Build the object array that describes a integer object
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Label(double initVal, String name, boolean[] boolFmtVals) {
+		return new Object[] {new double[0], initVal, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, boolFmtVals};	
+	}
+	
+	/**
 	 * Build the object array that describes a integer object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
@@ -785,7 +810,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		for(int i =0; i< guiObjNames.length; ++i){
 			switch(guiObjTypes[i]) {
 				case IntVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], guiColors[i][0], guiColors[i][1]);
 					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
@@ -793,30 +818,30 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				case ListVal : {
 					++numListObjs;
 					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
+							guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
 					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], guiColors[i][0], guiColors[i][1]);
 					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
-				case labelVal :{
-					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], UI_off, guiColors[i][0], guiColors[i][1]);					
+				case LabelVal :{
+					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i], guiColors[i][0], guiColors[i][1]);					
 					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiLabelValIDXs.add(i);
 					break;}
 				case Button  :{
 					//TODO
-					msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
+					msgObj.dispWarningMessage(className, "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
 					break;
 				}
 				default : {
-					msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
+					msgObj.dispWarningMessage(className, "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
 					break;				
 				}
 			}
@@ -1361,7 +1386,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 					setUI_FloatValsCustom(UIidx, val, origVal);
 				}
 				break;}
-			case labelVal : {
+			case LabelVal : {
 				msgObj.dispWarningMessage(className, "setUIWinVals", "Attempting to process the value `" + guiObjs_Numeric[UIidx].getValueAsString()+"` from the `" + guiObjs_Numeric[UIidx].getName()+ "` label object.");				
 				break;}
 			case Button : {

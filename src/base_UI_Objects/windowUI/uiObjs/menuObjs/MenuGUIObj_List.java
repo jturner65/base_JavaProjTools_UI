@@ -9,31 +9,23 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 
 	/**
 	 * Build a list-based UI object
-	 * @param _ri render interface
 	 * @param _objID the index of the object in the managing container
 	 * @param _name the name/display label of the object
 	 * @param _minMaxMod the minimum and values this object can hold, and the base modifier amount
 	 * @param _initVal the initial value of this object
-	 * @param _flags any preset configuration flags
-	 * @param _off offset from label in x,y for placement of drawn ornamental box. make null for none
+	 * @param _flags any preset behavior flags
 	 * @param _listVals
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public MenuGUIObj_List(int _objID, String _name, double[] _minMaxMod, double _initVal, boolean[] _flags, double[] _off, String[] _listVals, int[] strkClr, int[] fillClr) {
-		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, _off, strkClr, fillClr);
+	public MenuGUIObj_List(int _objID, String _name, double[] _minMaxMod, double _initVal, boolean[] _flags, String[] _listVals, int[] strkClr, int[] fillClr) {
+		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, strkClr, fillClr);
 		setListVals(_listVals);
 	}
-	
+
+	//List objects use integers
 	@Override
-	public final double modVal(double mod){
-		double oldVal = val;
-		val += (mod*modMult);
-		val = Math.round(val);
-		val = forceBounds(val);
-		if (oldVal != val) {setIsDirty(true);}		
-		return val;		
-	}
+	protected final double modValAssign(double _val) {	return Math.round(_val);}
 	
 	/**
 	 * Set a new modifier value to use for this object : Mod values for list objects will always be 1
@@ -50,18 +42,14 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 	 * @return
 	 */
 	@Override
-	protected String getValueAsString(double _val) {
-		return listVals[(((int)_val) % listVals.length)];
-	}
+	protected String getValueAsString(double _val) {	return listVals[(((int)_val) % listVals.length)];}
 	
 	/**
 	 * return the string representation corresponding to the passed index in the list of this object's values, if any exist
 	 * @param idx index in list of value to retrieve
 	 * @return
 	 */
-	public final String getListValStr(int idx) {
-		return getValueAsString(idx);
-	}// getListValStr
+	public final String getListValStr(int idx) {	return getValueAsString(idx);}
 	
 	/**
 	 * Set this list object's list of values
@@ -77,14 +65,12 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 		double curVal = getVal();
 		setNewMax(listVals.length-1);
 		curVal = setVal(curVal);
-		return (int) curVal;
-		
+		return (int) curVal;		
 	}//setListVals
 	
 	public final int getIDXofStringInArray(String tok) {
-		for(int i=0;i<listVals.length;++i) {
-			if(listVals[i].trim().equals(tok.trim())) {return i;}
-		}return -1;
+		for(int i=0;i<listVals.length;++i) {if(listVals[i].trim().equals(tok.trim())) {return i;}}
+		return -1;
 	}//getIDXofStringInArray
 	
 	/**
@@ -97,6 +83,5 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 		if(idx >=0){		return new int[] {(int) setVal(idx), 0};}
 		return new int[] {idx, 1};
 	}
-
 
 }//class myGUIObj_List

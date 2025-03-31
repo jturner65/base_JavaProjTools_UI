@@ -48,7 +48,10 @@ public class UIObjectManager {
 	* array lists of idxs for integer/list-based objects
 	*/
 	private ArrayList<Integer> guiIntValIDXs;	
-	
+	/**
+	* array lists of idxs for integer/list-based objects
+	*/
+	private ArrayList<Integer> guiLabelValIDXs;		
 	/**
 	 * Numeric Gui Objects
 	 */
@@ -137,6 +140,7 @@ public class UIObjectManager {
 		//initialize arrays to hold idxs of int and float items being created.
 		guiFloatValIDXs = new ArrayList<Integer>();
 		guiIntValIDXs = new ArrayList<Integer>();
+		guiLabelValIDXs = new ArrayList<Integer>();
 		if (!isMenu) {
 			// list box values - keyed by list obj IDX, value is string array of list obj values
 			TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
@@ -170,6 +174,31 @@ public class UIObjectManager {
 		_buildUIUpdateStruct();
 		
 	}//_initAllGUIObjs
+	
+	/**
+	 * Build the object array that describes a label object
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Label(double initVal, String name) {
+		return uiObjInitAra_Label(initVal, name, dfltUIFmtVals);
+	}		
+	
+	/**
+	 * Build the object array that describes a integer object
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Label(double initVal, String name, boolean[] boolFmtVals) {
+		return new Object[] {new double[0], initVal, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, boolFmtVals};	
+	}
 	
 	/**
 	 * Build the object array that describes a integer object
@@ -304,7 +333,7 @@ public class UIObjectManager {
 	 */
 	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
 		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.ListVal,boolVals, boolFmtVals};	
-	}
+	}	
 	
 	/**
 	 * build ui objects from maps, keyed by ui object idx, with value being data
@@ -325,7 +354,6 @@ public class UIObjectManager {
 	 * @param tmpListObjVals : map of list object data
 	 * @param uiClkRect : 4-element array of upper corner x,y lower corner x,y coordinates for ui rectangular region
 	 * @return y coordinate for end of ui region
-	 * 
 	 */
 	private float _buildGUIObjsForMenu(
 			TreeMap<Integer, Object[]> tmpUIObjArray, 
@@ -382,7 +410,6 @@ public class UIObjectManager {
 			for (boolean val : formatAra) {
 				guiFormatBoolVals[i][idx++] = val;
 			}
-
 		}		
 		//build all objects using these values 
 		_buildAllObjects(guiObjNames, guiMinMaxModVals, 
@@ -395,15 +422,12 @@ public class UIObjectManager {
 			// Get next newStPt as we calculate the hotspot region for every UI object
 			newStPt = guiObjs_Numeric[i].reCalcHotSpot(newStPt, textHeightOffset, uiClkRect[0], uiClkRect[2]);			
 		}
-		
-		
 		//Make a smaller padding amount for final row
 		uiClkRect[3] =  newStPt.y - .5f*textHeightOffset;
 		// return final y coordinate
 		return uiClkRect[3];
 	}//_buildGUIObjsForMenu
-	
-	
+		
 	/**
 	 * Build the renderer for a UI object 
 	 * @param _owner
@@ -436,6 +460,7 @@ public class UIObjectManager {
 	/**
 	 * This will build objects sequentially using the values provided
 	 * @param guiObjNames name of each object
+	 * @param corners 2-element point array of upper left and lower right corners for object
 	 * @param guiMinMaxModVals array of 3 element arrays of min and max value and base modifier
 	 * @param guiStVals array of per-object initial values
 	 * @param guiBoolVals array of boolean flags describing each object's behavior
@@ -464,7 +489,7 @@ public class UIObjectManager {
 		for(int i =0; i< guiObjNames.length; ++i){
 			switch(guiObjTypes[i]) {
 				case IntVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], guiColors[i][0], guiColors[i][1]);
 					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
@@ -472,24 +497,30 @@ public class UIObjectManager {
 				case ListVal : {
 					++numListObjs;
 					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], UI_off, tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
+							guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
 					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], UI_off, guiColors[i][0], guiColors[i][1]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], guiColors[i][0], guiColors[i][1]);
 					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
+				case LabelVal :{
+					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i], guiColors[i][0], guiColors[i][1]);					
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i].setRenderer(renderer);
+					guiLabelValIDXs.add(i);
+					break;}
 				case Button  :{
 					//TODO
-					msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
+					msgObj.dispWarningMessage("UIObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
 					break;
 				}
 				default : {
-					msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
+					msgObj.dispWarningMessage("UIObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
 					break;				
 				}
 			}
