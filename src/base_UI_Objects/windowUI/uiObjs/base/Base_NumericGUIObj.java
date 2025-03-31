@@ -33,24 +33,21 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * Multiplier for modification
 	 */
 	protected double modMult;
+	
 	/**
 	 * Build a numeric value-based UI object
-	 * @param _ri render interface
 	 * @param _objID the index of the object in the managing container
 	 * @param _name the name/display label of the object
-	 * @param _start the upper left corner of the hot spot for this object
-	 * @param _end the lower right corner of the hot spot for this object
 	 * @param _minMaxMod the minimum and maximum values this object can hold, and the base modifier amount
 	 * @param _initVal the initial value of this object
 	 * @param _objType the type of UI object this is
-	 * @param _flags any preset configuration flags
-	 * @param _off offset from label in x,y for placement of drawn ornamental box. make null for none
+	 * @param _flags any preset behavior flags
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public Base_NumericGUIObj(int _objID, String _name,
-			double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] strkClr, int[] fillClr) {
-		super(_objID, _name, _objType, _flags, _off, strkClr, fillClr);
+	public Base_NumericGUIObj(int _objID, String _name,double[] _minMaxMod, double _initVal, 
+			GUIObj_Type _objType, boolean[] _flags, int[] strkClr, int[] fillClr) {
+		super(_objID, _name, _objType, _flags, strkClr, fillClr);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; setNewMod(_minMaxMod[2]);
 		origFormatStr = formatStr;
@@ -151,7 +148,21 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param mod
 	 * @return
 	 */
-	public abstract double modVal(double mod);
+	public final double modVal(double mod) {
+		double oldVal = val;
+		double newVal = val;
+		newVal += (mod*modMult);
+		val = forceBounds(modValAssign(newVal));
+		if (oldVal != val) {setIsDirty(true);}		
+		return val;	
+	}
+	
+	/**
+	 * Object-specific handling of modified value. (int/list objects will round, display-only will force to be original val)
+	 * @param _val
+	 * @return
+	 */
+	protected abstract double modValAssign(double _val);
 	
 	/**
 	 * set new display text for this UI object - doesn't change name

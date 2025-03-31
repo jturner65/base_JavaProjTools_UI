@@ -16,8 +16,8 @@ public class MenuGUIObj_DispValue extends Base_NumericGUIObj {
 	 * @param _strkClr
 	 * @param _fillClr
 	 */
-	public MenuGUIObj_DispValue(int _objID, String _name, double[] _minMaxMod, double _initVal, double[] _off, int[] _strkClr, int[] _fillClr) {
-		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.labelVal, new boolean[]{false, false, false},_off, _strkClr, _fillClr);
+	public MenuGUIObj_DispValue(int _objID, String _name, double _initVal, int[] _strkClr, int[] _fillClr) {
+		super(_objID, _name, new double[] {-Double.MAX_VALUE, Double.MAX_VALUE, 0}, _initVal, GUIObj_Type.LabelVal, new boolean[]{false, false, false}, _strkClr, _fillClr);
 	}
 	
 	/**
@@ -30,11 +30,9 @@ public class MenuGUIObj_DispValue extends Base_NumericGUIObj {
 		formatStr = "%.0f";
 	}
 
+	//display only object ignores any mod so just return original val
 	@Override
-	public final double modVal(double mod) {
-		//display only - no mod
-		return val;
-	}
+	public final double modValAssign(double _notUsed) {	return val;}
 	
 	@Override
 	protected final String getValueAsString(double _val) {	return String.format(formatStr,_val);}

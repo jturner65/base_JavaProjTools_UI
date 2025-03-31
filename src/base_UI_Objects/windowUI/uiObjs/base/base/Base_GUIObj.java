@@ -70,12 +70,12 @@ public abstract class Base_GUIObj {
 	 * @param _objID the index of the object in the managing container
 	 * @param _name the name/display label of the object
 	 * @param _objType the type of UI object this is
-	 * @param _flags any preset configuration flags
+	 * @param _flags any preset behavior flags
 	 * @param _off offset before text
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public Base_GUIObj(int _objID, String _name, GUIObj_Type _objType, boolean[] _flags, double[] _off, int[] _strkClr, int[] _fillClr){
+	public Base_GUIObj(int _objID, String _name, GUIObj_Type _objType, boolean[] _flags, int[] _strkClr, int[] _fillClr){
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;
