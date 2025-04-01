@@ -756,8 +756,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param _end
 	 * @param _off
 	 * @param _menuWidth max width of menu
-	 * @param _strkClr
-	 * @param _fillClr
+	 * @param _colors : index 0 is stroke, index 1 is fill
 	 * @param guiFormatBoolVals array of boolean flags describing how the object should be constructed
 	 * 				idx 0 : Should be multiline
 	 * 				idx 1 : Should have ornament
@@ -768,9 +767,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			Base_GUIObj _owner, 
 			double[] _off,
 			float _menuWidth,
-			int[] _strkClr, 
-			int[] _fillClr, 
-			boolean[] guiFormatBoolVals) {	
+			int[][] _colors, 
+			boolean[] guiFormatBoolVals) {
+		
+		int[] _strkClr = _colors[0];
+		int[] _fillClr= _colors[1]; 
 		if (guiFormatBoolVals[0]) {
 			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
 		} else {
@@ -810,28 +811,27 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		for(int i =0; i< guiObjNames.length; ++i){
 			switch(guiObjTypes[i]) {
 				case IntVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case ListVal : {
 					++numListObjs;
-					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i));
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
 				case LabelVal :{
-					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i], guiColors[i][0], guiColors[i][1]);					
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i]);					
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiLabelValIDXs.add(i);
 					break;}

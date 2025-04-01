@@ -41,6 +41,13 @@ public class UIObjectManager {
 	 */
 	protected MessageObject msgObj;
 	/**
+	 * subregion of window where UI objects may be found
+	 * Idx 0,1 : Upper left corner x,y
+	 * Idx 2,3 : Lower right corner x,y
+	 */
+	public float[] uiClkCoords;
+	
+	/**
 	* array lists of idxs for float-based UI objects
 	*/
 	private ArrayList<Integer> guiFloatValIDXs;
@@ -182,7 +189,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Label(double initVal, String name) {
+	public final Object[] uiObjInitAra_Label(double initVal, String name) {
 		return uiObjInitAra_Label(initVal, name, dfltUIFmtVals);
 	}		
 	
@@ -196,7 +203,7 @@ public class UIObjectManager {
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Label(double initVal, String name, boolean[] boolFmtVals) {
+	public final Object[] uiObjInitAra_Label(double initVal, String name, boolean[] boolFmtVals) {
 		return new Object[] {new double[0], initVal, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, boolFmtVals};	
 	}
 	
@@ -208,7 +215,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default behavior and UI format boolean values
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name) {
+	public final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Int(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}	
 		
@@ -224,7 +231,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+	public final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
 		return uiObjInitAra_Int(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
 	}	
 	
@@ -243,7 +250,7 @@ public class UIObjectManager {
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
+	public final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
 		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.IntVal,boolVals, boolFmtVals};	
 	}
 	
@@ -255,7 +262,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default behavior and UI format boolean values
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name) {
+	public final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Float(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}
 	
@@ -271,7 +278,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+	public final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
 		return uiObjInitAra_Float(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
 	}
 	
@@ -287,7 +294,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
+	public final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
 		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.FloatVal,boolVals, boolFmtVals};	
 	}
 
@@ -299,7 +306,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default behavior and UI format boolean values
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name) {
+	public final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_List(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}
 	
@@ -315,7 +322,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+	public final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
 		return uiObjInitAra_List(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
 	}	
 	
@@ -331,7 +338,7 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	protected final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
+	public final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
 		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.ListVal,boolVals, boolFmtVals};	
 	}	
 	
@@ -435,8 +442,7 @@ public class UIObjectManager {
 	 * @param _end
 	 * @param _off
 	 * @param _menuWidth max width of menu
-	 * @param _strkClr
-	 * @param _fillClr
+	 * @param _colors : index 0 is stroke, index 1 is fill
 	 * @param guiFormatBoolVals array of boolean flags describing how the object should be constructed
 	 * 				idx 0 : Should be multiline
 	 * 				idx 1 : Should have ornament
@@ -447,9 +453,11 @@ public class UIObjectManager {
 			Base_GUIObj _owner, 
 			double[] _off,
 			float _menuWidth,
-			int[] _strkClr, 
-			int[] _fillClr, 
-			boolean[] guiFormatBoolVals) {	
+			int[][] _colors, 
+			boolean[] guiFormatBoolVals) {
+		
+		int[] _strkClr = _colors[0];
+		int[] _fillClr= _colors[1]; 
 		if (guiFormatBoolVals[0]) {
 			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
 		} else {
@@ -489,28 +497,27 @@ public class UIObjectManager {
 		for(int i =0; i< guiObjNames.length; ++i){
 			switch(guiObjTypes[i]) {
 				case IntVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case ListVal : {
 					++numListObjs;
-					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], 
-							guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i), guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i));
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], guiColors[i][0], guiColors[i][1]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
 				case LabelVal :{
-					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i], guiColors[i][0], guiColors[i][1]);					
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i][0], guiColors[i][1], guiFormatBoolVals[i]);
+					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i]);					
+					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
 					guiObjs_Numeric[i].setRenderer(renderer);
 					guiLabelValIDXs.add(i);
 					break;}
