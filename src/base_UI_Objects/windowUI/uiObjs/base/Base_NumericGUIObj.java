@@ -43,7 +43,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset behavior flags
 	 */
-	public Base_NumericGUIObj(int _objID, String _name,double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags) {
+	public Base_NumericGUIObj(int _objID, String _name, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags) {
 		super(_objID, _name, _objType, _flags);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; setNewMod(_minMaxMod[2]);
@@ -145,12 +145,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @return
 	 */
 	public final double modVal(double mod) {
-		double oldVal = val;
-		double newVal = val;
-		newVal += (mod*modMult);
-		val = forceBounds(modValAssign(newVal));
-		if (oldVal != val) {setIsDirty(true);}		
-		return val;	
+		return setVal(modValAssign(val + (mod*modMult)));
 	}
 	
 	/**

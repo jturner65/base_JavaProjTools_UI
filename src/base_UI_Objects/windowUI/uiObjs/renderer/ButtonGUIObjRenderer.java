@@ -5,7 +5,7 @@ package base_UI_Objects.windowUI.uiObjs.renderer;
 
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.Base_ButtonGUIObj;
+import base_UI_Objects.windowUI.uiObjs.menuButtons.MenuGUIObj_Button;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 
 /**
@@ -33,14 +33,13 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 	 * @param _colors fill colors to render for each state
 	 * @param _txtColor color for outline and text
 	 */
-	@SuppressWarnings("unchecked")
-	public ButtonGUIObjRenderer(IRenderInterface _ri, Base_ButtonGUIObj<E> _owner, double[] _off, float _menuWidth,
+	public ButtonGUIObjRenderer(IRenderInterface _ri, MenuGUIObj_Button _owner, double[] _off, float _menuWidth,
 			int[][] _colors, int[] _txtColor) {
 		super(_ri, _owner, _off, _menuWidth, _txtColor, _txtColor,false, false, "Button Renderer");
 		colors = new int[_colors.length][];
 		for(int i=0;i<_colors.length; ++i) {	colors[i] = _colors[i];		}
 		float longLbl = 0, curLblLen;
-		String[] stateLabels = ((Base_ButtonGUIObj<E>) owner).getStateLabels();
+		String[] stateLabels = ((MenuGUIObj_Button) owner).getStateLabels();
 		for(String label : stateLabels) {
 			curLblLen = ri.textWidth(label);
 			longLbl = (longLbl < curLblLen ? curLblLen : longLbl);
@@ -50,9 +49,8 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 		numBtnsPerLine = 2.0f;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected int[] getStateColor() {
-		return colors[((Base_ButtonGUIObj<E>) owner).getStateOrdinal()];
+		return colors[((MenuGUIObj_Button) owner).getState()];
 	}
 
 	@Override
@@ -66,6 +64,7 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 		ri.popMatState();
 		ri.showText(owner.getLabel(), 0, 0);
 	}
+	
 	/**
 	 * Recalculate the lower right location of the hotspot for the owning UI object
 	 * Button obj will be the width of the label, and 1 text line high. 
