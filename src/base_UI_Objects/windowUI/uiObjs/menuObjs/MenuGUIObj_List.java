@@ -15,11 +15,9 @@ public class MenuGUIObj_List extends Base_NumericGUIObj {
 	 * @param _initVal the initial value of this object
 	 * @param _flags any preset behavior flags
 	 * @param _listVals
-	 * @param strkClr stroke color of text
-	 * @param fillClr fill color around text
 	 */
-	public MenuGUIObj_List(int _objID, String _name, double[] _minMaxMod, double _initVal, boolean[] _flags, String[] _listVals, int[] strkClr, int[] fillClr) {
-		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags, strkClr, fillClr);
+	public MenuGUIObj_List(int _objID, String _name, double[] _minMaxMod, double _initVal, boolean[] _flags, String[] _listVals) {
+		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.ListVal, _flags);
 		setListVals(_listVals);
 	}
 

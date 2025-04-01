@@ -72,10 +72,8 @@ public abstract class Base_GUIObj {
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset behavior flags
 	 * @param _off offset before text
-	 * @param strkClr stroke color of text
-	 * @param fillClr fill color around text
 	 */
-	public Base_GUIObj(int _objID, String _name, GUIObj_Type _objType, boolean[] _flags, int[] _strkClr, int[] _fillClr){
+	public Base_GUIObj(int _objID, String _name, GUIObj_Type _objType, boolean[] _flags){
 		objID = _objID;
 		ID = GUIObjID++;
 		name = _name;

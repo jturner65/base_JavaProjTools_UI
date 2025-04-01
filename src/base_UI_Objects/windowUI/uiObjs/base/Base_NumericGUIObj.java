@@ -42,12 +42,9 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @param _initVal the initial value of this object
 	 * @param _objType the type of UI object this is
 	 * @param _flags any preset behavior flags
-	 * @param strkClr stroke color of text
-	 * @param fillClr fill color around text
 	 */
-	public Base_NumericGUIObj(int _objID, String _name,double[] _minMaxMod, double _initVal, 
-			GUIObj_Type _objType, boolean[] _flags, int[] strkClr, int[] fillClr) {
-		super(_objID, _name, _objType, _flags, strkClr, fillClr);
+	public Base_NumericGUIObj(int _objID, String _name,double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags) {
+		super(_objID, _name, _objType, _flags);
 		
 		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; setNewMod(_minMaxMod[2]);
 		origFormatStr = formatStr;
@@ -90,8 +87,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * @return
 	 */
 	public final double getModStep(){return modMult;}	
-
-		
+	
 	/**
 	 * Make sure val adheres to specified bounds
 	 * @param _val

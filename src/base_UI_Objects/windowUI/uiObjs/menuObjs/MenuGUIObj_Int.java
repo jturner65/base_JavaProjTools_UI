@@ -15,8 +15,8 @@ public class MenuGUIObj_Int extends Base_NumericGUIObj {
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public MenuGUIObj_Int(int _objID, String _name, double[] _minMaxMod, double _initVal, boolean[] _flags, int[] strkClr, int[] fillClr) {
-		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.IntVal, _flags, strkClr, fillClr);
+	public MenuGUIObj_Int(int _objID, String _name, double[] _minMaxMod, double _initVal, boolean[] _flags) {
+		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.IntVal, _flags);
 	}
 	
 	//Integer values only
