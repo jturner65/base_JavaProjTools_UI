@@ -27,33 +27,58 @@ public abstract class Base_ButtonGUIObj<E extends Enum<E>> extends Base_GUIObj {
 	protected Class<E> enumType;
 
 	/**
+	 * List of labels to display for each enum state.
+	 */
+	protected final String[] stateLabels;
+	
+	/**
 	 * Build a boolean/multi-state button
 	 * @param _objID the index of the object in the managing container
 	 * @param _name the name/display label of the object
 	 * @param _enumType The enum class this button uses. Passed as <enum type name>.class
 	 * @param _initialState the initial state setting for this object
-	 * @param _objType the type of UI object this is
 	 * @param _flags any preset behavior flags
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public Base_ButtonGUIObj(int _objID, String _name, Class<E>_enumType, E _initialState, GUIObj_Type _objType, boolean[] _flags, int[] strkClr, int[] fillClr) {		
-		super(_objID, _name, _objType, _flags, strkClr, fillClr);
+	public Base_ButtonGUIObj(int _objID, String _name, Class<E>_enumType, E _initialState, boolean[] _flags, String[] _stateLabels) {		
+		super(_objID, _name, GUIObj_Type.Button, _flags);
 		state = _initialState;
 		initialState = state;
 		enumType = _enumType;
+		stateLabels = _stateLabels;
 	}//ctor
 	
 	@Override
-	public void resetToInit() {
-		state=initialState;
+	public void resetToInit() {	state=initialState;}
+
+	/**
+	 * Set label to display for this button. 
+	 * @param _str ignored - value will be the string in stateLabels array corresponding to the current state
+	 */
+	@Override
+	public final void setLabel(String _str) {label = stateLabels[state.ordinal()];}
+		
+	/**
+	 * Return this object's label - update the label based on the current state
+	 */
+	@Override
+	public String getLabel() {
+		setLabel("");
+		return label;
 	}
 
+	public final String[] getStateLabels() {		return stateLabels;	}
+	
 	@Override
-	protected void setValueFromString(String enumStr) {
+	protected final void setValueFromString(String enumStr) {
 		state = Enum.valueOf(enumType, enumStr);
 	}
 
+	public final int getStateOrdinal() {	return state.ordinal();}
+	
+	
+	
 	@Override
 	public String getValueAsString() {
 		return "" + state;

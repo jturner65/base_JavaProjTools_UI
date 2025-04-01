@@ -247,7 +247,7 @@ public abstract class Base_GUIObj {
 	/**
 	 * Return this object's label
 	 */
-	public final String getLabel() {return label;}
+	public String getLabel() {return label;}
 	
 	/**
 	 * set new display text for this UI object - doesn't change name
@@ -260,7 +260,7 @@ public abstract class Base_GUIObj {
 	 * @return
 	 */
 	public final String getUIDispAsSingleLine() {
-		return label + getValueAsString();		
+		return getLabel() + getValueAsString();		
 	}
 	
 	/**
@@ -268,7 +268,7 @@ public abstract class Base_GUIObj {
 	 * @return
 	 */
 	public final String[] getUIDispAsMultiLine() {
-		return new String[] {label, getValueAsString()};		
+		return new String[] {getLabel(), getValueAsString()};		
 	}	
 	
 	/**
@@ -312,7 +312,7 @@ public abstract class Base_GUIObj {
 		String[] valResAra = getStrDataForVal();
 		String[] tmpRes = new String[valResAra.length+4];
 		int idx = 0;
-		tmpRes[idx++] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " label : `" + label+"`";
+		tmpRes[idx++] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " label : `" + getLabel()+"`";
 		tmpRes[idx++] = renderer.getHotBoxLocString();
 		tmpRes[idx++] = "Treat as Int  : " + (objType == GUIObj_Type.IntVal);
 		for (String valStr : valResAra) {tmpRes[idx++] = valStr;}

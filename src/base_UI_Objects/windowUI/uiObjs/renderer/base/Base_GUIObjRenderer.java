@@ -18,10 +18,14 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	private final Base_GUIPrefixObj _ornament;
 	/**
+	 * Text color value for main UI object label/text. 
+	 * For text rendering this is governed by fill (not stroke)
+	 */
+	protected int[] textClr = new int[] {0,0,0,255};
+	/**
 	 * Fill color value for main UI object
 	 */
-	protected int[] fillClr = new int[] {0,0,0,255};
-	
+	protected int[] fillClr = new int[] {0,0,0,255};	
 	/**
 	 * Stroke color value for main UI object
 	 */
@@ -53,18 +57,62 @@ public abstract class Base_GUIObjRenderer {
 	protected Base_GUIObj owner;
 	
 	private final String rendererType;
+
 	
 	/**
+	 * 
 	 * @param _ri render interface
-	 * @param _start the upper left corner of the hot spot for this object
-	 * @param _end the lower right corner of the hot spot for this object
-	 * @param _off offset before text
+	 * @param _owner Gui object that owns this renderer
+	 * @param _off offset for ornament
 	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
 	 * 						while multi line will be some fraction of this wide.
-	 * @param strkClr stroke color of text
-	 * @param fillClr fill color around text
-	 * @param buildPrefix whether to build a prefix ornament or not
-	 * @param matchLabelColor whether the built prefix ornament should match the object's color
+	 * @param _strkClr stroke color
+	 * @param _fillClr fill color
+	 * @param _textClr text color - specified in draw using setFill
+	 * @param buildPrefix whether to build prefix ornament
+	 * @param matchLabelColor whether prefix ornament should match label color
+	 * @param _rendererType whether single or multi line renderer
+	 */
+	public Base_GUIObjRenderer (
+			IRenderInterface _ri,
+			Base_GUIObj _owner,
+			double[] _off,
+			float _menuWidth,
+			int[] _strkClr,
+			int[] _fillClr,  
+			int[] _textClr,  
+			boolean buildPrefix, 
+			boolean matchLabelColor,
+			String _rendererType) {
+		ri=_ri;	
+		owner = _owner;
+		menuWidth = _menuWidth;
+		// stroke color, fill color, text color of text
+		strkClr = _strkClr;
+		fillClr = _fillClr;
+		textClr = _textClr;
+		//build prefix ornament to display
+		if (buildPrefix && (_off != null)) {
+			int[] prefixClr = (matchLabelColor ? textClr : ri.getRndClr());
+			_ornament = new GUI_PrefixObj(_off, prefixClr);
+		} else {
+			_ornament = new GUI_NoPrefixObj();
+		}
+		rendererType = _rendererType;
+	}
+	
+	/**
+	 * 
+	 * @param _ri render interface
+	 * @param _owner Gui object that owns this renderer
+	 * @param _off offset for ornament
+	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
+	 * 						while multi line will be some fraction of this wide.
+	 * @param _strkClr stroke color
+	 * @param _fillClr fill color
+	 * @param buildPrefix whether to build prefix ornament
+	 * @param matchLabelColor whether prefix ornament should match label color
+	 * @param _rendererType whether single or multi line renderer
 	 */
 	public Base_GUIObjRenderer (
 			IRenderInterface _ri,
@@ -76,20 +124,7 @@ public abstract class Base_GUIObjRenderer {
 			boolean buildPrefix, 
 			boolean matchLabelColor,
 			String _rendererType) {
-		ri=_ri;	
-		owner = _owner;
-		menuWidth = _menuWidth;
-		// stroke color and fill color of text
-		strkClr = _strkClr;
-		fillClr = _fillClr;
-		//build prefix ornament to display
-		if (buildPrefix && (_off != null)) {
-			int[] prefixClr = (matchLabelColor ? _fillClr : ri.getRndClr());
-			_ornament = new GUI_PrefixObj(_off, prefixClr);
-		} else {
-			_ornament = new GUI_NoPrefixObj();
-		}
-		rendererType = _rendererType;
+		this(_ri, _owner,_off, _menuWidth, _strkClr, _fillClr, _fillClr, buildPrefix, matchLabelColor, _rendererType);
 	}
 	
 	/**
@@ -112,9 +147,16 @@ public abstract class Base_GUIObjRenderer {
 			if(_cyanStroke) {ri.setStroke(0, 255, 255,255);} else {	ri.setStroke(255, 0, 255,255);}
 			ri.noFill();
 			//Draw rectangle around this object denoting active zone
-			ri.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);
+			_drawRectangle();
+			ri.drawLine(start.x, start.y,0, end.x, end.y, 0);
+			ri.drawLine(start.x, end.y,0, end.x, start.y, 0);
+			
 		ri.popMatState();
 		draw();
+	}
+	//Draw rectangle for object - debug, button, etc
+	protected void _drawRectangle() {
+		ri.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);
 	}
 	
 	/**
@@ -124,7 +166,8 @@ public abstract class Base_GUIObjRenderer {
 		ri.pushMatState();
 			ri.translate(start.x,start.y,0);
 			_ornament.drawPrefixObj(ri);
-			ri.setFill(fillClr,fillClr[3]);
+			//Text is colored by fill
+			ri.setFill(textClr,textClr[3]);
 			ri.setStroke(strkClr,strkClr[3]);	
 			//draw specifics for this UI object
 			_drawUIData();
