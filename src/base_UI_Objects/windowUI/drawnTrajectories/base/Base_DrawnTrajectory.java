@@ -827,7 +827,7 @@ public abstract class Base_DrawnTrajectory {
 		myPoint[] pts = getDrawnPtAra(false);
 		int minBnd = MyMathUtils.max(drawnTrajPickedIdx - drawnTrajEditWidth, 0),
 			maxBnd = MyMathUtils.min(drawnTrajPickedIdx + drawnTrajEditWidth, pts.length-1);		
-		//System.out.println("drag in drag zone inside disp calc -> idx bounds : " + minBnd + " | " + maxBnd);
+		//win.getMsgObj().dispInfoMessage("Base_DrawnTrajectory", "handleMouseDrag","Drag in drag zone inside disp calc -> idx bounds : " + minBnd + " | " + maxBnd);
 		float modAmt, invdistLow = 1.0f/(drawnTrajPickedIdx - minBnd), invdistHigh = 1.0f/(maxBnd - drawnTrajPickedIdx);
 		for(int idx = minBnd; idx < maxBnd; ++idx){
 			float divMultVal = (idx > drawnTrajPickedIdx) ? invdistHigh:invdistLow;
@@ -872,13 +872,13 @@ public abstract class Base_DrawnTrajectory {
 		int numPoints = pts.length;
 		//myPoint[] newPts = new myPoint[numPoints];
 		double dist;
-		//pa.outStr2Scr("cntlPts size at scalePointsAboveAxis : " + pts.length,true);
+		//win.getMsgObj().dispInfoMessage("Base_DrawnTrajectory","scalePointsAboveAxis","cntlPts size at scalePointsAboveAxis : " + pts.length,true);
 		for(int i =0; i<numPoints; ++i){
 			dist = MyMathUtils.distToLine(pts[i], a,b);
 			//if(Double.isNaN(dist)){dist = 0;}
 			myPoint pointOnLine = MyMathUtils.projectionOnLine(pts[i], a,b);
 			myVector resVec = myVector._mult(myVector._unit(pointOnLine,pts[i]),dist*scaleAmt);
-			//pa.outStr2Scr("cntlPts : st : dist*scale : "+ (dist*scaleAmt)+" dist : "+ (dist)+" scale : "+ (scaleAmt)+" stPoint : " + pts[i].toStrBrf() + " | linePt : " + pointOnLine.toStrBrf() + " | resVec : " +resVec.toStrBrf() ,true);
+			//win.getMsgObj().dispInfoMessage("Base_DrawnTrajectory","scalePointsAboveAxis","cntlPts : st : dist*scale : "+ (dist*scaleAmt)+" dist : "+ (dist)+" scale : "+ (scaleAmt)+" stPoint : " + pts[i].toStrBrf() + " | linePt : " + pointOnLine.toStrBrf() + " | resVec : " +resVec.toStrBrf() ,true);
 			pts[i].set(new myPoint(pointOnLine, resVec));
 		}
 	}

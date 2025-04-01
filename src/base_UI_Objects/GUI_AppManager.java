@@ -1050,6 +1050,22 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		if(isSlowProc) {win.getGuiBtnSt()[row][col] = 0;}		
 	}//clearBtnState 
 	
+	
+	/**
+	 * Get a list of the maximum click coordinates across every window
+	 * @return
+	 */
+	protected float[] getMaxUIClkCoords() {
+		float[] res = new float[] {0.0f,0.0f,0.0f,0.0f}, tmpCoords;
+		for (int winIDX : winDispIdxXOR) {
+			tmpCoords = dispWinFrames[winIDX].getUIClkCoords();
+			for(int i=0;i<tmpCoords.length;++i) {
+				if(res[i]<tmpCoords[i]) {res[i]=tmpCoords[i];}
+			}
+		}
+		return res;
+	}//getMaxUIClkCoords
+	
 	/**
 	 * only send names of function and debug btns (if they exist) in 2d array
 	 * @param btnNames
@@ -1147,7 +1163,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected void setMenuBtnState(int row, int col, int val) {
 		((SidebarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
 		if (val == 1) {
-			//outStr2Scr("my_procApplet :: setMenuBtnState :: Note!!! Turning on button at row : " + row + "  col " + col + " without button's command.");
+			//msgObj.dispConsoleWarningMessage("GUI_AppManager","setMenuBtnState","Note!!! Turning on button at row : " + row + "  col " + col + " without button's command.");
 			((SidebarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
 	}//setMenuBtnState	
 	
@@ -1823,7 +1839,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			//sidebar menu synthesizes its uiClickCoords in its constructor
 			case dispMenuIDX 		: {return new float[0];}			
 			default 	:{
-				return getUIRectVals_Indiv(idx, dispWinFrames[dispMenuIDX].uiClkCoords);
+				return getUIRectVals_Indiv(idx, dispWinFrames[dispMenuIDX].getUIClkCoords());
 			}
 		}
 	}//getUIRectVals

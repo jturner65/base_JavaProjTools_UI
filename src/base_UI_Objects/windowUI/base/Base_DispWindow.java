@@ -81,7 +81,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	protected final GUI_AppWinVals winInitVals;
 	
-	public float[] closeBox, mseClickCrnr;	
+	public float[] closeBox;	
 	//current visible screen width and height
 	public float[] curVisScrDims;
 	
@@ -158,7 +158,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Idx 0,1 : Upper left corner x,y
 	 * Idx 2,3 : Lower right corner x,y
 	 */
-	public float[] uiClkCoords;												//
+	protected float[] uiClkCoords;												//
 											
 	/**
 	 * array lists of idxs for float-based UI objects.
@@ -187,9 +187,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *  idx 1: if true, build prefix ornament                                                      
 	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 */
-	protected final boolean[] dfltUIFmtVals =  new boolean[] {false, true, false};	
-	
-	
+	protected final boolean[] dfltUIFmtVals =  new boolean[] {false, true, false};
 	
 	/**
 	 * offset to bottom of custom window menu 
@@ -374,16 +372,15 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		// build all UI objects using specifications from instancing window
 		_initAllGUIObjs(_isMenu, uiClkCoords);
 		
-		//run instancing window-specific initialization
+		//run instancing window-specific initialization after all ui objects are built
 		initMe();
+		//set menu offset for custom UI objects
+		custMenuOffset = uiClkCoords[3] + AppMgr.getClkBoxDim();
 		//set any custom button names if necessary
 		setCustMenuBtnLabels();
 		//pass all flag states to initialized structures in instancing window handler
 		privFlags.refreshAllFlags();
-		_setClosedBox();
-		mseClickCrnr = new float[2];		//this is offset for click to check buttons in x and y - since buttons for all menus will be in menubar, this should be the upper left corner of menubar - upper left corner of rect 
-		mseClickCrnr[0] = 0;
-		mseClickCrnr[1] = 0;		
+		_setClosedBox();		
 		if((!_isMenu) && (dispFlags.getHasScrollBars())){scbrs = new ScrollBars[4];	for(int i =0; i<scbrs.length;++i){scbrs[i] = new ScrollBars(ri, this);}}
 		dispFlags.setIs3DWin(winInitVals.dispWinIs3D());
 		dispFlags.setCanChgView(winInitVals.canMoveView());
@@ -722,14 +719,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			boolean[] tmpAra = (boolean[])obj[4];
 			guiBoolVals[i] = new boolean[(tmpAra.length < 5 ? 5 : tmpAra.length)];
 			int idx = 0;
-			for (boolean val : tmpAra) {
-				guiBoolVals[i][idx++] = val;
-			}
+			for (boolean val : tmpAra) {guiBoolVals[i][idx++] = val;}
 			guiFormatBoolVals[i] = new boolean[(formatAra.length < 3 ? 3 : formatAra.length)];
 			idx = 0;
-			for (boolean val : formatAra) {
-				guiFormatBoolVals[i][idx++] = val;
-			}
+			for (boolean val : formatAra) {	guiFormatBoolVals[i][idx++] = val;}
 		}		
 		//build all objects using these values 
 		_buildAllObjects(guiObjNames, guiMinMaxModVals, 
@@ -1564,7 +1557,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	protected final void setCameraBase(float[] camVals) {
 		ri.setCameraWinVals(camVals);  
-		//if(this.flags[this.debugMode]){outStr2Scr("rx :  " + rx + " ry : " + ry + " dz : " + dz);}
+		//if(this.flags[this.debugMode]){msgObj.dispWarningMessage("Base_DispWindow","setCameraBase","rx :  " + rx + " ry : " + ry + " dz : " + dz);}
 		// puts origin of all drawn objects at screen center and moves forward/away by dz
 		ri.translate(camVals[0],camVals[1],(float)dz); 
 	    setCamOrient();	
@@ -2080,11 +2073,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	private boolean checkUIButtons(int mouseX, int mouseY){
 		if(0==privFlagBtns.length) {return false;}
 		boolean mod = false;
-		int mx, my;
 		//keep checking -see if clicked in UI buttons (flag-based buttons)
 		for(int i = 0;i<privFlagBtns.length;++i){
-			mx = (int)(mouseX - mseClickCrnr[0]); my = (int)(mouseY - mseClickCrnr[1]);
-			mod = msePtInRect(mx, my, privFlagBtns[i]); 
+			mod = msePtInRect(mouseX, mouseY, privFlagBtns[i]); 
 			//msgObj.dispDebugMessage("Base_DispWindow","checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
 			if (mod){ 
 				privFlags.toggleFlag(privModFlgIdxs[i]);
@@ -2132,8 +2123,15 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return
 	 */
 	public final boolean getIs3DWindow() {return dispFlags.getIs3DWin();}
+	
 	protected final myPoint getMsePoint(myPoint pt){return dispFlags.getIs3DWin() ? getMsePtAs3DPt(pt) : pt;}		//get appropriate representation of mouse location in 3d if 3d window
 	public final myPoint getMsePoint(int mouseX, int mouseY){return dispFlags.getIs3DWin() ? getMsePtAs3DPt(new myPoint(mouseX,mouseY,0)) : new myPoint(mouseX,mouseY,0);}
+	
+	/**
+	 * Return the coordinates of the clickable region for this window's UI
+	 * @return
+	 */
+	public float[] getUIClkCoords() {return uiClkCoords;}
 	
 	/**
 	 * Check inside all objects to see if passed mouse x,y is within hotspot
@@ -2154,7 +2152,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final boolean handleMouseMove(int mouseX, int mouseY){
 		if(!dispFlags.getShowWin()){return false;}
-		if(msePtInUIRect(mouseX, mouseY)){//in clickable region for UI interaction
+		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
 			int idx = _checkInAllObjs(mouseX, mouseY);
 			if(idx >= 0) {	msOvrObj=idx;return true;	}
 		}
@@ -2164,9 +2162,16 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		return false;
 	}//handleMouseMove
 	
+	/**
+	 * Check if point x,y is between r[0], r[1] and r[0]+r[2], r[1]+r[3]
+	 * @param x
+	 * @param y
+	 * @param r rectangle - idx 0,1 is upper left corner, idx 2,3 is width, height
+	 * @return
+	 */
 	public final boolean msePtInRect(int x, int y, float[] r){return ((x >= r[0])&&(x <= r[0]+r[2])&&(y >= r[1])&&(y <= r[1]+r[3]));}
 	
-	public final boolean msePtInUIRect(int x, int y){
+	public final boolean msePtInUIClckCoords(int x, int y){
 		return ((x > uiClkCoords[0])&&(x <= uiClkCoords[2])
 				&&(y > uiClkCoords[1])&&(y <= uiClkCoords[3]));
 	}	
@@ -2200,9 +2205,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		boolean showWin = dispFlags.getShowWin();
 		if(!showWin){return mod;}
 		// this window is showing
-		if(msePtInUIRect(mouseX, mouseY)){//in clickable region for UI interaction
+		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
 			int idx = _checkInAllObjs(mouseX, mouseY);
 			if(idx >= 0) {
+				//found in list of UI objects
 				msBtnClcked = mseBtn;
 				if(AppMgr.isClickModUIVal()){//allows for click-mod
 					setUIObjValFromClickAlone(idx);

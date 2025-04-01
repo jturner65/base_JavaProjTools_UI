@@ -103,7 +103,7 @@ public class DrawnSimpleTraj {
 	}
 	public boolean startEditEndPoint(int idx){
 		editEndPt = idx; trajMgr.setShouldEdit(true);
-		//pa.outStr2Scr("Handle TrajClick 2 startEditEndPoint : " + name + " | Move endpoint : "+editEndPt);
+		//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","startEditEndPoint","Handle TrajClick 2 startEditEndPoint : " + name + " | Move endpoint : "+editEndPt);
 		return true;
 	}
 	//check if initiating an edit on an existing object, if so then set up edit
@@ -118,12 +118,12 @@ public class DrawnSimpleTraj {
 			double[] distToPts = new double[1];			//using array as pointer, passing by reference
 			myPoint[] pts = drawnTraj.getDrawnPtAra(false);
 			int pIdx = trajMgr.findClosestPt(mse, distToPts, pts);
-			//pa.outStr2Scr("Handle TrajClick 2 startEditObj : " + name);
+			//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","startEditObj","Handle TrajClick 2 startEditObj : " + name);
 			if(distToPts[0] < chkDist){//close enough to mod
 				trajMgr.setEditCueCircle(0,mse);
 				trajMgr.setShouldEdit(true);
 				doEdit = true;
-				//pa.outStr2Scr("Handle TrajClick 3 startEditObj modPt : " + name + " : pIdx : "+ pIdx);
+				//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","startEditObj","Handle TrajClick 3 startEditObj modPt : " + name + " : pIdx : "+ pIdx);
 				drawnTrajPickedIdx = pIdx;	
 				editEndPt = -1;
 			} else if (distToPts[0] < sqMsClkRad){//not close enough to mod but close to curve
@@ -163,9 +163,8 @@ public class DrawnSimpleTraj {
 			if(editEndPt == 2){	edtCrvEndPts[2]._add(a1);edtCrvEndPts[3]._add(a2);} 
 			else {				edtCrvEndPts[2]._add(a2);edtCrvEndPts[3]._add(a1);}
 			float dist2 = (float)myPoint._dist(edtCrvEndPts[2], edtCrvEndPts[3]);
-			//pa.outStr2Scr("modTrajCntlPts : editEndPt : " + editEndPt + " : diff : "+ diff+ " dist : " + dist+ " dist2 :" + dist2 + " rot tangent axis : " + abRotAxis + " | Scale : " + (1+dist2)/(1+dist) );
+			//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","modTrajCntlPts : editEndPt : " + editEndPt + " : diff : "+ diff+ " dist : " + dist+ " dist2 :" + dist2 + " rot tangent axis : " + abRotAxis + " | Scale : " + (1+dist2)/(1+dist) );
 			drawnTraj.scalePointsAboveAxis(edtCrvEndPts[0],edtCrvEndPts[1], abRotAxis, (1+dist2)/(1+dist));
-			//pa.outStr2Scr("");
 		}			
 	}
 	
@@ -183,7 +182,7 @@ public class DrawnSimpleTraj {
 		boolean mod = false;
 		if((drawnTrajPickedIdx == -1) && (editEndPt == -1) && (!trajMgr.getIsSmoothing())){return mod;}			//neither endpoints nor drawn points have been edited, and we're not smoothing
 		myVector diff = trajFlags[ownrWinIs3dIDX] ? mseDragInWorld : new myVector(mouseX-pmouseX, mouseY-pmouseY,0);		
-		//pa.outStr2Scr("Diff in editTraj for  " + name + "  : " +diff.toStrBrf());
+		//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","editTraj","Diff in editTraj for  " + name + "  : " +diff.toStrBrf());
 		//needs to be before templateZoneY check
 		if (editEndPt != -1){//modify scale of ornament here, or modify drawn trajectory	
 			modTrajCntlPts(diff);
@@ -205,7 +204,7 @@ public class DrawnSimpleTraj {
 //			drawnTraj.remakeDrawnTraj(false);	
 //			rebuildDrawnTraj();	
 //		}
-		//pa.outStr2Scr("In Traj : " + this.ID + " endEditObj ");
+		//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","endEditObj","In Traj : " + this.ID + " endEditObj ");
 		trajMgr.processTrajectory(this);//dispFlags[trajDirty, true);
 		drawnTrajPickedIdx = -1;
 		editEndPt = -1;
@@ -215,15 +214,15 @@ public class DrawnSimpleTraj {
 	
 	public void endDrawObj(myPoint endPoint){
 		drawnTraj.addPt(endPoint);
-		//pa.outStr2Scr("Size of drawn traj : " + drawnTraj.cntlPts.length);
+		//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","endDrawObj","Size of drawn traj : " + drawnTraj.cntlPts.length);
 		if(drawnTraj.getNumCntlPts() >= 2){
 			drawnTraj.finalizeDrawing(true);
 			myPoint[] pts = drawnTraj.getDrawnPtAra(false);
-			//pa.outStr2Scr("Size of pts ara after finalize (use drawn vels : " +false + " ): " + pts.length);
+			//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","endDrawObj","Size of pts ara after finalize (use drawn vels : " +false + " ): " + pts.length);
 			edtCrvEndPts[0] = new myPoint(pts[0]);
 			edtCrvEndPts[1] = new myPoint(pts[pts.length-1]);
 			rebuildDrawnTraj();
-			//pa.outStr2Scr("In Traj : " + this.ID + " endDrawObj ");
+			//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","endDrawObj","In Traj : " + this.ID + " endDrawObj ");
 			trajMgr.processTrajectory(this);
 		} else {
 			drawnTraj = new VariableTraj(win, new myVector(AppMgr.getDrawSNorm()),fillClrCnst, strkClrCnst);
