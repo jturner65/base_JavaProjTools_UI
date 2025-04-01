@@ -88,8 +88,6 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		initSimExec();		
 		//implementation class specifics 
 		initMeSim();
-		//set 
-		custMenuOffset = uiClkCoords[3];
 	}//initMe()
 	
 	/**
