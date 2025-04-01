@@ -64,11 +64,11 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	protected final int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
 		// add an entry for each button, in the order they are wished to be displayed
 		// true tag, false tag, btn IDX
-		tmpBtnNamesArray.add(new Object[] {"Visualization Debug", "Enable Debug", Base_BoolFlags.debugIDX});  
-		tmpBtnNamesArray.add(new Object[] {"Resetting Simulation", "Reset Simulation",   resetSimIDX});  
-		tmpBtnNamesArray.add(new Object[] {"Drawing Vis", "Render Visualization",  drawVisIDX});  
-		tmpBtnNamesArray.add(new Object[] {"Experimenting", "Run Experiment", conductExpIDX});  
-		tmpBtnNamesArray.add(new Object[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment", conductSweepExpIDX});  
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Drawing Vis", "Render Visualization"},  drawVisIDX));  
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Experimenting", "Run Experiment"}, conductExpIDX));  
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
 
 		
 		return initSimPrivBtns(tmpBtnNamesArray);

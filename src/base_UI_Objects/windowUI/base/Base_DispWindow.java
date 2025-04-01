@@ -653,6 +653,16 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}	
 	
 	/**
+	 * Build the object array that describes a button object
+	 * @param labels the list of labels this button supports. The size of the list is the number of states the button will handle.
+	 * @param btnIdx the index of the button, for UI lookup
+	 * @return
+	 */
+	protected final Object[] uiObjInitAra_Btn(String[] labels, int btnIdx) {
+		return new Object[] {labels, btnIdx};
+	}
+	
+	/**
 	 * build ui objects from maps, keyed by ui object idx, with value being data
 	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
 	 *           the first element double array of min/max/mod values                                                   
@@ -1156,9 +1166,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		privModFlgIdxs = new int[truePrivFlagLabels.length];
 		for (int i = 0; i < truePrivFlagLabels.length; ++i) {
 			Object[] tmpAra = tmpBtnNamesArray.get(i);
-			truePrivFlagLabels[i] = (String) tmpAra[0];
-			falsePrivFlagLabels[i] = (String) tmpAra[1];
-			privModFlgIdxs[i] = (int) tmpAra[2];
+			String[] labelAra = (String[])tmpAra[0];
+			truePrivFlagLabels[i] = labelAra[0];
+			falsePrivFlagLabels[i] = labelAra[1];
+			privModFlgIdxs[i] = (int) tmpAra[1];
 		}
 		return _buildPrivBtnRects(0, truePrivFlagLabels.length, uiClkRect);
 	}//_buildAllPrivButtons
@@ -1638,16 +1649,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	//////////////////////
 	//draw functions
-	
-	/**
-	 * Entry point for draw functionality TODO
-	 */
-	public final void draw(float[] camvals, float modAmtMillis) {
-		
-		
-	}
-	
-	
+
 	/**
 	 * initial draw stuff for each frame draw
 	 * @param camVals
