@@ -2021,7 +2021,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected final void setBaseFlagToShow_singleStep(boolean val) {_setBaseFlagToShow(singleStep, val);}
 	protected final void setBaseFlagToShow_showRtSideMenu(boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}	
 	protected final void setBaseFlagToShow_showDrawableCanvas(boolean val) {_setBaseFlagToShow(showCanvas, val);}	
-
 	
 	public final boolean getBaseFlagIsShown_debugMode() {return _getBaseFlagIsShown(debugMode);}
 	public final boolean getBaseFlagIsShown_saveAnim() {return _getBaseFlagIsShown(saveAnim);}
@@ -2045,7 +2044,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		return false;
 	}
 	
-	public abstract double clickValModMult();
+	/**
+	 * gives multiplier based on whether shift, alt or cntl (or any combo) is pressed
+	 * @return
+	 */
+	public double clickValModMult(){return ((altIsPressed() ? .1 : 1.0) * (shiftIsPressed() ? 10.0 : 1.0));}	
+
 	public abstract boolean isClickModUIVal();
 	
 	public Base_DispWindow getCurFocusDispWindow() {return dispWinFrames[curFocusWin];}	
