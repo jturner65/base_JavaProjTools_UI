@@ -441,7 +441,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//initialize all private buttons based on values put in arraylist
 		uiClkRect[3] = _buildAllPrivButtons(tmpBtnNamesArray, uiClkRect);
 		// init specific sim flags
-		privFlags = new WinAppPrivStateFlags(this,_numPrivFlags);
+		privFlags = new WinAppPrivStateFlags(this, _numPrivFlags);
 		// set instance-specific initial flags
 		int[] trueFlagIDXs = getFlagIDXsToInitToTrue();
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
@@ -945,15 +945,16 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 	
 	/**
-	 * Set all the values in the idx'th List UI Object, if it exists, and is a list object
-	 * @param idx
-	 * @param values
+	 * Set all the values in the uiObjIdx List UI Object, if it exists, and is a list object
+	 * @param uiObjIdx the list obj's index
+	 * @param values the list of values to set
+	 * @param setAsDefault whether or not these new values should be set as the default values
 	 * @return
 	 */
-	public int setAllUIListValues(int idx, String[] values) {		
-		if ((!_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setAllUIListValues", "add all list values")) || 
-				(!_validateIdxIsListObj(guiObjs_Numeric[idx], "setAllUIListValues", "add all list values"))){return -1;}
-		return ((MenuGUIObj_List) guiObjs_Numeric[idx]).setListVals(values);
+	public int setAllUIListValues(int uiObjIdx, String[] values, boolean setAsDefault) {		
+		if ((!_validateUIObjectIdx(uiObjIdx, guiObjs_Numeric.length, "setAllUIListValues", "set/replace all list values")) || 
+				(!_validateIdxIsListObj(guiObjs_Numeric[uiObjIdx], "setAllUIListValues", "set/replace all list values"))){return -1;}
+		return ((MenuGUIObj_List) guiObjs_Numeric[uiObjIdx]).setListVals(values, setAsDefault);
 	}
 	
 	/**
@@ -1018,9 +1019,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		uiUpdateData = buildUIDataUpdateObject();
 		if (uiUpdateData == null) {return;}
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
-		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, guiObjs_Numeric[idx].valAsInt());}		
+		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, guiObjs_Numeric[idx].getValueAsInt());}		
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
-		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjs_Numeric[idx].valAsFloat());}
+		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjs_Numeric[idx].getValueAsFloat());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
 		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
@@ -1364,7 +1365,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		GUIObj_Type objType = guiObjs_Numeric[UIidx].getObjType();
 		switch (objType) {
 			case IntVal : {
-				int ival = guiObjs_Numeric[UIidx].valAsInt();
+				int ival = guiObjs_Numeric[UIidx].getValueAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
 					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
@@ -1373,7 +1374,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				}
 				break;}
 			case ListVal : {
-				int ival = guiObjs_Numeric[UIidx].valAsInt();
+				int ival = guiObjs_Numeric[UIidx].getValueAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
 					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
@@ -1382,7 +1383,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				}
 				break;}
 			case FloatVal : {
-				float val = guiObjs_Numeric[UIidx].valAsFloat();
+				float val = guiObjs_Numeric[UIidx].getValueAsFloat();
 				float origVal = uiUpdateData.getFloatValue(UIidx);
 				if(checkAndSetFloatVal(UIidx, val)) {
 					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
@@ -2212,11 +2213,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			if(idx >= 0) {
 				//found in list of UI objects
 				msBtnClcked = mseBtn;
-				if(AppMgr.isClickModUIVal()){//allows for click-mod
-					setUIObjValFromClickAlone(idx);
-					dispFlags.setUIObjMod(true);
-				} 				
 				msClkObj=idx;
+				if(AppMgr.isClickModUIVal()){//allows for click-mod
+					setUIObjValFromClickAlone(msClkObj);
+					if(guiObjs_Numeric[msClkObj].getIsDirty()) {dispFlags.setUIObjMod(true);}
+				} 				
 				return true;	
 			}
 		}			
@@ -2247,23 +2248,26 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		boolean mod = false;
 		if(!dispFlags.getShowWin()){return mod;}
 		boolean shiftPressed = AppMgr.shiftIsPressed();
+		int delX = (mouseX-pmouseX), delY = (mouseY-pmouseY);
 		//check if modding view
 		if (shiftPressed && dispFlags.getCanChgView() && (msClkObj==-1)) {//modifying view angle/zoom
 			AppMgr.setModView(true);	
-			if(mseBtn == 0){			handleViewChange(false,AppMgr.msSclY*(mouseY-pmouseY), AppMgr.msSclX*(mouseX-pmouseX));}	
-			else if (mseBtn == 1) {		handleViewChange(true,(mouseY-pmouseY), 0);}	
+			if(mseBtn == 0){			handleViewChange(false,AppMgr.msSclY*delY, AppMgr.msSclX*delX);}	
+			else if (mseBtn == 1) {		handleViewChange(true,delY, 0);}	
 			return true;
 		} else if ((AppMgr.cntlIsPressed()) && dispFlags.getCanChgView() && (msClkObj==-1)) {//modifying view focus
 			AppMgr.setModView(true);
-			handleViewTargetChange((mouseY-pmouseY), (mouseX-pmouseX));
+			handleViewTargetChange(delY, delX);
 			return true;
 		} else {//modify UI elements		
 			//any generic dragging stuff - need flag to determine if trajectory is being entered		
 			//modify object that was clicked in by mouse motion
 			if(msClkObj!=-1){	
-				guiObjs_Numeric[msClkObj].modVal((mouseX-pmouseX)+(mouseY-pmouseY)*-(shiftPressed ? 50.0f : 5.0f));
-				dispFlags.setUIObjMod(true); 
-				if(guiObjs_Numeric[msClkObj].shouldUpdateWin(false)){setUIWinVals(msClkObj);}
+				guiObjs_Numeric[msClkObj].dragModVal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));
+				if(guiObjs_Numeric[msClkObj].getIsDirty()) {		
+					dispFlags.setUIObjMod(true); 
+					if(guiObjs_Numeric[msClkObj].shouldUpdateWin(false)){setUIWinVals(msClkObj);}
+				}
 				return true;
 			}		
 			
@@ -2286,10 +2290,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	 * @param j
 	 */
-	private void setUIObjValFromClickAlone(int j) {
+	private void setUIObjValFromClickAlone(int objId) {
 		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
-		//msgObj.dispDebugMessage("Base_DispWindow","setUIObjValFromClickAlone","Mult : " + (mult *AppMgr.clickValModMult()));
-		guiObjs_Numeric[j].modVal(mult * AppMgr.clickValModMult());
+		//msgObj.dispDebugMessage("Base_DispWindow","setUIObjValFromClickAlone","Mult : " + mult + "|Scale : " +AppMgr.clickValModMult()));
+		guiObjs_Numeric[objId].clickModVal(mult, AppMgr.clickValModMult());
 	}//setUIObjValFromClickAlone
 	
 	/**

@@ -654,9 +654,9 @@ public class UIObjectManager {
 		uiUpdateData = owner.buildOwnerUIDataUpdateObject();
 		if (uiUpdateData == null) {return;}
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
-		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, guiObjs_Numeric[idx].valAsInt());}		
+		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, guiObjs_Numeric[idx].getValueAsInt());}		
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
-		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjs_Numeric[idx].valAsFloat());}
+		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjs_Numeric[idx].getValueAsFloat());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
 		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
@@ -736,7 +736,7 @@ public class UIObjectManager {
 		GUIObj_Type objType = guiObjs_Numeric[UIidx].getObjType();
 		switch (objType) {
 			case IntVal : {
-				int ival = guiObjs_Numeric[UIidx].valAsInt();
+				int ival = guiObjs_Numeric[UIidx].getValueAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
 					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
@@ -745,7 +745,7 @@ public class UIObjectManager {
 				}
 				break;}
 			case ListVal : {
-				int ival = guiObjs_Numeric[UIidx].valAsInt();
+				int ival = guiObjs_Numeric[UIidx].getValueAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
 					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
@@ -754,7 +754,7 @@ public class UIObjectManager {
 				}
 				break;}
 			case FloatVal : {
-				float val = guiObjs_Numeric[UIidx].valAsFloat();
+				float val = guiObjs_Numeric[UIidx].getValueAsFloat();
 				float origVal = uiUpdateData.getFloatValue(UIidx);
 				if(checkAndSetFloatVal(UIidx, val)) {
 					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
@@ -901,15 +901,16 @@ public class UIObjectManager {
 	}
 	
 	/**
-	 * Set all the values in the idx'th List UI Object, if it exists, and is a list object
-	 * @param idx
-	 * @param values
+	 * Set all the values in the uiObjIdx List UI Object, if it exists, and is a list object
+	 * @param uiObjIdx the list obj's index
+	 * @param values the list of values to set
+	 * @param setAsDefault whether or not these new values should be set as the default values
 	 * @return
 	 */
-	public int setAllUIListValues(int idx, String[] values) {		
-		if ((!_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setAllUIListValues", "add all list values")) || 
-				(!_validateIdxIsListObj(guiObjs_Numeric[idx], "setAllUIListValues", "add all list values"))){return -1;}
-		return ((MenuGUIObj_List) guiObjs_Numeric[idx]).setListVals(values);
+	public int setAllUIListValues(int uiObjIdx, String[] values, boolean setAsDefault) {		
+		if ((!_validateUIObjectIdx(uiObjIdx, guiObjs_Numeric.length, "setAllUIListValues", "set/replace all list values")) || 
+				(!_validateIdxIsListObj(guiObjs_Numeric[uiObjIdx], "setAllUIListValues", "set/replace all list values"))){return -1;}
+		return ((MenuGUIObj_List) guiObjs_Numeric[uiObjIdx]).setListVals(values, setAsDefault);
 	}
 	
 	/**

@@ -129,6 +129,7 @@ public abstract class Base_GUIObj {
 	}//setFlag	
 		
 	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
+	public boolean getIsDirty() {return getStateFlags(valChangedIDX);}
 	public boolean shouldUpdateConsumer() {return !getConfigFlags(explicitUIDataUpdateIDX);}
 	protected boolean isUsedByWindow() {return getConfigFlags(usedByWinsIDX);}
 	
@@ -142,7 +143,7 @@ public abstract class Base_GUIObj {
 	 * @return
 	 */
 	public final boolean shouldUpdateWin(boolean isRelease) {
-		boolean isDirty = getStateFlags(valChangedIDX);
+		boolean isDirty = getIsDirty();
 		//only clear once processed
 		if (isRelease){	setIsDirty(false);	}
 		return isDirty && ((isRelease || getConfigFlags(updateWhileModIDX)) && isUsedByWindow());
@@ -286,6 +287,8 @@ public abstract class Base_GUIObj {
 	 */
 	public final String getName(){return name;}
 	
+	
+	public final int getObjID() {return objID;}
 	/**
 	 * Set this UI object's value from a string
 	 * @param str
