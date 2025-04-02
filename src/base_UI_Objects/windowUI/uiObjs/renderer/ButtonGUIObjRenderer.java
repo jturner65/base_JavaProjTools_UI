@@ -5,7 +5,7 @@ package base_UI_Objects.windowUI.uiObjs.renderer;
 
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.menuButtons.MenuGUIObj_Button;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Button;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 
 /**
@@ -50,7 +50,7 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 	}
 
 	protected int[] getStateColor() {
-		return colors[((MenuGUIObj_Button) owner).getState()];
+		return colors[((MenuGUIObj_Button) owner).getButtonState()];
 	}
 
 	@Override

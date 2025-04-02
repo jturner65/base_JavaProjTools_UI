@@ -17,7 +17,7 @@ public class MenuGUIObj_Float extends Base_NumericGUIObj {
 	public MenuGUIObj_Float(int _objID, String _name, double[] _minMaxMod, double _initVal, boolean[] _flags) {
 		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.FloatVal, _flags);	
 	}
-
+	
 	//Float object has no manipulations during modification
 	@Override
 	protected final double modValAssign(double _val) {return _val;}
@@ -27,21 +27,15 @@ public class MenuGUIObj_Float extends Base_NumericGUIObj {
 	 * @param _newval
 	 */
 	@Override
-	public final void setNewMod(double _newval){	
-		if (_newval > (maxVal-minVal)) {
-			_newval = (maxVal-minVal);
-		}
+	public final void setNewMod(double _newval){
+		double minMaxDiff = getMinMaxDiff();
+		if (_newval > minMaxDiff) {	_newval = minMaxDiff;}
 		modMult = _newval;
-		if(modMult >=1) {
-			formatStr = "%.0f";
-		} else {
+		if(modMult >=1) {			formatStr = "%.0f";	} 
+		else {
 			int formatVal = (int) Math.ceil(-Math.log10(modMult*1.00001))+1;
 			formatStr = "%."+formatVal+"f";
 		}
 	}	
-	@Override
-	protected final String getValueAsString(double _val) {	return String.format(formatStr,_val);}
-
-
-
+		
 }//class myGUIObj_Float

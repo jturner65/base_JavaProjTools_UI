@@ -24,11 +24,11 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	/**
 	 * Value for this numeric object
 	 */
-	protected double val;
+	private double val;
 	/**
 	 * Min and max values allowed for this numeric object
 	 */
-	protected double minVal, maxVal;
+	private double minVal, maxVal;
 	/**
 	 * Multiplier for modification
 	 */
@@ -65,8 +65,12 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 		setVal(initVals[3]);
 		label = origLabel;
 		formatStr = origFormatStr;
+		resetToInit_Indiv();
 	}
-	
+	/**
+	 * Instance-specific reset - most instance classes have nothing to do here. Override for classes that require it.
+	 */
+	protected void resetToInit_Indiv() {}
 	/**
 	 * 
 	 * @return
@@ -88,6 +92,8 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 */
 	public final double getModStep(){return modMult;}	
 	
+	public final double getMinMaxDiff() {return maxVal - minVal;}
+	
 	/**
 	 * Make sure val adheres to specified bounds
 	 * @param _val
@@ -98,6 +104,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 		if (_val > maxVal) {return maxVal;}
 		return _val;
 	}
+	
 	/**
 	 * Set new maximum value for this object, which will also force current value to adhere to bounds.
 	 * NOTE: Does not currently verify that new max is > current min. Don't be stupid.
@@ -140,12 +147,20 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 		return val;
 	}	
 	/**
-	 * Modify this object by passed mod value, scaled by modMult
+	 * Modify this object by passed mod value, scaled by modMult. This is called during drag
 	 * @param mod
 	 * @return
 	 */
-	public final double modVal(double mod) {
-		return setVal(modValAssign(val + (mod*modMult)));
+	public double dragModVal(double mod) {return setVal(modValAssign(val + (mod*modMult)));}
+	
+	/**
+	 * Modify this object by passed mod value, multiplied by scale. This is for a single click
+	 * @param mod
+	 * @param scale
+	 * @return
+	 */
+	public double clickModVal(double mod, double scale) {
+		return setVal(modValAssign(val + (mod *scale*modMult)));
 	}
 	
 	/**
@@ -175,26 +190,29 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * Get this object's value as an int
 	 * @return
 	 */
-	public final int valAsInt(){return (int)(val) ;}
+	public final int getValueAsInt(){return (int)(val) ;}
 	/**
 	 * Get this object's value as a float
 	 * @return
 	 */
-	public final float valAsFloat(){return (float)( val);}
+	public final float getValueAsFloat(){return (float)( val);}
 	
 	/**
 	 * Get this UI object's value as a string with appropriate format
 	 * @return
 	 */
 	@Override
-	public final String getValueAsString() {
-		return getValueAsString(val);
-	}
-	protected abstract String getValueAsString(double _val);
+	public final String getValueAsString() {return getValueAsString(val);}
+	
+	/**
+	 * Get this UI object's value as a string - overridden by classes that do not use val directly
+	 * @return
+	 */
+	protected String getValueAsString(double _val) {	return String.format(formatStr,_val);}
 
 
 	@Override
-	protected boolean checkUIObjectStatus_Indiv() {
+	protected final boolean checkUIObjectStatus_Indiv() {
 		// TODO add any object instance-specific checks that might be required here
 		return true;
 	}
@@ -203,7 +221,8 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * Get string data array representing the value this UI object holds
 	 * @return
 	 */
-	protected final String[] getStrDataForVal() {
+	@Override
+	protected String[] getStrDataForVal() {
 		String[] tmpRes = new String[2];
 		tmpRes[0] = "Value : "+ getValueAsString() +" Max Val : " + getValueAsString(maxVal) 
 		+ " Min Val : " + getValueAsString(minVal)+ " Mod multiplier : " +getValueAsString(modMult);

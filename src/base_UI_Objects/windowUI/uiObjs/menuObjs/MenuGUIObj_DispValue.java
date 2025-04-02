@@ -32,7 +32,18 @@ public class MenuGUIObj_DispValue extends Base_NumericGUIObj {
 
 	//display only object ignores any mod so just return original val
 	@Override
-	public final double modValAssign(double _notUsed) {	return val;}
+	public final double modValAssign(double _notUsed) {	return getVal();}
+	
+	/**
+	 * Dragging is disabled on labels
+	 */
+	@Override
+	public final double dragModVal(double _notUsed) {return getVal();}
+	
+	/**
+	 * Click modification is disabled on labels
+	 */
+	public final double clickModVal(double _notUsed, double _notUsed2) {return getVal();}
 	
 	@Override
 	protected final String getValueAsString(double _val) {	return String.format(formatStr,_val);}
@@ -42,4 +53,5 @@ public class MenuGUIObj_DispValue extends Base_NumericGUIObj {
 	 */
 	@Override
 	public boolean shouldUpdateConsumer() {return false;}
+
 }//class MenuGUIObj_DispValue
