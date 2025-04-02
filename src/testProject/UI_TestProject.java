@@ -234,9 +234,6 @@ public class UI_TestProject extends GUI_AppManager {
 	@Override
 	protected void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw) {}
 
-	@Override
-	//gives multiplier based on whether shift, alt or cntl (or any combo) is pressed
-	public double clickValModMult(){return ((altIsPressed() ? .1 : 1.0) * (shiftIsPressed() ? 10.0 : 1.0));}	
 
 	@Override
 	public boolean isClickModUIVal() {
