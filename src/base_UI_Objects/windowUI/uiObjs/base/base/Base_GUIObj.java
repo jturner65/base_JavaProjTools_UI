@@ -103,8 +103,8 @@ public abstract class Base_GUIObj {
 	protected abstract boolean checkUIObjectStatus_Indiv();
 	
 	private void initStateFlags(){			uiStateFlags = new int[1 + numStateFlags/32]; for(int i = 0; i<numStateFlags; ++i){setStateFlags(i,false);}	}
-	protected boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
-	protected void setStateFlags(int idx, boolean val){
+	private boolean getStateFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiStateFlags[idx/32] & bitLoc) == bitLoc;}	
+	private void setStateFlags(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		uiStateFlags[flIDX] = (val ?  uiStateFlags[flIDX] | mask : uiStateFlags[flIDX] & ~mask);
 		switch (idx) {//special actions for each flag
@@ -116,8 +116,8 @@ public abstract class Base_GUIObj {
 	}//setFlag	
 	
 	private void initConfigFlags(){			uiConfigFlags = new int[1 + numConfigFlags/32]; for(int i = 0; i<numConfigFlags; ++i){setConfigFlags(i,false);}	}
-	protected boolean getConfigFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiConfigFlags[idx/32] & bitLoc) == bitLoc;}	
-	protected void setConfigFlags(int idx, boolean val){
+	private boolean getConfigFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiConfigFlags[idx/32] & bitLoc) == bitLoc;}	
+	private void setConfigFlags(int idx, boolean val){
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		uiConfigFlags[flIDX] = (val ?  uiConfigFlags[flIDX] | mask : uiConfigFlags[flIDX] & ~mask);
 		switch (idx) {//special actions for each flag
