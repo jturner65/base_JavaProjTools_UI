@@ -21,10 +21,6 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 	protected final float longestLabelLen;
 	
 	/**
-	 * Number of buttons to try to fit per line
-	 */
-	protected final float numBtnsPerLine;
-	/**
 	 * 
 	 * @param _ri
 	 * @param _owner
@@ -45,8 +41,6 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 			longLbl = (longLbl < curLblLen ? curLblLen : longLbl);
 		}
 		longestLabelLen = longLbl;
-		//TODO support more buttons per line
-		numBtnsPerLine = 2.0f;
 	}
 
 	protected int[] getStateColor() {
@@ -62,35 +56,34 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 			ri.setFill(clr, clr[3]);
 			_drawRectangle();	
 		ri.popMatState();
+		// show Button Text
 		ri.showText(owner.getLabel(), 0, 0);
 	}
 	
 	/**
 	 * Recalculate the lower right location of the hotspot for the owning UI object
-	 * Button obj will be the width of the label, and 1 text line high. 
-	 * Needs to be moved to a new line if will not fit in currently specified menuWidth
-	 * @param newStartPoint new upper left point proposal. Might be changed if moved to a new line
-	 * @param lineHeight the height of a single line of text
-	 * @param menuStartX the x coord of the start of the menu region
-	 * @param menuWidth the possible display with for the object
+	 * Buttons are dependent on the size of their neighbors for their own size, shrinking or stretching to fit, 
+	 * depending on the space available, so this function will not successfully automate this process for buttons, 
+	 * and instead should be used to set the start and end points for the button after the values have been already
+	 * calculated.
+	 * 
+	 * @param newStartPoint new upper left point proposal.
+	 * @param buttonHeight the height of the button
+	 * @param buttonWidth the width of the button
+	 * @param _notUsed 
 	 * @return the next object's new start location
 	 */
 	@Override
-	public myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {
+	public myPointf reCalcHotSpot(myPointf newStart, float buttonHeight, float buttonWidth, float _notUsed) {
 		//set based on passed new start
-		start = new myPointf(newStart);
-		// max text width is width of longest label
-		float textWidth = getMaxWidth();
-		
+		start = new myPointf(newStart);		
 		// End point x is width of text further than start x, lineHeight further than start y text
-		end = new myPointf(start.x + textWidth, start.y + lineHeight, start.z);
+		end = new myPointf(start.x + buttonWidth, start.y + buttonHeight, start.z);
 		// return the next object's start location
 		return new myPointf(end.x, end.y, start.z);	
 	}
 
 	@Override
-	public float getMaxWidth() {
-		return longestLabelLen;
-	}
+	public float getMaxWidth() {return longestLabelLen;}
 
-}
+}//class ButtonGUIObjRenderer<E

@@ -55,6 +55,11 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	}//ctor
 
 	/**
+	 * Return this object to its initial value
+	 */
+	public final void returnToInitVal() {setVal(initVals[3]);}
+	
+	/**
 	 * Reset this UI component to its initialization values
 	 */
 	@Override
@@ -62,7 +67,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 		setNewMin(initVals[0]);
 		setNewMax(initVals[1]);
 		setNewMod(initVals[2]);
-		setVal(initVals[3]);
+		returnToInitVal();
 		label = origLabel;
 		formatStr = origFormatStr;
 		resetToInit_Indiv();
