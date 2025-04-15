@@ -113,8 +113,8 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	public Boolean[][] getGuiBtnWaitForProc() {return  btnConfig.getGuiBtnWaitForProc();}
 	public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {		btnConfig.setGuiBtnWaitForProc(_guiBtnWaitForProc);}
-	public int[][] getGuiBtnSt() {		return btnConfig.getGuiBtnSt();	}
-	public void setGuiBtnSt(int[][] _guiBtnSt) {btnConfig.setGuiBtnSt(_guiBtnSt);	}
+	public int[][] getGuiBtnSt() {		return btnConfig.getGuiBtnState();	}
+	public void setGuiBtnSt(int[][] _guiBtnSt) {btnConfig.setGuiBtnState(_guiBtnSt);	}
 	
 	@Override
 	//initialize all private-flag based UI buttons here - called by base class

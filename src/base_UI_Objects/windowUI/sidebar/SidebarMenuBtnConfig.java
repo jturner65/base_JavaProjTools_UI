@@ -71,14 +71,14 @@ public class SidebarMenuBtnConfig {
 	/**
 	 * whether buttons are disabled(-1), enabled but not clicked/on (0), or enabled and on/clicked(1)
 	 */
-	private int[][] guiBtnSt;
+	private int[][] guiBtnState;
 	
-	public final int[] guiBtnStFillClr = new int[]{					//button colors based on state
+	public final int[] guiBtnStateFillClr = new int[]{					//button colors based on state
 			IRenderInterface.gui_White,								//disabled color for buttons
 			IRenderInterface.gui_LightGray,							//not clicked button color
 			IRenderInterface.gui_LightBlue,							//clicked button color
 		};
-	public final int[] guiBtnStTxtClr = new int[]{					//text color for buttons
+	public final int[] guiBtnStateTxtClr = new int[]{					//text color for buttons
 			IRenderInterface.gui_LightGray,							//disabled color for buttons
 			IRenderInterface.gui_Black,								//not clicked button color
 			IRenderInterface.gui_Black,								//clicked button color
@@ -135,11 +135,25 @@ public class SidebarMenuBtnConfig {
 		UIAppButtonRegion[3] = yOffset + initRowStYOff +guiBtnRowsEndY;		
 	}
 	
+
 	/**
 	 * Set values for ui action buttons, based on specifications of @class mySidebarMenuBtnConfig
 	 * Parameters user defined in main as window is specified, individual button names can be overridden in individual app windows
+	 * @param funcRowNames array of names for each row of functional buttons 
+	 * @param funcBtnLabels array of arrays of labels for each button
+	 * @param debugBtnLabels list of labels for debug buttons
+	 * @param winTitles the titles of all the windows in this application
+	 * @param inclWinNames include the names of all the instanced windows
+	 * @param inclMseOvValues include a row for possible mouse over values
+	 * @return
 	 */
-	public float buildBtnData(String[] funcRowNames, String[][] funcBtnLabels, String[] debugBtnLabels, String[] winTitles, boolean inclWinNames, boolean inclMseOvValues) {
+	public float buildBtnData(
+			String[] funcRowNames, 
+			String[][] funcBtnLabels, 
+			String[] debugBtnLabels, 
+			String[] winTitles, 
+			boolean inclWinNames, 
+			boolean inclMseOvValues) {
 		int[] numBtnsPerFuncRow = new int[funcRowNames.length];
 		for (int i=0;i<funcRowNames.length;++i) {
 			numBtnsPerFuncRow[i] = funcBtnLabels[i].length;
@@ -233,8 +247,8 @@ public class SidebarMenuBtnConfig {
 		guiBtnInst = tmpBtnIsInst.toArray(new Boolean[0][]);
 		guiBtnWaitForProc = tmpBtnWaitForProc.toArray(new Boolean[0][]);
 		
-		guiBtnSt = new int[guiBtnRowNames.length][];
-		for(int i=0;i<guiBtnSt.length;++i) {guiBtnSt[i] = new int[guiBtnLabels[i].length];}
+		guiBtnState = new int[guiBtnRowNames.length][];
+		for(int i=0;i<guiBtnState.length;++i) {guiBtnState[i] = new int[guiBtnLabels[i].length];}
 		
 		//set button names
 		for(int _type = 0;_type<funcBtnLabels.length;++_type) {setAllFuncBtnLabels(_type,funcBtnLabels[_type]);}
@@ -278,7 +292,7 @@ public class SidebarMenuBtnConfig {
 	public final void clearAllBtnStates(){	
 		//guiBtnWaitForProc should only be set for non-momentary buttons when they are pushed and cleared when whatever they are do is complete
 		for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnLabels[row].length;++col){				
-			if((guiBtnSt[row][col]==1) && (guiBtnInst[row][col]  || !guiBtnWaitForProc[row][col])){	guiBtnSt[row][col] = 0;}//btn is on, and either is momentary or it is not waiting for processing
+			if((guiBtnState[row][col]==1) && (guiBtnInst[row][col]  || !guiBtnWaitForProc[row][col])){	guiBtnState[row][col] = 0;}//btn is on, and either is momentary or it is not waiting for processing
 		}}		
 	}//clearAllBtnStates
 	
@@ -288,8 +302,8 @@ public class SidebarMenuBtnConfig {
 	 * @param btnToKeepOn btn whose state should stay on
 	 */
 	public final void clearRowExceptPassedBtn(int row, int btnToKeepOn) {
-		for(int col =0; col<guiBtnLabels[row].length;++col){	guiBtnSt[row][col] = 0;}
-		guiBtnSt[row][btnToKeepOn]=1;
+		for(int col =0; col<guiBtnLabels[row].length;++col){	guiBtnState[row][col] = 0;}
+		guiBtnState[row][btnToKeepOn]=1;
 	}
 	
 	/**
@@ -318,8 +332,8 @@ public class SidebarMenuBtnConfig {
 	 * @param col
 	 */
 	private final void handleButtonClick(int row, int col){
-		int val = guiBtnSt[row][col];//initial state, before being changed
-		guiBtnSt[row][col] = (guiBtnSt[row][col] + 1)%2;//change state
+		int val = guiBtnState[row][col];//initial state, before being changed
+		guiBtnState[row][col] = (guiBtnState[row][col] + 1)%2;//change state
 		//if not momentary buttons, set wait for proc to true
 		setWaitForProc(row,col);
 		// click in window select button region
@@ -349,7 +363,7 @@ public class SidebarMenuBtnConfig {
 			widthX = winWidth/(1.0f * guiBtnLabels[row].length);
 			stX = 0;	endX = widthX;
 			for(int col =0; col<guiBtnLabels[row].length;++col){	
-				if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (guiBtnSt[row][col] != -1)){
+				if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (guiBtnState[row][col] != -1)){
 					handleButtonClick(row,col);
 					return true;
 				}					
@@ -367,8 +381,8 @@ public class SidebarMenuBtnConfig {
 	
 	public Boolean[][] getGuiBtnWaitForProc() {return guiBtnWaitForProc;}
 	public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {		guiBtnWaitForProc = _guiBtnWaitForProc;}
-	public int[][] getGuiBtnSt() {		return guiBtnSt;	}
-	public void setGuiBtnSt(int[][] _guiBtnSt) {	guiBtnSt = _guiBtnSt;	}	
+	public int[][] getGuiBtnState() {		return guiBtnState;	}
+	public void setGuiBtnState(int[][] _guiBtnState) {	guiBtnState = _guiBtnState;	}	
 	public float[] getUIAppBtnRegion() {return UIAppButtonRegion;}
 	/**
 	 * draw UI buttons that control functions, debug and global load/save stubs
@@ -388,9 +402,9 @@ public class SidebarMenuBtnConfig {
 			ri.translate(-xOffHalf, 0);
 			for(int col =0; col<guiBtnLabels[row].length;++col){
 				halfWay = (xWidthOffset - guiBtnLabelWidths[row][col])/2.0f;
-				ri.setColorValFill(guiBtnStFillClr[guiBtnSt[row][col]+1],255);
+				ri.setColorValFill(guiBtnStateFillClr[guiBtnState[row][col]+1],255);
 				ri.drawRect(new float[] {0,0,xWidthOffset, initTextHeightOff});	
-				ri.setColorValFill(guiBtnStTxtClr[guiBtnSt[row][col]+1],255);
+				ri.setColorValFill(guiBtnStateTxtClr[guiBtnState[row][col]+1],255);
 				ri.showText(guiBtnLabels[row][col], halfWay, initTextHeightOff*.75f);
 				ri.translate(xWidthOffset, 0);
 			}
