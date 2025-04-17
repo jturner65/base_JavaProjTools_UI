@@ -439,8 +439,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * 			2+ - TBD
 	 */
 	protected abstract int setAppWindowDimRestrictions();
-		
-	public int getNumThreadsAvailable() {return Runtime.getRuntime().availableProcessors();}
 	
 	/**
 	 * Setup this application.  Called from render interface setup
@@ -505,7 +503,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * Called in pre-draw initial setup, before first init
 	 * potentially override setup variables on per-project basis.
 	 * Do not use for setting background color or Skybox anymore.
-	 *  	(Current settings in my_procApplet) 	
+	 *  	(Current settings in IRenderInterface implementation) 	
 	 *  	strokeCap(PROJECT);
 	 *  	textSize(txtSz);
 	 *  	textureMode(NORMAL);			
