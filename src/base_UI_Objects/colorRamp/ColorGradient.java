@@ -27,7 +27,7 @@ public class ColorGradient{
 //		System.arraycopy(_clrs, 0, clrs, 0, _clrs.length);
 	}
 	
-	public void fillAndShowLineByRBGPt(IRenderInterface pa,myPoint p, float x,  float y, float w, float h){
+	public void fillAndShowLineByRBGPt(IRenderInterface pa, myPoint p, float x,  float y, float w, float h){
 		pa.setFill((int)p.x,(int)p.y,(int)p.z, 255);
 		pa.setStroke((int)p.x,(int)p.y,(int)p.z, 255);
 		pa.drawRect(x,y,w,h);
