@@ -235,7 +235,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			"Changing View",	 	
 			"Run Simulation",
 			"Single Step",
-			"Displaying Side Menu",
+			"Display Side Menu",
 			"Reverse Drawn Trajectory",
 			"Clear Background"
 			};
@@ -1282,17 +1282,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected final String getWindowTitle(boolean updateMem) {
 		String sep = "  |  ";
 		String title = getPrjNmLong() + sep;
-//		String currWindowNameStr = "Curr Win["+curFocusWin+"]:  " +  getCurFocusDispWindowName() + sep;
-//		title +=currWindowNameStr;
 		// Frame rate
 		String fRateStr =  "Frames : " + String.format("%4.1f",ri.getFrameRate()) + " fps";
 		title+= fRateStr +sep;
 		// Memory status if title not too long
 		if(title.length()<130){			title +=buildMemString(updateMem); } // about 111 long
 		return title;
-	}
+	}// getWindowTitle
 	 
-	
 	/**
 	 * sim loop, called from IRenderInterface draw method
 	 * @param modAmtMillis milliseconds since last frame started
