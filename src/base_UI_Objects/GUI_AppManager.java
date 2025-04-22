@@ -65,11 +65,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected float aspectRatio;
 	
 	/**
-	 * counter for simulation cycles	
-	 */
-	protected int simCycles;
-	
-	/**
 	 * 9 element array holding camera loc, target, and orientation
 	 */
 	private float[] camVals;	
@@ -77,10 +72,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	// Time and date
 	
 	/**
-	 * time that this application started
+	 * time that this application started in millis
 	 */
-	private int _glblStartSimFrameTime,			//begin of draw(sim)
-			_glblLastSimFrameTime;				//begin of last draw(sim)
+	private long _glblStartSimFrameTime,			//begin of draw(sim)
+			_glblLastSimFrameTime,					//begin of last draw(sim)
+			_memChkLastTimerMark,
+			_memChkMillisTimer;						//# of milliseconds to count for memory update in title bar
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Display Window-based values
@@ -346,6 +343,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final int[][] triColors = new int[][] {
 		{IRenderInterface.gui_DarkMagenta,IRenderInterface.gui_DarkBlue,IRenderInterface.gui_DarkGreen,IRenderInterface.gui_DarkCyan}, 
 		{IRenderInterface.gui_LightMagenta,IRenderInterface.gui_LightBlue,IRenderInterface.gui_LightGreen,IRenderInterface.gui_TransCyan}};
+	
+		
+	// Maintain copy of memory map	
+	protected Long[] currMemMap;
 		
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// code
@@ -367,6 +368,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		_useSkyboxBKGndAra= new boolean[numDispWins];
 		// set initial text size
 		_txtSize = (int) (_displayHeight * fontSizeScale);
+		// Initialize memory map
+		currMemMap = getMemoryStatusMap();
 		//initialize grid dim structs
 		setGridDimStructs();
 	}//	
@@ -487,14 +490,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//set clearing the background to be true
 		setBaseFlag(clearBKG,true);
 		//init sim cycles count
-		simCycles = 0;
 		//visibility flags corresponding to windows
 		initVisFlags();
 		
 		// set milli time tracking
-		_glblStartSimFrameTime = timeSinceStart();
+		_glblStartSimFrameTime = timeMgr.getMillisFromProgStart();
 		_glblLastSimFrameTime =  _glblStartSimFrameTime;
-		
+		_memChkMillisTimer = getMemStrUpdateMillis();
+		_memChkLastTimerMark = _glblStartSimFrameTime/_memChkMillisTimer; 
+				
 		//call this in first draw loop also, if not setup yet
 		initOnce();
 	}
@@ -657,6 +661,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	protected float getPopUpWinOpenMult_Custom() {	return _dfltPopUpWinOpenFraction;}	
+	
+	/**
+	 * Override if we want to speed up or slow down the memory query for the title bar, in number of millis between updates
+	 */
+	protected long getMemStrUpdateMillis() {return 200L;}
 	
 	/**
 	 * Whether or not the 3d window at winIdx of this application 
@@ -1234,12 +1243,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	private float getModAmtMillis() {
-		_glblStartSimFrameTime = timeSinceStart();
+		_glblStartSimFrameTime = timeMgr.getMillisFromProgStart();
 		float modAmtMillis = (_glblStartSimFrameTime - _glblLastSimFrameTime);
-		_glblLastSimFrameTime = timeSinceStart();
+		_glblLastSimFrameTime = _glblStartSimFrameTime;
 		return modAmtMillis;
 	}
-	
+		
 	/**
 	 * primary sim and draw loop.  Called from draw in IRenderInterface class
 	 */
@@ -1252,22 +1261,48 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//drawing section																//initialize camera, lights and scene orientation and set up eye movement
 		drawMainWinAndCanvas(modAmtMillis);		     									//draw UI overlay on top of rendered results			
 		//build window title
-		ri.setWindowTitle(getPrjNmLong(), ("IDX : " + curFocusWin + " : " + getCurFocusDispWindowName()));
+		ri.setWindowTitle(getWindowTitle(_memChkLastTimerMark != _glblStartSimFrameTime/_memChkMillisTimer));
+		//Update timer mark for mem query update
+		_memChkLastTimerMark = _glblStartSimFrameTime/_memChkMillisTimer;
+		
 		return true;
 	}//mainSimAndDrawLoop
 	
+	private final float memDiv = 1024.0f * 1024.0f;
+	protected final String buildMemString(boolean updateMem) {
+		// Current Memory status - only update occasionally
+		if (updateMem) {	currMemMap = getMemoryStatusMap();		}
+		String memStatusStr = "Memory : ";
+		for(int i=0;i< currMemMap.length; ++i) { 
+			memStatusStr +=  memDispTextAbbrev[i]+": " + String.format("%7.2f", currMemMap[i]/memDiv)+" MB | ";
+		}	
+		return memStatusStr;
+	}
+
+	protected final String getWindowTitle(boolean updateMem) {
+		String sep = "  |  ";
+		String title = getPrjNmLong() + sep;
+//		String currWindowNameStr = "Curr Win["+curFocusWin+"]:  " +  getCurFocusDispWindowName() + sep;
+//		title +=currWindowNameStr;
+		// Frame rate
+		String fRateStr =  "Frames : " + String.format("%4.1f",ri.getFrameRate()) + " fps";
+		title+= fRateStr +sep;
+		// Memory status if title not too long
+		if(title.length()<130){			title +=buildMemString(updateMem); } // about 111 long
+		return title;
+	}
+	 
 	
 	/**
 	 * sim loop, called from IRenderInterface draw method
 	 * @param modAmtMillis milliseconds since last frame started
 	 */
-	public boolean execSimDuringDrawLoop(float modAmtMillis) {
+	protected boolean execSimDuringDrawLoop(float modAmtMillis) {
 		//simulation section
 		if(isRunSim() ){
 			//run simulation
 			for(int i = 1; i<numDispWins; ++i){if((isShowingWindow(i)) && (dispWinFrames[i].getIsRunnable())){dispWinFrames[i].simulate(modAmtMillis);}}
 			if(isSingleStep()){setSimIsRunning(false);}
-			++simCycles;
 			return true;
 		}		//play in current window
 		return false;

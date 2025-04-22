@@ -208,9 +208,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * Builds and sets window title
 	 */
 	@Override
-	public void setWindowTitle(String applicationTitle, String windowName) {
-		//build window title
-		surface.setTitle(applicationTitle + " : " + (int)(frameRate) + " fps|cyc curFocusWin : " + windowName);		
+	public void setWindowTitle(String winTitle) {
+		//display window title
+		surface.setTitle(winTitle);		
 	}		
 	
 	/**
