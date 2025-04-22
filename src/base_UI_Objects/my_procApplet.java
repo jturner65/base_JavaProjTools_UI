@@ -83,23 +83,24 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	/**
 	 * Set the background painted color for specified window idx
-	 * @param winIdx window idx to set color for
+	 * @param idx idx to set color for
 	 * @param r
 	 * @param g
 	 * @param b
 	 * @param alpha
 	 */	
 	@Override
-	public final void setRenderBackground(int winIdx, int r, int g, int b, int alpha) {
-		bgrndColorAra.put(winIdx, new int[] {r,g,b,alpha});
+	public void setRenderBackground(int idx, int r, int g, int b, int alpha) {
+		bgrndColorAra.put(idx, new int[] {r,g,b,alpha});
 	}
 	
 	/**
 	 * Load a background "skybox" sphere using texture from filename
+	 * @param idx The idx where to put the image in the hashmap
 	 * @param filename Texture to use for background skybox sphere
 	 */
 	@Override
-	public void loadBkgndSphere(int winIdx, String filename) {
+	public void loadBkgndSphere(int idx, String filename) {
 		//save current sphere detail
 		int sPrevDet = getSphereDetail();
 		setSphereDetail(100);
@@ -108,27 +109,12 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		bgrndSphere.setTexture(bgrndTex);
 		bgrndSphere.rotate(MyMathUtils.HALF_PI_F,-1,0,0);
 		bgrndSphere.setStroke(false);	
-		bgrndSphereAra.put(winIdx, bgrndSphere);
-		setRenderBackground(winIdx,getClr(gui_White, 255), 255);		
+		bgrndSphereAra.put(idx, bgrndSphere);
+		setRenderBackground(idx, 255, 255, 255, 255);		
 		shape(bgrndSphere);	
 		//reset detail
 		setSphereDetail(sPrevDet);
 	}
-	/**
-	 * Set loaded background sphere as skybox
-	 * @param winIdx the idx of the skybox to draw
-	 */
-	@Override
-	public void drawBkgndSphere(int winIdx) {
-		PShape shape = bgrndSphereAra.get(winIdx);
-		drawRenderBackground(winIdx);
-		if(shape==null) {
-			AppMgr.msgObj.dispErrorMessage("my_procApplet","drawBkgndSphere","ERROR! No background sphere specified for window idx :"+winIdx);
-			return;
-		}
-		shape(shape);	
-	}
-	
 	
 	@Override
 	public void setup() {
@@ -148,17 +134,31 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	/**
 	 * Draw the specified window's background color
-	 * @param winIdx the window whose background to draw
+	 * @param idx the idx of the background to draw
 	 */
 	@Override
-	public void drawRenderBackground(int winIdx) {
-		int[] bGroundAra = bgrndColorAra.get(winIdx);
+	public void drawRenderBackground(int idx) {
+		int[] bGroundAra = bgrndColorAra.get(idx);
 		if (bGroundAra == null) {
 			bGroundAra = getClr(gui_White, 255);
 		}
 		super.background(bGroundAra[0],bGroundAra[1],bGroundAra[2],bGroundAra[3]);
 	}
-	
+	/**
+	 * Set loaded background sphere as skybox
+	 * @param idx the idx of the skybox to draw
+	 */
+	@Override
+	public void drawBkgndSphere(int idx) {
+		PShape shape = bgrndSphereAra.get(idx);
+		drawRenderBackground(idx);
+		if(shape==null) {
+			AppMgr.msgObj.dispErrorMessage("my_procApplet","drawBkgndSphere","ERROR! No background sphere specified for idx :"+idx);
+			return;
+		}
+		shape(shape);	
+	}
+		
 	/**
 	 * Return the underlying GL Window for this JOGL 
 	 * @return

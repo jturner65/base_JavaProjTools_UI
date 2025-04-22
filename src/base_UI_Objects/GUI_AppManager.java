@@ -18,6 +18,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
+//import base_UI_Objects.windowUI.background.base.Base_WinBackground;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
 import base_UI_Objects.windowUI.sidebar.SidebarMenu;
@@ -37,18 +38,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * rendering engine interface, providing expected methods.
 	 */
 	protected static IRenderInterface ri = null;
-	
-	
 	/**
 	 * Multiple of screen height that font size should be
 	 */
 	public static final float fontSizeScale = .0075f;
-	
 	/**
 	 * point size of text; is some multiple of screen height. Should be able to support modification
 	 */	
 	protected int _txtSize;
-	
 	/**
 	 * 3d interaction stuff and mouse tracking
 	 */
@@ -56,8 +53,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * Reference to GL Window underlying IRenderInterface surface
 	 */
-	public GLWindow window;
-	
+	public GLWindow window;	
 	/**
 	 * Width and height of application window
 	 */
@@ -76,7 +72,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * 9 element array holding camera loc, target, and orientation
 	 */
-	public float[] camVals;	
+	private float[] camVals;	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time and date
 	
@@ -84,7 +80,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * time that this application started
 	 */
 	private int _glblStartSimFrameTime,			//begin of draw(sim)
-			_glblLastSimFrameTime;					//begin of last draw(sim)
+			_glblLastSimFrameTime;				//begin of last draw(sim)
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Display Window-based values
@@ -97,6 +93,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * individual display/HUD windows for gui/user interaction
 	 */
 	protected Base_DispWindow[] dispWinFrames = new Base_DispWindow[0];
+	
+	/**
+	 * backgrounds for windows, either spherical image or colors
+	 */
+	//private Base_WinBackground[] dispWinBkgrnds;
+	
+	/**
+	 * Convenience ref to left side menu window.
+	 */
+	protected SidebarMenu sideBarMenu;
+	
 	/**
 	 * set in instancing class - must be > 1
 	 */
@@ -915,11 +922,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				sceneOriginValsBase[0], sceneFcsValsBase[0]);
 		_winTitles[0] = "UI Window";
 		SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(ri, this, _funcRowNames, _funcBtnNames, _dbgBtnNames, _winTitles, _inclWinNames, _inclMseOvValues);
-		dispWinFrames[dispMenuIDX] = new SidebarMenu(ri, this, dispMenuIDX, sideBarConfig);		
+		dispWinFrames[dispMenuIDX] = new SidebarMenu(ri, this, dispMenuIDX, sideBarConfig);	
+		sideBarMenu = (SidebarMenu)(dispWinFrames[dispMenuIDX]);
 	}
 	
 	/**
-	 * Return a default boolean array of window-related falgs suitable for most window creation for both 2D and 3D.
+	 * Return a default boolean array of window-related flags suitable for most window creation for both 2D and 3D.
 	 * @param is3D whether the window is 3d or not
 	 * @return an array of booleans with idx/vals : 
 	 * 								is3D		!is3D
@@ -1045,9 +1053,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	//isSlowProc means original calling process lasted longer than mouse click release and so button state should be forced to be off
 	public final void clearBtnState(int _type, int col, boolean isSlowProc) {
 		int row = _type;
-		SidebarMenu win = (SidebarMenu)dispWinFrames[dispMenuIDX];
-		win.getGuiBtnWaitForProc()[row][col] = false;
-		if(isSlowProc) {win.getGuiBtnSt()[row][col] = 0;}		
+		sideBarMenu.getGuiBtnWaitForProc()[row][col] = false;
+		if(isSlowProc) {sideBarMenu.getGuiBtnSt()[row][col] = 0;}		
 	}//clearBtnState 
 	
 	
@@ -1071,7 +1078,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param btnNames
 	 */
 	public final void setAllMenuBtnNames(String[][] btnNames) {
-		for(int _type = 0;_type<btnNames.length;++_type) {((SidebarMenu)dispWinFrames[dispMenuIDX]).setAllFuncBtnLabels(_type,btnNames[_type]);}
+		for(int _type = 0;_type<btnNames.length;++_type) {sideBarMenu.setAllFuncBtnLabels(_type,btnNames[_type]);}
 	}
 	
 	
@@ -1161,10 +1168,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}	
 	
 	protected void setMenuBtnState(int row, int col, int val) {
-		((SidebarMenu)dispWinFrames[dispMenuIDX]).getGuiBtnSt()[row][col] = val;	
+		sideBarMenu.getGuiBtnSt()[row][col] = val;	
 		if (val == 1) {
 			//msgObj.dispConsoleWarningMessage("GUI_AppManager","setMenuBtnState","Note!!! Turning on button at row : " + row + "  col " + col + " without button's command.");
-			((SidebarMenu)dispWinFrames[dispMenuIDX]).setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
+			sideBarMenu.setWaitForProc(row,col);}//if programmatically (not through UI) setting button on, then set wait for proc value true 
 	}//setMenuBtnState	
 	
 	public final void loadFromFile(File file){
@@ -1209,7 +1216,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	private final void drawBackground(int winIdx) {
 		if(_useSkyboxBKGndAra[winIdx]) {	ri.drawBkgndSphere(winIdx);} 
-		else {					ri.drawRenderBackground(winIdx);}
+		else {								ri.drawRenderBackground(winIdx);}
 	}
 
 	
@@ -1238,16 +1245,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * primary sim and draw loop.  Called from draw in IRenderInterface class
 	 */
-	public boolean mainSimAndDrawLoop() {
+	public final boolean mainSimAndDrawLoop() {
 		//Finish final init if not done already
 		if(!isFinalInitDone()) {initOnce(); return false;}	
 		float modAmtMillis = getModAmtMillis();
 		//simulation section
 		execSimDuringDrawLoop(modAmtMillis);
 		//drawing section																//initialize camera, lights and scene orientation and set up eye movement
-		drawMainWinAndCanvas(modAmtMillis);				
-		//Draw UI and 
-		drawUI(modAmtMillis);												//draw UI overlay on top of rendered results			
+		drawMainWinAndCanvas(modAmtMillis);		     									//draw UI overlay on top of rendered results			
 		//build window title
 		ri.setWindowTitle(getPrjNmLong(), ("IDX : " + curFocusWin + " : " + getCurFocusDispWindowName()));
 		return true;
@@ -1269,8 +1274,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		}		//play in current window
 		return false;
 	}//execSimDuringDrawLoop
+	
 	/**
-	 * setup 
+	 * setup for draw
 	 */
 	private void _drawSetup(){
 		ri.setPerspective(MyMathUtils.THIRD_PI_F, aspectRatio, .5f, camVals[2]*100.0f);
@@ -1306,6 +1312,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			draw2D(modAmtMillis);
 		}
 		drawMePost_Indiv(modAmtMillis, is3DDraw);
+		//Draw UI and on-screen elements
+		drawUI(modAmtMillis);
 	}//draw	
 	
 	
@@ -1346,12 +1354,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		boolean shouldDrawOnscreenText = (isDebugMode() || showInfo);
 		for(int i =1; i<numDispWins; ++i){
 			dispWinFrames[i].drawHeader(
-					dispWinFrames[dispMenuIDX].getDebugData(),
+					sideBarMenu.getDebugData(),
 					(shouldDrawOnscreenText && (i==curFocusWin)), 
 					isDebugMode(), 
 					modAmtMillis);}
-		dispWinFrames[dispMenuIDX].draw2D(modAmtMillis);
-		dispWinFrames[dispMenuIDX].drawHeader(new String[0], false, isDebugMode(), modAmtMillis);
+		sideBarMenu.draw2D(modAmtMillis);
+		sideBarMenu.drawHeader(new String[0], false, isDebugMode(), modAmtMillis);
 		dispWinFrames[curFocusWin].updateConsoleStrs();	
 	}//drawUI
 	
@@ -1579,7 +1587,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public final String getSidebarMenuButtonLabel(int row, int col) {
-		return ((SidebarMenu) dispWinFrames[dispMenuIDX]).getSidebarMenuButtonLabel(row,col);
+		return sideBarMenu.getSidebarMenuButtonLabel(row,col);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1839,7 +1847,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			//sidebar menu synthesizes its uiClickCoords in its constructor
 			case dispMenuIDX 		: {return new float[0];}			
 			default 	:{
-				return getUIRectVals_Indiv(idx, dispWinFrames[dispMenuIDX].getUIClkCoords());
+				return getUIRectVals_Indiv(idx, sideBarMenu.getUIClkCoords());
 			}
 		}
 	}//getUIRectVals
@@ -1874,7 +1882,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		int flIDX = idx/32, mask = 1<<(idx%32);
 		_winVisFlags[flIDX] = (val ?  _winVisFlags[flIDX] | mask : _winVisFlags[flIDX] & ~mask);
 		switch (idx){
-			case dispMenuIDX 	: { dispWinFrames[dispMenuIDX].setShowWin(val);    break;}
+			case dispMenuIDX 	: { sideBarMenu.setShowWin(val);    break;}
 			default 			: {	setVisFlag_Indiv(idx, val);	}
 		}
 	}
@@ -2054,7 +2062,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	public Base_DispWindow getCurFocusDispWindow() {return dispWinFrames[curFocusWin];}	
 
-	public SidebarMenu getSideBarMenuWindow() {return ((SidebarMenu)dispWinFrames[dispMenuIDX]);}
+	public SidebarMenu getSideBarMenuWindow() {return sideBarMenu;}
 	public String getCurFocusDispWindowName() {return getDispWindowName(curFocusWin);}
 	public String getDispWindowName(int idx) { 
 		if ((idx >= 0) && (idx < dispWinFrames.length)){

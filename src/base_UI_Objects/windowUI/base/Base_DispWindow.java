@@ -50,19 +50,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected MessageObject msgObj;
 
 	/**
-	 * Manager of all UI objects in this window
+	 * TODO Manager of all UI objects in this window
 	 */
 	protected UIObjectManager uiMgr;
-	
+
 	/**
-	 * enable drawing debug info onto app canvas	
+	 * Window initialization values - open and closed dims, colors
 	 */
-	private ArrayList<String> DebugInfoAra;	
-	//count of draw cycles for consoleString decay
-	private int drawCount = 0;
-		
-	//how long a message should last before it is popped from the console strings deque (how many frames)
-	private final int cnslStrDecay = 10;
+	protected final GUI_AppWinVals winInitVals;
 	
 	/**
 	 * file IO object to manage IO
@@ -73,18 +68,23 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	protected final String className;
 	
-	public final int ID;	
+	public final int ID;
+	//Counter of how many windows are built in the application. Used to specify unique ID for each new window
 	private static int winCnt = 0;
 
-	/**
-	 * Window initialization values - open and closed dims, colors
-	 */
-	protected final GUI_AppWinVals winInitVals;
-	
 	public float[] closeBox;	
 	//current visible screen width and height
 	public float[] curVisScrDims;
 	
+	/**
+	 * enable drawing debug info onto app canvas	
+	 */
+	private ArrayList<String> DebugInfoAra;	
+	//count of draw cycles for consoleString decay
+	private int drawCount = 0;
+		
+	//how long a message should last before it is popped from the console strings deque (how many frames)
+	private static final int cnslStrDecay = 10;
 	
 	/**
 	 * the window list idx in the App Manager that controls this window - use -1 for none.
@@ -1899,7 +1899,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void draw3D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){return;}
 		float animTimeMod = modAmtMillis/1000.0f;
-		ri.pushMatState();	
+		ri.pushMatState();
+		// Set current fill and stroke colors
 		winInitVals.setWinFillAndStroke(ri);
 		//draw instancing win-specific stuff
 		drawMe(animTimeMod);			//call instance class's draw
@@ -1926,6 +1927,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//msgObj.dispDebugMessage("Base_DispWindow","draw2D","Hitting hint code draw2D");
 		ri.setBeginNoDepthTest();
 		ri.disableLights();
+		// Set current fill and stroke colors
 		winInitVals.setWinFillAndStroke(ri);
 		//main window drawing
 		winInitVals.drawRectDim(ri);
@@ -2383,8 +2385,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		return res.toArray(new String[0]);	
 	}
 	
-	//setup the launch of UI-driven custom functions or debugging capabilities, which will execute next frame
+	/**
+	 * Get the number of usable threads the system supports.
+	 * @return
+	 */
+	public final int getNumThreadsAvailable() {return AppMgr.getNumThreadsAvailable();}
 	
+	
+	//setup the launch of UI-driven custom functions or debugging capabilities, which will execute next frame
 	//get key used to access arrays in traj array
 	protected final String getTrajAraKeyStr(int i){if(null==trajMgr) {return "";} return trajMgr.getTrajAraKeyStr(i);}
 	protected final int getTrajAraIDXVal(String str){if(null==trajMgr) {return -1;} return trajMgr.getTrajAraIDXVal(str);  }
