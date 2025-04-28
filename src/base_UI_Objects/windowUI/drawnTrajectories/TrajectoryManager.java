@@ -147,7 +147,7 @@ public class TrajectoryManager {
 				}	
 			}
 		}
-	}//setRectDimsY
+	}//setTrajRectDimsY
 	
 
 	/////////////////////
@@ -434,7 +434,7 @@ public class TrajectoryManager {
 	 * @param animTimeMod
 	 * @param trans
 	 */
-	public void drawTraj_3d(IRenderInterface ri, float modAmtMillis, myPoint trans){
+	public void drawTraj_3d(IRenderInterface ri, float modAmtMillis, myPointf trans){
 		if(!getFlags(canDrawTraj)) {return;}
 		ri.pushMatState();	
 		ownr.drawTraj3D(modAmtMillis,trans);

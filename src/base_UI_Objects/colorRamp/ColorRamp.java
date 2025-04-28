@@ -41,7 +41,8 @@ public class ColorRamp  {
 	public ColorRamp(IRenderInterface _p, GUI_AppManager _AppMgr){
 		ri = _p; 	 AppMgr = _AppMgr;
 		layer = new Layer(50, 10);
-		scaleVals = new float[]{AppMgr.gridDimX/255.0f,AppMgr.gridDimY/255.0f,AppMgr.gridDimZ/255.0f};
+		float[] gridDims = AppMgr.get3dGridDims();
+		scaleVals = new float[]{gridDims[0]/255.0f,gridDims[1]/255.0f,gridDims[2]/255.0f};
 		
 		float y = ri.getHeight() *.15f;
 		grads = new ColorGradient(ri, this, ri.getWidth() *.85f, y, "Modified LCH");//(CAProject3 _pa, float _x, float _y){			

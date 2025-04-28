@@ -186,6 +186,7 @@ public abstract class Base_NumericGUIObj extends Base_GUIObj {
 	 * Set this UI object's value from a string
 	 * @param str
 	 */
+	@Override
 	protected final void setValueFromString(String str) {
 		double uiVal = Double.parseDouble(str);	
 		setVal(uiVal);

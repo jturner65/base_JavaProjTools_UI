@@ -35,12 +35,12 @@ public class MenuGUIObj_Int extends Base_NumericGUIObj {
 	protected final double modValAssign(double _val) {return Math.round(_val);}
 	
 	/**
-	 * Set a new modifier value to use for this object : Mod values for integer-based objects will always be 1
-	 * @param _unused
+	 * Set a new modifier value to use for this object : Mod values for integer-based objects will always be integral values
+	 * @param newMod
 	 */
 	@Override
-	public final void setNewMod(double _unused){	
-		modMult = 1.0;
+	public void setNewMod(double newMod){	
+		modMult = Math.round(newMod);
 		formatStr = "%.0f";
 	}
 	

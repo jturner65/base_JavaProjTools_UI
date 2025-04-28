@@ -57,6 +57,16 @@ public class MenuGUIObj_List extends MenuGUIObj_Int {
 	}
 	
 	/**
+	 * Set a new modifier value to use for this object : Mod values for list-based objects will always be 1
+	 * @param _unused
+	 */
+	@Override
+	public final void setNewMod(double _unused){	
+		modMult = 1.0;
+		formatStr = "%.0f";
+	}
+	
+	/**
 	 * Get this UI object's value as a string
 	 * @return
 	 */

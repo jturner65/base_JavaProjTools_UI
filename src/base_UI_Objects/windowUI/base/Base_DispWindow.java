@@ -237,12 +237,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * target of focus - used in translate to set where the camera is looking - allow for modification
 	 */
-	private myVector focusTar;							
+	private myVectorf focusTar;							
 	/**
 	 * set this value to be different display center translations -to be used to calculate mouse offset in world for pick
 	 * and also as origin for 
 	 */
-	private myPoint sceneOriginVal;							
+	private myPointf sceneOriginVal;							
 	
 	//to control how much is shown in the window - if stuff extends off the screen and for 2d window
 	protected ScrollBars[] scbrs;
@@ -318,8 +318,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		msClkObj = -1;
 		msOvrObj = -1;
 		reInitInfoStr();
-		sceneOriginVal = new myPoint(winInitVals.sceneOriginVal);
-		focusTar = new myVector(winInitVals.initSceneFocusVal);
+		sceneOriginVal = new myPointf(winInitVals.sceneOriginVal);
+		focusTar = new myVectorf(winInitVals.initSceneFocusVal);
 		//initialize the camera
 		setInitCamView();
 	}//ctor
@@ -391,6 +391,42 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			trajMgr = null;
 		}
 	}//initThisWin
+	
+	/**
+	 * Shorthand to display general information
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispInfoMsg(String funcName, String message) {
+		msgObj.dispInfoMessage( className, funcName, message);
+	}
+	
+	/**
+	 * Shorthand to display a debug message
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispDbgMsg(String funcName, String message) {
+		msgObj.dispDebugMessage( className, funcName, message);
+	}
+	
+	/**
+	 * Shorthand to display a warning message
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispWarnMsg(String funcName, String message) {
+		msgObj.dispWarningMessage( className, funcName, message);
+	}
+	
+	/**
+	 * Shorthand to display an error message
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispErrMsg(String funcName, String message) {
+		msgObj.dispErrorMessage( className, funcName, message);
+	}
 	
 	/**
 	 * Build appropriate UIDataUpdater instance for application
@@ -840,11 +876,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 					break;}
 				case Button  :{
 					//TODO
-					msgObj.dispWarningMessage(className, "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
+					_dispWarnMsg("_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
 					break;
 				}
 				default : {
-					msgObj.dispWarningMessage(className, "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
+					_dispWarnMsg("_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
 					break;				
 				}
 			}
@@ -855,16 +891,16 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}//_buildAllObjects	
 	
 	/**
-	 * 
-	 * @param idx
-	 * @param len
-	 * @param calFunc
-	 * @param desc
-	 * @return
+	 * Validate that the passed idx exists in the list of objects 
+	 * @param idx index of potential objects
+	 * @param len number of objects stored in object array
+	 * @param calFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether or not the passed index corresponds to a valid location in the array of UI objects
 	 */
 	private boolean _validateUIObjectIdx(int idx, int len, String calFunc, String desc) {
 		if (!MyMathUtils.inRange(idx, 0, len)){
-			msgObj.dispErrorMessage(className, calFunc, 
+			_dispErrMsg(calFunc, 
 				"Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
 			return false;
 		}		
@@ -872,14 +908,15 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 	
 	/**
-	 * 
-	 * @param obj
-	 * @param calFunc
-	 * @return
+	 * Validate whether the passed UI object is a listVal object
+	 * @param obj the object to check
+	 * @param calFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether the passed UI object is a listVal object
 	 */
 	private boolean _validateIdxIsListObj(Base_GUIObj obj, String calFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.ListVal) {
-			msgObj.dispErrorMessage(className, calFunc, 
+			_dispErrMsg(calFunc, 
 					"Attempting to access illegal List UI object to "+desc+" (object :"+obj.getName()+" is not a list object). Aborting.");
 			return false;
 		}
@@ -890,31 +927,34 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Sets the passed UI object's new max value
 	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes
 	 * @param maxVal
+	 * @return whether modification was performed or not
 	 */
-	public void setNewUIMaxVal(int idx, double maxVal) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMaxVal", "set its max value")) {guiObjs_Numeric[idx].setNewMax(maxVal);}	
+	public boolean setNewUIMaxVal(int idx, double maxVal) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMaxVal", "set its max value")) {guiObjs_Numeric[idx].setNewMax(maxVal);return true;}	
+		return false;
 	}
-	
-	
+		
 	/**
 	 * Sets the passed UI object's new min value
 	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes
 	 * @param minVal
+	 * @return whether modification was performed or not
 	 */
-	public void setNewUIMinVal(int idx, double minVal) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMinVal", "set its min value")) {guiObjs_Numeric[idx].setNewMin(minVal);}
+	public boolean setNewUIMinVal(int idx, double minVal) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMinVal", "set its min value")) {guiObjs_Numeric[idx].setNewMin(minVal);return true;}
+		return false;
 	}
-	
+		
 	/**
-	 * Force a value to be set in the numeric UI object at the passed IDX
-	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes and returns 0
+	 * Force a value to be set in the numeric UI object at the passed idx
+	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes and returns -Double.MAX_VALUE
 	 * @param val
-	 * @return the new value that was set, after having been bounded
+	 * @return value being set, or -Double.MAX_VALUE if idx is out of range
 	 */
 	public double setNewUIValue(int idx, double val) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIValue", "set its value")) {guiObjs_Numeric[idx].setVal(val);}
-			return 0;
-		}		
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIValue", "set its value")) {return guiObjs_Numeric[idx].setVal(val);}
+		return -Double.MAX_VALUE;
+	}
 	
 	/**
 	 * Set the display text of the passed UI Object, either numeric or boolean
@@ -959,8 +999,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	/**
 	 * Retrieve the min value of a numeric UI object
-	 * @param idx index in numeric UI object array to access. If out of range, returns max value
-	 * @return
+	 * @param idx index in numeric UI object array to access.
+	 * @return min value allowed, or Double.MAX_VALUE if idx out of range
 	 */
 	public double getMinUIValue(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMinUIValue","get its min value")) {return guiObjs_Numeric[idx].getMinVal();}
@@ -969,8 +1009,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	/**
 	 * Retrieve the max value of a numeric UI object
-	 * @param idx index in numeric UI object array to access. If out of range, returns min value
-	 * @return
+	 * @param idx index in numeric UI object array to access.
+	 * @return max value allowed, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getMaxUIValue(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMaxUIValue","get its max value")){return guiObjs_Numeric[idx].getMaxVal();}
@@ -979,8 +1019,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	/**
 	 * Retrieve the mod step value of a numeric UI object
-	 * @param idx index in numeric UI object array to access. If out of range, returns 0
-	 * @return
+	 * @param idx index in numeric UI object array to access.
+	 * @return mod value of UI object, or 0 if idx out of range
 	 */
 	public double getModStep(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getModStep", "get its mod value")) {return guiObjs_Numeric[idx].getModStep();}
@@ -989,19 +1029,19 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	/**
 	 * Retrieve the value of a numeric UI object
-	 * @param idx index in numeric UI object array to access. If out of range, returns 0
-	 * @return
+	 * @param idx index in numeric UI object array to access.
+	 * @return the current value of the UI object, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getUIValue(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getUIValue", "get its value")) {return guiObjs_Numeric[idx].getVal();}
-		return 0;
+		return -Double.MAX_VALUE;
 	}
 	
 	/**
 	 * Get the string representation of the passed integer listIdx from the UI Object at UIidx
-	 * @param UIidx
-	 * @param listIdx
-	 * @return
+	 * @param UIidx index in numeric UI object array to access.
+	 * @param listIdx index in list of elements to access
+	 * @return the string value at the requested index, or "" if not a valid request
 	 */
 	public String getListValStr(int UIidx, int listIdx) {		
 		if ((!_validateUIObjectIdx(UIidx, guiObjs_Numeric.length, "getListValStr", "get a list value at specified idx")) || 
@@ -1190,7 +1230,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
 			float btnLen = _calcBtnLength(truePrivFlagLabels[i].trim(),falsePrivFlagLabels[i].trim());
 			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
-			//msgObj.dispDebugMessage(className, "_buildPrivBtnRects","i: "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
+			//_dispDbgMsg("_buildPrivBtnRects","i: "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
 			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
@@ -1247,9 +1287,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param val
 	 */
 	public final void handleDispFlagsDebugMode(boolean val) {
-		msgObj.dispDebugMessage(className, "handleDispFlagsDebugMode", "Start UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
+		_dispDbgMsg("handleDispFlagsDebugMode", "Start UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
 		handleDispFlagsDebugMode_Indiv(val);
-		msgObj.dispDebugMessage(className, "handleDispFlagsDebugMode", "End UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
+		_dispDbgMsg("handleDispFlagsDebugMode", "End UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
 	}
 	protected abstract void handleDispFlagsDebugMode_Indiv(boolean val);
 
@@ -1259,9 +1299,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	@Override
 	public final void handlePrivFlagsDebugMode(boolean val) {
-		msgObj.dispDebugMessage(className, "handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ val +".");
+		_dispDbgMsg("handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ val +".");
 		handlePrivFlagsDebugMode_Indiv(val);
-		msgObj.dispDebugMessage(className, "handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ val +".");
+		_dispDbgMsg("handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ val +".");
 	}
 	
 	/**
@@ -1325,10 +1365,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * window pushes up or pulls down this window - this resizes any drawn trajectories in this 
 	 * window, and calls the instance class's code for resizing
 	 * @param height
+	 * 
+	 * TODO DEPRECATE THIS
 	 */
 	public final void setRectDimsY(float height){
 		float oldVal = dispFlags.getShowWin() ? winInitVals.rectDim[3] : winInitVals.rectDim[3];
-		winInitVals.rectDim[3] = height;
 		winInitVals.rectDim[3] = height;
 		float scale  = height/oldVal;			//scale of modification - rescale the size and location of all components of this window by this
 		if(null!=trajMgr) {		trajMgr.setTrajRectDimsY(height, scale);}
@@ -1392,13 +1433,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				}
 				break;}
 			case LabelVal : {
-				msgObj.dispWarningMessage(className, "setUIWinVals", "Attempting to process the value `" + guiObjs_Numeric[UIidx].getValueAsString()+"` from the `" + guiObjs_Numeric[UIidx].getName()+ "` label object.");				
+				_dispWarnMsg("setUIWinVals", "Attempting to process the value `" + guiObjs_Numeric[UIidx].getValueAsString()+"` from the `" + guiObjs_Numeric[UIidx].getName()+ "` label object.");				
 				break;}
 			case Button : {
-				msgObj.dispWarningMessage(className, "setUIWinVals", "Attempting to set a value for an unsupported Button UI object : " + objType.toStrBrf());
+				_dispWarnMsg("setUIWinVals", "Attempting to set a value for an unsupported Button UI object : " + objType.toStrBrf());
 				break;}
 			default : {
-				msgObj.dispWarningMessage(className, "setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
+				_dispWarnMsg("setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
 				break;}
 			
 		}//switch on obj type
@@ -1906,7 +1947,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		drawMe(animTimeMod);			//call instance class's draw
 		//draw traj stuff if exists and appropriate - if this window 
 		//accepts a drawn trajectory, then allow it to be displayed
-		if(null!=trajMgr){		trajMgr.drawTraj_3d(ri, animTimeMod, myPoint._add(sceneOriginVal,focusTar));}				
+		if(null!=trajMgr){		trajMgr.drawTraj_3d(ri, animTimeMod, myPointf._add(sceneOriginVal,focusTar));}				
 		ri.popMatState();		
 	}//draw3D
 
@@ -1941,7 +1982,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 
 	
-	public void drawTraj3D(float animTimeMod, myPoint trans){
+	public void drawTraj3D(float animTimeMod, myPointf trans){
 		msgObj.dispWarningMessage("Base_DispWindow","drawTraj3D","I should be overridden in 3d instancing class");
 //			pa.pushMatState();	
 //			if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
@@ -2436,9 +2477,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		int row = curCstBtnRow-curCstFuncBtnOffset;
 		int col = curCustBtn[curCstBtnRow];
 		String label = AppMgr.getSidebarMenuButtonLabel(curCstBtnRow,col);
-		msgObj.dispDebugMessage(className, "launchMenuBtnHndlr", "Begin requested action : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + winInitVals.winName);
+		_dispDbgMsg("launchMenuBtnHndlr", "Begin requested action : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + winInitVals.winName);
 		launchMenuBtnHndlr(row, col, label);
-		msgObj.dispDebugMessage(className,"launchMenuBtnHndlr", "End requested action (multithreaded actions may still be working) : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + winInitVals.winName);
+		_dispDbgMsg("launchMenuBtnHndlr", "End requested action (multithreaded actions may still be working) : Click '" + label +"' (Row:"+(row+1)+"|Col:"+col+") in " + winInitVals.winName);
 		custFuncDoLaunch=false;
 	}//checkCustMenuUIObjs
 

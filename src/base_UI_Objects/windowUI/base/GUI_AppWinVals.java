@@ -3,8 +3,8 @@ package base_UI_Objects.windowUI.base;
 import java.util.Arrays;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IRenderInterface;
 
 /**
@@ -70,11 +70,11 @@ public class GUI_AppWinVals {
 	/**
 	 * Scene center value, for drawing
 	 */
-	public final myPoint sceneOriginVal;
+	public final myPointf sceneOriginVal;
 	/**
 	 * Initial focus point for camera
 	 */
-	public final myVector initSceneFocusVal;
+	public final myVectorf initSceneFocusVal;
 	/**
 	 * Background color for this window
 	 */
@@ -125,7 +125,7 @@ public class GUI_AppWinVals {
 	 * @param _sceneCenterVal center of scene, for drawing objects
 	 * @param _initSceneFocusVal initial focus target for camera
 	 */
-	public GUI_AppWinVals(int _winIdx, String[] _strVals, boolean[] _flags, float[][] _floatVals, int[][] _intVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
+	public GUI_AppWinVals(int _winIdx, String[] _strVals, boolean[] _flags, float[][] _floatVals, int[][] _intVals, myPointf _sceneCenterVal, myVectorf _initSceneFocusVal) {
 		winIdx = _winIdx;
 		winName = _strVals[0];
 		winDescr = _strVals[1];
@@ -157,8 +157,8 @@ public class GUI_AppWinVals {
 			rtSideFillClr = new int[]{0,0,0,200};
 			rtSideStrkClr = new int[]{255,255,255,255};
 		}		
-		sceneOriginVal = new myPoint(_sceneCenterVal);
-		initSceneFocusVal = new myVector(_initSceneFocusVal);
+		sceneOriginVal = new myPointf(_sceneCenterVal);
+		initSceneFocusVal = new myVectorf(_initSceneFocusVal);
 		//background and canvas colors
 		bGroundColor = new int[4];
 		canvasColor = new int[4];

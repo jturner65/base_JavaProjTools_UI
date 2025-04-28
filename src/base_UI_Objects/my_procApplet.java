@@ -205,13 +205,14 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}//draw	
 	
 	/**
-	 * Builds and sets window title
+	 * Sets window title. AppMgr constructs window title
+	 * @param windowTitle string to display in the window titlebar
 	 */
 	@Override
 	public void setWindowTitle(String winTitle) {
 		//display window title
 		surface.setTitle(winTitle);		
-	}		
+	}	
 	
 	/**
 	 * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector

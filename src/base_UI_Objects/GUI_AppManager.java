@@ -91,6 +91,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	protected Base_DispWindow[] dispWinFrames = new Base_DispWindow[0];
 	
+	
+	/**
+	 * whether or not a particular background is 'dark' or 'light' ( backgrounds are dark if their average color is < 128)
+	 */
+	protected HashMap<Integer, Boolean> bgrndIsDarkAra;
+	
 	/**
 	 * backgrounds for windows, either spherical image or colors
 	 */
@@ -195,9 +201,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			singleStep			= 12,			//run single sim step
 	//UI
 			showRtSideMenu		= 13,			//display the right side info menu for the current window, if it supports that display
-			flipDrawnTraj  		= 14,			//whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
-			clearBKG 			= 15;			//whether or not background should be cleared for every draw.  defaults to true
-	public final int numBaseFlags = 16;
+			showStatusBar		= 14,			//whether or not to display status bar with frames per second and mem usage
+			flipDrawnTraj  		= 15,			//whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
+			clearBKG 			= 16;			//whether or not background should be cleared for every draw.  defaults to true
+	public final int numBaseFlags = 17;
 	
 	/**
 	 * booleans in main program - need to have labels in idx order, even if not displayed
@@ -217,6 +224,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			"Stop Simulation",
 			"Single Step",
 			"Displaying Side Menu",
+			"Displaying Status Bar",
 			"Reverse Drawn Trajectory",
 			"Clearing Background"
 			};
@@ -236,6 +244,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			"Run Simulation",
 			"Single Step",
 			"Display Side Menu",
+			"Display Status Bar",
 			"Reverse Drawn Trajectory",
 			"Clear Background"
 			};
@@ -253,7 +262,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		runSim,
 		singleStep,
 		showCanvas,
-		showRtSideMenu
+		showRtSideMenu,
+		showStatusBar
 		);
 	
 	private int numFlagsToShow = flagsToShow.size();
@@ -294,32 +304,37 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public boolean showInfo = false;			
 	
 	//display-related size variables
-	public int grid2D_X = 800, grid2D_Y = 800;	
-	public int gridDimX = 800, gridDimY = 800, gridDimZ = 800;				//dimensions of 3d region
-	public myVectorf gridHalfDim = new myVectorf(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
+	private int grid2D_X = 800, grid2D_Y = 800;	
+	private int gridDimX = 800, gridDimY = 800, gridDimZ = 800;				//dimensions of 3d region
+	private myPointf gridHalfDim = new myPointf(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
 
 	/**
 	 * boundary regions for enclosing cube - given as min and difference of min and max
 	 */
-	public float[][] cubeBnds;			//diffs		
-	
-	public myVectorf[] cubeDirAra;
-	public myPointf[][] origPerDirAra;
+	private float[][] cubeBnds;	
+	/**
+	 * Unit direction vectors for cube walls
+	 */
+	private myVectorf[] cubeDirAra;
+	/**
+	 * origins in wall planes for each index of cubeDirAra normals.
+	 */
+	private myPointf[][] origPerDirAra;
 		
 	/**
 	 * 2D, 3D
 	 */
-	private myVector[] sceneFcsValsBase;
+	private myVectorf[] sceneFcsValsBase;
 	/**
 	 * 2D, 3D
 	 */
-	private myPoint[] sceneOriginValsBase;
+	private myPointf[] sceneOriginValsBase;
 	
 	//3D box stuff
-	public myVector[] boxNorms = new myVector[] {new myVector(1,0,0),new myVector(-1,0,0),new myVector(0,1,0),new myVector(0,-1,0),new myVector(0,0,1),new myVector(0,0,-1)};//normals to 3 d bounding boxes
-	protected float hGDimX = gridDimX/2.0f, hGDimY = gridDimY/2.0f, hGDimZ = gridDimZ/2.0f;
-	protected float tGDimX = gridDimX*10, tGDimY = gridDimY*10, tGDimZ = gridDimZ*20;
-	public myPoint[][] boxWallPts;
+	private myVectorf[] boxNorms = new myVectorf[] {new myVectorf(1,0,0),new myVectorf(-1,0,0),new myVectorf(0,1,0),new myVectorf(0,-1,0),new myVectorf(0,0,1),new myVectorf(0,0,-1)};//normals to 3 d bounding boxes
+	private float hGDimX = gridDimX/2.0f, hGDimY = gridDimY/2.0f, hGDimZ = gridDimZ/2.0f;
+	private float tGDimX = gridDimX*10, tGDimY = gridDimY*10, tGDimZ = gridDimZ*20;
+	private myPointf[][] boxWallPts;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// file IO variables
@@ -458,12 +473,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//per-window specification
 		
 		int[][] bkGrndColors = new int[numDispWins][];
+		bgrndIsDarkAra = new HashMap<Integer, Boolean>();
 		for(int i=0;i<numDispWins;++i) {
 			_useSkyboxBKGndAra[i] = getUseSkyboxBKGnd(i);
 			if (_useSkyboxBKGndAra[i]) {
 				ri.loadBkgndSphere(i, getSkyboxFilename(i));
 			}
 			int[] bGroundClr = getBackgroundColor(i);
+			bgrndIsDarkAra.put(i, ((bGroundClr[0]+bGroundClr[1]+bGroundClr[2])/3.0f < 128.0f));			
 			ri.setRenderBackground(i, bGroundClr, bGroundClr[3]);
 			bkGrndColors[i] = bGroundClr;
 		}
@@ -834,8 +851,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		gridHalfDim.set(gridDimX*.5f,gridDimY*.5f,gridDimZ*.5f );
 		
 		cubeBnds = new float[][]{//idx 0 is min, 1 is diffs
-			new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},//mins
-			new float[]{gridDimX,gridDimY,gridDimZ}};			//diffs
+			new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},	//mins
+			new float[]{gridDimX,gridDimY,gridDimZ}};					//diffs
 			
 			
 		cubeDirAra = new myVectorf[] {
@@ -846,35 +863,35 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 		origPerDirAra = new myPointf[][] {
 			 new myPointf[] {
-			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1], 				cubeBnds[0][2]),				//min x, min y, min z
-			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1] +cubeBnds[1][1], cubeBnds[0][2]),				//min x, max y, min z
-			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1], 				cubeBnds[0][2] +cubeBnds[1][2]),	//min x, min y, max z
+			    		new myPointf(cubeBnds[0]),																		//min x, min y, min z
+			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1] +cubeBnds[1][1], cubeBnds[0][2]),					//min x, max y, min z
+			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1], 				 cubeBnds[0][2] +cubeBnds[1][2]),	//min x, min y, max z
 			    		new myPointf(cubeBnds[0][0], cubeBnds[0][1] +cubeBnds[1][1], cubeBnds[0][2] +cubeBnds[1][2])	//min x, max y, max z
 			    },
 			new myPointf[] {
-		    		new myPointf(cubeBnds[0][0], 				cubeBnds[0][1], 	cubeBnds[0][2]),             //min x, min y, min z  
-		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][0], 	cubeBnds[0][1], 	cubeBnds[0][2]),             //max x, min y, min z  
-		    		new myPointf(cubeBnds[0][0], 				cubeBnds[0][1], 	cubeBnds[0][2] +cubeBnds[1][2]),//min x, min y, max z  
-		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][1], 	cubeBnds[0][1], 	cubeBnds[0][2] +cubeBnds[1][2]) //max x, min y, max z  
+		    		new myPointf(cubeBnds[0]),             																//min x, min y, min z  
+		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][0], 	cubeBnds[0][1], cubeBnds[0][2]),            	 	//max x, min y, min z  
+		    		new myPointf(cubeBnds[0][0], 					cubeBnds[0][1], cubeBnds[0][2] +cubeBnds[1][2]),	//min x, min y, max z  
+		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][0], 	cubeBnds[0][1], cubeBnds[0][2] +cubeBnds[1][2]) 	//max x, min y, max z  
 		    }, 
 			new myPointf[] {
-		    		new myPointf(cubeBnds[0][0], 				cubeBnds[0][1], 				cubeBnds[0][2]), //min x, min y, min z  
-		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][0],	cubeBnds[0][1], 				cubeBnds[0][2]), //max x, min y, min z  
-		    		new myPointf(cubeBnds[0][0], 				cubeBnds[0][1] +cubeBnds[1][1], 	cubeBnds[0][2]), //min x, max y, min z  
-		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][1], 	cubeBnds[0][1] +cubeBnds[1][1], 	cubeBnds[0][2])  //max x, max y, min z  
+		    		new myPointf(cubeBnds[0]), //min x, min y, min z  
+		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][0],	cubeBnds[0][1], 				cubeBnds[0][2]), 	 //max x, min y, min z  
+		    		new myPointf(cubeBnds[0][0], 					cubeBnds[0][1] +cubeBnds[1][1], 	cubeBnds[0][2]), //min x, max y, min z  
+		    		new myPointf(cubeBnds[0][0] +cubeBnds[1][0], 	cubeBnds[0][1] +cubeBnds[1][1], 	cubeBnds[0][2])  //max x, max y, min z  
 		    }
 			
 		};
 		
 		//2D, 3D
-		sceneFcsValsBase = new myVector[]{						//set these values to be different targets of focus
-				new myVector(-grid2D_X/2,-grid2D_Y/1.75f,0),
-				new myVector(0,0,0)
+		sceneFcsValsBase = new myVectorf[]{						//set these values to be different targets of focus
+				new myVectorf(-grid2D_X/2,-grid2D_Y/1.75f,0),
+				new myVectorf(0,0,0)
 		};
 		//2D, 3D
-		sceneOriginValsBase = new myPoint[]{				//set these values to be different display center translations -
-			new myPoint(0,0,0),										// to be used to calculate mouse offset in world for pick
-			new myPoint(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
+		sceneOriginValsBase = new myPointf[]{				//set these values to be different display center translations -
+			new myPointf(0,0,0),										// to be used to calculate mouse offset in world for pick
+			new myPointf(-gridDimX/2.0,-gridDimY/2.0,-gridDimZ/2.0)
 		};
 		
 		hGDimX = gridDimX/2.0f;
@@ -883,13 +900,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		tGDimX = gridDimX*10;
 		tGDimY = gridDimY*10;
 		tGDimZ = gridDimZ*20;
-		boxWallPts = new myPoint[][] {//pts to check if intersection with 3D bounding box happens
-				new myPoint[] {new myPoint(hGDimX,tGDimY,tGDimZ), new myPoint(hGDimX,-tGDimY,tGDimZ), new myPoint(hGDimX,tGDimY,-tGDimZ)  },
-				new myPoint[] {new myPoint(-hGDimX,tGDimY,tGDimZ), new myPoint(-hGDimX,-tGDimY,tGDimZ), new myPoint(-hGDimX,tGDimY,-tGDimZ) },
-				new myPoint[] {new myPoint(tGDimX,hGDimY,tGDimZ), new myPoint(-tGDimX,hGDimY,tGDimZ), new myPoint(tGDimX,hGDimY,-tGDimZ) },
-				new myPoint[] {new myPoint(tGDimX,-hGDimY,tGDimZ),new myPoint(-tGDimX,-hGDimY,tGDimZ),new myPoint(tGDimX,-hGDimY,-tGDimZ) },
-				new myPoint[] {new myPoint(tGDimX,tGDimY,hGDimZ), new myPoint(-tGDimX,tGDimY,hGDimZ), new myPoint(tGDimX,-tGDimY,hGDimZ)  },
-				new myPoint[] {new myPoint(tGDimX,tGDimY,-hGDimZ),new myPoint(-tGDimX,tGDimY,-hGDimZ),new myPoint(tGDimX,-tGDimY,-hGDimZ)  }};
+		boxWallPts = new myPointf[][] {//pts to check if intersection with 3D bounding box happens
+				new myPointf[] {new myPointf(hGDimX,tGDimY,tGDimZ), new myPointf(hGDimX,-tGDimY,tGDimZ), new myPointf(hGDimX,tGDimY,-tGDimZ)  },
+				new myPointf[] {new myPointf(-hGDimX,tGDimY,tGDimZ), new myPointf(-hGDimX,-tGDimY,tGDimZ), new myPointf(-hGDimX,tGDimY,-tGDimZ) },
+				new myPointf[] {new myPointf(tGDimX,hGDimY,tGDimZ), new myPointf(-tGDimX,hGDimY,tGDimZ), new myPointf(tGDimX,hGDimY,-tGDimZ) },
+				new myPointf[] {new myPointf(tGDimX,-hGDimY,tGDimZ),new myPointf(-tGDimX,-hGDimY,tGDimZ),new myPointf(tGDimX,-hGDimY,-tGDimZ) },
+				new myPointf[] {new myPointf(tGDimX,tGDimY,hGDimZ), new myPointf(-tGDimX,tGDimY,hGDimZ), new myPointf(tGDimX,-tGDimY,hGDimZ)  },
+				new myPointf[] {new myPointf(tGDimX,tGDimY,-hGDimZ),new myPointf(-tGDimX,tGDimY,-hGDimZ),new myPointf(tGDimX,-tGDimY,-hGDimZ)  }};
 	}
 	
 	/**
@@ -971,12 +988,41 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param _initSceneFocusVal initial focus target for camera
 	 */
 	protected final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
-			float[][] _floatVals, int[][] _intClrVals, myPoint _sceneCenterVal, myVector _initSceneFocusVal) {
-		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+			float[][] _floatVals, int[][] _intClrVals, myPointf _sceneCenterVal, myVectorf _initSceneFocusVal) {
+		winInitVals[_winIdx] = buildGUI_AppWinVals(_winIdx, _title, _descr, _dispFlags, 
 				_floatVals, _intClrVals, _sceneCenterVal, _initSceneFocusVal);
 	
 	}//setInitDispWinVals
-	
+	/**
+	 * Build a GUI_AppWinVals structure for the passed values. 	 
+	 * @param _winIdx The index in the various window-descriptor arrays for the dispWindow being set
+	 * @param _title string title of this window
+	 * @param _descr string description of this window
+	 * @param _dispFlags Essential flags describing the nature of the dispWindow for idxs : 
+	 * 		0 : dispWinIs3d, 
+	 * 		1 : canDrawInWin; 
+	 * 		2 : canShow3dbox (only supported for 3D); 
+	 * 		3 : canMoveView
+	 * @param _floatVals an array holding float arrays for 
+	 * 				rectDimOpen(idx 0),
+	 * 				rectDimClosed(idx 1),
+	 * 				initCameraVals(idx 2)
+	 * @param _intClrVals and array holding int arrays for
+	 * 				winFillClr (idx 0),
+	 * 				winStrkClr (idx 1),
+	 * 				winTrajFillClr(idx 2),
+	 * 				winTrajStrkClr(idx 3),
+	 * 				rtSideFillClr(idx 4),
+	 * 				rtSideStrkClr(idx 5)
+	 * @param _sceneCenterVal center of scene, for drawing objects
+	 * @param _initSceneFocusVal initial focus target for camera
+	 * @return the constructed GUI_AppWinVals
+	 */
+	public final GUI_AppWinVals buildGUI_AppWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
+			float[][] _floatVals, int[][] _intClrVals, myPointf _sceneCenterVal, myVectorf _initSceneFocusVal) {
+		return new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+				_floatVals, _intClrVals, _sceneCenterVal, _initSceneFocusVal); 
+	}//buildGUI_AppWinVals
 	/**
 	 * call once for each display window before calling constructor. Sets essential values describing windows
 	 * @param _winIdx The index in the various window-descriptor arrays for the dispWindow being set
@@ -1001,11 +1047,38 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	protected final void setInitDispWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals) {
-		int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
-		winInitVals[_winIdx] = new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
-				_floatVals, _intClrVals, sceneOriginValsBase[scIdx], sceneFcsValsBase[scIdx]);
-	
+		winInitVals[_winIdx] = buildGUI_AppWinVals(_winIdx, _title, _descr, _dispFlags, _floatVals, _intClrVals);	
 	}//setInitDispWinVals
+	
+	/**
+	 * Build a GUI_AppWinVals structure for the passed values. 	 
+	 * @param _winIdx The index in the various window-descriptor arrays for the dispWindow being set
+	 * @param _title string title of this window
+	 * @param _descr string description of this window
+	 * @param _dispFlags Essential flags describing the nature of the dispWindow for idxs : 
+	 * 		0 : dispWinIs3d, 
+	 * 		1 : canDrawInWin; 
+	 * 		2 : canShow3dbox (only supported for 3D); 
+	 * 		3 : canMoveView
+	 * @param _floatVals an array holding float arrays for 
+	 * 				rectDimOpen(idx 0),
+	 * 				rectDimClosed(idx 1),
+	 * 				initCameraVals(idx 2)
+	 * @param _intClrVals and array holding int arrays for
+	 * 				winFillClr (idx 0),
+	 * 				winStrkClr (idx 1),
+	 * 				winTrajFillClr(idx 2),
+	 * 				winTrajStrkClr(idx 3),
+	 * 				rtSideFillClr(idx 4),
+	 * 				rtSideStrkClr(idx 5)
+	 * @return
+	 */
+	public final GUI_AppWinVals buildGUI_AppWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
+			float[][] _floatVals, int[][] _intClrVals) {
+		int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
+		return new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+				_floatVals, _intClrVals, sceneOriginValsBase[scIdx], sceneFcsValsBase[scIdx]); 
+	}//buildGUI_AppWinVals
 	
 	/**
 	 * This will build a 6 element array of color int arrays, based on the integer tags provided.
@@ -1260,14 +1333,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		execSimDuringDrawLoop(modAmtMillis);
 		//drawing section																//initialize camera, lights and scene orientation and set up eye movement
 		drawMainWinAndCanvas(modAmtMillis);		     									//draw UI overlay on top of rendered results			
-		//build window title
-		ri.setWindowTitle(getWindowTitle(_memChkLastTimerMark != _glblStartSimFrameTime/_memChkMillisTimer));
+		//set window title
+		ri.setWindowTitle(getProjAndFrapsString());
 		//Update timer mark for mem query update
 		_memChkLastTimerMark = _glblStartSimFrameTime/_memChkMillisTimer;
 		
 		return true;
 	}//mainSimAndDrawLoop
 	
+	/**
+	 * Amount to divide memory query by to display in MBs
+	 */
 	private final float memDiv = 1024.0f * 1024.0f;
 	protected final String buildMemString(boolean updateMem) {
 		// Current Memory status - only update occasionally
@@ -1278,17 +1354,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		}	
 		return memStatusStr;
 	}
-
-	protected final String getWindowTitle(boolean updateMem) {
-		String sep = "  |  ";
-		String title = getPrjNmLong() + sep;
-		// Frame rate
-		String fRateStr =  "Frames : " + String.format("%4.1f",ri.getFrameRate()) + " fps";
-		title+= fRateStr +sep;
-		// Memory status if title not too long
-		if(title.length()<130){			title +=buildMemString(updateMem); } // about 111 long
-		return title;
-	}// getWindowTitle
+	protected final String sep = "  |  ";
+	protected final String getProjAndFrapsString() {
+		return getPrjNmLong() + sep + "Frames : " + String.format("%4.1f",ri.getFrameRate()) + " fps";
+	}
+	
+	protected final String getStatusBarString(boolean updateMem) {
+		return getProjAndFrapsString() +sep + buildMemString(updateMem);
+//		// Memory status if title not too long
+//		if(title.length()<130){			title +=buildMemString(updateMem); } // about 111 long
+//		return title;
+	}// getStatusBarString
 	 
 	/**
 	 * sim loop, called from IRenderInterface draw method
@@ -1391,8 +1467,28 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		sideBarMenu.draw2D(modAmtMillis);
 		sideBarMenu.drawHeader(new String[0], false, isDebugMode(), modAmtMillis);
 		dispWinFrames[curFocusWin].updateConsoleStrs();	
+		//build and set statusbar if should be used
+		if(doShowStatusBar()) {
+			drawWindowStatusBar(getStatusBarString(_memChkLastTimerMark != _glblStartSimFrameTime/_memChkMillisTimer));
+		}		
 	}//drawUI
 	
+	private final void drawWindowStatusBar(String statusBarString) { 
+		ri.pushMatState();
+		ri.setBeginNoDepthTest();
+		ri.disableLights();
+		// draw status bar
+		ri.setFill(255,255,255,255);
+		ri.setStrokeWt(1.0f);
+		ri.setStroke(0,0,0,255);
+		ri.translate(0, viewHeight);
+		ri.drawRect(0, -getTextHeightOffset(), viewWidth, getTextHeightOffset());		
+		ri.setColorValFill(IRenderInterface.gui_Black, 255);ri.setColorValStroke(IRenderInterface.gui_Black, 255);
+		ri.showText(statusBarString, getRowStYOffset(), -getRowStYOffset(),0); 
+		ri.enableLights();
+		ri.setEndNoDepthTest();
+		ri.popMatState();
+	}
 	
 	/**
 	 * draw bounding box for 3d
@@ -1420,7 +1516,20 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		}
 		ri.popMatState();
 	}//drawProjOnBox
-
+	/**
+	 * project passed point onto box surface based on location - to help visualize the location in 3d
+	 * @param p
+	 */
+	public final void drawProjOnBox(myPointf p){
+		myPointf prjOnPlane;
+		ri.pushMatState();
+		ri.translate(-p.x,-p.y,-p.z);
+		for(int i  = 0; i< 6; ++i){				
+			prjOnPlane = bndChkInCntrdBox3D(intersectPl(p, boxNorms[i], boxWallPts[i][0],boxWallPts[i][1],boxWallPts[i][2]));				
+			ri.showPtAsSphere(prjOnPlane,5,5,IRenderInterface.rgbClrs[i/2],IRenderInterface.rgbClrs[i/2]);				
+		}
+		ri.popMatState();
+	}//drawProjOnBox
 	/**
 	 * display menu text based on menu state - moved from menu class
 	 * @param xOffHalf
@@ -1583,6 +1692,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public myPoint getMseLoc(myPoint glbTrans){			return canvas.getMseLoc(glbTrans);	}
 	/**
+	 * relative to passed origin as float point
+	 * @param glbTrans
+	 * @return
+	 */
+	public myPoint getMseLoc(myPointf glbTrans){			return canvas.getMseLoc(new myPoint(glbTrans.x, glbTrans.y, glbTrans.z));	}
+	/**
 	 * move by passed translation
 	 * @param glbTrans
 	 * @return
@@ -1714,6 +1829,25 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public final int getDisplayHeight() {return _displayHeight;}
+	
+	/**
+	 * Retrieve the 3d grid box dimensions
+	 * @return
+	 */
+	public final float[] get3dGridDims() {return new float[] {gridDimX, gridDimY, gridDimZ};}
+	
+	/**
+	 * Retrieve the 3d grid box dimensions scaled by some multiplicative factor 
+	 * (for rendering to stay consistent if some measurements change)
+	 * @return
+	 */
+	public final float[] getScaled3dGridDims(float _scl) {return new float[] {gridDimX*_scl, gridDimY*_scl, gridDimZ*_scl};}
+	
+	/**
+	 * Return the boundaries for the enclosing 3d cube
+	 * @return
+	 */
+	public final float[][] get3dCubeBnds(){return cubeBnds;}
 	
 	/**
 	 * Returns window dims : X,Y,Width,Height
@@ -1971,6 +2105,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			case drawing			: { break;}
 			case runSim				: { break;}// handleTrnsprt((val ? 2 : 1) ,(val ? 1 : 0),false); break;}		//anything special for runSim	
 			case showRtSideMenu		: {	for(int i =1; i<dispWinFrames.length;++i){dispWinFrames[i].setRtSideInfoWinSt(val);}break;}	//set value for every window - to show or not to show info window
+			case showStatusBar		: { break;}
 			case flipDrawnTraj		: { for(int i =1; i<dispWinFrames.length;++i){dispWinFrames[i].rebuildAllDrawnTrajs();}break;}						//whether or not to flip the drawn melody trajectory, width-wise
 			case singleStep 		: { break;}
 			case clearBKG			: { break;}
@@ -2018,7 +2153,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final boolean isSingleStep() {return getBaseFlag(singleStep);}
 	public final boolean doSaveAnim() {return getBaseFlag(saveAnim);}
 	public final boolean doFlipTraj() {return getBaseFlag(flipDrawnTraj);}
-	public final boolean doShowRtSideMenu() {return getBaseFlag(showRtSideMenu);}	
+	public final boolean doShowRtSideMenu() {return getBaseFlag(showRtSideMenu);}
+	public final boolean doShowStatusBar() {return getBaseFlag(showStatusBar);}
 	
 	public final boolean shiftIsPressed() {return getBaseFlag(shiftKeyPressed);}
 	public final boolean altIsPressed() {return getBaseFlag(altKeyPressed);}
@@ -2042,6 +2178,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void toggleSimIsRunning() {setBaseFlag(runSim, !getBaseFlag(runSim));}
 	public final void setSimIsSingleStep(boolean val) {setBaseFlag(singleStep,val);}
 	public final void setShowRtSideMenu(boolean val) {setBaseFlag(showRtSideMenu,val);}
+	public final void setShowStatusBar(boolean val) {setBaseFlag(showStatusBar,val);}
 	public final void setClearBackgroundEveryStep(boolean val) {setBaseFlag(clearBKG,val);}
 		
 	public final void setMouseClicked(boolean val) {setBaseFlag(mouseClicked,val);}
@@ -2058,6 +2195,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	protected final void setBaseFlagToShow_runSim(boolean val) {_setBaseFlagToShow(runSim, val);}
 	protected final void setBaseFlagToShow_singleStep(boolean val) {_setBaseFlagToShow(singleStep, val);}
 	protected final void setBaseFlagToShow_showRtSideMenu(boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}	
+	protected final void setBaseFlagToShow_showStatusBar(boolean val) {_setBaseFlagToShow(showStatusBar, val);}	
 	protected final void setBaseFlagToShow_showDrawableCanvas(boolean val) {_setBaseFlagToShow(showCanvas, val);}	
 	
 	public final boolean getBaseFlagIsShown_debugMode() {return _getBaseFlagIsShown(debugMode);}
@@ -2065,6 +2203,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final boolean getBaseFlagIsShown_runSim() {return _getBaseFlagIsShown(runSim);}
 	public final boolean getBaseFlagIsShown_singleStep() {return _getBaseFlagIsShown(singleStep);}
 	public final boolean getBaseFlagIsShown_showRtSideMenu() {return _getBaseFlagIsShown(showRtSideMenu);}
+	public final boolean getBaseFlagIsShown_showStatusBar() {return _getBaseFlagIsShown(showStatusBar);}
 	public final boolean getBaseFlagIsShown_showDrawableCanvas() {return _getBaseFlagIsShown(showCanvas);}
 	
 
@@ -2489,6 +2628,39 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param C point describing plane
 	 * @return
 	 */
+	public final myPoint intersectPl(myPoint E, myVectorf T, myPointf A, myPointf B, myPointf C) {
+		myPointf res = intersectPl(new myPointf(E.x, E.y, E.z), T, A, B, C);
+		return new myPoint(res.x, res.y, res.z);
+	}//intersectPl
+	/**
+	 * Return intersection point of vector T through point E in plane described by ABC
+	 * @param E point within cast vector/ray
+	 * @param T directional vector/ray
+	 * @param A point describing plane
+	 * @param B point describing plane
+	 * @param C point describing plane
+	 * @return
+	 */
+	public final myPointf intersectPl(myPointf E, myVectorf T, myPointf A, myPointf B, myPointf C) {
+		//vector through point and planar point
+		myVectorf EA=new myVectorf(E,A); 
+		//planar vectors
+		myVectorf AB=new myVectorf(A,B), AC=new myVectorf(A,C);
+		//find planar norm
+		myVectorf ACB = AC._cross(AB);
+		//project 
+		float t = (EA._dot(ACB) / T._dot(ACB));		
+		return (myPointf._add(E,t,T));		
+	}//intersectPl
+	/**
+	 * Return intersection point of vector T through point E in plane described by ABC
+	 * @param E point within cast vector/ray
+	 * @param T directional vector/ray
+	 * @param A point describing plane
+	 * @param B point describing plane
+	 * @param C point describing plane
+	 * @return
+	 */
 	public final myPoint intersectPl(myPoint E, myVector T, myPoint A, myPoint B, myPoint C) {
 		//vector through point and planar point
 		myVector EA=new myVector(E,A); 
@@ -2497,10 +2669,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		//find planar norm
 		myVector ACB = AC._cross(AB);
 		//project 
-		double t = (float)(EA._dot(ACB) / T._dot(ACB));		
+		double t = (EA._dot(ACB) / T._dot(ACB));		
 		return (myPoint._add(E,t,T));		
-	}//intersectPl
-	
+	}//intersectPl		
 	/**
 	 * if ray from E along V intersects sphere at C with radius r, return t when intersection occurs
 	 * @param E
@@ -2631,6 +2802,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 				MyMathUtils.max(-hGDimY,MyMathUtils.min(p.y,hGDimY)),
 				MyMathUtils.max(-hGDimZ,MyMathUtils.min(p.z,hGDimZ)));return p;}	
 	
+	public final myPointf bndChkInBox2D(myPointf p){p.set(MyMathUtils.max(0,MyMathUtils.min(p.x,grid2D_X)),MyMathUtils.max(0,MyMathUtils.min(p.y,grid2D_Y)),0);return p;}
+	public final myPointf bndChkInBox3D(myPointf p){p.set(MyMathUtils.max(0,MyMathUtils.min(p.x,gridDimX)), MyMathUtils.max(0,MyMathUtils.min(p.y,gridDimY)),MyMathUtils.max(0,MyMathUtils.min(p.z,gridDimZ)));return p;}	
+	public final myPointf bndChkInCntrdBox3D(myPointf p){
+		p.set(MyMathUtils.max(-hGDimX,MyMathUtils.min(p.x,hGDimX)), 
+				MyMathUtils.max(-hGDimY,MyMathUtils.min(p.y,hGDimY)),
+				MyMathUtils.max(-hGDimZ,MyMathUtils.min(p.z,hGDimZ)));return p;}	
 	
 	/**
 	 * convert a world location within the bounded cube region to be a 4-int color array

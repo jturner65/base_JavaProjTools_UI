@@ -115,7 +115,8 @@ public class UI_TestProject extends GUI_AppManager {
 		setBaseFlagToShow_saveAnim(true); 
 		setBaseFlagToShow_runSim(true);
 		setBaseFlagToShow_singleStep(true);
-		setBaseFlagToShow_showRtSideMenu(true);		
+		setBaseFlagToShow_showRtSideMenu(true);	
+		setBaseFlagToShow_showStatusBar(true);
 	}//initBaseFlags_Indiv
 
 	@Override
@@ -190,6 +191,7 @@ public class UI_TestProject extends GUI_AppManager {
 	@Override
 	protected void initOnce_Indiv() {
 		setWinVisFlag(disp3DRes1IDX, true);
+		setShowStatusBar(true);
 	}
 	@Override
 	protected void initProgram_Indiv() {	}

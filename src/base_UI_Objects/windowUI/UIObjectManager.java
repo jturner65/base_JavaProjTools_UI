@@ -135,9 +135,13 @@ public class UIObjectManager {
 	 */
 	private ArrayList<Integer> privBtnsToClear;
 	
+	// Class name to use for any debugging messages
+	private final String dispMsgClassName;
+	
 	public UIObjectManager(IRenderInterface _ri, IUIManagerOwner _owner, GUI_AppManager _AppMgr, MessageObject _msgObj) {
 		ri = _ri;
 		owner = _owner;
+		dispMsgClassName = "UIObjectManager ("+owner.getClassName()+")";
 		AppMgr = _AppMgr;
 		msgObj = _msgObj;
 	}
@@ -466,6 +470,42 @@ public class UIObjectManager {
 	}
 	
 	/**
+	 * Shorthand to display general information
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispInfoMsg(String funcName, String message) {
+		msgObj.dispInfoMessage(dispMsgClassName, funcName, message);
+	}
+		
+	/**
+	 * Shorthand to display a debug message
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispDbgMsg(String funcName, String message) {
+		msgObj.dispDebugMessage(dispMsgClassName, funcName, message);
+	}
+	
+	/**
+	 * Shorthand to display a warning message
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispWarnMsg(String funcName, String message) {
+		msgObj.dispWarningMessage(dispMsgClassName, funcName, message);
+	}
+	
+	/**
+	 * Shorthand to display an error message
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispErrMsg(String funcName, String message) {
+		msgObj.dispErrorMessage(dispMsgClassName, funcName, message);
+	}
+	
+	/**
 	 * This will build objects sequentially using the values provided
 	 * @param guiObjNames name of each object
 	 * @param corners 2-element point array of upper left and lower right corners for object
@@ -523,17 +563,17 @@ public class UIObjectManager {
 					break;}
 				case Button  :{
 					//TODO
-					msgObj.dispWarningMessage("UIObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
+					_dispWarnMsg("_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
 					break;
 				}
 				default : {
-					msgObj.dispWarningMessage("UIObjectManager", "_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
+					_dispWarnMsg("_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
 					break;				
 				}
 			}
 		}
 		if(numListObjs != tmpListObjVals.size()) {
-			msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
+			_dispWarnMsg("_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
 		}	
 	}//_buildAllObjects	
 	
@@ -762,11 +802,14 @@ public class UIObjectManager {
 					owner.setUI_OwnerFloatValsCustom(UIidx, val, origVal);
 				}
 				break;}
+			case LabelVal : {
+				_dispWarnMsg("setUIWinVals", "Attempting to process the value `" + guiObjs_Numeric[UIidx].getValueAsString()+"` from the `" + guiObjs_Numeric[UIidx].getName()+ "` label object.");				
+				break;}
 			case Button : {
-				msgObj.dispWarningMessage(owner.getClassName(), "setUIWinVals", "Attempting to set a value for an unsupported Button UI object : " + objType.toStrBrf());
+				_dispWarnMsg("setUIWinVals", "Attempting to set a value for an unsupported Button UI object : " + objType.toStrBrf());
 				break;}
 			default : {
-				msgObj.dispWarningMessage(owner.getClassName(), "setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
+				_dispWarnMsg("setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
 				break;}
 			
 		}//switch on obj type
@@ -812,31 +855,32 @@ public class UIObjectManager {
 	}	
 	
 	/**
-	 * 
-	 * @param idx
-	 * @param len
-	 * @param calFunc
-	 * @param desc
-	 * @return
+	 * Validate that the passed idx exists in the list of objects 
+	 * @param idx index of potential objects
+	 * @param len number of objects stored in object array
+	 * @param calFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether or not the passed index corresponds to a valid location in the array of UI objects
 	 */
 	private boolean _validateUIObjectIdx(int idx, int len, String calFunc, String desc) {
 		if (!MyMathUtils.inRange(idx, 0, len)){
-			msgObj.dispErrorMessage("Base_uiObjectManager", calFunc, 
+			msgObj.dispErrorMessage(dispMsgClassName, calFunc, 
 				"Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
-		return false;
+			return false;
 		}		
 		return true;
 	}
 	
 	/**
-	 * 
-	 * @param obj
-	 * @param calFunc
-	 * @return
+	 * Validate whether the passed UI object is a listVal object
+	 * @param obj the object to check
+	 * @param calFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether the passed UI object is a listVal object
 	 */
 	private boolean _validateIdxIsListObj(Base_GUIObj obj, String calFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.ListVal) {
-			msgObj.dispErrorMessage("Base_uiObjectManager", calFunc, 
+			msgObj.dispErrorMessage(dispMsgClassName, calFunc, 
 					"Attempting to access illegal List UI object to "+desc+" (object :"+obj.getName()+" is not a list object). Aborting.");
 			return false;
 		}
@@ -847,30 +891,35 @@ public class UIObjectManager {
 	 * Sets the passed UI object's new max value
 	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes
 	 * @param maxVal
+	 * @return whether modification was performed or not
 	 */
-	public void setNewUIMaxVal(int idx, double maxVal) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMaxVal", "set its max value")) {guiObjs_Numeric[idx].setNewMax(maxVal);}	
-	}	
+	public boolean setNewUIMaxVal(int idx, double maxVal) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMaxVal", "set its max value")) {guiObjs_Numeric[idx].setNewMax(maxVal);return true;}	
+		return false;
+	}
+	
 	
 	/**
 	 * Sets the passed UI object's new min value
-	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes
+	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes.
 	 * @param minVal
+	 * @return whether modification was performed or not
 	 */
-	public void setNewUIMinVal(int idx, double minVal) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMinVal", "set its min value")) {guiObjs_Numeric[idx].setNewMin(minVal);}
+	public boolean setNewUIMinVal(int idx, double minVal) {
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMinVal", "set its min value")) {guiObjs_Numeric[idx].setNewMin(minVal);return true;}
+		return false;
 	}
 	
 	/**
-	 * Force a value to be set in the numeric UI object at the passed IDX
-	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes and returns 0
+	 * Force a value to be set in the numeric UI object at the passed idx
+	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes and returns -Double.MAX_VALUE
 	 * @param val
-	 * @return the new value that was set, after having been bounded
+	 * @return value being set, or -Double.MAX_VALUE if idx is out of range
 	 */
 	public double setNewUIValue(int idx, double val) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIValue", "set its value")) {guiObjs_Numeric[idx].setVal(val);}
-			return 0;
-		}		
+		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIValue", "set its value")) {return guiObjs_Numeric[idx].setVal(val);}
+		return -Double.MAX_VALUE;
+	}		
 	
 	/**
 	 * Set the display text of the passed UI Object, either numeric or boolean
@@ -915,8 +964,8 @@ public class UIObjectManager {
 	
 	/**
 	 * Retrieve the min value of a numeric UI object
-	 * @param idx index in numeric UI object array to access. If out of range, returns max value
-	 * @return
+	 * @param idx index in numeric UI object array to access.
+	 * @return min value allowed, or Double.MAX_VALUE if idx out of range
 	 */
 	public double getMinUIValue(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMinUIValue","get its min value")) {return guiObjs_Numeric[idx].getMinVal();}
@@ -925,8 +974,8 @@ public class UIObjectManager {
 	
 	/**
 	 * Retrieve the max value of a numeric UI object
-	 * @param idx index in numeric UI object array to access. If out of range, returns min value
-	 * @return
+	 * @param idx index in numeric UI object array to access.
+	 * @return max value allowed, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getMaxUIValue(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMaxUIValue","get its max value")){return guiObjs_Numeric[idx].getMaxVal();}
@@ -935,8 +984,8 @@ public class UIObjectManager {
 	
 	/**
 	 * Retrieve the mod step value of a numeric UI object
-	 * @param idx index in numeric UI object array to access. If out of range, returns 0
-	 * @return
+	 * @param idx index in numeric UI object array to access.
+	 * @return mod value of UI object, or 0 if idx out of range
 	 */
 	public double getModStep(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getModStep", "get its mod value")) {return guiObjs_Numeric[idx].getModStep();}
@@ -945,25 +994,27 @@ public class UIObjectManager {
 	
 	/**
 	 * Retrieve the value of a numeric UI object
-	 * @param idx index in numeric UI object array to access. If out of range, returns 0
-	 * @return
+	 * @param idx index in numeric UI object array to access.
+	 * @return the current value of the UI object, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getUIValue(int idx) {
 		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getUIValue", "get its value")) {return guiObjs_Numeric[idx].getVal();}
-		return 0;
+		return -Double.MAX_VALUE;
 	}
 	
 	/**
 	 * Get the string representation of the passed integer listIdx from the UI Object at UIidx
-	 * @param UIidx
-	 * @param listIdx
-	 * @return
+	 * @param UIidx index in numeric UI object array to access.
+	 * @param listIdx index in list of elements to access
+	 * @return the string value at the requested index, or "" if not a valid request
 	 */
 	public String getListValStr(int UIidx, int listIdx) {		
 		if ((!_validateUIObjectIdx(UIidx, guiObjs_Numeric.length, "getListValStr", "get a list value at specified idx")) || 
 				(!_validateIdxIsListObj(guiObjs_Numeric[UIidx], "getListValStr", "get a list value at specified idx"))){return "";}
 		return ((MenuGUIObj_List) guiObjs_Numeric[UIidx]).getListValStr(listIdx);
-	}	
+	}
+
+	
 	
 	/////////////////////////////////
 	// UI object rendering	
