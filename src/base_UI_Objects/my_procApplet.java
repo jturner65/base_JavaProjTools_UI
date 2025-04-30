@@ -418,17 +418,17 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * draw a cloud of points with passed color values as an integrated shape
 	 * @param numPts number of points to draw
 	 * @param ptIncr incrementer between points, to draw only every 2nd, 3rd or more'th point
-	 * @param h_part_clr_int 2d array of per point 3-color stroke values
-	 * @param h_part_pos_x per point x value
-	 * @param h_part_pos_y per point y value
-	 * @param h_part_pos_z per point z value
+	 * @param ptClrIntAra 2d array of per point 3-color stroke values
+	 * @param ptPosX per point x value
+	 * @param ptPosY per point y value
+	 * @param ptPosZ per point z value
 	 */
 	@Override
-	public void drawPointCloudWithColors(int numPts, int ptIncr, int[][] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
+	public void drawPointCloudWithColors(int numPts, int ptIncr, int[][] ptClrIntAra, float[] ptPosX, float[] ptPosY, float[] ptPosZ) {
 		gl_beginShape(GL_PrimStyle.GL_POINTS);
 		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
-			setStroke(h_part_clr_int[i][0], h_part_clr_int[i][1], h_part_clr_int[i][2], 255);
-			gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
+			setStroke(ptClrIntAra[i][0], ptClrIntAra[i][1], ptClrIntAra[i][2], 255);
+			gl_vertex(ptPosX[i], ptPosY[i], ptPosZ[i]);
 		}
 		gl_endShape();
 	}//drawPointCloudWithColors	
@@ -437,20 +437,20 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * draw a cloud of points with all points having same color value as an integrated shape
 	 * @param numPts number of points to draw
 	 * @param ptIncr incrementer between points, to draw only every 2nd, 3rd or more'th point
-	 * @param h_part_clr_int array of 3-color stroke values for all points
-	 * @param h_part_pos_x per point x value
-	 * @param h_part_pos_y per point y value
-	 * @param h_part_pos_z per point z value
+	 * @param ptClrIntAra array of 3-color stroke values for all points
+	 * @param ptPosX per point x value
+	 * @param ptPosY per point y value
+	 * @param ptPosZ per point z value
 	 */
 	@Override
-	public void drawPointCloudWithColor(int numPts, int ptIncr, int[] h_part_clr_int, float[] h_part_pos_x, float[] h_part_pos_y, float[] h_part_pos_z) {
+	public void drawPointCloudWithColor(int numPts, int ptIncr, int[] ptClrIntAra, float[] ptPosX, float[] ptPosY, float[] ptPosZ) {
 		gl_beginShape(GL_PrimStyle.GL_POINTS);
-		setStroke(h_part_clr_int[0], h_part_clr_int[1], h_part_clr_int[2], 255);
+		setStroke(ptClrIntAra[0], ptClrIntAra[1], ptClrIntAra[2], 255);
 		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
-			gl_vertex(h_part_pos_x[i], h_part_pos_y[i], h_part_pos_z[i]);
+			gl_vertex(ptPosX[i], ptPosY[i], ptPosZ[i]);
 		}
 		gl_endShape();
-	}//drawPointCloudWithColors	
+	}//drawPointCloudWithColor
 	
 	/**
 	 * draw a box centered at origin with passed dimensions, in 3D
