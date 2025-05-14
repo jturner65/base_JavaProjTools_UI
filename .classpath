@@ -14,7 +14,7 @@
 	<classpathentry kind="lib" path="base_JavaProjTools_IRender.jar"/>
 	<classpathentry kind="lib" path="base_JavaProjTools_Math.jar"/>
 	<classpathentry kind="lib" path="base_JavaProjTools_Utils.jar"/>
-	<classpathentry kind="lib" path="processing/core.jar"/>
+	<classpathentry kind="lib" path="processing/core.jar" sourcepath="/processing4-main/core/src/"/>
 	<classpathentry kind="lib" path="processing/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="processing/jogl-all.jar"/>
 	<classpathentry kind="output" path="bin"/>
