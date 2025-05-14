@@ -1192,7 +1192,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	//private static final float ltrLen = 5.0f;private static final int btnStep = 5;
 	//private float _calcBtnLength(String tStr, String fStr){return btnStep * (int)(((MyMathUtils.max(tStr.length(), fStr.length())+4) * ltrLen)/btnStep);}
-	private float _calcBtnLength(String tStr, String fStr){return MyMathUtils.max(ri.textWidth(tStr), ri.textWidth(fStr));}
+	private float _calcBtnLength(String tStr, String fStr){return MyMathUtils.max(ri.getTextWidth(tStr), ri.getTextWidth(fStr));}
 	
 	private void _setBtnDims(int idx, float xStart, float yEnd, float oldBtnLen, float btnLen) {privFlagBtns[idx]= new float[] {xStart+oldBtnLen, yEnd, btnLen, AppMgr.getTextHeightOffset() };}
 	

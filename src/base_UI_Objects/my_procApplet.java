@@ -17,7 +17,6 @@ import com.jogamp.newt.opengl.GLWindow;
 
 import processing.core.PConstants;
 import processing.core.PImage;
-import processing.core.PMatrix3D;
 import processing.core.PShape;
 import processing.event.MouseEvent;
 import processing.opengl.PGL;
@@ -25,13 +24,10 @@ import processing.opengl.PGraphics3D;
 
 public final class my_procApplet extends processing.core.PApplet implements IRenderInterface {
 	
-	public static GUI_AppManager AppMgr;
+	private static GUI_AppManager AppMgr;
 		
-	public final float frate = 120;			//target frame rate - # of playback updates per second
-	
-	//animation control variables	
-	public final float maxAnimCntr = MyMathUtils.PI_F*1000.0f, baseAnimSpd = 1.0f;
-	
+	private final float frate = 120;			//target frame rate - # of playback updates per second
+		
 	/**
 	 * map of giant spheres encapsulating entire 3D scene - allows for different ones for each 3D window
 	 */
@@ -169,7 +165,20 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}
 	///////////////////////////////////////////
 	// draw routines
-	protected static int pushPopAllDepth = 0, pushPopJustStyleDepth = 0;
+	protected int pushPopAllDepth = 0, pushPopJustStyleDepth = 0;
+	/**
+	 * Retrieve current push matrix/style depth - for debugging purposes.
+	 * @return
+	 */
+	@Override
+	public final int getCurrentPushMatDepth() {return pushPopAllDepth;}
+	/**
+	 * Retrieve current push style only depth - for debugging purposes.
+	 * @return
+	 */
+	@Override
+	public final int getCurrentPushStyleDepth() {return pushPopJustStyleDepth;}
+	
 	/**
 	 * push matrix, and style (if available) - must be paired with pop matrix/style calls
 	 */
@@ -200,8 +209,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public void draw(){
 		//returns whether actually drawn or not
 		if(!AppMgr.mainSimAndDrawLoop()) {return;}
-		//TODO find better mechanism for saving screenshot
-		if (AppMgr.doSaveAnim()) {	savePic();}
 	}//draw	
 	
 	/**
@@ -309,19 +316,19 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * type needs to be -1 for blank, otherwise should be specified in PConstants
 	 * 
 	 * (from PConstants) - these are allowed elements in glBegin function
-  static final int POINTS          = 3;   // vertices
-  static final int LINES           = 5;   // beginShape(), createShape()
-  static final int LINE_STRIP      = 50;  // beginShape()
-  static final int LINE_LOOP       = 51;
-  static final int TRIANGLES       = 9;   // vertices
-  static final int TRIANGLE_STRIP  = 10;  // vertices
-  static final int TRIANGLE_FAN    = 11;  // vertices
-  
-  DONOT SUPPORT QUAD PRIMS - have been deprecated/Removed from opengl
-  static final int QUADS           = 17;  // vertices
-  static final int QUAD_STRIP      = 18;  // vertices
-  
-  static final int POLYGON         = 20;  // 
+		  static final int POINTS          = 3;   // vertices
+		  static final int LINES           = 5;   // beginShape(), createShape()
+		  static final int LINE_STRIP      = 50;  // beginShape()
+		  static final int LINE_LOOP       = 51;
+		  static final int TRIANGLES       = 9;   // vertices
+		  static final int TRIANGLE_STRIP  = 10;  // vertices
+		  static final int TRIANGLE_FAN    = 11;  // vertices
+		  
+		  DONOT SUPPORT QUAD PRIMS - have been deprecated/Removed from opengl
+		  static final int QUADS           = 17;  // vertices
+		  static final int QUAD_STRIP      = 18;  // vertices
+		  
+		  static final int POLYGON         = 20;  // 
 	 * 
 	 * 
 	 */
@@ -375,6 +382,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	@Override
 	public void drawSphere(float rad) {sphere(rad);}
+	//internal value tracking current sphere detail
 	private int sphereDtl = 4;
 
 	@Override
@@ -687,12 +695,21 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	public final myVector bezierTangent(myPoint[] C, float t) {return new myVector(bezierTangent((float)C[0].x,(float)C[1].x,(float)C[2].x,(float)C[3].x,(float)t),bezierTangent((float)C[0].y,(float)C[1].y,(float)C[2].y,(float)C[3].y,(float)t),bezierTangent((float)C[0].z,(float)C[1].z,(float)C[2].z,(float)C[3].z,(float)t)); }
 	
 	/**
-	 * vertex with texture coordinates
-	 * @param P vertex location
-	 * @param u,v txtr coords
+	 * Set a vertex's UV texture coordinates
+	 * @param P myPointf for vertex
+	 * @param u float u texture coordinate (0-1)
+	 * @param v float v texture coordinate (0-1)
 	 */
-	public void vTextured(myPointf P, float u, float v) {vertex(P.x,P.y,P.z,u,v);}; 
-	public void vTextured(myPoint P, double u, double v) {vertex((float)P.x,(float)P.y,(float)P.z,(float)u,(float)v);};                         
+	@Override
+	public void vTextured(myPointf P, float u, float v) {vertex(P.x,P.y,P.z,u,v);}
+	/**
+	 * Set a vertex's UV texture coordinates
+	 * @param P myPoint for vertex
+	 * @param u double u texture coordinate (0-1)
+	 * @param v double v texture coordinate (0-1)
+	 */
+	@Override
+	public void vTextured(myPoint P, double u, double v) {vertex((float)P.x,(float)P.y,(float)P.z,(float)u,(float)v);}                      
 	
 	/////////////
 	// show functions 
@@ -710,10 +727,13 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @return the size in pixels
 	 */
 	@Override
-	public float textWidth(String txt) {		return super.textWidth(txt);	}
-	
+	public float getTextWidth(String txt) {		return super.textWidth(txt);	}
+	/**
+	 * Set the current text font size
+	 * @param size
+	 */
 	@Override
-	public void textSize(float fontSize) {super.textSize(fontSize);}
+	public void setTextSize(float fontSize) {super.textSize(fontSize);}
 
 	///////////
 	// end text	
@@ -837,35 +857,60 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	@Override
 	public void showTextAtPt(myPoint P, String s, myVector D) {text(s, (float)(P.x+D.x), (float)(P.y+D.y), (float)(P.z+D.z));  } // prints string s in 3D at P+D
 	
-	public void show(myPoint P, double rad, int fclr, int sclr, int tclr, String txt) {
-		pushMatState(); 
-		checkClrInts(fclr, sclr);
-		sphereDetail(5);
-		translate((float)P.x,(float)P.y,(float)P.z); 
-		setColorValFill(tclr,255);setColorValStroke(tclr,255);
-		AppMgr.showOffsetText(1.2f * (float)rad,tclr, txt);
-		popMatState();} // render sphere of radius r and center P)
-	
-	public void show(myPoint P, double r, int fclr, int sclr) {
-		pushMatState(); 
-		checkClrInts(fclr, sclr);
-		sphereDetail(5);
-		translate((float)P.x,(float)P.y,(float)P.z); 
-		sphere((float)r); 
-		popMatState();} // render sphere of radius r and center P)
-	
+//	public void show(myPoint P, double rad, int fclr, int sclr, int tclr, String txt) {
+//		pushMatState(); 
+//		checkClrInts(fclr, sclr);
+//		sphereDetail(5);
+//		translate((float)P.x,(float)P.y,(float)P.z); 
+//		setColorValFill(tclr,255);setColorValStroke(tclr,255);
+//		AppMgr.showOffsetText(1.2f * (float)rad,tclr, txt);
+//		popMatState();} // render sphere of radius r and center P)
+//	
+//	public void show(myPoint P, double r, int fclr, int sclr) {
+//		pushMatState(); 
+//		checkClrInts(fclr, sclr);
+//		sphereDetail(5);
+//		translate((float)P.x,(float)P.y,(float)P.z); 
+//		sphere((float)r); 
+//		popMatState();} // render sphere of radius r and center P)
+	/**
+	 * Draw a shape from the passed myPoint ara
+	 * @param ara array of myPoints
+	 */
+	@Override
 	public void drawShapeFromPts(myPoint[] ara) {
-		gl_beginShape(); 
+		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP); 
 		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
 		gl_endShape(true);
 	}                     
+	/**
+	 * Draw a shape from passed myPoint array with given normal
+	 * @param ara array of myPoints
+	 * @param norm surface normal for resultant shape
+	 */
+	@Override
 	public void drawShapeFromPts(myPoint[] ara, myVector norm) {
-		gl_beginShape();
+		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
 		gl_normal(norm); 
 		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
 		gl_endShape(true);
-	}   
-	
+	}
+	/**
+	 * Draw a shape from the given myPoint array of points with the given myVector array
+	 * of normals per point.  NOTE : point array size and normal array size is not checked.
+	 * 
+	 * @param ara array of myPoints
+	 * @param normAra array of per-point myVector surface normals for shape.
+	 * SIZE IS NOT VERIFIED - this must be at least as many normals
+	 * as there are points for shape
+	 */
+	@Override
+	public void drawShapeFromPts(myPoint[] ara, myVector[] normAra) {
+		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP); 
+		for(int i=0;i<ara.length;++i){gl_normal(normAra[i]);gl_vertex(ara[i]);} 
+		gl_endShape(true);
+	}
+		
 	///////////
 	// end double points
 	///////////
@@ -956,6 +1001,44 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	@Override
 	public void showTextAtPt(myPointf P, String s, myVectorf D) {text(s, (P.x+D.x), (P.y+D.y),(P.z+D.z));  } // prints string s in 3D at P+D
+	/**
+	 * Draw a shape from the passed myPointf ara
+	 * @param ara array of myPointfs
+	 */
+	@Override
+	public void drawShapeFromPts(myPointf[] ara) {
+		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP); 
+		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
+		gl_endShape(true);
+	}
+	/**
+	 * Draw a shape from passed myPointf array with given normal
+	 * @param ara array of myPointfs
+	 * @param norm myVectorf surface normal for resultant shape
+	 */
+	@Override
+	public void drawShapeFromPts(myPointf[] ara, myVectorf norm) {
+		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
+		gl_normal(norm); 
+		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
+		gl_endShape(true);
+	} 
+	/**
+	 * Draw a shape from the given myPointf array of points with the given myVectorf array
+	 * of normals per point.  NOTE : point array size and normal array size is not checked.
+	 * 
+	 * @param ara array of myPointfs
+	 * @param normAra array of per-point myVectorf surface normals for shape.
+	 * SIZE IS NOT VERIFIED - this must be at least as many normals
+	 * as there are points for shape
+	 */
+	@Override
+	public void drawShapeFromPts(myPointf[] ara, myVectorf[] normAra) {
+		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
+		for(int i=0;i<ara.length;++i){gl_normal(normAra[i]);gl_vertex(ara[i]);} 
+		gl_endShape(true);
+	}  
+	
 	
 	/////////////
 	// show functions using color idxs 
@@ -1034,21 +1117,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		 popMatState();
 	} // render sphere of radius r and center P)
 	
-	public void drawShapeFromPts(myPointf[] ara) {
-		gl_beginShape(); 
-		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
-		gl_endShape(true);
-	}                     
-	public void drawShapeFromPts(myPointf[] ara, myVectorf norm) {
-		gl_beginShape();
-		gl_normal(norm); 
-		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
-		gl_endShape(true);
-	}                     
-	
-	public void showNoClose(myPoint[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape();};                     
-	public void showNoClose(myPointf[] ara) {gl_beginShape(); for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} gl_endShape();};   
-	
 	///end show functions
 	
 	
@@ -1066,6 +1134,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 			return;}		
 		gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} gl_endShape();
 	}
+	protected final void curveVertex2D(myPointf P) {curveVertex(P.x,P.y);};                                           // curveVertex for shading or drawing
+
+	
 	/**
 	 * implementation of catumull rom - array needs to be at least 4 points, if not, then reuses first and last points as extra cntl points  
 	 * @param pts
@@ -1079,7 +1150,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} gl_endShape();		
 	}
 	protected final void curveVertex2D(myPoint P) {curveVertex((float)P.x,(float)P.y);};                                           // curveVertex for shading or drawing
-	protected final void curveVertex2D(myPointf P) {curveVertex(P.x,P.y);};                                           // curveVertex for shading or drawing
 	
 	/**
 	 * implementation of catumull rom - array needs to be at least 4 points, if not, then reuses first and last points as extra cntl points  
@@ -1093,6 +1163,8 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 			return;}		
 		gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} gl_endShape();
 	}
+	protected final void curveVertex3D(myPointf P) {curveVertex(P.x,P.y,P.z);};                                           // curveVertex for shading or drawing
+
 	/**
 	 * implementation of catumull rom - array needs to be at least 4 points, if not, then reuses first and last points as extra cntl points  
 	 * @param pts
@@ -1107,7 +1179,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}
 	
 	protected final void curveVertex3D(myPoint P) {curveVertex((float)P.x,(float)P.y,(float)P.z);};                                           // curveVertex for shading or drawing
-	protected final void curveVertex3D(myPointf P) {curveVertex(P.x,P.y,P.z);};                                           // curveVertex for shading or drawing
 
 
 	///////////////////////////////////
@@ -1233,22 +1304,25 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @return 4 element array. Point is idxs 0,1,2 normalized by idx 3
 	 */
 	private float[] _getWorldLocFromScreenLoc(int x, int y, float depthValue){
-		int newY = height - y;
+		float height = getHeight();
+		float width = getWidth();
+		int newY = (int) (height - y);
 		if(depthValue == -1){depthValue = getDepth(x, y); }	
-		//get 3d transform matrices
-		PGraphics3D p3d = (PGraphics3D)g;
+
 		// build normalized x,y prenormalized depth homogeneous screen point
 		float[] normalized = new float[] {
 				(x/(width * 0.5f)) - 1.0f, 
 				(newY/(height* 0.5f)) - 1.0f, 
 				depthValue * 2.0f - 1.0f, 
 				1.0f};
-		
+
+		//get 3d transform matrices
+		PGraphics3D p3d = (PGraphics3D)g;
 		// Get projection matrix
-		PMatrix3D modelViewProjInv = p3d.projection.get(),
-				modelView = p3d.modelview.get(); 
+		var modelViewProjInv = p3d.projection.get();
+		var modelView = p3d.modelview.get(); 
 		// multiply projection by model view
-		modelViewProjInv.apply( modelView ); 
+		modelViewProjInv.apply( modelView );
 		modelViewProjInv.invert();	  
 	  
 		//destination
@@ -1260,9 +1334,9 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	
 	/**
 	 * determine world location as myPoint based on mouse click and passed depth
-	 * @param x
-	 * @param y
-	 * @param depthValue
+	 * @param x mouse x
+	 * @param y mouse y
+	 * @param depthValue depth in world 
 	 * @return
 	 */
 	@Override
@@ -1354,13 +1428,5 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		if(t==0){return new Integer[]{a[0],a[1],a[2],a[3]};} else if(t==1){return new Integer[]{b[0],b[1],b[2],b[3]};}
 		return new Integer[]{(int)(((1.0f-t)*a[0])+t*b[0]),(int)(((1.0f-t)*a[1])+t*b[1]),(int)(((1.0f-t)*a[2])+t*b[2]),(int)(((1.0f-t)*a[3])+t*b[3])};
 	}
-
-	//save screenshot
-	public void savePic(){			
-		String picName = AppMgr.getAnimPicName(); 
-		if(null==picName) {return;}
-		save(picName);
-	}
-
 
 }//my_procApplet

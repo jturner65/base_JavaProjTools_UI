@@ -36,7 +36,7 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * @return
 	 */
 	public final float getMaxWidth() {
-		return ri.textWidth(owner.getLabel() + owner.getValueAsString());
+		return ri.getTextWidth(owner.getLabel() + owner.getValueAsString());
 	}
 	
 	/**

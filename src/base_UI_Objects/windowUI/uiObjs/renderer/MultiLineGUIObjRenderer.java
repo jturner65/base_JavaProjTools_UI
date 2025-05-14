@@ -37,8 +37,8 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * @return
 	 */
 	public final float getMaxWidth() {
-		float labelWidth = ri.textWidth(owner.getLabel());
-		float dispWidth = ri.textWidth(owner.getValueAsString());
+		float labelWidth = ri.getTextWidth(owner.getLabel());
+		float dispWidth = ri.getTextWidth(owner.getValueAsString());
 		return (labelWidth > dispWidth ? labelWidth : dispWidth);
 	}	
 	

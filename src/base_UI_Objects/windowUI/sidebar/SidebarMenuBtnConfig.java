@@ -179,7 +179,7 @@ public class SidebarMenuBtnConfig {
 		String[] titleArray = new String[winTitles.length-1];
 		Float[] titleLengths = new Float[winTitles.length-1];
 		if((inclWinNames)&&(titleArray.length != 0)) {
-			for(int i=0;i<titleArray.length;++i) {titleArray[i] =winTitles[i+1];titleLengths[i]=ri.textWidth(titleArray[i]);}
+			for(int i=0;i<titleArray.length;++i) {titleArray[i] =winTitles[i+1];titleLengths[i]=ri.getTextWidth(titleArray[i]);}
 			tmpBtnLabels.add(titleArray);
 			tmpBtnLabelWidths.add(titleLengths);
 			tmpDfltBtnLabels.add(titleArray);
@@ -197,7 +197,7 @@ public class SidebarMenuBtnConfig {
 		if((inclMseOvValues) && (mseOvrBtnLabels!=null) && (mseOvrBtnLabels.length > 0)) {
 			tmpBtnLabels.add(mseOvrBtnLabels);
 			Float[] mseOvrBtnLblLengths = new Float[mseOvrBtnLabels.length];
-			for(int i=0;i<mseOvrBtnLblLengths.length;++i ) {mseOvrBtnLblLengths[i] = ri.textWidth(mseOvrBtnLabels[i]);}
+			for(int i=0;i<mseOvrBtnLblLengths.length;++i ) {mseOvrBtnLblLengths[i] = ri.getTextWidth(mseOvrBtnLabels[i]);}
 			tmpBtnLabelWidths.add(mseOvrBtnLblLengths);			
 			tmpDfltBtnLabels.add(mseOvrBtnLabels);
 		
@@ -215,7 +215,7 @@ public class SidebarMenuBtnConfig {
 			String[] btnNameAra = buildBtnNameAra(numBtnsPerFuncRow[i],"Func"); 
 			Float[] btnNameLengths = new Float[btnNameAra.length];
 			tmpBtnLabels.add(btnNameAra);
-			for(int j=0;j<btnNameLengths.length;++j ) {btnNameLengths[j] = ri.textWidth(btnNameAra[j]);}
+			for(int j=0;j<btnNameLengths.length;++j ) {btnNameLengths[j] = ri.getTextWidth(btnNameAra[j]);}
 			tmpBtnLabelWidths.add(btnNameLengths);			
 			tmpDfltBtnLabels.add(buildBtnNameAra(numBtnsPerFuncRow[i],"Func"));
 			
@@ -228,7 +228,7 @@ public class SidebarMenuBtnConfig {
 			String[] btnNameAra = buildBtnNameAra(debugBtnLabels.length,"Debug");
 			Float[] btnNameLengths = new Float[btnNameAra.length];
 			tmpBtnLabels.add(btnNameAra);
-			for(int j=0;j<btnNameLengths.length;++j ) {btnNameLengths[j] = ri.textWidth(btnNameAra[j]);}
+			for(int j=0;j<btnNameLengths.length;++j ) {btnNameLengths[j] = ri.getTextWidth(btnNameAra[j]);}
 			tmpBtnLabelWidths.add(btnNameLengths);			
 			tmpDfltBtnLabels.add(buildBtnNameAra(debugBtnLabels.length,"Debug"));
 			
@@ -282,7 +282,7 @@ public class SidebarMenuBtnConfig {
 		String[] replAra = ((null==BtnLabels) || (BtnLabels.length != guiBtnLabels[rowIdx].length)) ? defaultUIBtnLabels[rowIdx] : BtnLabels;
 		for(int i=0;i<guiBtnLabels[rowIdx].length;++i) {
 			guiBtnLabels[rowIdx][i]=replAra[i]; 
-			guiBtnLabelWidths[rowIdx][i] = ri.textWidth(guiBtnLabels[rowIdx][i]);
+			guiBtnLabelWidths[rowIdx][i] = ri.getTextWidth(guiBtnLabels[rowIdx][i]);
 		}
 	}//setFunctionButtonNames
 	

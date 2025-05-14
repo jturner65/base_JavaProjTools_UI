@@ -37,7 +37,7 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 		float longLbl = 0, curLblLen;
 		String[] stateLabels = ((MenuGUIObj_Button) owner).getStateLabels();
 		for(String label : stateLabels) {
-			curLblLen = ri.textWidth(label);
+			curLblLen = ri.getTextWidth(label);
 			longLbl = (longLbl < curLblLen ? curLblLen : longLbl);
 		}
 		longestLabelLen = longLbl;
