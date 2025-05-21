@@ -135,7 +135,7 @@ public class UI_TestProject extends GUI_AppManager {
 			{"Func 10", "Func 11", "Func 12", "Func 13"},	//row 2
 			{"Func 10", "Func 11", "Func 12", "Func 13"}	//row 3
 			};
-		String [] dbgBtns = {"Debug 0", "Debug 1", "Debug 2", "Debug 3","Debug 4"};
+		String [] dbgBtns = {"Show All Msg Types", "Debug 1", "Debug 2"};
 		//Builds sidebar menu
 		buildSideBarMenu(_winTitles, menuBtnTitles, menuBtnNames, dbgBtns, true, false);
 		
@@ -169,19 +169,19 @@ public class UI_TestProject extends GUI_AppManager {
 				new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},
 					new int[]{180,180,180,255},new int[]{100,100,100,255},
 					new int[]{0,0,0,200},new int[]{255,255,255,255}});
-			dispWinFrames[wIdx] = new UI_TestWindow3D(ri, this, wIdx);
+		setDispWindow(wIdx, new UI_TestWindow3D(ri, this, wIdx));
 		wIdx = disp3DRes2IDX;
 		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], getDfltBoolAra(true), _floatDims,		
 			new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},
 				new int[]{180,180,180,255},new int[]{100,100,100,255},
 				new int[]{0,0,0,200},new int[]{255,255,255,255}});
-		dispWinFrames[wIdx] = new UI_TestWindow3D(ri, this, wIdx);
+		setDispWindow(wIdx, new UI_TestWindow3D(ri, this, wIdx));
 		wIdx = disp2DResIDX;
 		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], getDfltBoolAra(false), _floatDims,
 				new int[][] {new int[]{50,40,20,255}, new int[]{255,255,255,255},
 					new int[]{180,180,180,255}, new int[]{100,100,100,255},
 					new int[]{0,0,0,200},new int[]{255,255,255,255}});
-		dispWinFrames[wIdx] = new UI_TestWindow2D(ri, this, wIdx);
+		setDispWindow(wIdx, new UI_TestWindow2D(ri, this, wIdx));
 
 		//specify windows that cannot be shown simultaneously here
 		initXORWins(new int[]{disp3DRes1IDX,disp3DRes2IDX,disp2DResIDX}, new int[]{disp3DRes1IDX, disp3DRes2IDX,disp2DResIDX});
@@ -215,7 +215,7 @@ public class UI_TestProject extends GUI_AppManager {
 			case '9' : {break;}
 			case '0' : { break;}							
 			case ' ' : {toggleSimIsRunning(); break;}							//run sim
-			case 'f' : {dispWinFrames[curFocusWin].setInitCamView();break;}//reset camera
+			case 'f' : {getCurFocusDispWindow().setInitCamView();break;}//reset camera getCurFocusDispWindow()
 			case 'a' :
 			case 'A' : {toggleSaveAnim();break;}						//start/stop saving every frame for making into animation
 			case 's' :
