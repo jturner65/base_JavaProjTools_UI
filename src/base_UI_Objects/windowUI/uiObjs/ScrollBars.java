@@ -45,7 +45,7 @@ public class ScrollBars{
 	
 	public void setSize(){
 		float[] winRectDim = win.getRectDims();
-		float rectWidth = winRectDim[0]+winRectDim[2],vScrlStartY = winRectDim[1]+(win.closeBox[3]),
+		float rectWidth = winRectDim[0]+winRectDim[2],vScrlStartY = winRectDim[1]+(win.getCloseBoxHeight()),
 				rectHeight = winRectDim[3]-(vScrlStartY);
 		vScrlDims = new float[]{rectWidth - thk,vScrlStartY, thk,  rectHeight-thk};
 		hScrlDims = new float[]{winRectDim[0], winRectDim[1]+winRectDim[3] - thk,winRectDim[2]-thk,thk};

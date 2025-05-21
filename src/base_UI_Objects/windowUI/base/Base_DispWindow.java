@@ -71,8 +71,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final int ID;
 	//Counter of how many windows are built in the application. Used to specify unique ID for each new window
 	private static int winCnt = 0;
-
-	public float[] closeBox;	
+	
+	//x,y location and width,height of clickable close/open box in upper right corner of closeable windows
+	private float[] closeBox;	
 	//current visible screen width and height
 	public float[] curVisScrDims;
 	
@@ -130,7 +131,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	private float[][] privFlagBtns;									
 	/**
 	 * array of priv buttons to be cleared next frame - 
-	 * should always be empty except when buttons need to be cleared
+	 * Should always be empty except when buttons need to be cleared
 	 */
 	private ArrayList<Integer> privBtnsToClear;
 	
@@ -154,7 +155,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected int msBtnClcked;														//mouse button clicked
 
 	/**
-	 * subregion of window where UI objects may be found
+	 * Subregion of window where UI objects may be found
 	 * Idx 0,1 : Upper left corner x,y
 	 * Idx 2,3 : Lower right corner x,y
 	 */
@@ -203,7 +204,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	private float[] closedUIRtSideRecBox;	
 	/**
-	 * structure to facilitate communicating UI changes with functional code
+	 * Structure to facilitate communicating UI changes with functional code
 	 */
 	private UIDataUpdater uiUpdateData;
 		
@@ -239,7 +240,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	private myVectorf focusTar;							
 	/**
-	 * set this value to be different display center translations -to be used to calculate mouse offset in world for pick
+	 * Set this value to be different display center translations -to be used to calculate mouse offset in world for pick
 	 * and also as origin for 
 	 */
 	private myPointf sceneOriginVal;							
@@ -392,13 +393,17 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		}
 	}//initThisWin
 	
+	protected void _dispMessage(String funcName, String message, MsgCodes useCode) {
+		msgObj.dispMessage(className, funcName, message, useCode);
+	}
+	
 	/**
 	 * Shorthand to display general information
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
 	protected void _dispInfoMsg(String funcName, String message) {
-		msgObj.dispInfoMessage( className, funcName, message);
+		msgObj.dispInfoMessage(className, funcName, message);
 	}
 	
 	/**
@@ -407,7 +412,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param message the message to display
 	 */
 	protected void _dispDbgMsg(String funcName, String message) {
-		msgObj.dispDebugMessage( className, funcName, message);
+		msgObj.dispDebugMessage(className, funcName, message);
 	}
 	
 	/**
@@ -416,7 +421,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param message the message to display
 	 */
 	protected void _dispWarnMsg(String funcName, String message) {
-		msgObj.dispWarningMessage( className, funcName, message);
+		msgObj.dispWarningMessage(className, funcName, message);
 	}
 	
 	/**
@@ -425,7 +430,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param message the message to display
 	 */
 	protected void _dispErrMsg(String funcName, String message) {
-		msgObj.dispErrorMessage( className, funcName, message);
+		msgObj.dispErrorMessage(className, funcName, message);
 	}
 	
 	/**
@@ -1051,7 +1056,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	/**
 	 * This has to be called after UI structs are built and set - this creates and populates the 
-	 * structure that serves to communicate UI data to consumer from UI Window.
+	 * Structure that serves to communicate UI data to consumer from UI Window.
 	 */
 	private void _buildUIUpdateStruct() {
 		//set up UI->to->Consumer class communication object - only make instance of object here, 
@@ -1131,7 +1136,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected abstract void updateCalcObjUIVals();
 		
 	/**
-	 * set up initial trajectories - 2d array, 1 per UI Page, 1 per modifiable construct within page.
+	 * Set up initial trajectories - 2d array, 1 per UI Page, 1 per modifiable construct within page.
 	 */
 	public final void initDrwnTrajs(){
 		if(null!=trajMgr) {		trajMgr.initDrwnTrajs();	initDrwnTraj_Indiv();				}
@@ -1155,7 +1160,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected final void initUIClickCoords(float x1, float y1, float x2, float y2){uiClkCoords[0] = x1;uiClkCoords[1] = y1;uiClkCoords[2] = x2; uiClkCoords[3] = y2;}
 	protected final void initUIClickCoords(float[] cpy){	uiClkCoords[0] = cpy[0];uiClkCoords[1] = cpy[1];uiClkCoords[2] = cpy[2]; uiClkCoords[3] = cpy[3];}
 	/**
-	 * set up initial colors for sim specific flags for display
+	 * Set up initial colors for sim specific flags for display
 	 */
 	private void initPrivFlagColors(){
 		privFlagTrueColors = new int[truePrivFlagLabels.length][4];
@@ -1172,7 +1177,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 	
 	/**
-	 * set labels of boolean buttons for both true state and false state. Will be updated on next draw
+	 * Set labels of boolean buttons for both true state and false state. Will be updated on next draw
 	 * @param idx idx of button label to set
 	 * @param tLbl new 
 	 * @param fLbl
@@ -1180,7 +1185,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected void setButtonLabels(int idx, String tLbl, String fLbl) {truePrivFlagLabels[idx] = tLbl;falsePrivFlagLabels[idx] = fLbl;}
 	
 	/**
-	 * set up child class button rectangles. Override-able for nested windows
+	 * Set up child class button rectangles. Override-able for nested windows
 	 */
 	protected void initUIBox(){		
 		float [] menuUIClkCoords = AppMgr.getUIRectVals(ID); 
@@ -1216,7 +1221,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}//_buildAllPrivButtons
 	
 	/**
-	 * set up boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
+	 * Set up boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
 	 * @param yDisp displacement for button to be drawn
 	 * @param numBtns number of buttons to make
 	 */
@@ -1267,7 +1272,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}//_buildPrivBtnRects
 	
 	/**
-	 * find index in flag name arrays of passed boolean IDX
+	 * Find index in flag name arrays of passed boolean IDX
 	 * @param idx
 	 * @return
 	 */
@@ -1277,31 +1282,37 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}	
 	
 	/**
-	 * set the right side menu state for this window - if it is actually present, show it
+	 * Set the right side menu state for this window - if it is actually present, show it
 	 * @param visible
 	 */
-	public final void setRtSideInfoWinSt(boolean visible) {dispFlags.setRtSideInfoWinSt(visible);}	
+	public final void setRtSideInfoWinSt(boolean visible) {dispFlags.setRtSideInfoWinSt(visible);}
+	
+	/**
+	 * Set whether or not the global debug mode has been activated
+	 * @param dbg
+	 */
+	public final void setIsGlobalDebugMode(boolean dbg) {dispFlags.setIsDebug(dbg);}
 
 	/**
-	 * UI code-level Debug mode functionality. Called only from flags structure
-	 * @param val
+	 * UI code-level Debug mode functionality. Called only from flags structure from GUI_AppManager debug button.  Enables debug mode in all windows!
+	 * @param enable
 	 */
-	public final void handleDispFlagsDebugMode(boolean val) {
-		_dispDbgMsg("handleDispFlagsDebugMode", "Start UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
-		handleDispFlagsDebugMode_Indiv(val);
-		_dispDbgMsg("handleDispFlagsDebugMode", "End UI Code-specific Debug, called from base window Debug flags with value "+ val +".");
+	public final void handleDispFlagsDebugMode(boolean enable) {
+		_dispDbgMsg("handleDispFlagsDebugMode", "Start UI Code-specific Debug, called from base window Debug flags with value "+ enable +".");
+		handleDispFlagsDebugMode_Indiv(enable);
+		_dispDbgMsg("handleDispFlagsDebugMode", "End UI Code-specific Debug, called from base window Debug flags with value "+ enable +".");
 	}
 	protected abstract void handleDispFlagsDebugMode_Indiv(boolean val);
 
 	/**
 	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
-	 * @param val
+	 * @param enable
 	 */
 	@Override
-	public final void handlePrivFlagsDebugMode(boolean val) {
-		_dispDbgMsg("handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ val +".");
-		handlePrivFlagsDebugMode_Indiv(val);
-		_dispDbgMsg("handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ val +".");
+	public final void handlePrivFlagsDebugMode(boolean enable) {
+		_dispDbgMsg("handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ enable +".");
+		handlePrivFlagsDebugMode_Indiv(enable);
+		_dispDbgMsg("handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ enable +".");
 	}
 	
 	/**
@@ -1343,16 +1354,16 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 	
 	/**
-	 * set initial values for private flags for instancing window - set before initMe is called
+	 * Set initial values for private flags for instancing window - set before initMe is called
 	 */	
 	public int[] getOwnerFlagIDXsToInitToTrue() {return getFlagIDXsToInitToTrue();}
 	/**
-	 * set initial values for private flags for instancing window - set before initMe is called
+	 * Set initial values for private flags for instancing window - set before initMe is called
 	 */
 	protected abstract int[] getFlagIDXsToInitToTrue();
 	
 	/**
-	 * sets flag values without calling instancing window flag handler - only for init!
+	 * Sets flag values without calling instancing window flag handler - only for init!
 	 * @param idxs
 	 * @param val
 	 */
@@ -1882,7 +1893,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 	
 	/**
-	 * separating bar for menu
+	 * Separating bar for menu
 	 * @param uiClkRect
 	 */
 	protected void drawSepBar(double uiClkRect) {
@@ -2232,8 +2243,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param ticks
 	 * @param mult amount to modify view based on sensitivity and whether shift is pressed or not
 	 */
-	public final void handleMouseWheel(int ticks, float mult) {
+	public final boolean handleMouseWheel(int ticks, float mult) {
 		if (dispFlags.getCanChgView()) {handleViewChange(true,(mult * ticks),0);}
+		return true;
 	}//handleMouseWheel	
 	
 	/**
@@ -2326,11 +2338,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}//handleMouseDrag
 	
 	/**
-	 * set all window values for UI objects
+	 * Set all window values for UI objects
 	 */
 	protected final void setAllUIWinVals() {for(int i=0;i<guiObjs_Numeric.length;++i){if(guiObjs_Numeric[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
 	/**
-	 * set UI value for object based on non-drag modification such as click - either at initial click or when click is released
+	 * Set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	 * @param j
 	 */
 	private void setUIObjValFromClickAlone(int objId) {
@@ -2439,6 +2451,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected final int getTrajAraIDXVal(String str){if(null==trajMgr) {return -1;} return trajMgr.getTrajAraIDXVal(str);  }
 	
 	public final void clearAllTrajectories(){	if(null!=trajMgr) {		trajMgr.clearAllTrajectories();}}//clearAllTrajectories
+	
+	/**
+	 * Return the height of the clickable close/open box in upper right hand corner of closable windows
+	 * @return
+	 */
+	public final float getCloseBoxHeight() {return closeBox[3];}
 	
 	//add another screen to this window - need to handle specific trajectories - always remake traj structure
 	public final void addSubScreenToWin(int newWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(newWinKey, "",false);			addSScrToWin_Indiv(newWinKey);}}

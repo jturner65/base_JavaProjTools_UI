@@ -1107,9 +1107,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public float[] getInitCameraValues() {
 		return new float[] {-0.06f*MyMathUtils.TWO_PI_F, -0.04f*MyMathUtils.TWO_PI_F, -200.0f};
 	}
-
 	
-	public Base_DispWindow getCurrentWindow() {return dispWinFrames[curFocusWin];}
+	/**
+	 * Retrive the window that is currently in focus
+	 * @return
+	 */
+	public final Base_DispWindow getCurFocusDispWindow() {return _dispWinFrames[_curFocusWin];}	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// side bar menu stuff
@@ -1748,20 +1751,46 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.showText(txt,0.0f,0.0f,0.0f);
 		ri.translate(txt.length()*mult, 0.0f,0.0f);		
 	}
-	
+	/**
+	 * 
+	 * @param d
+	 * @param tclr
+	 * @param txt
+	 */
 	public final void showOffsetText(float d, int tclr, String txt){
 		ri.setColorValFill(tclr, 255);ri.setColorValStroke(tclr, 255);
 		ri.showText(txt, d, d,d); 
-	}	
+	}
+	/**
+	 * 
+	 * @param loc
+	 * @param tclr
+	 * @param txt
+	 */
 	public final void showOffsetText(myPointf loc, int tclr, String txt){
 		ri.setColorValFill(tclr, 255);ri.setColorValStroke(tclr, 255);
 		ri.showText(txt, loc.x, loc.y, loc.z); 
 	}	
+	/**
+	 * 
+	 * @param d
+	 * @param tclr
+	 * @param txt
+	 */
 	public final void showOffsetText2D(float d, int tclr, String txt){
 		ri.setColorValFill(tclr, 255);ri.setColorValStroke(tclr, 255);
 		ri.showText(txt, d, d,0); 
 	}
-		
+	/**
+	 * 
+	 * @param P
+	 * @param rad
+	 * @param det
+	 * @param fclr
+	 * @param strkclr
+	 * @param tclr
+	 * @param txt
+	 */
 	public final void showBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, String txt) {
 		ri.pushMatState();  
 		ri.translate(P.x,P.y,P.z);
@@ -1775,7 +1804,16 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
-	//translate to point, draw point and text
+	/**
+	 * translate to point, draw point and text
+	 * @param P
+	 * @param rad
+	 * @param det
+	 * @param fclr
+	 * @param strkclr
+	 * @param tclr
+	 * @param txt
+	 */
 	public final void showNoBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, String txt) {
 		ri.pushMatState();  
 		ri.setFill(fclr,255); 
@@ -1786,7 +1824,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
-	//textP is location of text relative to point
+	/**
+	 * textP is location of text relative to point
+	 * @param P
+	 * @param rad
+	 * @param det
+	 * @param fclr
+	 * @param strkclr
+	 * @param tclr
+	 * @param txtP
+	 * @param txt
+	 */
 	public final void showNoBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, myPointf txtP, String txt) {
 		ri.pushMatState();  
 		ri.translate(P.x,P.y,P.z); 
@@ -1797,7 +1845,16 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
-	//textP is location of text relative to point
+	/**
+	 * textP is location of text relative to point
+	 * @param P
+	 * @param rad
+	 * @param fclr
+	 * @param strkclr
+	 * @param tclr
+	 * @param txtP
+	 * @param txt
+	 */
 	public final void showCrclNoBox_ClrAra(myPointf P, float rad, int[] fclr, int[] strkclr, int tclr, myPointf txtP, String txt) {
 		ri.pushMatState();  
 		ri.translate(P.x,P.y,P.z); 
@@ -1808,7 +1865,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.popMatState();
 	} // render sphere of radius r and center P)
 	
-	//show sphere of certain radius
+	/**
+	 * show sphere of certain radius
+	 * @param P
+	 * @param rad
+	 * @param det
+	 * @param fclr
+	 * @param strkclr
+	 */
 	public final void show_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr) {
 		ri.pushMatState();   
 		if((fclr!= null) && (strkclr!= null)){ri.setFill(fclr,255); ri.setStroke(strkclr,255);}
@@ -1862,7 +1926,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final void setWinsHeight(int popUpWinIDX){
 		//skip first window - ui menu
-		for(int i =0;i<winDispIdxXOR.length;++i){		dispWinFrames[winDispIdxXOR[i]].setRectDimsY( dispWinFrames[popUpWinIDX].getRectDim(1));	}						
+		for(int i=0;i<winDispIdxXOR.length;++i){		_dispWinFrames[winDispIdxXOR[i]].setRectDimsY( _dispWinFrames[popUpWinIDX].getRectDim(1));	}						
 	}
 	/**
 	 * allow only 1 window to display
@@ -1872,7 +1936,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final void setWinFlagsXOR(int idx, boolean val){
 		if(val){//turning one on
 			//turn off not shown, turn on shown				
-			for(int i =0;i<winDispIdxXOR.length;++i){//check windows that should be mutually exclusive during display
+			for(int i=0;i<winDispIdxXOR.length;++i){//check windows that should be mutually exclusive during display
 				if(winDispIdxXOR[i]!= idx){
 					dispWinFrames[winDispIdxXOR[i]].setShowWin(false);
 					handleShowWin(i ,0,false); 
@@ -2004,8 +2068,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * get the ui rect values of the "master" ui region (another window) -> this is so ui objects of one window can be made, clicked, and shown displaced from those of the parent window
 	 * @param idx
 	 * @return
-	 */
-	
+	 */	
 	public final float[] getUIRectVals(int idx) {
 		switch(idx){
 			//sidebar menu synthesizes its uiClickCoords in its constructor
@@ -2029,7 +2092,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	private final void initVisFlags(){
 		int numVisFlags = getNumVisFlags();
-		_winVisFlags = new int[1 + numVisFlags/32];for(int i =0; i<numVisFlags;++i){forceWinVisFlag(i,false);}	
+		_winVisFlags = new int[1 + numVisFlags/32];for(int i=0; i<numVisFlags;++i){forceWinVisFlag(i,false);}	
 	}		
 	
 	/**
@@ -2037,6 +2100,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public abstract int getNumVisFlags();
+	
 	/**
 	 * set visibility flag value
 	 * @param idx

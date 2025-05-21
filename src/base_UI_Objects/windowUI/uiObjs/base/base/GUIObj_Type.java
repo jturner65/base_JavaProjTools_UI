@@ -18,7 +18,8 @@ public enum GUIObj_Type {
 	public static String[] getListOfTypes() {return _typeName;}
 	private static Map<Integer, GUIObj_Type> map = new HashMap<Integer, GUIObj_Type>(); 
 	static { for (GUIObj_Type enumV : GUIObj_Type.values()) { map.put(enumV.ordinal(), enumV);}}
-	public int getVal(){return ordinal();} 	
+	public int getVal() {return ordinal();}
+	public int getOrdinal() {return ordinal();} 	
 	public static GUIObj_Type getEnumByIndex(int idx){return map.get(idx);}
 	public static GUIObj_Type getEnumFromValue(int idx){return map.get(idx);}
 	public static int getNumVals(){return map.size();}						//get # of values in enum

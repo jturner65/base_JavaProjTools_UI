@@ -134,7 +134,7 @@ public class ColorRamp  {
 	
 	public void showDebugOutput(){
 		double[] lab0 = MyColorUtils.RGBtoLAB(R0,G0,B0), lab1 = MyColorUtils.RGBtoLAB(R1,G1,B1);		 
-		AppMgr.getCurrentWindow().getMsgObj().dispInfoMessage("myClrRamp","showDebugOutput",
+		AppMgr.getCurFocusDispWindow().getMsgObj().dispInfoMessage("myClrRamp","showDebugOutput",
 				String.format("Mode: %s   k: %d   L: %d\nColor0: RGB(%3d,%3d,%3d) Lab(%3.2f,%3.2f,%3.2f)\nColor1: RGB(%3d,%3d,%3d) Lab(%3.2f,%3.2f,%3.2f)",
                 mode.toUpperCase(),k,layer.l,R0,G0,B0,lab0[0],lab0[1],lab0[2],R1,G1,B1,lab1[0],lab1[1],lab1[2]));
 	}
