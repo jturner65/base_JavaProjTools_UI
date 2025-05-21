@@ -14,6 +14,7 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
+import base_Utils_Objects.io.messaging.MsgCodes;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 import testProject.uiData.UITestDataUpdater_3D;
 
@@ -152,8 +153,14 @@ public class UI_TestWindow3D extends Base_DispWindow {
 	}
 
 	@Override
-	protected void handleDispFlagsDebugMode_Indiv(boolean val) {
-		// TODO Auto-generated method stub
+	protected void handleDispFlagsDebugMode_Indiv(boolean enable) {
+		if(enable) {
+			int numMsgCodes = MsgCodes.getNumVals();
+			for(int i=0; i<numMsgCodes; ++i) {
+				MsgCodes code = MsgCodes.getEnumByIndex(i);
+				_dispMessage("handleDispFlagsDebugMode_Indiv", "Message code " +i +" with color for Code : " + code.name(), code);
+			}
+		}
 
 	}
 
