@@ -453,7 +453,7 @@ public class UIObjectManager {
 	 * 				idx 2 : Ornament color should match label color 
 	 * @return
 	 */
-	private Base_GUIObjRenderer buildRenderer(
+	private Base_GUIObjRenderer buildObjRenderer(
 			Base_GUIObj _owner, 
 			double[] _off,
 			float _menuWidth,
@@ -538,27 +538,19 @@ public class UIObjectManager {
 			switch(guiObjTypes[i]) {
 				case IntVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case ListVal : {
 					++numListObjs;
 					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i));
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
 				case LabelVal :{
 					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i]);					
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-					guiObjs_Numeric[i].setRenderer(renderer);
 					guiLabelValIDXs.add(i);
 					break;}
 				case Button  :{
@@ -570,7 +562,10 @@ public class UIObjectManager {
 					_dispWarnMsg("_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
 					break;				
 				}
-			}
+			}//switch
+			var renderer = buildObjRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
+			guiObjs_Numeric[i].setRenderer(renderer);
+
 		}
 		if(numListObjs != tmpListObjVals.size()) {
 			_dispWarnMsg("_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");

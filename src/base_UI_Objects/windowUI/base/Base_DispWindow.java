@@ -807,7 +807,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * 				idx 2 : Ornament color should match label color 
 	 * @return
 	 */
-	private Base_GUIObjRenderer buildRenderer(
+	private Base_GUIObjRenderer buildObjRenderer(
 			Base_GUIObj _owner, 
 			double[] _off,
 			float _menuWidth,
@@ -856,27 +856,19 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			switch(guiObjTypes[i]) {
 				case IntVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case ListVal : {
 					++numListObjs;
 					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i));
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-					guiObjs_Numeric[i].setRenderer(renderer);
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
 					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-					guiObjs_Numeric[i].setRenderer(renderer);
 					guiFloatValIDXs.add(i);
 					break;}
 				case LabelVal :{
 					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i]);					
-					var renderer = buildRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-					guiObjs_Numeric[i].setRenderer(renderer);
 					guiLabelValIDXs.add(i);
 					break;}
 				case Button  :{
@@ -887,11 +879,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				default : {
 					_dispWarnMsg("_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
 					break;				
-				}
-			}
+				}				
+			}//switch
+			var renderer = buildObjRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
+			guiObjs_Numeric[i].setRenderer(renderer);
+			
 		}
 		if(numListObjs != tmpListObjVals.size()) {
-			msgObj.dispWarningMessage("Base_uiObjectManager", "_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
+			_dispWarnMsg("_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
 		}	
 	}//_buildAllObjects	
 	
@@ -1141,8 +1136,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void initDrwnTrajs(){
 		if(null!=trajMgr) {		trajMgr.initDrwnTrajs();	initDrwnTraj_Indiv();				}
 	}
-	
-	
+		
 	protected final void setVisScreenWidth(float visScrWidth) {setVisScreenDims(visScrWidth,curVisScrDims[1]);}
 	protected final void setVisScreenHeight(float visScrHeight) {setVisScreenDims(curVisScrDims[0],visScrHeight);}
 	/**
@@ -1539,7 +1533,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final void loadFromFile(File file){
 		if (file == null) {
-			msgObj.dispWarningMessage("Base_DispWindow","loadFromFile","Load was cancelled.");
+			_dispWarnMsg("loadFromFile","Load was cancelled.");
 		    return;
 		} 
 		String[] res = fileIO.loadFileIntoStringAra(file.getAbsolutePath(), "Variable File Load successful", "Variable File Load Failed.");
@@ -1563,7 +1557,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	public final void saveToFile(File file){
 		if (file == null) {
-			msgObj.dispWarningMessage("Base_DispWindow","saveToFile","Save was cancelled.");
+			_dispWarnMsg("saveToFile","Save was cancelled.");
 		    return;
 		} 
 		ArrayList<String> res = new ArrayList<String>();
@@ -1621,7 +1615,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	protected final void setCameraBase(float[] camVals) {
 		ri.setCameraWinVals(camVals);  
-		//if(this.flags[this.debugMode]){msgObj.dispWarningMessage("Base_DispWindow","setCameraBase","rx :  " + rx + " ry : " + ry + " dz : " + dz);}
+		//if(this.flags[this.debugMode]){_dispWarnMsg("setCameraBase","rx :  " + rx + " ry : " + ry + " dz : " + dz);}
 		// puts origin of all drawn objects at screen center and moves forward/away by dz
 		ri.translate(camVals[0],camVals[1],(float)dz); 
 	    setCamOrient();	
@@ -1976,7 +1970,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void draw2D(float modAmtMillis){
 		if(!dispFlags.getShowWin()){drawSmall();return;}
 		ri.pushMatState();
-		//msgObj.dispDebugMessage("Base_DispWindow","draw2D","Hitting hint code draw2D");
+		//_dispDbgMsg("draw2D","Hitting hint code draw2D");
 		ri.setBeginNoDepthTest();
 		ri.disableLights();
 		// Set current fill and stroke colors
@@ -1994,7 +1988,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 
 	
 	public void drawTraj3D(float animTimeMod, myPointf trans){
-		msgObj.dispWarningMessage("Base_DispWindow","drawTraj3D","I should be overridden in 3d instancing class");
+		_dispWarnMsg("drawTraj3D","I should be overridden in 3d instancing class");
 //			pa.pushMatState();	
 //			if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
 //			TreeMap<String,ArrayList<myDrawnNoteTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
@@ -2105,7 +2099,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void setShowWin(boolean val) {dispFlags.setShowWin(val);}
 	
 	protected final void toggleWindowState(){
-		//msgObj.dispDebugMessage("Base_DispWindow","toggleWindowState","Attempting to close window : " + this.name);
+		//_dispDbgMsg("toggleWindowState","Attempting to close window : " + this.name);
 		dispFlags.toggleShowWin();
 		if(dispFlagWinIDX != -1) {AppMgr.setWinVisFlag(dispFlagWinIDX, dispFlags.getShowWin());}	//value has been changed above by close box	
 	}
@@ -2133,7 +2127,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//keep checking -see if clicked in UI buttons (flag-based buttons)
 		for(int i = 0;i<privFlagBtns.length;++i){
 			mod = msePtInRect(mouseX, mouseY, privFlagBtns[i]); 
-			//msgObj.dispDebugMessage("Base_DispWindow","checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
+			//_dispDbgMsg("checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
 			if (mod){ 
 				privFlags.toggleFlag(privModFlgIdxs[i]);
 				//setPrivFlags(privModFlgIdxs[i],!getPrivFlags(privModFlgIdxs[i])); 
@@ -2257,7 +2251,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
 		boolean mod = false;
-		//msgObj.dispConsoleDebugMessage(className, "handleMouseClick", String.format("Mouse click location @ [%d , %d]", mouseX, mouseY));
 		//check if trying to close or open the window via click, if possible
 		if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}		
 		boolean showWin = dispFlags.getShowWin();
@@ -2329,7 +2322,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			if(null!=trajMgr) {	mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn);		}
 			if(!mod) {
 				if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle	
-				//msgObj.dispDebugMessage("Base_DispWindow","handleMouseDrag","before handle indiv drag traj for window : " + this.name);
+				//_dispDbgMsg("handleMouseDrag","before handle indiv drag traj for window : " + this.name);
 				myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
 				mod = hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);		//handle specific, non-trajectory functionality for implementation of window
 			}
@@ -2347,7 +2340,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	private void setUIObjValFromClickAlone(int objId) {
 		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
-		//msgObj.dispDebugMessage("Base_DispWindow","setUIObjValFromClickAlone","Mult : " + mult + "|Scale : " +AppMgr.clickValModMult()));
+		//_dispDbgMsg("setUIObjValFromClickAlone","Mult : " + mult + "|Scale : " +AppMgr.clickValModMult()));
 		guiObjs_Numeric[objId].clickModVal(mult, AppMgr.clickValModMult());
 	}//setUIObjValFromClickAlone
 	
@@ -2471,13 +2464,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		
 	public final void setThisWinDebugState(int btn,int val) {
 		if(val==0) {//turning on
-			msgObj.dispMessage(className, "handleSideMenuDebugSelEnable","Click Debug functionality on in " + winInitVals.winName + " : btn : " + btn, MsgCodes.debug1);
+			_dispDbgMsg("handleSideMenuDebugSelEnable","Click Debug functionality on in " + winInitVals.winName + " : btn : " + btn);
 			handleSideMenuDebugSelEnable(btn);
-			msgObj.dispMessage(className, "handleSideMenuDebugSelEnable", "End Debug functionality on selection.",MsgCodes.debug1);
+			_dispDbgMsg("handleSideMenuDebugSelEnable", "End Debug functionality on selection.");
 		} else {
-			msgObj.dispMessage(className, "handleSideMenuDebugSelDisable","Click Debug functionality off in " + winInitVals.winName + " : btn : " + btn, MsgCodes.debug1);
+			_dispDbgMsg("handleSideMenuDebugSelDisable","Click Debug functionality off in " + winInitVals.winName + " : btn : " + btn);
 			handleSideMenuDebugSelDisable(btn);			
-			msgObj.dispMessage(className, "handleSideMenuDebugSelDisable", "End Debug functionality off selection.",MsgCodes.debug1);
+			_dispDbgMsg("handleSideMenuDebugSelDisable", "End Debug functionality off selection.");
 		}
 	}
 	
