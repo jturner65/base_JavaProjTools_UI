@@ -347,26 +347,63 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		dispFlags = new WinDispStateFlags(this);		
 		privBtnsToClear = new ArrayList<Integer>();
 		
-		//set up ui click region to be in sidebar menu below menu's entries - do not do here for sidebar menu itself
-		if(!_isMenu){
-			//Initialize dispFlags settings based on AppMgr
-			//Does this window include a runnable sim (launched by main menu flag)
-			dispFlags.setIsRunnable(AppMgr.getBaseFlagIsShown_runSim());
-			//Is this window capable of showing right side menu
-			dispFlags.setHasRtSideMenu(AppMgr.getBaseFlagIsShown_showRtSideMenu());
-			//initialize/override any state/display flags
-			initDispFlags();
-			//build uiClkCoords for this object
-			//initUIBox();						
-		} else {
-			//menu is not ever closeable 
-			dispFlags.setIsCloseable(false);
-		}
-		float[] _uiClickCoords = getParentWindowUIClkCoords();
-		System.arraycopy(_uiClickCoords, 0, uiClkCoords, 0, uiClkCoords.length);		
+		//////////////////////////////
+		// TODO replace this with UI Manager
+		// uiMgr.initAllGUIObjects();
+		//
+		//////////////////////////////
+		// Start replace ////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////
+		//initialize arrays to hold idxs of int and float items being created.
+		guiButtonIDXs = new ArrayList<Integer>();
+		guiFloatValIDXs = new ArrayList<Integer>();
+		guiIntValIDXs = new ArrayList<Integer>();
+		guiLabelValIDXs = new ArrayList<Integer>();
+		//Initialize object array
+		guiObjsAra = new Base_GUIObj[0];	
 		
+		//////////////
 		// build all UI objects using specifications from instancing window
-		_initAllGUIObjs(_isMenu, uiClkCoords);
+		initStateDispFlags();
+		
+		// Setup proper ui click coords
+		float[] _uiClickCoords = getParentWindowUIClkCoords();
+		System.arraycopy(_uiClickCoords, 0, uiClkCoords, 0, uiClkCoords.length);
+		
+		//////////////////////////////
+		//build ui objects
+		// list box values - keyed by list obj IDX, value is string array of list obj values
+		TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
+		// ui object values - keyed by object idx, value is object array of describing values
+		TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
+		//  set up all gui objects for this window
+		//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
+		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);			
+		//initialized for sidebar menu as well as for display windows
+		guiObjsAra = new Base_GUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
+		//build ui objects
+		uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, uiClkCoords);		
+		
+		//////////////////////////////
+		//build UI boolean buttons - necessary for menu and not menu
+		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
+		//  set up all window-specific boolean buttons for this window
+		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
+		int _numPrivFlags = initAllUIButtons(tmpBtnNamesArray);
+		//initialize all private buttons based on values put in arraylist
+		uiClkCoords[3] = _buildAllPrivButtons(tmpBtnNamesArray, uiClkCoords);
+		// init specific sim flags
+		privFlags = new WinAppPrivStateFlags(this, _numPrivFlags);
+		// set instance-specific initial flags
+		int[] trueFlagIDXs = getFlagIDXsToInitToTrue();
+		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
+		if(null!=trueFlagIDXs) {_initPassedPrivFlagsToTrue(trueFlagIDXs);}
+		
+		// build instance-specific UI update communication object if exists
+		_buildUIUpdateStruct();	
+		//////////////////////////////
+		// End replace ////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////
 		
 		//run instancing window-specific initialization after all ui objects are built
 		initMe();
@@ -437,45 +474,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return
 	 */
 	protected abstract UIDataUpdater buildUIDataUpdateObject();
-	
-	private void _initAllGUIObjs(boolean isMenu, float[] uiClkRect) {
-		//initialize arrays to hold idxs of int and float items being created.
-		guiFloatValIDXs = new ArrayList<Integer>();
-		guiIntValIDXs = new ArrayList<Integer>();
-		guiLabelValIDXs = new ArrayList<Integer>();
-		if (!isMenu) {
-			// list box values - keyed by list obj IDX, value is string array of list obj values
-			TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
-			// ui object values - keyed by object idx, value is object array of describing values
-			TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
-			//  set up all gui objects for this window
-			//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
-			setupGUIObjsAras(tmpUIObjArray,tmpListObjVals);					
-			//initialized for sidebar menu as well as for display windows
-			guiObjs_Numeric = new Base_NumericGUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
-			//build ui objects
-			uiClkRect[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, uiClkRect);	
-		} else {
-			//no guiObjs for menu
-			guiObjs_Numeric = new Base_NumericGUIObj[0];
-		}
-		//build UI boolean buttons
-		ArrayList<Object[]> tmpBtnNamesArray = new ArrayList<Object[]>();
-		//  set up all window-specific boolean buttons for this window
-		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
-		int _numPrivFlags = initAllUIButtons(tmpBtnNamesArray);
-		//initialize all private buttons based on values put in arraylist
-		uiClkRect[3] = _buildAllPrivButtons(tmpBtnNamesArray, uiClkRect);
-		// init specific sim flags
-		privFlags = new WinAppPrivStateFlags(this, _numPrivFlags);
-		// set instance-specific initial flags
-		int[] trueFlagIDXs = getFlagIDXsToInitToTrue();
-		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		
-		if(null!=trueFlagIDXs) {_initPassedPrivFlagsToTrue(trueFlagIDXs);}	
-		// build instance-specific UI update communication object if exists
-		_buildUIUpdateStruct();
-		
-	}//_initAllGUIObjs
 	
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
@@ -1048,6 +1046,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjsAra[idx].getValueAsFloat());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
+		//TODO 
+		//for (Integer idx : guiButtonIDXs) {			boolValues.put(idx, guiObjsAra[idx].getValueAsFloat());}
+		
 		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}//_buildUIUpdateStruct
