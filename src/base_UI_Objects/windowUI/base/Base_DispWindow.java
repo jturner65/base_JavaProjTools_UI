@@ -367,7 +367,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//run instancing window-specific initialization after all ui objects are built
 		initMe();
 		//set menu offset for custom UI objects
-		custMenuOffset = uiClkCoords[3] + AppMgr.getClkBoxDim();
+		custMenuOffset = uiClkCoords[3] + (2.0f * AppMgr.getClkBoxDim());
 		//set any custom button names if necessary
 		setCustMenuBtnLabels();
 		//pass all flag states to initialized structures in instancing window handler
@@ -1675,7 +1675,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		ri.translate(focusTar.x,focusTar.y,focusTar.z);
 	}
 
-	
 	/**
 	 * Draw this window's gui objects in sidebar menu
 	 * @param animTimeMod
@@ -1685,11 +1684,16 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		drawGUIObjs(isDebug, animTimeMod);
 		//draw all boolean-based buttons for this window
 		drawAppFlagButtons(dispFlags.getUseRndBtnClrs());
-		//draw any custom menu objects for sidebar menu
-		drawCustMenuObjs(animTimeMod);
+		//draw any custom menu objects for sidebar menu after buttons
+		ri.pushMatState();
+			//all sub menu drawing within push mat call
+			ri.translate(0,custMenuOffset);		
+			//draw any custom menu stuff here
+			drawCustMenuObjs(animTimeMod);
+		ri.popMatState();
 		//also launch custom function here if any are specified
 		checkCustMenuUIObjs();		
-	}//drawWindowGuiObjs
+	}//drawWindowGuiObjs	
 	
 	/**
 	 * Draw the UI clickable region rectangle

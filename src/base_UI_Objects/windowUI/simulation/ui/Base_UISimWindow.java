@@ -323,9 +323,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	//draw custom 2d constructs below interactive component of menu
 	@Override
 	public final void drawCustMenuObjs(float animTimeMod){
-		ri.pushMatState();
-		//all sub menu drawing within push mat call
-		ri.translate(0,custMenuOffset+AppMgr.getTextHeightOffset());		
+		ri.pushMatState();	
 		//draw any custom menu stuff here
 		drawSimCustMenuObjs(animTimeMod);
 		ri.popMatState();	

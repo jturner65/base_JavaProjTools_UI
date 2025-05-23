@@ -10,6 +10,9 @@ import base_UI_Objects.windowUI.uiObjs.base.ornaments.base.Base_GUIPrefixObj;
 public class GUI_NoPrefixObj extends Base_GUIPrefixObj{
 
 	public GUI_NoPrefixObj() {super();}
+	/**
+	 * Nothing to draw
+	 */
 	@Override
 	public void drawPrefixObj(IRenderInterface ri) {}
 	

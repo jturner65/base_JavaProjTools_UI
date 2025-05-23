@@ -31,6 +31,15 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	protected int[] strkClr = new int[] {0,0,0,255};
 	/**
+	 * Highlight fill color when selected (for bounding box)
+	 */
+	protected int[] hlFillClr = new int[] {220, 255, 255, 255};
+	/**
+	 * Highlight stroke color when selected (for bounding box edge)
+	 */
+	protected int[] hlStrkClr = new int[] {150, 150, 150,255};
+
+	/**
 	 * x,y coords of top left corner for clickable region
 	 */
 	protected myPointf start;
@@ -50,8 +59,10 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	protected Base_GUIObj owner;
 	
+	/**
+	 * The type of this renderer, for debug purposes
+	 */
 	private final String rendererType;
-
 	
 	/**
 	 * 
@@ -88,6 +99,11 @@ public abstract class Base_GUIObjRenderer {
 		//build prefix ornament to display
 		if (buildPrefix && (_off != null)) {
 			int[] prefixClr = (matchLabelColor ? textClr : ri.getRndClr());
+			System.arraycopy(prefixClr, 0, hlStrkClr, 0, hlStrkClr.length);
+			for(int i=0;i<3;++i ) {
+				hlStrkClr[i] = prefixClr[i];
+				hlFillClr[i] = (prefixClr[i] + 1024)/5;	
+			}
 			_ornament = new GUI_PrefixObj(_off, prefixClr);
 		} else {
 			_ornament = new GUI_NoPrefixObj();
@@ -135,8 +151,8 @@ public abstract class Base_GUIObjRenderer {
 	public final void drawHighlight() {
 		ri.pushMatState();
 			ri.setStrokeWt(1.0f);
-			ri.setFill(220, 255, 255, 255);
-			ri.setStroke(150, 150, 150,255);
+			ri.setFill(hlFillClr, hlFillClr[3]);
+			ri.setStroke(hlStrkClr, hlStrkClr[3]);
 			//Draw rectangle around this object denoting active zone
 			_drawRectangle();
 		ri.popMatState();

@@ -30,7 +30,9 @@ public class MenuGUIObj_DispValue extends Base_NumericGUIObj {
 		formatStr = "%.0f";
 	}
 
-	//display only object ignores any mod so just return original val
+	/**
+	 * Labels ignore any mod so just return original val
+	 */
 	@Override
 	public final double modValAssign(double _notUsed) {	return getVal();}
 	
