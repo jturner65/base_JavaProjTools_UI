@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
-import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 
 public class MenuGUIObj_Button extends MenuGUIObj_List {
 	

@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI.uiObjs.base.base;
+package base_UI_Objects.windowUI.uiObjs.base;
 
 import java.util.HashMap;
 import java.util.Map;

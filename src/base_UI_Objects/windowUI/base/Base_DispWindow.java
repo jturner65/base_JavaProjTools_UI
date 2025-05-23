@@ -14,9 +14,8 @@ import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.drawnTrajectories.TrajectoryManager;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.ScrollBars;
-import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
-import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
-import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_DispValue;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Float;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Int;
@@ -139,7 +138,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	//UI objects in this window
 	//GUI Objects
-	private Base_NumericGUIObj[] guiObjs_Numeric;	
+	private Base_GUIObj[] guiObjsAra;	
 	
 	/**
 	 * Base_GUIObj that was clicked on for modification
@@ -164,6 +163,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected float[] uiClkCoords;												//
 											
 	/**
+	* array lists of idxs for toggle-able multi-state objects
+	*/	
+	private ArrayList<Integer> guiButtonIDXs;
+	/**
 	 * array lists of idxs for float-based UI objects.
 	 */
 	private ArrayList<Integer> guiFloatValIDXs;
@@ -176,6 +179,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * array lists of idxs for label/read-only objects
 	 */	
 	private ArrayList<Integer> guiLabelValIDXs;
+
 	
 	/**
 	 * Boolean array of default behavior boolean values, if formatting is not otherwise specified
@@ -383,6 +387,29 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			trajMgr = null;
 		}
 	}//initThisWin
+	
+	/**
+	 * UIObjectManager will call this.
+	 */
+	@Override
+	public void initOwnerStateDispFlags() {
+		initStateDispFlags();
+	}
+	
+	/**
+	 * Set initial state and initialize gui objects. This is overridden by SidebarMenu
+	 */
+	protected final void initStateDispFlags() {
+		//Initialize dispFlags settings based on AppMgr
+		//Does this window include a runnable sim (launched by main menu flag)
+		dispFlags.setIsRunnable(AppMgr.getBaseFlagIsShown_runSim());
+		//Is this window capable of showing right side menu
+		dispFlags.setHasRtSideMenu(AppMgr.getBaseFlagIsShown_showRtSideMenu());
+		//initialize/override any state/display flags
+		initDispFlags();					
+	}//initStateDispFlags
+	
+	
 	/**
 	 * Initialize window's application-specific logic
 	 */
@@ -686,70 +713,70 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			TreeMap<Integer, String[]> tmpListObjVals, 
 			float[] uiClkRect) {
 		int numGUIObjs = tmpUIObjArray.size();
-		
-		double[][] guiMinMaxModVals = new double[numGUIObjs][3];			//min max mod values
-		double[] guiStVals = new double[numGUIObjs];						//starting values
-		String[] guiObjNames = new String[numGUIObjs];						//display labels for UI components	
-		//TODO Get guiColors from user input 
-		int[][][] guiColors = new int[numGUIObjs][2][4];		
-		
-		//idx 0 is value is sent to owning window, 
-		//idx 1 is value is sent on any modifications, 
-		//idx 2 is if true, then changes to value are not sent to UIDataUpdater structure automatically
-		boolean[][] guiBoolVals = new boolean[numGUIObjs][];				//array of UI flags for UI objects
-		// idx 0: whether multi-line(stacked) or not
-		// idx 1: if true, build prefix ornament
-		// idx 2: if true and prefix ornament is built, make it the same color as the text fill color. 
-		boolean[][] guiFormatBoolVals = new boolean[numGUIObjs][];		
-				
-		GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
-		float textHeightOffset = AppMgr.getTextHeightOffset();
-	
-		for (int i = 0; i < numGUIObjs; ++i) {
-			Object[] obj = tmpUIObjArray.get(i);
+		if(numGUIObjs > 0) {			
+			double[][] guiMinMaxModVals = new double[numGUIObjs][3];			//min max mod values
+			double[] guiStVals = new double[numGUIObjs];						//starting values
+			String[] guiObjNames = new String[numGUIObjs];						//display labels for UI components	
+			//TODO Get guiColors from user input 
+			int[][][] guiColors = new int[numGUIObjs][2][4];		
+			
+			//idx 0 is value is sent to owning window, 
+			//idx 1 is value is sent on any modifications, 
+			//idx 2 is if true, then changes to value are not sent to UIDataUpdater structure automatically
+			boolean[][] guiBoolVals = new boolean[numGUIObjs][];				//array of UI flags for UI objects
+			// idx 0: whether multi-line(stacked) or not
+			// idx 1: if true, build prefix ornament
+			// idx 2: if true and prefix ornament is built, make it the same color as the text fill color. 
+			boolean[][] guiFormatBoolVals = new boolean[numGUIObjs][];		
+					
+			GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
+			float textHeightOffset = AppMgr.getTextHeightOffset();
 			boolean[] formatAra;
-			if (obj.length == 6) {
-				// object has been built with extended format array specified				
-				formatAra = (boolean[])obj[5];
-			} else {
-				// Not specified, use default values - {false (single line), true (use prefix), false (don't use label color for prefix)}
-				formatAra = new boolean[] {false, true,false};
+			for (int i = 0; i < numGUIObjs; ++i) {
+				Object[] obj = tmpUIObjArray.get(i);
+		
+				if (obj.length == 6) {
+					// object has been built with extended format array specified				
+					formatAra = (boolean[])obj[5];
+				} else {
+					// Not specified, use default values - {false (single line), true (use prefix), false (don't use label color for prefix)}
+					formatAra = new boolean[] {false, true,false};
+				}
+				guiMinMaxModVals[i] = (double[]) obj[0];
+				guiStVals[i] = (Double)(obj[1]);
+				guiObjNames[i] = (String)obj[2];
+				guiObjTypes[i] = (GUIObj_Type)obj[3];
+				//TODO Get guiColors from user input/configuration
+				guiColors[i] = new int[][] {
+							{0,0,0,255}, //stroke
+							{0,0,0,255}, // fill
+						};
+	
+				boolean[] tmpAra = (boolean[])obj[4];
+				guiBoolVals[i] = new boolean[(tmpAra.length < 5 ? 5 : tmpAra.length)];
+				int idx = 0;
+				for (boolean val : tmpAra) {guiBoolVals[i][idx++] = val;}
+				guiFormatBoolVals[i] = new boolean[(formatAra.length < 3 ? 3 : formatAra.length)];
+				idx = 0;
+				for (boolean val : formatAra) {	guiFormatBoolVals[i][idx++] = val;}
+			}		
+			//build all objects using these values 
+			_buildAllObjects(guiObjNames, guiMinMaxModVals, 
+					guiStVals, guiBoolVals, guiFormatBoolVals, 
+					guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkRect[2]);
+			//Objects are created by here and assigned renderers
+			// Assign hotspots
+			myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
+			for (int i = 0; i < guiObjsAra.length; ++i) {
+				// Get next newStPt as we calculate the hotspot region for every UI object
+				newStPt = guiObjsAra[i].reCalcHotSpot(newStPt, textHeightOffset, uiClkRect[0], uiClkRect[2]);			
 			}
-			guiMinMaxModVals[i] = (double[]) obj[0];
-			guiStVals[i] = (Double)(obj[1]);
-			guiObjNames[i] = (String)obj[2];
-			guiObjTypes[i] = (GUIObj_Type)obj[3];
-			//TODO Get guiColors from user input/configuration
-			guiColors[i] = new int[][] {
-						{0,0,0,255}, //stroke
-						{0,0,0,255}, // fill
-					};
-
-			boolean[] tmpAra = (boolean[])obj[4];
-			guiBoolVals[i] = new boolean[(tmpAra.length < 5 ? 5 : tmpAra.length)];
-			int idx = 0;
-			for (boolean val : tmpAra) {guiBoolVals[i][idx++] = val;}
-			guiFormatBoolVals[i] = new boolean[(formatAra.length < 3 ? 3 : formatAra.length)];
-			idx = 0;
-			for (boolean val : formatAra) {	guiFormatBoolVals[i][idx++] = val;}
-		}		
-		//build all objects using these values 
-		_buildAllObjects(guiObjNames, guiMinMaxModVals, 
-				guiStVals, guiBoolVals, guiFormatBoolVals, 
-				guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkRect[2]);
-		//Objects are created by here and assigned renderers
-		// Assign hotspots
-		myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
-		for (int i = 0; i < guiObjs_Numeric.length; ++i) {
-			// Get next newStPt as we calculate the hotspot region for every UI object
-			newStPt = guiObjs_Numeric[i].reCalcHotSpot(newStPt, textHeightOffset, uiClkRect[0], uiClkRect[2]);			
+			//Make a smaller padding amount for final row
+			uiClkRect[3] =  newStPt.y - .5f*textHeightOffset;
 		}
-		//Make a smaller padding amount for final row
-		uiClkRect[3] =  newStPt.y - .5f*textHeightOffset;
 		// return final y coordinate
 		return uiClkRect[3];
-	}//_buildGUIObjsForMenu
-	
+	}//_buildGUIObjsForMenu	
 	
 	/**
 	 * Build the renderer for a UI object 
@@ -813,25 +840,26 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		for(int i =0; i< guiObjNames.length; ++i){
 			switch(guiObjTypes[i]) {
 				case IntVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
+					guiObjsAra[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
 					guiIntValIDXs.add(i);
 					break;}
 				case ListVal : {
 					++numListObjs;
-					guiObjs_Numeric[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i));
+					guiObjsAra[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i));
 					guiIntValIDXs.add(i);
 					break;}
 				case FloatVal : {
-					guiObjs_Numeric[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
+					guiObjsAra[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
 					guiFloatValIDXs.add(i);
 					break;}
 				case LabelVal :{
-					guiObjs_Numeric[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i]);					
+					guiObjsAra[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i]);					
 					guiLabelValIDXs.add(i);
 					break;}
 				case Button  :{
+					guiButtonIDXs.add(i);
 					//TODO
-					_dispWarnMsg("_buildAllObjects", "Attempting to instantiate unknown UI object ID for a " + guiObjTypes[i].toStrBrf());
+					_dispWarnMsg("_buildAllObjects", "Instantiating a Button UI object not yet supported for ID : "+i);
 					break;
 				}
 				default : {
@@ -839,9 +867,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 					break;				
 				}				
 			}//switch
-			var renderer = buildObjRenderer(guiObjs_Numeric[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-			guiObjs_Numeric[i].setRenderer(renderer);
-			
+			var renderer = buildObjRenderer(guiObjsAra[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
+			guiObjsAra[i].setRenderer(renderer);			
 		}
 		if(numListObjs != tmpListObjVals.size()) {
 			_dispWarnMsg("_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
@@ -888,7 +915,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return whether modification was performed or not
 	 */
 	public boolean setNewUIMaxVal(int idx, double maxVal) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMaxVal", "set its max value")) {guiObjs_Numeric[idx].setNewMax(maxVal);return true;}	
+		if (_validateUIObjectIdx(idx, guiObjsAra.length, "setNewUIMaxVal", "set its max value")) {guiObjsAra[idx].setNewMax(maxVal);return true;}	
 		return false;
 	}
 		
@@ -899,7 +926,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return whether modification was performed or not
 	 */
 	public boolean setNewUIMinVal(int idx, double minVal) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIMinVal", "set its min value")) {guiObjs_Numeric[idx].setNewMin(minVal);return true;}
+		if (_validateUIObjectIdx(idx, guiObjsAra.length, "setNewUIMinVal", "set its min value")) {guiObjsAra[idx].setNewMin(minVal);return true;}
 		return false;
 	}
 		
@@ -910,7 +937,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return value being set, or -Double.MAX_VALUE if idx is out of range
 	 */
 	public double setNewUIValue(int idx, double val) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIValue", "set its value")) {return guiObjs_Numeric[idx].setVal(val);}
+		if (_validateUIObjectIdx(idx, guiObjsAra.length, "setNewUIValue", "set its value")) {return guiObjsAra[idx].setVal(val);}
 		return -Double.MAX_VALUE;
 	}
 	
@@ -922,11 +949,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public void setNewUIDispText(int idx, boolean isNumeric, String str) {
 		if (isNumeric) {
-			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setLabel(str);}
+			if (_validateUIObjectIdx(idx, guiObjsAra.length, "setNewUIDispText", "set its display text")) {guiObjsAra[idx].setLabel(str);}
 			return;
 		} else {
 			//TODO support boolean UI objects
-			if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setNewUIDispText", "set its display text")) {guiObjs_Numeric[idx].setLabel(str);}
+			if (_validateUIObjectIdx(idx, guiObjsAra.length, "setNewUIDispText", "set its display text")) {guiObjsAra[idx].setLabel(str);}
 			return;
 		}
 	}
@@ -937,9 +964,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return
 	 */
 	public int[] setDispUIListVal(int idx, String val) {		
-		if ((!_validateUIObjectIdx(idx, guiObjs_Numeric.length, "setDispUIListVal", "display passed value")) || 
-				(!_validateIdxIsListObj(guiObjs_Numeric[idx], "setDispUIListVal", "display passed value"))){return new int[0];}
-		return ((MenuGUIObj_List) guiObjs_Numeric[idx]).setValInList(val);
+		if ((!_validateUIObjectIdx(idx, guiObjsAra.length, "setDispUIListVal", "display passed value")) || 
+				(!_validateIdxIsListObj(guiObjsAra[idx], "setDispUIListVal", "display passed value"))){return new int[0];}
+		return ((MenuGUIObj_List) guiObjsAra[idx]).setValInList(val);
 	}
 	
 	/**
@@ -950,9 +977,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return
 	 */
 	public int setAllUIListValues(int uiObjIdx, String[] values, boolean setAsDefault) {		
-		if ((!_validateUIObjectIdx(uiObjIdx, guiObjs_Numeric.length, "setAllUIListValues", "set/replace all list values")) || 
-				(!_validateIdxIsListObj(guiObjs_Numeric[uiObjIdx], "setAllUIListValues", "set/replace all list values"))){return -1;}
-		return ((MenuGUIObj_List) guiObjs_Numeric[uiObjIdx]).setListVals(values, setAsDefault);
+		if ((!_validateUIObjectIdx(uiObjIdx, guiObjsAra.length, "setAllUIListValues", "set/replace all list values")) || 
+				(!_validateIdxIsListObj(guiObjsAra[uiObjIdx], "setAllUIListValues", "set/replace all list values"))){return -1;}
+		return ((MenuGUIObj_List) guiObjsAra[uiObjIdx]).setListVals(values, setAsDefault);
 	}
 	
 	/**
@@ -961,7 +988,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return min value allowed, or Double.MAX_VALUE if idx out of range
 	 */
 	public double getMinUIValue(int idx) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMinUIValue","get its min value")) {return guiObjs_Numeric[idx].getMinVal();}
+		if (_validateUIObjectIdx(idx, guiObjsAra.length, "getMinUIValue","get its min value")) {return guiObjsAra[idx].getMinVal();}
 		return Double.MAX_VALUE;
 	}
 	
@@ -971,7 +998,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return max value allowed, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getMaxUIValue(int idx) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getMaxUIValue","get its max value")){return guiObjs_Numeric[idx].getMaxVal();}
+		if (_validateUIObjectIdx(idx, guiObjsAra.length, "getMaxUIValue","get its max value")){return guiObjsAra[idx].getMaxVal();}
 		return -Double.MAX_VALUE;
 	}
 	
@@ -981,7 +1008,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return mod value of UI object, or 0 if idx out of range
 	 */
 	public double getModStep(int idx) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getModStep", "get its mod value")) {return guiObjs_Numeric[idx].getModStep();}
+		if (_validateUIObjectIdx(idx, guiObjsAra.length, "getModStep", "get its mod value")) {return guiObjsAra[idx].getModStep();}
 		return 0;
 	}
 	
@@ -991,7 +1018,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return the current value of the UI object, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getUIValue(int idx) {
-		if (_validateUIObjectIdx(idx, guiObjs_Numeric.length, "getUIValue", "get its value")) {return guiObjs_Numeric[idx].getVal();}
+		if (_validateUIObjectIdx(idx, guiObjsAra.length, "getUIValue", "get its value")) {return guiObjsAra[idx].getVal();}
 		return -Double.MAX_VALUE;
 	}
 	
@@ -1002,9 +1029,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return the string value at the requested index, or "" if not a valid request
 	 */
 	public String getListValStr(int UIidx, int listIdx) {		
-		if ((!_validateUIObjectIdx(UIidx, guiObjs_Numeric.length, "getListValStr", "get a list value at specified idx")) || 
-				(!_validateIdxIsListObj(guiObjs_Numeric[UIidx], "getListValStr", "get a list value at specified idx"))){return "";}
-		return ((MenuGUIObj_List) guiObjs_Numeric[UIidx]).getListValStr(listIdx);
+		if ((!_validateUIObjectIdx(UIidx, guiObjsAra.length, "getListValStr", "get a list value at specified idx")) || 
+				(!_validateIdxIsListObj(guiObjsAra[UIidx], "getListValStr", "get a list value at specified idx"))){return "";}
+		return ((MenuGUIObj_List) guiObjsAra[UIidx]).getListValStr(listIdx);
 	}
 	
 	/**
@@ -1017,9 +1044,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		uiUpdateData = buildUIDataUpdateObject();
 		if (uiUpdateData == null) {return;}
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
-		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, guiObjs_Numeric[idx].getValueAsInt());}		
+		for (Integer idx : guiIntValIDXs) {				intValues.put(idx, guiObjsAra[idx].getValueAsInt());}		
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
-		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjs_Numeric[idx].getValueAsFloat());}
+		for (Integer idx : guiFloatValIDXs) {			floatValues.put(idx, guiObjsAra[idx].getValueAsFloat());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
 		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
@@ -1070,13 +1097,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateIntValFromExecCode(int idx, int value) {guiObjs_Numeric[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
+	public final void updateIntValFromExecCode(int idx, int value) {guiObjsAra[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
 	/**
 	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateFloatValFromExecCode(int idx, float value) {guiObjs_Numeric[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
+	public final void updateFloatValFromExecCode(int idx, float value) {guiObjsAra[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
 	
 	@Override
 	public void updateOwnerCalcObjUIVals() {updateCalcObjUIVals();}	
@@ -1144,6 +1171,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	protected final void initUIClickCoords(float[] cpy){System.arraycopy(cpy, 0, uiClkCoords, 0, uiClkCoords.length);}
 	
+	/**
+	 * UI Manager access to this function to retrieve appropriate initial uiClkCoords.
+	 * @return
+	 */
+	@Override
+	public final float[] getOwnerParentWindowUIClkCoords() {
+		return getParentWindowUIClkCoords();
+	}
 	/**
 	 * Get the click coordinates formed by the parent
 	 * @return
@@ -1380,37 +1415,37 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	protected final void setUIWinVals(int UIidx) {
 		//Determine whether int (int or list) or float
-		GUIObj_Type objType = guiObjs_Numeric[UIidx].getObjType();
+		GUIObj_Type objType = guiObjsAra[UIidx].getObjType();
 		switch (objType) {
 			case IntVal : {
-				int ival = guiObjs_Numeric[UIidx].getValueAsInt();
+				int ival = guiObjsAra[UIidx].getValueAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
-					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
+					if(guiObjsAra[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
 					//Special per-obj int handling, if pertinent
 					setUI_IntValsCustom(UIidx, ival, origVal);
 				}
 				break;}
 			case ListVal : {
-				int ival = guiObjs_Numeric[UIidx].getValueAsInt();
+				int ival = guiObjsAra[UIidx].getValueAsInt();
 				int origVal = uiUpdateData.getIntValue(UIidx);
 				if(checkAndSetIntVal(UIidx, ival)) {
-					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
+					if(guiObjsAra[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
 					//Special per-obj int (list idx)-related handling, if pertinent
 					setUI_IntValsCustom(UIidx, ival, origVal);
 				}
 				break;}
 			case FloatVal : {
-				float val = guiObjs_Numeric[UIidx].getValueAsFloat();
+				float val = guiObjsAra[UIidx].getValueAsFloat();
 				float origVal = uiUpdateData.getFloatValue(UIidx);
 				if(checkAndSetFloatVal(UIidx, val)) {
-					if(guiObjs_Numeric[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
+					if(guiObjsAra[UIidx].shouldUpdateConsumer()) {updateOwnerCalcObjUIVals();}
 					//Special per-obj float handling, if pertinent
 					setUI_FloatValsCustom(UIidx, val, origVal);
 				}
 				break;}
 			case LabelVal : {
-				_dispWarnMsg("setUIWinVals", "Attempting to process the value `" + guiObjs_Numeric[UIidx].getValueAsString()+"` from the `" + guiObjs_Numeric[UIidx].getName()+ "` label object.");				
+				_dispWarnMsg("setUIWinVals", "Attempting to process the value `" + guiObjsAra[UIidx].getValueAsString()+"` from the `" + guiObjsAra[UIidx].getName()+ "` label object.");				
 				break;}
 			case Button : {
 				_dispWarnMsg("setUIWinVals", "Attempting to set a value for an unsupported Button UI object : " + objType.toStrBrf());
@@ -1426,7 +1461,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Reset guiObj given by passed index to starting value
 	 * @param uiIdx
 	 */
-	protected final void resetUIObj(int uiIdx) {guiObjs_Numeric[uiIdx].resetToInit();setUIWinVals(uiIdx);}	
+	protected final void resetUIObj(int uiIdx) {guiObjsAra[uiIdx].resetToInit();setUIWinVals(uiIdx);}	
 	
 	/**
 	 * Called if int-handling guiObjs[UIidx] (int or list) has new data which updated UI adapter. 
@@ -1480,7 +1515,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param forceVals If true, this will bypass setUIWinVals, if false, will call set vals, to propagate changes to window vars 
 	 */
 	public final void resetUIVals(boolean forceVals){
-		for(int i=0; i<guiObjs_Numeric.length;++i){				guiObjs_Numeric[i].resetToInit();		}
+		for(int i=0; i<guiObjsAra.length;++i){				guiObjsAra[i].resetToInit();		}
 		if (!forceVals) {
 			setAllUIWinVals();
 		}
@@ -1495,7 +1530,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//window has no data values to load
 		if(toks.length==0){return;}
 		int uiIdx = Integer.parseInt(toks[0].split("\\s")[1].trim());
-		guiObjs_Numeric[uiIdx].setValFromStrTokens(toks);
+		guiObjsAra[uiIdx].setValFromStrTokens(toks);
 		setUIWinVals(uiIdx);//update window's values with UI construct's values
 	}//setValFromFileStr
 	
@@ -1567,7 +1602,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected final ArrayList<String> hndlFileSave_GUI(){
 		ArrayList<String> res = new ArrayList<String>();
 		res.add(winInitVals.winName);
-		for(int i=0;i<guiObjs_Numeric.length;++i){	res.add(guiObjs_Numeric[i].getStrFromUIObj(i));}		
+		for(int i=0;i<guiObjsAra.length;++i){	res.add(guiObjsAra[i].getStrFromUIObj(i));}		
 		//bound for custom components
 		res.add(winInitVals.winName + "_custUIComps");
 		//add blank space
@@ -1714,12 +1749,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		ri.pushMatState();
 		//draw UI Objs
 		if(isDebug) {
-			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}
+			for(int i =0; i<guiObjsAra.length; ++i){guiObjsAra[i].drawDebug();}
 			_drawUIRect();
 		} else {			
 			//mouse highlight
-			if (msClkObj != -1) {	guiObjs_Numeric[msClkObj].drawHighlight();	}
-			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}
+			if (msClkObj != -1) {	guiObjsAra[msClkObj].drawHighlight();	}
+			for(int i =0; i<guiObjsAra.length; ++i){guiObjsAra[i].draw();}
 		}	
 		ri.popMatState();	
 	}//drawAllGuiObjs
@@ -1735,9 +1770,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		ri.setColorValStroke(IRenderInterface.gui_Black,255);
 		ri.drawRect(loc);		
 		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		//pa.translate(-xOff*.5f,-yOff*.5f);
+		//ri.translate(-xOff*.5f,-yOff*.5f);
 		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
-		//pa.translate(width, 0);
+		//ri.translate(width, 0);
 	}
 	
 	/**
@@ -1760,41 +1795,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		}		
 		ri.popMatState();		
 	}//drawAppFlagButtons
-	
-	/**
-	 * Draw a rectangle around the GUI region
-	 * @param animTimeMod
-	 */
-	protected final void drawDebugGUIRectangle(float animTimeMod) {
-		ri.pushMatState();	
-			ri.setStrokeWt(2.0f);
-			ri.setNoFill();
-			ri.setColorValStroke(this.ID * 10, 255);
-			ri.drawRect(uiClkCoords[0], uiClkCoords[1], uiClkCoords[2]-uiClkCoords[0], uiClkCoords[3]-uiClkCoords[1]);
-		ri.popMatState();	
-	}
-	
-	/**
-	 * Draw ui objects in gui mode (with highlights around each object)
-	 * @param animTimeMod
-	 */
-	protected final void drawDebugGUIObjs(float animTimeMod) {
-		ri.pushMatState();	
-			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}
-		ri.popMatState();	
-	}
-	
-	/**
-	 * Draw UI Objs
-	 * @param animTimeMod for potential future animated UI Objects
-	 */
-	protected final void drawGUIObjs(float animTimeMod) {
-		ri.pushMatState();	
-			//mouse highlight
-			if (msClkObj != -1) {	guiObjs_Numeric[msClkObj].drawHighlight();	}
-			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}
-		ri.popMatState();	
-	}
 	
 	/**
 	 * draw any custom menu objects for sidebar menu
@@ -2246,7 +2246,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param val
 	 * @return
 	 */
-	protected final boolean setWinToUIVals(int UIidx, double val){return val == guiObjs_Numeric[UIidx].setVal(val);}
+	protected final boolean setWinToUIVals(int UIidx, double val){return val == guiObjsAra[UIidx].setVal(val);}
 	/**
 	 * Check if point x,y is between r[0], r[1] and r[0]+r[2], r[1]+r[3]
 	 * @param x
@@ -2273,7 +2273,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return idx of object that mouse resides in, or -1 if none
 	 */
 	private final int _checkInAllObjs(int mouseX, int mouseY) {
-		for(int j=0; j<guiObjs_Numeric.length; ++j){if(guiObjs_Numeric[j].checkIn(mouseX, mouseY)){ return j;}}
+		for(int j=0; j<guiObjsAra.length; ++j){if(guiObjsAra[j].checkIn(mouseX, mouseY)){ return j;}}
 		return -1;
 	}	
 	
@@ -2301,11 +2301,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				//found in list of UI objects
 				msBtnClcked = mseBtn;
 				msClkObj=idx;
-				guiObjs_Numeric[msClkObj].setHasFocus();
+				guiObjsAra[msClkObj].setHasFocus();
 				if(AppMgr.isClickModUIVal()){//allows for click-mod without dragging
 					setUIObjValFromClickAlone(msClkObj);
 					//Check if modification from click has changed the value of the object
-					if(guiObjs_Numeric[msClkObj].getIsDirty()) {dispFlags.setUIObjMod(true);}
+					if(guiObjsAra[msClkObj].getIsDirty()) {dispFlags.setUIObjMod(true);}
 				} 				
 				return true;	
 			}
@@ -2411,10 +2411,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			// if (retVals[0]){return true;}
 			// begin replace
 			if(msClkObj!=-1){	
-				guiObjs_Numeric[msClkObj].dragModVal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));
-				if(guiObjs_Numeric[msClkObj].getIsDirty()) {		
+				guiObjsAra[msClkObj].dragModVal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));
+				if(guiObjsAra[msClkObj].getIsDirty()) {		
 					dispFlags.setUIObjMod(true); 
-					if(guiObjs_Numeric[msClkObj].shouldUpdateWin(false)){setUIWinVals(msClkObj);}
+					if(guiObjsAra[msClkObj].shouldUpdateWin(false)){setUIWinVals(msClkObj);}
 				}
 				return true;
 			}		
@@ -2467,7 +2467,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * Set all window values for UI objects
 	 */
-	protected final void setAllUIWinVals() {for(int i=0;i<guiObjs_Numeric.length;++i){if(guiObjs_Numeric[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
+	protected final void setAllUIWinVals() {for(int i=0;i<guiObjsAra.length;++i){if(guiObjsAra[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
 	/**
 	 * Set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	 * @param j
@@ -2475,7 +2475,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	private void setUIObjValFromClickAlone(int objId) {
 		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
 		//_dispDbgMsg("setUIObjValFromClickAlone","Mult : " + mult + "|Scale : " +AppMgr.clickValModMult()));
-		guiObjs_Numeric[objId].clickModVal(mult, AppMgr.clickValModMult());
+		guiObjsAra[objId].clickModVal(mult, AppMgr.clickValModMult());
 	}//setUIObjValFromClickAlone
 	
 	/**
@@ -2495,7 +2495,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				setUIObjValFromClickAlone(msClkObj);	
 			}			
 			setAllUIWinVals();
-			guiObjs_Numeric[msClkObj].clearFocus();
+			guiObjsAra[msClkObj].clearFocus();
 			msClkObj = -1;	
 		}//some object was clicked - pass the values out to all windows
 		// end replace
@@ -2589,9 +2589,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return
 	 */
 	public final String[] getDebugData(){
+		// TODO replace all with
+		// String[] res = uiMgr.getDebugData();
+		// return res;
 		ArrayList<String> res = new ArrayList<String>();
 		List<String>tmp;
-		for(int j = 0; j<guiObjs_Numeric.length; j++){tmp = Arrays.asList(guiObjs_Numeric[j].getStrData());res.addAll(tmp);}
+		for(int j = 0; j<guiObjsAra.length; j++){tmp = Arrays.asList(guiObjsAra[j].getStrData());res.addAll(tmp);}
 		return res.toArray(new String[0]);	
 	}
 	

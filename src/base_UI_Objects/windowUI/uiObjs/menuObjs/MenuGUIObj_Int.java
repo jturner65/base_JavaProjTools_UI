@@ -1,9 +1,9 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
-import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
-import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 
-public class MenuGUIObj_Int extends Base_NumericGUIObj {
+public class MenuGUIObj_Int extends Base_GUIObj {
 
 	/**
 	 * Build an int-based UI object
@@ -50,5 +50,10 @@ public class MenuGUIObj_Int extends Base_NumericGUIObj {
 	 */
 	@Override
 	protected String getValueAsString(double _val) {	return String.format(formatStr,_val);}
+
+	@Override
+	protected boolean checkUIObjectStatus_Indiv() {
+		return true;
+	}
 	
 }//class myGUIObj_Int

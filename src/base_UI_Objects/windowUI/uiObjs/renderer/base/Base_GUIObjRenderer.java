@@ -2,10 +2,10 @@ package base_UI_Objects.windowUI.uiObjs.renderer.base;
 
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.base.Base_GUIObj;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_NoPrefixObj;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.GUI_PrefixObj;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.base.Base_GUIPrefixObj;
+import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.ornaments.GUI_NoPrefixObj;
+import base_UI_Objects.windowUI.uiObjs.ornaments.GUI_PrefixObj;
+import base_UI_Objects.windowUI.uiObjs.ornaments.base.Base_GUIPrefixObj;
 
 public abstract class Base_GUIObjRenderer {
 	/**

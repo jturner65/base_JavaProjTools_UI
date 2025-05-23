@@ -1,9 +1,9 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
-import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
-import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 
-public class MenuGUIObj_Float extends Base_NumericGUIObj {
+public class MenuGUIObj_Float extends Base_GUIObj {
 	/**
 	 * Build a float-based UI object
 	 * @param _objID the index of the object in the managing container
@@ -36,6 +36,11 @@ public class MenuGUIObj_Float extends Base_NumericGUIObj {
 			int formatVal = (int) Math.ceil(-Math.log10(modMult*1.00001))+1;
 			formatStr = "%."+formatVal+"f";
 		}
+	}
+
+	@Override
+	protected boolean checkUIObjectStatus_Indiv() {
+		return true;
 	}	
 		
 }//class myGUIObj_Float

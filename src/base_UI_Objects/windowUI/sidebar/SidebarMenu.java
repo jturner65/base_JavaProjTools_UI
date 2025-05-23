@@ -82,6 +82,19 @@ public class SidebarMenu extends Base_DispWindow{
 	}//ctor
 			
 	/**
+	 * Override for SidebarMenu of setting initial state flags
+	 */
+	@Override
+	protected final void initDispFlags() {
+		//menu is never runnable
+		dispFlags.setIsRunnable(false);
+		//menu never has a rt side menu window
+		dispFlags.setHasRtSideMenu(false);
+		//menu is not ever closeable 
+		dispFlags.setIsCloseable(false);			
+	}
+	
+	/**
 	 * init/reinit this window
 	 */
 	@Override
@@ -123,8 +136,6 @@ public class SidebarMenu extends Base_DispWindow{
 	//initialize all private-flag based UI buttons here - called by base class
 	protected final int initAllUIButtons(ArrayList<Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
 	
-	@Override
-	protected final void initDispFlags() {}
 	
 	//window UI object not used for sidebar menu
 	@Override

@@ -1,4 +1,4 @@
-package base_UI_Objects.windowUI.uiObjs.base.ornaments.base;
+package base_UI_Objects.windowUI.uiObjs.ornaments.base;
 
 import base_Render_Interface.IRenderInterface;
 

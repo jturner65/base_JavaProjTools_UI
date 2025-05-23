@@ -1,12 +1,12 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
-import base_UI_Objects.windowUI.uiObjs.base.Base_NumericGUIObj;
-import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 
 /**
  * Label that displays a value that may change but cannot be interacted with.
  */
-public class MenuGUIObj_DispValue extends Base_NumericGUIObj {
+public class MenuGUIObj_DispValue extends Base_GUIObj {
 	
 	/**
 	 * @param _objID
@@ -55,5 +55,11 @@ public class MenuGUIObj_DispValue extends Base_NumericGUIObj {
 	 */
 	@Override
 	public boolean shouldUpdateConsumer() {return false;}
+	
+
+	@Override
+	protected boolean checkUIObjectStatus_Indiv() {
+		return true;
+	}
 
 }//class MenuGUIObj_DispValue

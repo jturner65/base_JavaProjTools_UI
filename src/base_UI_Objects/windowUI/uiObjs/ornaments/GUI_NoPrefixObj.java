@@ -1,7 +1,7 @@
-package base_UI_Objects.windowUI.uiObjs.base.ornaments;
+package base_UI_Objects.windowUI.uiObjs.ornaments;
 
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.windowUI.uiObjs.base.ornaments.base.Base_GUIPrefixObj;
+import base_UI_Objects.windowUI.uiObjs.ornaments.base.Base_GUIPrefixObj;
 
 /**
  * Class for no prefix ornament to be displayed

@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
-import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 
 /**
  * UI object that supports selecting between a list of available values.

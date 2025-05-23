@@ -27,6 +27,17 @@ public interface IUIManagerOwner {
 	public void updateOwnerCalcObjUIVals();
 	
 	/**
+	 * Initialization specifics for the owning manager
+	 */
+	public void initOwnerStateDispFlags();
+	
+	/**
+	 * Access to retrieve appropriate initial uiClkCoords based on parent to manager owner.
+	 * @return
+	 */
+	public float[] getOwnerParentWindowUIClkCoords(); 
+	
+	/**
 	 * Called if int-handling guiObjs[UIidx] (int or list) has new data which updated UI adapter. 
 	 * Intended to support custom per-object handling by owning window.
 	 * Only called if data changed!
