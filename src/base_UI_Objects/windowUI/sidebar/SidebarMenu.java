@@ -74,19 +74,10 @@ public class SidebarMenu extends Base_DispWindow{
 		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
 		//msgObj.dispConsoleDebugMessage("SidebarMenu", "ctor", "clkFlgsStY : " + clkFlgsStY+ "|initTextHeightOff : " + initTextHeightOff + "|initBtnLblYOff : "+initBtnLblYOff+"| initRowStYOff : "+initRowStYOff+"| minBtnClkY : "+minBtnClkY);
 		// build uiClkCoords
-		//all ui objects for all windows will follow this format and share the uiClkCoords[0] value
-		
+		//all ui objects for all windows will follow this format and share the uiClkCoords[0] value	
 		// UI region for Application-wide buttons, under application flags
 		btnConfig.setAppButtonRegion(winInitVals.rectDim, (numMainFlagsToShow+3) * initTextHeightOff + clkFlgsStY);
-		
-
-		// Application flags start at beginning y of window rect dimensions
-		float uiClkCoordsYStart = winInitVals.rectDim[1] + .01f * winInitVals.rectDim[3];
-		// UI click coords will be flag region + Application buttons (so include flag y start)
-		float[] UIAppButtonRegion = btnConfig.getUIAppBtnRegion();
-		initUIClickCoords(UIAppButtonRegion[0], uiClkCoordsYStart, UIAppButtonRegion[2], UIAppButtonRegion[3]);
-		// Change UI FlagReg
-		//standard init
+		// Change UI FlagReg - standard init
 		super.initThisWin(true);
 	}//ctor
 			
@@ -96,6 +87,18 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void initMe() {	}	
 	
+	/**
+	 * Get the click coordinates formed by the parent, or in this case, the initial coords under the global state display indicators
+	 * @return
+	 */
+	@Override
+	protected final float[] getParentWindowUIClkCoords() {
+		// Application flags start at beginning y of window rect dimensions
+		float uiClkCoordsYStart = winInitVals.rectDim[1] + .01f * winInitVals.rectDim[3];
+		// UI click coords will be flag region + Application buttons (so include flag y start)
+		float[] UIAppButtonRegion = btnConfig.getUIAppBtnRegion();
+		return new float[] {UIAppButtonRegion[0], uiClkCoordsYStart, UIAppButtonRegion[2], UIAppButtonRegion[3]};
+	}//getParentWindowUIClkCoords
 	
 	//initialize structure to hold modifiable menu regions
 	//called from super.initThisWin
@@ -177,7 +180,7 @@ public class SidebarMenu extends Base_DispWindow{
 	}//clearAllBtnStates
 		
 	/**
-	 * set non-momentary buttons to be waiting for processing complete comand
+	 * Set non-momentary buttons to be waiting for processing complete command
 	 * @param row
 	 * @param col
 	 */
@@ -212,9 +215,19 @@ public class SidebarMenu extends Base_DispWindow{
 		}//in region where clickable buttons are - uiClkCoords[1] is bottom of buttons
 		return false;
 	}
+	/**
+	 * regular UI obj handling handled elsewhere - custom UI handling necessary to call main window	
+	 * @param mouseX
+	 * @param mouseY
+	 * @param pmouseX
+	 * @param pmouseY
+	 * @param mouseClickIn3D
+	 * @param mseDragInWorld
+	 * @param mseBtn
+	 * @return
+	 */
 	@Override
-	public boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {//regular UI obj handling handled elsewhere - custom UI handling necessary to call main window		
-		//boolean res = pa.getCurFocusDispWindow().hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
+	public boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {		
 		boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);	
 		return res;	}
 	@Override
@@ -228,7 +241,7 @@ public class SidebarMenu extends Base_DispWindow{
 		ri.translate(0,clkFlgsStY);
 		AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
 	}//drawSideBarBooleans	
-	
+
 	@Override
 	protected final void drawOnScreenStuffPriv(float modAmtMillis) {}
 	@Override//for windows to draw on screen
@@ -259,7 +272,7 @@ public class SidebarMenu extends Base_DispWindow{
 						winInitVals.rectDim[2]);						//draw buttons
 			ri.popMatState();	
 			ri.pushMatState();
-				drawGUIObjs(AppMgr.isDebugMode(), animTimeMod);					//draw what global user-modifiable fields are currently available 
+				drawGUIObjs(AppMgr.isDebugMode(), animTimeMod);//draw what global user-modifiable fields are currently available 
 			ri.popMatState();			
 			ri.pushMatState();
 				AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus

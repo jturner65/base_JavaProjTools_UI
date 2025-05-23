@@ -43,10 +43,11 @@ public abstract class Base_GUIObj {
 	private int[] uiStateFlags;
 	private static final int 
 		debugIDX 			= 0,
-		showIDX				= 1,					//show this component
-		valChangedIDX   	= 2,					//object value is dirty/clean
-		rendererSetIDX 		= 3;					//whether or not the renderer has been built and assigned
-	private static final int numStateFlags = 4;	// # of internal state booleans
+		showIDX				= 1,					// show this component
+		objHasFocusIDX		= 2,					// object currently has focus - set true upon click entry, false on click release
+		valChangedIDX   	= 3,					// object value is dirty/clean
+		rendererSetIDX 		= 4;					// whether or not the renderer has been built and assigned
+	private static final int numStateFlags = 5;	// # of internal state booleans
 	
 	/**
 	 * Flags structure to monitor/manage configurable behavior. No child class should access these directly
@@ -110,6 +111,7 @@ public abstract class Base_GUIObj {
 		switch (idx) {//special actions for each flag
 		case debugIDX 				:{break;}
 		case showIDX				:{break;}
+		case objHasFocusIDX			:{break;}
 		case valChangedIDX 			:{break;}
 		case rendererSetIDX			:{break;}
 		}
@@ -128,6 +130,10 @@ public abstract class Base_GUIObj {
 		}
 	}//setFlag	
 		
+	public void setHasFocus() {setStateFlags(objHasFocusIDX, true);}
+	public void clearFocus() {setStateFlags(objHasFocusIDX, false);}
+	public boolean getHasFocus() {return getStateFlags(objHasFocusIDX);}
+	
 	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
 	public boolean getIsDirty() {return getStateFlags(valChangedIDX);}
 	public boolean shouldUpdateConsumer() {return !getConfigFlags(explicitUIDataUpdateIDX);}
@@ -169,6 +175,11 @@ public abstract class Base_GUIObj {
 	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
 	public final void draw() {				renderer.draw();}//draw
+	
+	/**
+	 * Draw a highlight box around this object representing the click region this UI element will respond to
+	 */
+	public final void drawHighlight() { 	renderer.drawHighlight();}
 		
 	/**
 	 * Return the type of this object as defined in GUIObj_Type enum

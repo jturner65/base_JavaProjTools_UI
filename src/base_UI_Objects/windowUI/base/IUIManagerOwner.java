@@ -9,6 +9,11 @@ import base_UI_Objects.windowUI.uiData.UIDataUpdater;
  *	Describes the methods that must be implemented in a construct that will own a UIObjectManager
  */
 public interface IUIManagerOwner {
+	/**
+	 * Retrieve the Owner's class ID
+	 * @return
+	 */
+	public int getID();
 	
 	/**
 	 * Retrieve the Owner's class name, for debug messages

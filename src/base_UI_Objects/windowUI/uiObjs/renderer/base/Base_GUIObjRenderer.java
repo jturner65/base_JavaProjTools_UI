@@ -44,13 +44,7 @@ public abstract class Base_GUIObjRenderer {
 	 * while multi line will be some fraction of this wide.
 	 */
 	protected final float menuWidth;
-	/**
-	 * Used to draw this UI object encapsulated by a border representing the
-	 * click region this UI element will respond to, for debug
-	 */
-	private int _animCount = 0;
-	private boolean _cyanStroke = false;
-	
+
 	/**
 	 * Owning object consuming this renderer
 	 */
@@ -136,28 +130,47 @@ public abstract class Base_GUIObjRenderer {
 	public final boolean checkIn(float _clkx, float _clky){return (_clkx >= start.x)&&(_clkx <= end.x)&&(_clky >= start.y)&&(_clky <= end.y);}
 
 	/**
-	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
-	 * @param animTimeMod animation time modifier to enable this object to blink
+	 * Draw a highlight box around this object representing the click region this UI element will respond to
 	 */
-	public final void drawDebug() {
+	public final void drawHighlight() {
 		ri.pushMatState();
 			ri.setStrokeWt(1.0f);
-			++_animCount;
-			if(_animCount>20) {_animCount = 0; _cyanStroke = !_cyanStroke;}
-			if(_cyanStroke) {ri.setStroke(0, 255, 255,255);} else {	ri.setStroke(255, 0, 255,255);}
+			ri.setFill(220, 255, 255, 255);
+			ri.setStroke(150, 150, 150,255);
+			//Draw rectangle around this object denoting active zone
+			_drawRectangle();
+		ri.popMatState();
+	}//drawHighlight
+
+	/**
+	 * Used to draw this UI object encapsulated by a border representing the
+	 * click region this UI element will respond to, for debug
+	 */
+	private int _animCount = 0;
+	private final int _animSpeed = 10;
+	private int _animMod = _animSpeed;
+	/**
+	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
+	 */
+	public final void drawDebug() {		
+		ri.pushMatState();
+			ri.setStrokeWt(1.0f);
+			_animCount += _animMod;
+			_animMod = (_animCount <= 0 ? _animSpeed : (_animCount >= 255 ? -_animSpeed : _animMod));
+			ri.setStroke(_animCount, 255-_animCount, 255,255);
 			ri.noFill();
 			//Draw rectangle around this object denoting active zone
 			_drawRectangle();
 			ri.drawLine(start.x, start.y,0, end.x, end.y, 0);
-			ri.drawLine(start.x, end.y,0, end.x, start.y, 0);
-			
+			ri.drawLine(start.x, end.y,0, end.x, start.y, 0);			
 		ri.popMatState();
 		draw();
-	}
-	//Draw rectangle for object - debug, button, etc
-	protected void _drawRectangle() {
-		ri.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);
-	}
+	}//drawDebug
+	
+	/**
+	 * Draw rectangle for object - debug, button, etc
+	 */
+	protected void _drawRectangle() {		ri.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);	}
 	
 	/**
 	 * Draw this UI Object, including any ornamentation if appropriate

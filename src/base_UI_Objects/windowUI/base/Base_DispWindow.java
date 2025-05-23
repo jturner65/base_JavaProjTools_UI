@@ -102,23 +102,25 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * UI Application-specific flags and UI components (buttons)
 	 */	
 	protected WinAppPrivStateFlags privFlags;
+	/**
+	 * Button labels for true or false value buttons
+	 */
+	private String[][] privFlagButtonLabels; //needs to be in order of flags
+
+	/**
+	 * Colors for boolean buttons set to True or false based on child-class window specific values
+	 */
+	private int[][][] privFlagButtonColors;
+	/**
+	 * Non random button color for true (idx 1) and false (idx 0);
+	 */
+	private final int[][] btnColors = new int[][] {new int[]{255,215,215,255}, new int[]{220,255,220,255}};
 	
 	/**
-	 * Button labels for true value buttons
+	 * False button color to use if button labels are the same and using random colors
 	 */
-	private String[] truePrivFlagLabels; //needs to be in order of flags
-	/**
-	 * Button labels for false value buttons
-	 */
-	private String[] falsePrivFlagLabels;//needs to be in order of flags	
-	/**
-	 * Colors for boolean buttons set to True based on child-class window specific values
-	 */
-	private int[][] privFlagTrueColors;
-	/**
-	 * Colors for boolean buttons set to False based on child-class window specific values
-	 */
-	private int[][] privFlagFalseColors;
+	private static final int[] baseBtnFalseClr = new int[]{180,180,180, 255};
+	
 	
 	/**
 	 * only modifiable idx's will be shown as buttons - this needs to be in order of flag names
@@ -152,7 +154,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * mouse button clicked - consumed for individual click mod
 	 */
-	protected int msBtnClcked;														//mouse button clicked
+	protected int msBtnClcked;
 
 	/**
 	 * Subregion of window where UI objects may be found
@@ -247,21 +249,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	//to control how much is shown in the window - if stuff extends off the screen and for 2d window
 	protected ScrollBars[] scbrs;
-	
-	/**
-	 * Non random true button color
-	 */
-	private final int[] trueBtnClr = new int[]{220,255,220,255};
-	/**
-	 * Non-random false button color
-	 */
-	private final int[] falseBtnClr = new int[]{255,215,215,255};
-	
-	/**
-	 * False button color to use if button labels are the same and using random colors
-	 */
-	private static final int[] baseBtnFalseClr = new int[]{180,180,180, 255};
-	
+		
 	/**
 	 * directory with proper timestamp from when window was made
 	 */
@@ -365,11 +353,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			//initialize/override any state/display flags
 			initDispFlags();
 			//build uiClkCoords for this object
-			initUIBox();						
+			//initUIBox();						
 		} else {
 			//menu is not ever closeable 
 			dispFlags.setIsCloseable(false);
-		}				
+		}
+		float[] _uiClickCoords = getParentWindowUIClkCoords();
+		System.arraycopy(_uiClickCoords, 0, uiClkCoords, 0, uiClkCoords.length);		
+		
 		// build all UI objects using specifications from instancing window
 		_initAllGUIObjs(_isMenu, uiClkCoords);
 		
@@ -392,54 +383,21 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			trajMgr = null;
 		}
 	}//initThisWin
-	
-	protected void _dispMessage(String funcName, String message, MsgCodes useCode) {
-		msgObj.dispMessage(className, funcName, message, useCode);
-	}
-	
 	/**
-	 * Shorthand to display general information
-	 * @param funcName the calling method
-	 * @param message the message to display
+	 * Initialize window's application-specific logic
 	 */
-	protected void _dispInfoMsg(String funcName, String message) {
-		msgObj.dispInfoMessage(className, funcName, message);
-	}
-	
+	protected abstract void initMe();
 	/**
-	 * Shorthand to display a debug message
-	 * @param funcName the calling method
-	 * @param message the message to display
+	 * Initialize any UI control flags appropriate for window application
 	 */
-	protected void _dispDbgMsg(String funcName, String message) {
-		msgObj.dispDebugMessage(className, funcName, message);
-	}
-	
-	/**
-	 * Shorthand to display a warning message
-	 * @param funcName the calling method
-	 * @param message the message to display
-	 */
-	protected void _dispWarnMsg(String funcName, String message) {
-		msgObj.dispWarningMessage(className, funcName, message);
-	}
-	
-	/**
-	 * Shorthand to display an error message
-	 * @param funcName the calling method
-	 * @param message the message to display
-	 */
-	protected void _dispErrMsg(String funcName, String message) {
-		msgObj.dispErrorMessage(className, funcName, message);
-	}
-	
+	protected abstract void initDispFlags();
+
 	/**
 	 * Build appropriate UIDataUpdater instance for application
 	 * @return
 	 */	
 	@Override
-	public UIDataUpdater buildOwnerUIDataUpdateObject() {return buildUIDataUpdateObject();}
-	
+	public UIDataUpdater buildOwnerUIDataUpdateObject() {return buildUIDataUpdateObject();}	
 	/**
 	 * Retrieve the Owner's UIDataUpdater
 	 * @return
@@ -1121,10 +1079,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void updateFloatValFromExecCode(int idx, float value) {guiObjs_Numeric[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
 	
 	@Override
-	public void updateOwnerCalcObjUIVals() {
-		updateCalcObjUIVals();
-	}
-	
+	public void updateOwnerCalcObjUIVals() {updateCalcObjUIVals();}	
 	/**
 	 * This function is called on ui value update, to pass new ui values on to window-owned consumers
 	 */
@@ -1136,6 +1091,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void initDrwnTrajs(){
 		if(null!=trajMgr) {		trajMgr.initDrwnTrajs();	initDrwnTraj_Indiv();				}
 	}
+	protected abstract void initDrwnTraj_Indiv();
 		
 	protected final void setVisScreenWidth(float visScrWidth) {setVisScreenDims(visScrWidth,curVisScrDims[1]);}
 	protected final void setVisScreenHeight(float visScrHeight) {setVisScreenDims(curVisScrDims[0],visScrHeight);}
@@ -1149,41 +1105,52 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		curVisScrDims[1] = visScrHeight;
 		setVisScreenDimsPriv();
 	}//calcAndSetMapLoc
-
-	//build UI clickable region
-	protected final void initUIClickCoords(float x1, float y1, float x2, float y2){uiClkCoords[0] = x1;uiClkCoords[1] = y1;uiClkCoords[2] = x2; uiClkCoords[3] = y2;}
-	protected final void initUIClickCoords(float[] cpy){	uiClkCoords[0] = cpy[0];uiClkCoords[1] = cpy[1];uiClkCoords[2] = cpy[2]; uiClkCoords[3] = cpy[3];}
+	/**
+	 * Set implementation window-specific variables that are based on current visible screen dimensions curVisScrDims
+	 */
+	protected abstract void setVisScreenDimsPriv();
+	
 	/**
 	 * Set up initial colors for sim specific flags for display
 	 */
 	private void initPrivFlagColors(){
-		privFlagTrueColors = new int[truePrivFlagLabels.length][4];
-		privFlagFalseColors = new int[privFlagTrueColors.length][4];
+		privFlagButtonColors = new int[2][][];
+		int[][] privFlagTrueColors = new int[privFlagButtonLabels[0].length][4];
+		int[][] privFlagFalseColors = new int[privFlagTrueColors.length][4];
 		ThreadLocalRandom tr = ThreadLocalRandom.current();
 		for (int i = 0; i < privFlagTrueColors.length; ++i) { 
 			privFlagTrueColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150), 255};
-			if(truePrivFlagLabels[i].equals(falsePrivFlagLabels[i])) {
+			if(privFlagButtonLabels[0][i].equals(privFlagButtonLabels[1][i])) {
 				privFlagFalseColors[i] = baseBtnFalseClr;
 			} else {
 				privFlagFalseColors[i] = new int[]{0,255-privFlagTrueColors[i][1],255-privFlagTrueColors[i][2], 255};
 			}
-		}			
-	}
+		}
+		privFlagButtonColors[0] = privFlagFalseColors;
+		privFlagButtonColors[1] = privFlagTrueColors;			
+	}//initPrivFlagColors
 	
 	/**
 	 * Set labels of boolean buttons for both true state and false state. Will be updated on next draw
 	 * @param idx idx of button label to set
-	 * @param tLbl new 
-	 * @param fLbl
+	 * @param tLbl new true label
+	 * @param fLbl new false label
 	 */
-	protected void setButtonLabels(int idx, String tLbl, String fLbl) {truePrivFlagLabels[idx] = tLbl;falsePrivFlagLabels[idx] = fLbl;}
+	protected void setButtonLabels(int idx, String tLbl, String fLbl) {privFlagButtonLabels[1][idx] = tLbl;privFlagButtonLabels[0][idx] = fLbl;}
 	
 	/**
-	 * Set up child class button rectangles. Override-able for nested windows
+	 * Set uiClkCoords to be passed array
+	 * @param cpy
 	 */
-	protected void initUIBox(){		
-		float [] menuUIClkCoords = AppMgr.getUIRectVals(ID); 
-		initUIClickCoords(menuUIClkCoords[0],menuUIClkCoords[3],menuUIClkCoords[2],menuUIClkCoords[3]);			
+	protected final void initUIClickCoords(float[] cpy){System.arraycopy(cpy, 0, uiClkCoords, 0, uiClkCoords.length);}
+	
+	/**
+	 * Get the click coordinates formed by the parent
+	 * @return
+	 */
+	protected float[] getParentWindowUIClkCoords() {
+		float [] menuUIClkCoords = AppMgr.getUIRectVals(ID);		
+		return new float[] {menuUIClkCoords[0],menuUIClkCoords[3],menuUIClkCoords[2],menuUIClkCoords[3]};
 	}
 	
 	/**
@@ -1201,8 +1168,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */	
 	private float _buildAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray, float[] uiClkRect) {
 		// finalize setup for UI toggle buttons - convert to arrays
-		truePrivFlagLabels = new String[tmpBtnNamesArray.size()];
-		falsePrivFlagLabels = new String[truePrivFlagLabels.length];
+		privFlagButtonLabels = new String[2][];
+		String[] truePrivFlagLabels = new String[tmpBtnNamesArray.size()];
+		String[] falsePrivFlagLabels = new String[truePrivFlagLabels.length];;
 		privModFlgIdxs = new int[truePrivFlagLabels.length];
 		for (int i = 0; i < truePrivFlagLabels.length; ++i) {
 			Object[] tmpAra = tmpBtnNamesArray.get(i);
@@ -1211,6 +1179,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			falsePrivFlagLabels[i] = labelAra[1];
 			privModFlgIdxs[i] = (int) tmpAra[1];
 		}
+		privFlagButtonLabels[0]=falsePrivFlagLabels;
+		privFlagButtonLabels[1]=truePrivFlagLabels;	
 		return _buildPrivBtnRects(0, truePrivFlagLabels.length, uiClkRect);
 	}//_buildAllPrivButtons
 	
@@ -1222,23 +1192,24 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	private float _buildPrivBtnRects(float yDisp, int numBtns, float[] uiClkRect){
 		privFlagBtns = new float[numBtns][];
 		if (numBtns == 0) {	return uiClkRect[3];	}
-		float maxBtnLen = 0.95f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
-		uiClkRect[3] += getTextHeightOffset();
+		float yOffset = AppMgr.getTextHeightOffset();
+		float maxBtnLen = 0.98f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
+		uiClkRect[3] += yOffset;
 		float oldBtnLen = 0;
 		boolean lastBtnHalfStLine = false, startNewLine = true;
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
-			float btnLen = _calcBtnLength(truePrivFlagLabels[i].trim(),falsePrivFlagLabels[i].trim());
+			float btnLen = _calcBtnLength(privFlagButtonLabels[1][i].trim(),privFlagButtonLabels[0][i].trim());
 			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
 			//_dispDbgMsg("_buildPrivBtnRects","i: "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
 			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
 					privFlagBtns[i-1][2] = maxBtnLen;
-					uiClkRect[3] += getTextHeightOffset();
+					uiClkRect[3] += yOffset;
 				}
 				_setBtnDims(i, uiClkRect[0], uiClkRect[3], 0, btnLen);
 				//privFlagBtns[i]= new float[] {(float)(uiClkRect[0]-winInitVals.getXOffset()), (float) uiClkRect[3], btnLen, yOff };				
-				uiClkRect[3] += getTextHeightOffset();
+				uiClkRect[3] += yOffset;
 				startNewLine = true;
 				lastBtnHalfStLine = false;
 			} else {//button len should be half width unless this button started a new line
@@ -1250,7 +1221,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				} else {//should only get here if 2nd of two <1/2 width buttons in a row
 					lastBtnHalfStLine = false;
 					_setBtnDims(i, uiClkRect[0], uiClkRect[3], oldBtnLen, btnLen);
-					uiClkRect[3] += getTextHeightOffset();
+					uiClkRect[3] += yOffset;
 					startNewLine = true;					
 				}
 			}			
@@ -1258,7 +1229,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		}
 		if(lastBtnHalfStLine){//set last button full length if starting new line
 			privFlagBtns[numBtns-1][2] = maxBtnLen;
-			uiClkRect[3] += getTextHeightOffset();
+			uiClkRect[3] += yOffset;
 		}
 		uiClkRect[3] += AppMgr.getRowStYOffset();
 		initPrivFlagColors();
@@ -1337,6 +1308,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(!val){		closeMe();}	//not showing window :specific instancing window implementation stuff to do when hidden/transitioning to another window (i.e. suspend stuff running outside draw loop, or release memory of unnecessary stuff)
 		else {			showMe();}	//specific instance window functionality to do when window is shown
 	}//handleShowWin	
+	protected abstract void closeMe();	
+	protected abstract void showMe();
 	
 	/**
 	 * Custom handling of when showRightSideMenu is set or cleared
@@ -1381,14 +1354,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(dispFlags.getHasScrollBars()){for(int i =0; i<scbrs.length;++i){scbrs[i].setSize();}}
 		resizeMe(scale);
 	}
-	
+	protected abstract void resizeMe(float scale);	
+
 	/**
 	 * Returns string holding reasonable string name for a subdir for this application. Includes name of window and timestamp when window was instanced
 	 * @return
 	 */
-	public final String getAppFileSubdirName() {
-		return ssFolderDir;
-	}
+	public final String getAppFileSubdirName() {		return ssFolderDir;	}
 	
 	/**
 	 * This returns a date-time string properly formatted to be used in file names or file paths.  Time is when called
@@ -1552,7 +1524,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			ssPathBase + vals[0] + File.separatorChar, vals[1]	
 		};
 		return res;
-	}
+	}	
+	/**
+	 * return relevant name information for files and directories to be used to build screenshots/saved files	
+	 * @return
+	 */
+	protected abstract String[] getSaveFileDirNamesPriv();
+
 	
 	
 	public final void saveToFile(File file){
@@ -1624,6 +1602,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(dispFlags.getUseCustCam()){setCamera_Indiv(camVals);}//individual window camera handling
 		else {						setCameraBase(camVals);	}
 	}//setCamera
+	protected abstract void setCamera_Indiv(float[] camVals);
 
 	/**
 	 * used to handle camera location/motion
@@ -1676,20 +1655,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		closeBox[2] = clkBxDim;	
 		closeBox[3] = clkBxDim;
 	}	
-	
-	//draw a series of strings in a row
-	protected final void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
-		ri.setFill(clrAra, clrAra[3]);
-		ri.setColorValStroke(IRenderInterface.gui_Black,255);
-		ri.drawRect(loc);		
-		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		//pa.translate(-xOff*.5f,-yOff*.5f);
-		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
-		//pa.translate(width, 0);
-	}
-	
+
 	/**
-	 * whether or not to draw the mouse reticle/rgb(xyz) projection/edge to eye
+	 * Whether or not to draw the mouse reticle/rgb(xyz) projection/edge to eye
 	 * @return
 	 */
 	public final boolean chkDrawMseRet(){		return dispFlags.getDrawMseEdge();	}
@@ -1698,7 +1666,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	//draw functions
 
 	/**
-	 * initial draw stuff for each frame draw
+	 * Initial draw stuff for each frame draw
 	 * @param camVals
 	 */
 	public final void drawSetupWin(float[] camVals) {
@@ -1706,6 +1674,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//move to focus target
 		ri.translate(focusTar.x,focusTar.y,focusTar.z);
 	}
+
 	
 	/**
 	 * Draw this window's gui objects in sidebar menu
@@ -1721,7 +1690,52 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//also launch custom function here if any are specified
 		checkCustMenuUIObjs();		
 	}//drawWindowGuiObjs
-
+	
+	/**
+	 * Draw the UI clickable region rectangle
+	 */
+	private final void _drawUIRect() {
+		ri.setStrokeWt(2.0f);
+		ri.setNoFill();
+		ri.setColorValStroke(ID * 10, 255);
+		ri.drawRect(uiClkCoords[0], uiClkCoords[1], uiClkCoords[2]-uiClkCoords[0], uiClkCoords[3]-uiClkCoords[1]);
+	}
+	
+	/**
+	 * Draw all gui objects, with appropriate highlights for debug and if object is being edited or not
+	 * @param isDebug
+	 * @param animTimeMod
+	 */
+	protected void drawGUIObjs(boolean isDebug, float animTimeMod) {
+		ri.pushMatState();
+		//draw UI Objs
+		if(isDebug) {
+			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}
+			_drawUIRect();
+		} else {			
+			//mouse highlight
+			if (msClkObj != -1) {	guiObjs_Numeric[msClkObj].drawHighlight();	}
+			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}
+		}	
+		ri.popMatState();	
+	}//drawAllGuiObjs
+		
+	/**
+	 * Draw a series of strings in a row
+	 * @param txt
+	 * @param loc
+	 * @param clrAra
+	 */
+	protected final void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
+		ri.setFill(clrAra, clrAra[3]);
+		ri.setColorValStroke(IRenderInterface.gui_Black,255);
+		ri.drawRect(loc);		
+		ri.setColorValFill(IRenderInterface.gui_Black,255);
+		//pa.translate(-xOff*.5f,-yOff*.5f);
+		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
+		//pa.translate(width, 0);
+	}
+	
 	/**
 	 * Draw application-specific flag buttons
 	 * @param useRandBtnClrs
@@ -1729,48 +1743,52 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	private final void drawAppFlagButtons(boolean useRandBtnClrs) {
 		ri.pushMatState();	
 		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		String label;
-		int[] clr;
 		if(useRandBtnClrs){
 			for(int i =0; i<privModFlgIdxs.length; ++i){
-				if(privFlags.getFlag(privModFlgIdxs[i])){
-					label = truePrivFlagLabels[i];
-					clr = privFlagTrueColors[i];		
-				} else {
-					label = falsePrivFlagLabels[i];
-					clr = privFlagFalseColors[i];
-				}	
-				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+				int btnFlagIdx = privFlags.getFlag(privModFlgIdxs[i])  ? 1 : 0;
+				dispBttnAtLoc(privFlagButtonLabels[btnFlagIdx][i],privFlagBtns[i],privFlagButtonColors[btnFlagIdx][i]);	
 			}
 		} else {
 			for(int i =0; i<privModFlgIdxs.length; ++i){
-				if(privFlags.getFlag(privModFlgIdxs[i])){
-					label = truePrivFlagLabels[i];
-					clr = trueBtnClr;
-				} else {																
-					label = falsePrivFlagLabels[i];
-					clr = falseBtnClr;
-				}
-				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+				int btnFlagIdx = privFlags.getFlag(privModFlgIdxs[i])  ? 1 : 0;
+				dispBttnAtLoc(privFlagButtonLabels[btnFlagIdx][i],privFlagBtns[i],btnColors[btnFlagIdx]);	
 			}	
 		}		
-		ri.popMatState();	
+		ri.popMatState();		
 	}//drawAppFlagButtons
+	
+	/**
+	 * Draw a rectangle around the GUI region
+	 * @param animTimeMod
+	 */
+	protected final void drawDebugGUIRectangle(float animTimeMod) {
+		ri.pushMatState();	
+			ri.setStrokeWt(2.0f);
+			ri.setNoFill();
+			ri.setColorValStroke(this.ID * 10, 255);
+			ri.drawRect(uiClkCoords[0], uiClkCoords[1], uiClkCoords[2]-uiClkCoords[0], uiClkCoords[3]-uiClkCoords[1]);
+		ri.popMatState();	
+	}
+	
+	/**
+	 * Draw ui objects in gui mode (with highlights around each object)
+	 * @param animTimeMod
+	 */
+	protected final void drawDebugGUIObjs(float animTimeMod) {
+		ri.pushMatState();	
+			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}
+		ri.popMatState();	
+	}
 	
 	/**
 	 * Draw UI Objs
 	 * @param animTimeMod for potential future animated UI Objects
 	 */
-	protected final void drawGUIObjs(boolean isDebug, float animTimeMod) {
+	protected final void drawGUIObjs(float animTimeMod) {
 		ri.pushMatState();	
-		if (isDebug) { 	
-			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}
-			ri.setStrokeWt(2.0f);
-			ri.setNoFill();
-			ri.setColorValStroke(this.ID * 10, 255);
-			ri.drawRect(uiClkCoords[0], uiClkCoords[1], uiClkCoords[2]-uiClkCoords[0], uiClkCoords[3]-uiClkCoords[1]);
-		}
-		else {			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}}
+			//mouse highlight
+			if (msClkObj != -1) {	guiObjs_Numeric[msClkObj].drawHighlight();	}
+			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}
 		ri.popMatState();	
 	}
 	
@@ -1875,15 +1893,17 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//cleanup after drawing
 		postDraw();
 	}//drawHeader
+	protected abstract void drawOnScreenStuffPriv(float modAmtMillis);
 	
 	/**
 	 * This is called after all UI and other draw functionality has occurred.
 	 */
 	public final void postDraw() {
 		//last thing per draw - clear btns that have been set to clear after 1 frame of display
+		//TODO replace with
+		// uiMgr.postDraw(dispFlags.getClearPrivBtns());
+		// dispFlags.setClearPrivBtns(false);
 		if (dispFlags.getClearPrivBtns()) {clearAllPrivBtns();dispFlags.setClearPrivBtns(false);}
-//		//if buttons have been set to clear, clear them next draw - put this in mouse release?
-//		if (privBtnsToClear.size() > 0){dispFlags.setClearPrivBtns(true);	}				
 	}
 	
 	/**
@@ -1937,6 +1957,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			ri.drawRect(closedUIRtSideRecBox);
 		}		
 	}//drawRightSideMenu
+	protected abstract void drawRightSideInfoBarPriv(float modAmtMillis);
 	
 	/**
 	 * Draw 3d windows that are currently displayed
@@ -1955,6 +1976,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(null!=trajMgr){		trajMgr.drawTraj_3d(ri, animTimeMod, myPointf._add(sceneOriginVal,focusTar));}				
 		ri.popMatState();		
 	}//draw3D
+	/**
+	 * Draw window/application-specific functionality
+	 * @param animTimeMod # of milliseconds since last frame dividied by 1000
+	 */
+	protected abstract void drawMe(float animTimeMod);	
 
 	/**
 	 *  Convenience for 2D windows to move origin to view center
@@ -2015,15 +2041,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void reInitInfoStr(){		DebugInfoAra = new ArrayList<String>();		DebugInfoAra.add("");	}	
 
 	
-	public final int addInfoStr(String str){return addInfoStr(DebugInfoAra.size(), str);}
-	public final int addInfoStr(int idx, String str){	
+	private final int addInfoStr(String str){return addInfoStr(DebugInfoAra.size(), str);}
+	private final int addInfoStr(int idx, String str){	
 		int lstIdx = DebugInfoAra.size();
 		if(idx >= lstIdx){		for(int i = lstIdx; i <= idx; ++i){	DebugInfoAra.add(i,"");	}}
 		setInfoStr(idx,str);	return idx;
 	}
-	public final void setInfoStr(int idx, String str){DebugInfoAra.set(idx,str);	}
-	public final void drawInfoStr(float sc, int clr){drawInfoStr(sc, ri.getClr(clr,255));}
-	public final void drawInfoStr(float sc, int[] fillClr){//draw text on main part of screen
+	private final void setInfoStr(int idx, String str){DebugInfoAra.set(idx,str);	}
+	private final void drawInfoStr(float sc, int[] fillClr){//draw text on main part of screen
 		float yOff = getTextHeightOffset();
 		ri.pushMatState();		
 			ri.setFill(fillClr,fillClr[3]);
@@ -2043,11 +2068,24 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		boolean simDone = simMe(modAmtMillis);
 		if(simDone) {endSim();}
 	}//
+	/**
+	 * Implemenation-specific functionality for running a simulation
+	 * @param modAmtSec
+	 * @return
+	 */
+	protected abstract boolean simMe(float modAmtSec);
 	
 	/**
 	 * if ending simulation, call this function
 	 */
-	private void endSim() {	AppMgr.setSimIsRunning(false);}//endSim
+	private void endSim() {	
+		AppMgr.setSimIsRunning(false);
+		stopMe();
+	}//endSim	
+	/**
+	 * Implementation-specific functionality for ending simulation
+	 */
+	protected abstract void stopMe();
 	
 	/**
 	 * call after single draw - will clear window-based priv buttons that are momentary
@@ -2069,22 +2107,21 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * add a button to clear after next draw
 	 * @param idx index of button to clear
 	 */
-	protected final void addPrivBtnToClear(int idx) {
-		privBtnsToClear.add(idx);
-	}
+	protected final void addPrivBtnToClear(int idx) {		privBtnsToClear.add(idx);}
 	
 	/**
 	 * Access private flag values
 	 * @param idx
 	 * @return
 	 */
-	public final boolean getPrivFlag(int idx) {
-		return privFlags.getFlag(idx);
-	}
+	public final boolean getPrivFlag(int idx) {				return privFlags.getFlag(idx);}
 	
-	public final void setPrivFlag(int idx, boolean val) {
-		privFlags.setFlag(idx, val);
-	}
+	/**
+	 * Set private flag values
+	 * @param idx
+	 * @param val
+	 */
+	public final void setPrivFlag(int idx, boolean val) {		privFlags.setFlag(idx, val);}
 	
 	/**
 	 * Whether this window manages a simulator or some other runnable construct
@@ -2175,48 +2212,37 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final boolean getIs3DWindow() {return dispFlags.getIs3DWin();}
 	
-	protected final myPoint getMsePoint(myPoint pt){return dispFlags.getIs3DWin() ? getMsePtAs3DPt(pt) : pt;}		//get appropriate representation of mouse location in 3d if 3d window
+	/**
+	 * get appropriate representation of mouse location in 3d if 3d window
+	 * @param pt
+	 * @return
+	 */
+	protected final myPoint getMsePoint(myPoint pt){
+		return dispFlags.getIs3DWin() ? getMsePtAs3DPt(pt) : pt;}		//get appropriate representation of mouse location in 3d if 3d window
 	public final myPoint getMsePoint(int mouseX, int mouseY){return dispFlags.getIs3DWin() ? getMsePtAs3DPt(new myPoint(mouseX,mouseY,0)) : new myPoint(mouseX,mouseY,0);}
-	
+	/**
+	 * return appropriate 3d representation of mouse location - in 2d this will just be mseLoc x, mse Loc y, 0
+	 * @param mseLoc x and y are int values of mouse x and y location
+	 * @return
+	 */
+	protected abstract myPoint getMsePtAs3DPt(myPoint mseLoc);
+
 	/**
 	 * Return the coordinates of the clickable region for this window's UI
 	 * @return
 	 */
 	public float[] getUIClkCoords() {return uiClkCoords;}
 	
-	//////////////////////////////////////////////
-	/// Mouse handling
-	
-	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Start Mouse and keyboard handling
+
 	/**
-	 * Check inside all objects to see if passed mouse x,y is within hotspot
-	 * @param mouseX
-	 * @param mouseY
-	 * @return idx of object that mouse resides in, or -1 if none
-	 */
-	private final int _checkInAllObjs(int mouseX, int mouseY) {
-		for(int j=0; j<guiObjs_Numeric.length; ++j){if(guiObjs_Numeric[j].checkIn(mouseX, mouseY)){ return j;}}
-		return -1;
-	}	
-	
-	/**
-	 * Handle mouse move over window
-	 * @param mouseX
-	 * @param mouseY
+	 * updates values in UI with programatic changes 
+	 * @param UIidx
+	 * @param val
 	 * @return
 	 */
-	public final boolean handleMouseMove(int mouseX, int mouseY){
-		if(!dispFlags.getShowWin()){return false;}
-		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
-			int idx = _checkInAllObjs(mouseX, mouseY);
-			if(idx >= 0) {	msOvrObj=idx;return true;	}
-		}
-		myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
-		if(hndlMouseMove_Indiv(mouseX, mouseY, mouseClickIn3D)){return true;}
-		msOvrObj = -1;
-		return false;
-	}//handleMouseMove
-	
+	protected final boolean setWinToUIVals(int UIidx, double val){return val == guiObjs_Numeric[UIidx].setVal(val);}
 	/**
 	 * Check if point x,y is between r[0], r[1] and r[0]+r[2], r[1]+r[3]
 	 * @param x
@@ -2234,17 +2260,18 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final boolean pointInRectDim(int x, int y){return winInitVals.pointInRectDim(x, y);	}
 	public final boolean pointInRectDim(myPoint pt){return winInitVals.pointInRectDim(pt);}	
 	public final boolean pointInRectDim(myPointf pt){return winInitVals.pointInRectDim(pt);}
-	public final float getTextHeightOffset() {return AppMgr.getTextHeightOffset();}
+	public final float getTextHeightOffset() {return AppMgr.getTextHeightOffset();}	
 	
 	/**
-	 * Handle ticks from mouse wheel
-	 * @param ticks
-	 * @param mult amount to modify view based on sensitivity and whether shift is pressed or not
+	 * Check inside all objects to see if passed mouse x,y is within hotspot
+	 * @param mouseX
+	 * @param mouseY
+	 * @return idx of object that mouse resides in, or -1 if none
 	 */
-	public final boolean handleMouseWheel(int ticks, float mult) {
-		if (dispFlags.getCanChgView()) {handleViewChange(true,(mult * ticks),0);}
-		return true;
-	}//handleMouseWheel	
+	private final int _checkInAllObjs(int mouseX, int mouseY) {
+		for(int j=0; j<guiObjs_Numeric.length; ++j){if(guiObjs_Numeric[j].checkIn(mouseX, mouseY)){ return j;}}
+		return -1;
+	}	
 	
 	/**
 	 * handle a mouse click
@@ -2259,21 +2286,29 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}		
 		boolean showWin = dispFlags.getShowWin();
 		if(!showWin){return mod;}
-		// this window is showing
+		//TODO replace this with the following
+		// boolean[] retVals = uiMgr.handleMouseClick(mouseX, mouseY, mseBtn);
+		// if (retVals[1]){dispFlags.setUIObjMod(true);}
+		// if (retVals[0]){return true;}
+		// begin replace
 		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
 			int idx = _checkInAllObjs(mouseX, mouseY);
 			if(idx >= 0) {
 				//found in list of UI objects
 				msBtnClcked = mseBtn;
 				msClkObj=idx;
-				if(AppMgr.isClickModUIVal()){//allows for click-mod
+				guiObjs_Numeric[msClkObj].setHasFocus();
+				if(AppMgr.isClickModUIVal()){//allows for click-mod without dragging
 					setUIObjValFromClickAlone(msClkObj);
+					//Check if modification from click has changed the value of the object
 					if(guiObjs_Numeric[msClkObj].getIsDirty()) {dispFlags.setUIObjMod(true);}
 				} 				
 				return true;	
 			}
 		}			
 		if(!mod) {			mod = checkUIButtons(mouseX, mouseY);	}
+		// end replace
+		
 		//if nothing triggered yet, then specific instancing window implementation stuff
 		if(!mod){
 			//Get 3d point if appropriate
@@ -2286,6 +2321,57 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		}			//click + alt for traj drawing : only allow drawing trajectory if it can be drawn and no other interaction has occurred
 		return mod;
 	}//handleMouseClick
+	/**
+	 * Implementing class' necessary functions for mouse click
+	 * @param mouseX
+	 * @param mouseY
+	 * @param mseClckInWorld
+	 * @param mseBtn
+	 * @return
+	 */
+	protected abstract boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn);
+
+	/**
+	 * Handle mouse move over window
+	 * @param mouseX
+	 * @param mouseY
+	 * @return
+	 */
+	public final boolean handleMouseMove(int mouseX, int mouseY){
+		if(!dispFlags.getShowWin()){return false;}
+		//TODO replace with
+		// msOvrObj = uiMgr.handleMouseMove(mouseX, mouseY);
+		// if (msOvrObj != -1){return true;}
+		//begin replace		
+		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
+			int idx = _checkInAllObjs(mouseX, mouseY);
+			if(idx >= 0) {	msOvrObj=idx;return true;	}
+		}
+		//end replace
+		myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
+		if(hndlMouseMove_Indiv(mouseX, mouseY, mouseClickIn3D)){return true;}
+		msOvrObj = -1;
+		return false;
+	}//handleMouseMove
+	/**
+	 * Implementing class' necessary function for mouse movement
+	 * @param mouseX
+	 * @param mouseY
+	 * @param mseClckInWorld
+	 * @return
+	 */
+	protected abstract boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld);	
+			
+	/**
+	 * Handle ticks from mouse wheel
+	 * @param ticks
+	 * @param mult amount to modify view based on sensitivity and whether shift is pressed or not
+	 */
+	public final boolean handleMouseWheel(int ticks, float mult) {
+		if (dispFlags.getCanChgView()) {handleViewChange(true,(mult * ticks),0);}
+		return true;
+	}//handleMouseWheel	
+
 	/**
 	 * vector for drag in 3D
 	 * @param mouseX
@@ -2314,6 +2400,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		} else {//modify UI elements		
 			//any generic dragging stuff - need flag to determine if trajectory is being entered		
 			//modify object that was clicked in by mouse motion
+			
+			// TODO replace here
+			// boolean retVals[] = uiMgr.handleMouseDrag(delX, delY, shiftPressed);
+			// if (retVals[1]){dispFlags.setUIObjMod(true);}
+			// if (retVals[0]){return true;}
+			// begin replace
 			if(msClkObj!=-1){	
 				guiObjs_Numeric[msClkObj].dragModVal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));
 				if(guiObjs_Numeric[msClkObj].getIsDirty()) {		
@@ -2322,7 +2414,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 				}
 				return true;
 			}		
-			
+			// end replace
 			if(null!=trajMgr) {	mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn);		}
 			if(!mod) {
 				if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}	//if not drawing or editing a trajectory, force all dragging to be within window rectangle	
@@ -2333,6 +2425,40 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		}
 		return mod;
 	}//handleMouseDrag
+	
+	/**
+	 * Sidebar menu calling main window's implementation code for drag
+	 * @param mouseX
+	 * @param mouseY
+	 * @param pmouseX
+	 * @param pmouseY
+	 * @param mouseClickIn3D
+	 * @param mseDragInWorld
+	 * @param mseBtn
+	 * @return
+	 */
+	public final boolean sideBarMenu_CallWinMseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
+		return hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
+	}
+	/**
+	 * Implementing class' necessary function for mouse drag
+	 * @param mouseX
+	 * @param mouseY
+	 * @param pmouseX
+	 * @param pmouseY
+	 * @param mouseClickIn3D
+	 * @param mseDragInWorld
+	 * @param mseBtn
+	 * @return
+	 */
+	protected abstract boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn);
+	
+	/**
+	 * Handle selection of mouse-over-text option buttons in menu, specifying desired mouse over text to display in sim window
+	 * @param btn
+	 * @param val
+	 */
+	public abstract void handleSideMenuMseOvrDispSel(int btn,boolean val);		
 	
 	/**
 	 * Set all window values for UI objects
@@ -2353,29 +2479,35 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final void handleMouseRelease(){
 		if(!dispFlags.getShowWin()){return;}
-		if(dispFlags.getUIObjMod()){
+		boolean objModified = dispFlags.getUIObjMod();
+		dispFlags.setUIObjMod(false);
+		// TODO replace here
+		// uiMgr.handleMouseRelease(objModified);
+		// begin replace
+		if(msClkObj != -1) {
+			if(!objModified){
+				//_dispInfoMsg("handleMouseRelease", "Object : "+msClkObj+" was clicked clicked but getUIObjMod was false");
+				//means object was clicked in but not drag modified through drag or shift-clic - use this to modify by clicking
+				setUIObjValFromClickAlone(msClkObj);	
+			}			
 			setAllUIWinVals();
-			dispFlags.setUIObjMod(false);
+			guiObjs_Numeric[msClkObj].clearFocus();
 			msClkObj = -1;	
 		}//some object was clicked - pass the values out to all windows
-		else if(msClkObj != -1) {
-			//means object was clicked in but not drag modified through drag or shift-clic - use this to modify by clicking
-			setUIObjValFromClickAlone(msClkObj);
-			setAllUIWinVals();
-			dispFlags.setUIObjMod(false);
-			msClkObj = -1;	
-		}
+		// end replace
 		
 		if(null!=trajMgr) {trajMgr.handleMouseRelease_Traj(getMsePoint(ri.getMouse_Raw()));}
-		msClkObj = -1;	
 		//if buttons have been put in clear queue (set to clear), set flag to clear them next draw
 		if (privBtnsToClear.size() > 0){dispFlags.setClearPrivBtns(true);	}
-		
-		hndlMouseRel_Indiv();//specific instancing window implementation stuff
-
+		//specific instancing window implementation stuff for release
+		hndlMouseRel_Indiv();
 		if(null!=trajMgr) {trajMgr.clearTmpDrawnTraj();}
 	}//handleMouseRelease	
-	
+	/**
+	 * Implementing class' necessary function for mouse release
+	 */
+	protected abstract void hndlMouseRel_Indiv();
+			
 	/**
 	 * Handle releasing the alt key
 	 */
@@ -2384,6 +2516,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(null!=trajMgr) {trajMgr.endAltKey(getMsePoint(ri.getMouse_Raw()));}
 		endAltKey_Indiv();
 	}	
+	protected abstract void endAltKey_Indiv();
 	/**
 	 * Handle releasing the cntl key
 	 */
@@ -2392,6 +2525,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(null!=trajMgr) {trajMgr.endCntlKey(getMsePoint(ri.getMouse_Raw()));}
 		endCntlKey_Indiv();
 	}
+	protected abstract void endCntlKey_Indiv();
 	/**
 	 * Handle releasing the shift key
 	 */
@@ -2400,6 +2534,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(null!=trajMgr) {trajMgr.endShiftKey(getMsePoint(ri.getMouse_Raw()));}
 		endShiftKey_Indiv();
 	}
+	protected abstract void endShiftKey_Indiv();
 	/**
 	 * Set the value of the key and keycode pressed, passed by GUI_AppMgr
 	 * @param _key
@@ -2409,7 +2544,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(!dispFlags.getShowWin()){return;}
 		keyPressed = _key; 
 		keyCodePressed = _keyCode;
-	}	
+	}
+	// INDIV Version for setValueKey?
+	
 	/**
 	 * Clear the values of the key and keycode that was pressed.  Called by GUI_AppMgr
 	 */
@@ -2419,6 +2556,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		keyPressed = ' ';
 		keyCodePressed = 0;
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// End Mouse and keyboard handling
 	
 	/**
 	 * finds closest point to p in sPts - put dist in d, returns index
@@ -2470,17 +2610,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return
 	 */
 	public final float getCloseBoxHeight() {return closeBox[3];}
-	
-	//add another screen to this window - need to handle specific trajectories - always remake traj structure
-	public final void addSubScreenToWin(int newWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(newWinKey, "",false);			addSScrToWin_Indiv(newWinKey);}}
-	public final void addTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,false);	addTrajToScr_Indiv(subScrKey, newTrajKey);}}
-	public final void delSubScreenToWin(int delWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(delWinKey, "",true);				delSScrToWin_Indiv(delWinKey);}}
-	public final void delTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,true);		delTrajToScr_Indiv(subScrKey,newTrajKey);}}
-		
-	//updates values in UI with programatic changes 
-	public final boolean setWinToUIVals(int UIidx, double val){return val == guiObjs_Numeric[UIidx].setVal(val);}	
-	//UI controlled auxiliary/debug functionality	
-	public final void clickSideMenuBtn(int _row, int _funcOffset, int btnNum) {	curCstBtnRow = _row; curCstFuncBtnOffset = _funcOffset; curCustBtn[_row] = btnNum; custClickSetThisFrame = true;}
 		
 	/**
 	 * Handle this window's debug state/function based on what button was selected from side-bar debug menu
@@ -2497,8 +2626,19 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			handleSideMenuDebugSelDisable(btn);			
 			_dispDbgMsg("setThisWinMenuBtnDbgState", "End Debug functionality off selection.");
 		}
-	}
-	
+	}//setThisWinMenuBtnDbgState
+	/**
+	 * handle desired debug functionality enable based on buttons selected from side bar menu
+	 * @param btn
+	 * @param val
+	 */
+	protected abstract void handleSideMenuDebugSelEnable(int btn);
+	/**
+	 * handle desired debug functionality disable based on buttons selected from side bar menu
+	 * @param btn
+	 * @param val
+	 */
+	protected abstract void handleSideMenuDebugSelDisable(int btn);	
 	
 	/**
 	 * check if either custom function or debugging has been launched and process if so, skip otherwise.latched by a frame so that button can be turned on
@@ -2520,6 +2660,22 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}//checkCustMenuUIObjs
 
 	/**
+	 * UI controlled auxiliary/debug functionality	
+	 * @param _row
+	 * @param _funcOffset
+	 * @param btnNum
+	 */
+	public final void clickSideMenuBtn(int _row, int _funcOffset, int btnNum) {	curCstBtnRow = _row; curCstFuncBtnOffset = _funcOffset; curCustBtn[_row] = btnNum; custClickSetThisFrame = true;}
+	
+	/**
+	 * type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
+	 * @param funcRow idx for button row
+	 * @param btn idx for button within row (column)
+	 * @param label label for this button (for display purposes)
+	 */
+	protected abstract void launchMenuBtnHndlr(int funcRow, int btn, String label) ;
+	
+	/**
 	 * Call from custFunc/custDbg functions being launched in threads.
 	 * these are launched in threads to allow UI to respond to user input
 	 */
@@ -2536,66 +2692,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		curCustBtn[curCstBtnRow] = -1;
 	}//resetButtonState	
 	
-	/**
-	 * Handle selection of mouse-over-text option buttons in menu, specifying desired mouse over text to display in sim window
-	 * @param btn
-	 * @param val
-	 */
-	public abstract void handleSideMenuMseOvrDispSel(int btn,boolean val);	
-	/**
-	 * handle desired debug functionality enable based on buttons selected from side bar menu
-	 * @param btn
-	 * @param val
-	 */
-	protected abstract void handleSideMenuDebugSelEnable(int btn);	
-
-	/**
-	 * handle desired debug functionality disable based on buttons selected from side bar menu
-	 * @param btn
-	 * @param val
-	 */
-	protected abstract void handleSideMenuDebugSelDisable(int btn);	
-
-	/**
-	 * type is row of buttons (1st idx in curCustBtn array) 2nd idx is btn
-	 * @param funcRow idx for button row
-	 * @param btn idx for button within row (column)
-	 * @param label label for this button (for display purposes)
-	 */
-	protected abstract void launchMenuBtnHndlr(int funcRow, int btn, String label) ;
-	
-	//return relevant name information for files and directories to be used to build screenshots/saved files	
-	protected abstract String[] getSaveFileDirNamesPriv();
-	
-	protected abstract void initDrwnTraj_Indiv();
-	protected abstract void addSScrToWin_Indiv(int newWinKey);
-	protected abstract void addTrajToScr_Indiv(int subScrKey, String newTrajKey);
-	protected abstract void delSScrToWin_Indiv(int idx);
-	protected abstract void delTrajToScr_Indiv(int subScrKey, String newTrajKey);
-	/**
-	 * return appropriate 3d representation of mouse location - in 2d this will just be mseLoc x, mse Loc y, 0
-	 * @param mseLoc x and y are int values of mouse x and y location
-	 * @return
-	 */
-	protected abstract myPoint getMsePtAs3DPt(myPoint mseLoc);	
-	//set window-specific variables that are based on current visible screen dimensions
-	protected abstract void setVisScreenDimsPriv();
-	//implementing class' necessary functions - implement for each individual window
-	protected abstract boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld);
-	protected abstract boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn);
-	
-	public final boolean sideBarMenu_CallWinMseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
-		return hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
-	}
-	
-	protected abstract boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn);
-	protected abstract void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc);	
-	
-	protected abstract void hndlMouseRel_Indiv();
-	
-	protected abstract void endShiftKey_Indiv();
-	protected abstract void endAltKey_Indiv();
-	protected abstract void endCntlKey_Indiv();
+	protected abstract void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc);		
 	
 	/**
 	 * Modify the application-wide ui button labels based on context
@@ -2618,27 +2715,36 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public abstract ArrayList<String> hndlFileSave(File file);	
 	
+	protected void _dispMessage(String funcName, String message, MsgCodes useCode) {		msgObj.dispMessage(className, funcName, message, useCode);}
+	
 	/**
-	 * Initialize any UI control flags appropriate for window application
+	 * Shorthand to display general information
+	 * @param funcName the calling method
+	 * @param message the message to display
 	 */
-	protected abstract void initDispFlags();
+	protected void _dispInfoMsg(String funcName, String message) {		msgObj.dispInfoMessage(className, funcName, message);}
+	
 	/**
-	 * Initialize window's application-specific logic
+	 * Shorthand to display a debug message
+	 * @param funcName the calling method
+	 * @param message the message to display
 	 */
-	protected abstract void initMe();
-	protected abstract void resizeMe(float scale);	
-	protected abstract void showMe();
-	protected abstract void closeMe();	
-	protected abstract boolean simMe(float modAmtSec);
-	protected abstract void stopMe();
-	protected abstract void setCamera_Indiv(float[] camVals);
+	protected void _dispDbgMsg(String funcName, String message) {		msgObj.dispDebugMessage(className, funcName, message);}
+	
 	/**
-	 * Draw window/application-specific functionality
-	 * @param animTimeMod # of milliseconds since last frame dividied by 1000
+	 * Shorthand to display a warning message
+	 * @param funcName the calling method
+	 * @param message the message to display
 	 */
-	protected abstract void drawMe(float animTimeMod);	
-	protected abstract void drawRightSideInfoBarPriv(float modAmtMillis);
-	protected abstract void drawOnScreenStuffPriv(float modAmtMillis);
+	protected void _dispWarnMsg(String funcName, String message) {		msgObj.dispWarningMessage(className, funcName, message);}
+	
+	/**
+	 * Shorthand to display an error message
+	 * @param funcName the calling method
+	 * @param message the message to display
+	 */
+	protected void _dispErrMsg(String funcName, String message) {		msgObj.dispErrorMessage(className, funcName, message);}
+	
 	/**
 	 * Retrieve MessageObject for logging and message display
 	 * @return
@@ -2648,12 +2754,22 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final String getName() {return winInitVals.winName;}
 	
 	@Override
-	public final String getClassName() {return className;}
-	
 	public final int getID() {return ID;}
+	@Override
+	public final String getClassName() {return className;}
+	/**
+	 * String representation of the pertinent values for this window
+	 */
+	public String toString(){		String res = winInitVals.toString();		return res;	}
 	
-	public String toString(){
-		String res = winInitVals.toString();	
-		return res;
-	}
+	//add another screen to this window - need to handle specific trajectories - always remake traj structure
+	public final void addSubScreenToWin(int newWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(newWinKey, "",false);			addSScrToWin_Indiv(newWinKey);}}
+	protected abstract void addSScrToWin_Indiv(int newWinKey);
+	public final void addTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,false);	addTrajToScr_Indiv(subScrKey, newTrajKey);}}
+	protected abstract void addTrajToScr_Indiv(int subScrKey, String newTrajKey);
+	public final void delSubScreenToWin(int delWinKey){						if(null!=trajMgr) {		trajMgr.modTrajStructs(delWinKey, "",true);				delSScrToWin_Indiv(delWinKey);}}
+	protected abstract void delSScrToWin_Indiv(int idx);
+	public final void delTrajToSubScreen(int subScrKey, String newTrajKey){	if(null!=trajMgr) {		trajMgr.modTrajStructs(subScrKey, newTrajKey,true);		delTrajToScr_Indiv(subScrKey,newTrajKey);}}
+	protected abstract void delTrajToScr_Indiv(int subScrKey, String newTrajKey);
+		
 }//Base_DispWindow

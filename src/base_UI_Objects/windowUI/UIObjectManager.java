@@ -62,7 +62,16 @@ public class UIObjectManager {
 	/**
 	 * Numeric Gui Objects
 	 */
-	private Base_NumericGUIObj[] guiObjs_Numeric;	
+	private Base_NumericGUIObj[] guiObjs_Numeric;
+	/**
+	 * Base_GUIObj that was clicked on for modification
+	 */
+	private int msClkObj;
+	
+	/**
+	 * mouse button clicked - consumed for individual click mod
+	 */
+	private int msBtnClcked;
 
 	/**
 	 * structure to facilitate communicating UI changes with functional code
@@ -92,29 +101,18 @@ public class UIObjectManager {
 	 */	
 	protected WinAppPrivStateFlags privFlags;		
 	/**
-	 * Button labels for true value buttons
+	 * Button labels for true or false value buttons
 	 */
-	private String[] truePrivFlagLabels; //needs to be in order of flags
+	private String[][] privFlagButtonLabels; //needs to be in order of flags
+
 	/**
-	 * Button labels for false value buttons
+	 * Colors for boolean buttons set to True or false based on child-class window specific values
 	 */
-	private String[] falsePrivFlagLabels;//needs to be in order of flags	
+	private int[][][] privFlagButtonColors;
 	/**
-	 * Colors for boolean buttons set to True based on child-class window specific values
+	 * Non random button color for true (idx 1) and false (idx 0);
 	 */
-	private int[][] privFlagTrueColors;
-	/**
-	 * Colors for boolean buttons set to False based on child-class window specific values
-	 */
-	private int[][] privFlagFalseColors;
-	/**
-	 * Non random true button color
-	 */
-	private final int[] trueBtnClr = new int[]{220,255,220,255};
-	/**
-	 * Non-random false button color
-	 */
-	private final int[] falseBtnClr = new int[]{255,215,215,255};
+	private final int[][] btnColors = new int[][] {new int[]{255,215,215,255}, new int[]{220,255,220,255}};
 	
 	/**
 	 * False button color to use if button labels are the same and using random colors
@@ -144,6 +142,8 @@ public class UIObjectManager {
 		dispMsgClassName = "UIObjectManager ("+owner.getClassName()+")";
 		AppMgr = _AppMgr;
 		msgObj = _msgObj;
+		msClkObj = -1;
+		msBtnClcked = -1;
 	}
 		
 	// UI object creation	
@@ -586,15 +586,19 @@ public class UIObjectManager {
 	 */	
 	private float _buildAllPrivButtons(ArrayList<Object[]> tmpBtnNamesArray, float[] uiClkRect) {
 		// finalize setup for UI toggle buttons - convert to arrays
-		truePrivFlagLabels = new String[tmpBtnNamesArray.size()];
-		falsePrivFlagLabels = new String[truePrivFlagLabels.length];
+		privFlagButtonLabels = new String[2][];
+		String[] truePrivFlagLabels = new String[tmpBtnNamesArray.size()];
+		String[] falsePrivFlagLabels = new String[truePrivFlagLabels.length];
 		privModFlgIdxs = new int[truePrivFlagLabels.length];
 		for (int i = 0; i < truePrivFlagLabels.length; ++i) {
 			Object[] tmpAra = tmpBtnNamesArray.get(i);
-			truePrivFlagLabels[i] = (String) tmpAra[0];
-			falsePrivFlagLabels[i] = (String) tmpAra[1];
-			privModFlgIdxs[i] = (int) tmpAra[2];
+			String[] labelAra = (String[])tmpAra[0];
+			truePrivFlagLabels[i] = labelAra[0];
+			falsePrivFlagLabels[i] = labelAra[1];
+			privModFlgIdxs[i] = (int) tmpAra[1];
 		}
+		privFlagButtonLabels[0]=falsePrivFlagLabels;
+		privFlagButtonLabels[1]=truePrivFlagLabels;		
 		return _buildPrivBtnRects(0, truePrivFlagLabels.length, uiClkRect);
 	}//_buildAllPrivButtons
 	
@@ -605,16 +609,16 @@ public class UIObjectManager {
 	 */
 	private float _buildPrivBtnRects(float yDisp, int numBtns, float[] uiClkRect){
 		privFlagBtns = new float[numBtns][];
-		float yOffset = AppMgr.getTextHeightOffset();
 		if (numBtns == 0) {	return uiClkRect[3];	}
-		float maxBtnLen = 0.95f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
+		float yOffset = AppMgr.getTextHeightOffset();
+		float maxBtnLen = 0.98f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
 		uiClkRect[3] += yOffset;
 		float oldBtnLen = 0;
 		boolean lastBtnHalfStLine = false, startNewLine = true;
 		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
-			float btnLen = _calcBtnLength(truePrivFlagLabels[i].trim(),falsePrivFlagLabels[i].trim());
+			float btnLen = _calcBtnLength(privFlagButtonLabels[1][i].trim(),privFlagButtonLabels[0][i].trim());
 			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
-			//pa.pr("_buildPrivBtnRects: i "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
+			//_dispDbgMsg("_buildPrivBtnRects","i: "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
 			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
 				btnLen = maxBtnLen;
 				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
@@ -622,7 +626,6 @@ public class UIObjectManager {
 					uiClkRect[3] += yOffset;
 				}
 				_setBtnDims(i, uiClkRect[0], uiClkRect[3], 0, btnLen);
-				//privFlagBtns[i]= new float[] {(float)(uiClkRect[0]-winInitVals.getXOffset()), (float) uiClkRect[3], btnLen, yOff };				
 				uiClkRect[3] += yOffset;
 				startNewLine = true;
 				lastBtnHalfStLine = false;
@@ -649,31 +652,33 @@ public class UIObjectManager {
 		initPrivFlagColors();
 		return uiClkRect[3];
 	}//_buildPrivBtnRects
-	
 	/**
 	 * set up initial colors for sim specific flags for display
 	 */
 	protected void initPrivFlagColors(){
-		privFlagTrueColors = new int[truePrivFlagLabels.length][4];
-		privFlagFalseColors = new int[privFlagTrueColors.length][4];
+		privFlagButtonColors = new int[2][][];
+		int[][] privFlagTrueColors = new int[privFlagButtonLabels[0].length][4];
+		int[][] privFlagFalseColors = new int[privFlagTrueColors.length][4];
 		ThreadLocalRandom tr = ThreadLocalRandom.current();
 		for (int i = 0; i < privFlagTrueColors.length; ++i) { 
 			privFlagTrueColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150), 255};
-			if(truePrivFlagLabels[i].equals(falsePrivFlagLabels[i])) {
+			if(privFlagButtonLabels[0][i].equals(privFlagButtonLabels[1][i])) {
 				privFlagFalseColors[i] = baseBtnFalseClr;
 			} else {
 				privFlagFalseColors[i] = new int[]{0,255-privFlagTrueColors[i][1],255-privFlagTrueColors[i][2], 255};
 			}
-		}			
+		}
+		privFlagButtonColors[0] = privFlagFalseColors;
+		privFlagButtonColors[1] = privFlagTrueColors;
 	}	
 	
 	/**
-	 * set labels of boolean buttons for both true state and false state. Will be updated on next draw
+	 * Set labels of boolean buttons for both true state and false state. Will be updated on next draw
 	 * @param idx idx of button label to set
-	 * @param tLbl new 
-	 * @param fLbl
+	 * @param tLbl new true label
+	 * @param fLbl new false label
 	 */
-	public void setButtonLabels(int idx, String tLbl, String fLbl) {truePrivFlagLabels[idx] = tLbl;falsePrivFlagLabels[idx] = fLbl;}
+	public void setButtonLabels(int idx, String tLbl, String fLbl) {privFlagButtonLabels[1][idx] = tLbl;privFlagButtonLabels[0][idx] = fLbl;}
 	
 	
 	///////////////////////////////
@@ -696,19 +701,7 @@ public class UIObjectManager {
 		for(Integer i=0; i < privFlags.numFlags;++i) {		boolValues.put(i, privFlags.getFlag(i));}	
 		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}//_buildUIUpdateStruct
-	
-	
-	/**
-	 * call after single draw - will clear window-based priv buttons that are momentary
-	 */
-	public final void clearAllPrivBtns() {
-		if(privBtnsToClear.size() == 0) {return;}
-		//only clear button if button is currently set to true, otherwise concurrent modification error
-		for (Integer idx : privBtnsToClear) {if (privFlags.getFlag(idx)) {privFlags.setFlag(idx, false);}}
-		privBtnsToClear.clear();
-	}//clearPrivBtns()
-
-	
+		
 	/**
 	 * Called by privFlags bool struct, to update uiUpdateData when boolean flags have changed
 	 * @param idx
@@ -816,16 +809,23 @@ public class UIObjectManager {
 	 */
 	public final void resetUIVals(boolean forceVals){
 		for(int i=0; i<guiObjs_Numeric.length;++i){				guiObjs_Numeric[i].resetToInit();		}
-		if (!forceVals) {
-			setAllUIWinVals();
-		}
+		if (!forceVals) {			setAllUIWinVals();		}
 	}//resetUIVals
 	/**
 	 * set all window values for UI objects
 	 */
 	protected final void setAllUIWinVals() {for(int i=0;i<guiObjs_Numeric.length;++i){if(guiObjs_Numeric[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
-	
 		
+	/**
+	 * call after single draw - will clear window-based priv buttons that are momentary
+	 */
+	public final void clearAllPrivBtns() {
+		if(privBtnsToClear.size() == 0) {return;}
+		// only clear button if button is currently set to true, otherwise concurrent modification error
+		for (Integer idx : privBtnsToClear) {if (privFlags.getFlag(idx)) {privFlags.setFlag(idx, false);}}
+		privBtnsToClear.clear();
+	}//clearPrivBtns
+	
 	/**
 	 * clear button next frame - to act like momentary switch.  will also clear UI object
 	 * @param idx
@@ -836,18 +836,28 @@ public class UIObjectManager {
 	 * add a button to clear after next draw
 	 * @param idx index of button to clear
 	 */
-	private final void _addPrivBtnToClear(int idx) {
-		privBtnsToClear.add(idx);
-	}
+	private final void _addPrivBtnToClear(int idx) {		privBtnsToClear.add(idx);	}
 
 	/**
 	 * sets flag values without calling instancing window flag handler - only for init!
 	 * @param idxs
 	 * @param val
 	 */
-	private void _initPassedPrivFlagsToTrue(int[] idxs) { 
-		privFlags.setAllFlagsToTrue(idxs);
-	}	
+	private void _initPassedPrivFlagsToTrue(int[] idxs) { 	privFlags.setAllFlagsToTrue(idxs);	}	
+	
+	/**
+	 * Access private flag values
+	 * @param idx
+	 * @return
+	 */
+	public final boolean getPrivFlag(int idx) {				return privFlags.getFlag(idx);}
+	
+	/**
+	 * Set private flag values
+	 * @param idx
+	 * @param val
+	 */
+	public final void setPrivFlag(int idx, boolean val) {		privFlags.setFlag(idx, val);}
 	
 	/**
 	 * Validate that the passed idx exists in the list of objects 
@@ -1010,9 +1020,160 @@ public class UIObjectManager {
 	}
 
 	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// Start Mouse and keyboard handling	
+	/**
+	 * updates values in UI with programatic changes 
+	 * @param UIidx
+	 * @param val
+	 * @return
+	 */
+	public final boolean setWinToUIVals(int UIidx, double val){return val == guiObjs_Numeric[UIidx].setVal(val);}
+	/**
+	 * Check if point x,y is between r[0], r[1] and r[0]+r[2], r[1]+r[3]
+	 * @param x
+	 * @param y
+	 * @param r rectangle - idx 0,1 is upper left corner, idx 2,3 is width, height
+	 * @return
+	 */
+	public final boolean msePtInRect(int x, int y, float[] r){return ((x >= r[0])&&(x <= r[0]+r[2])&&(y >= r[1])&&(y <= r[1]+r[3]));}
 	
-	/////////////////////////////////
-	// UI object rendering	
+	public final boolean msePtInUIClckCoords(int x, int y){
+		return ((x > uiClkCoords[0])&&(x <= uiClkCoords[2])
+				&&(y > uiClkCoords[1])&&(y <= uiClkCoords[3]));
+	}	
+	
+	/**
+	 * check if mouse location is in UI buttons, and handle button click if so
+	 * @param mouseX
+	 * @param mouseY
+	 * @return
+	 */
+	private boolean checkUIButtons(int mouseX, int mouseY){
+		if(0==privFlagBtns.length) {return false;}
+		boolean mod = false;
+		//keep checking -see if clicked in UI buttons (flag-based buttons)
+		for(int i = 0;i<privFlagBtns.length;++i){
+			mod = msePtInRect(mouseX, mouseY, privFlagBtns[i]); 
+			//_dispDbgMsg("checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+privFlagBtns[i][0]+","+privFlagBtns[i][1]+","+privFlagBtns[i][2]+","+privFlagBtns[i][3]);
+			if (mod){ 
+				privFlags.toggleFlag(privModFlgIdxs[i]);
+				//setPrivFlags(privModFlgIdxs[i],!getPrivFlags(privModFlgIdxs[i])); 
+				return mod;
+			}			
+		}
+		return mod;
+	}//checkUIButtons	
+	
+	/**
+	 * handle a mouse click
+	 * @param mouseX x location on screen
+	 * @param mouseY y location on screen
+	 * @param mseBtn which button is pressed : 0 is left, 1 is right
+	 * @return
+	 */
+	public final boolean[] handleMouseClick(int mouseX, int mouseY, int mseBtn){
+		// idx 0 is if an object has been modified
+		// idx 1 is if we should set "setUIObjMod" to true
+		boolean[] retVals = new boolean[] {false,false};
+		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
+			int idx = _checkInAllObjs(mouseX, mouseY);
+			if(idx >= 0) {
+				//found in list of UI objects
+				msBtnClcked = mseBtn;
+				msClkObj=idx;
+				guiObjs_Numeric[msClkObj].setHasFocus();
+				if(AppMgr.isClickModUIVal()){//allows for click-mod without dragging
+					setUIObjValFromClickAlone(msClkObj);
+					//Check if modification from click has changed the value of the object
+					if(guiObjs_Numeric[msClkObj].getIsDirty()) {retVals[1] = true;}
+				} 				
+				retVals[0] = true;
+			}
+		}			
+		if(!retVals[0]) {			retVals[0] = checkUIButtons(mouseX, mouseY);	}
+		return retVals;
+	}//handleMouseClick
+	
+	/**
+	 * Check inside all objects to see if passed mouse x,y is within hotspot
+	 * @param mouseX
+	 * @param mouseY
+	 * @return idx of object that mouse resides in, or -1 if none
+	 */
+	private final int _checkInAllObjs(int mouseX, int mouseY) {
+		for(int j=0; j<guiObjs_Numeric.length; ++j){if(guiObjs_Numeric[j].checkIn(mouseX, mouseY)){ return j;}}
+		return -1;
+	}	
+	
+	/**
+	 * Handle mouse move over window - returns the object ID of the object the mouse is over
+	 * @param mouseX
+	 * @param mouseY
+	 * @return
+	 */
+	public final int handleMouseMove(int mouseX, int mouseY){
+		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
+			int idx = _checkInAllObjs(mouseX, mouseY);
+			if(idx >= 0) { return idx;	}
+		}
+		return -1;
+	}//handleMouseMov
+	
+	/**
+	 * 
+	 * @param delX
+	 * @param delY
+	 * @param shiftPressed
+	 * @return
+	 */
+	public final boolean[] handleMouseDrag(int delX, int delY, boolean shiftPressed) {
+		// idx 0 is if an object has been modified
+		// idx 1 is if we should set "setUIObjMod" to true
+		boolean[] retVals = new boolean[] {false, false};
+		if(msClkObj!=-1){	
+			//modify object that was clicked in by mouse motion
+			guiObjs_Numeric[msClkObj].dragModVal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));
+			if(guiObjs_Numeric[msClkObj].getIsDirty()) {
+				retVals[1] = true;
+				if(guiObjs_Numeric[msClkObj].shouldUpdateWin(false)){setUIWinVals(msClkObj);}
+			}
+			retVals[0] = true;
+		}	
+		return retVals;
+	}//handleMouseDrag
+	
+	
+	/**
+	 * Set UI value for object based on non-drag modification such as click - either at initial click or when click is released
+	 * @param j
+	 */
+	private void setUIObjValFromClickAlone(int objId) {
+		float mult = msBtnClcked * -2.0f + 1;	//+1 for left, -1 for right btn	
+		//_dispDbgMsg("setUIObjValFromClickAlone","Mult : " + mult + "|Scale : " +AppMgr.clickValModMult()));
+		guiObjs_Numeric[objId].clickModVal(mult, AppMgr.clickValModMult());
+	}//setUIObjValFromClickAlone
+	
+	
+	/**
+	 * Handle UI functionality when mouse is released in owner
+	 * @param objModified whether object was clicked on but not changed - this will change cause the release to increment the object's value
+	 */
+	public final void handleMouseRelease(boolean objModified) {
+		if(msClkObj != -1) {
+			if(!objModified) {
+				//_dispInfoMsg("handleMouseRelease", "Object : "+msClkObj+" was clicked clicked but getUIObjMod was false");
+				//means object was clicked in but not drag modified through drag or shift-clic - use this to modify by clicking
+				setUIObjValFromClickAlone(msClkObj);
+			} 		
+			setAllUIWinVals();
+			guiObjs_Numeric[msClkObj].clearFocus();
+			msClkObj = -1;	
+		}
+	}//handleMouseRelease
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// End Mouse and keyboard handling; Start UI object rendering	
 	
 	/**
 	 * Draw this window's gui objects in sidebar menu
@@ -1025,20 +1186,42 @@ public class UIObjectManager {
 		drawAppFlagButtons(usRndBtnClrs);
 	}//drawWindowGuiObjs	
 	
-	
 	/**
-	 * Draw UI Objs
-	 * @param animTimeMod for potential future animated UI Objects
+	 * Draw the UI clickable region rectangle
 	 */
-	public final void drawGUIObjs(boolean isDebug, float animTimeMod) {
-		ri.pushMatState();	
-		if (isDebug) { 	for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}}
-		else {			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}}
-		ri.popMatState();	
+	private final void _drawUIRect() {
+		ri.setStrokeWt(2.0f);
+		ri.setNoFill();
+		ri.setColorValStroke(owner.getID() * 10, 255);
+		ri.drawRect(uiClkCoords[0], uiClkCoords[1], uiClkCoords[2]-uiClkCoords[0], uiClkCoords[3]-uiClkCoords[1]);
 	}
 	
-	//draw a series of strings in a row
-	public final void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
+	/**
+	 * Draw all gui objects, with appropriate highlights for debug and if object is being edited or not
+	 * @param isDebug
+	 * @param animTimeMod
+	 */
+	protected void drawGUIObjs(boolean isDebug, float animTimeMod) {
+		ri.pushMatState();
+		//draw UI Objs
+		if(isDebug) {
+			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].drawDebug();}
+			_drawUIRect();
+		} else {			
+			//mouse highlight
+			if (msClkObj != -1) {	guiObjs_Numeric[msClkObj].drawHighlight();	}
+			for(int i =0; i<guiObjs_Numeric.length; ++i){guiObjs_Numeric[i].draw();}
+		}	
+		ri.popMatState();	
+	}//drawAllGuiObjs
+	
+	/**
+	 * Draw a series of strings in a row
+	 * @param txt
+	 * @param loc
+	 * @param clrAra
+	 */
+	private final void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
 		ri.setFill(clrAra, clrAra[3]);
 		ri.setColorValStroke(IRenderInterface.gui_Black,255);
 		ri.drawRect(loc);		
@@ -1055,35 +1238,28 @@ public class UIObjectManager {
 	private final void drawAppFlagButtons(boolean useRandBtnClrs) {
 		ri.pushMatState();	
 		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		String label;
-		int[] clr;
 		if(useRandBtnClrs){
 			for(int i =0; i<privModFlgIdxs.length; ++i){
-				if(privFlags.getFlag(privModFlgIdxs[i])){
-					label = truePrivFlagLabels[i];
-					clr = privFlagTrueColors[i];		
-				} else {
-					label = falsePrivFlagLabels[i];
-					clr = privFlagFalseColors[i];
-				}	
-				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+				int btnFlagIdx = privFlags.getFlag(privModFlgIdxs[i])  ? 1 : 0;
+				dispBttnAtLoc(privFlagButtonLabels[btnFlagIdx][i],privFlagBtns[i],privFlagButtonColors[btnFlagIdx][i]);	
 			}
 		} else {
 			for(int i =0; i<privModFlgIdxs.length; ++i){
-				if(privFlags.getFlag(privModFlgIdxs[i])){
-					label = truePrivFlagLabels[i];
-					clr = trueBtnClr;
-				} else {																
-					label = falsePrivFlagLabels[i];
-					clr = falseBtnClr;
-				}
-				dispBttnAtLoc(label,privFlagBtns[i],clr);	
+				int btnFlagIdx = privFlags.getFlag(privModFlgIdxs[i])  ? 1 : 0;
+				dispBttnAtLoc(privFlagButtonLabels[btnFlagIdx][i],privFlagBtns[i],btnColors[btnFlagIdx]);	
 			}	
 		}		
 		ri.popMatState();	
 	}//drawAppFlagButtons
 	
-	
+	/**
+	 * What to do after the owner has finished draw command
+	 */
+	public final void postDraw(boolean clearPrivBtns) {
+		//last thing per draw - clear btns that have been set to clear after 1 frame of display
+		if (clearPrivBtns) {clearAllPrivBtns();}
+		
+	}
 	
 	
 	

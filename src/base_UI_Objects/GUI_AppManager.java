@@ -1134,14 +1134,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param btn which button has been selected
 	 * @param val whether button is turned on or off
 	 */
-	public final void handleShowWinFromMenuClick(int btn, int val){handleShowWin(btn, val, true);}					//display specific windows - multi-select/ always on if sel
+	public final void handleShowWinFromMenuClick(int btn, int val){_handleShowWinInternal(btn, val, true);}					//display specific windows - multi-select/ always on if sel
 	/**
 	 * these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
 	 * @param btn
 	 * @param val
 	 * @param callFlags whether turned on/off by button click, or via programatically being set 
 	 */
-	public final void handleShowWin(int btn, int val, boolean callFlags) {
+	private final void _handleShowWinInternal(int btn, int val, boolean callFlags) {
 		if(!callFlags){//called from setflags - only sets button state in UI to avoid infinite loop
 			setMenuBtnState(SidebarMenu.btnShowWinIdx,btn, val);
 		} else {//called from clicking on window buttons in UI
@@ -1883,16 +1883,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
 			for(int i=0;i<winDispIdxXOR.length;++i){//check windows that should be mutually exclusive during display
 				if(winDispIdxXOR[i]!= idx){
 					_dispWinFrames[winDispIdxXOR[i]].setShowWin(false);
-					handleShowWin(i ,0,false); 
+					_handleShowWinInternal(i ,0,false); 
 					forceWinVisFlag(winFlagsXOR[i], false);
 				}//not this window
 				else {//turning on this one
 					_dispWinFrames[idx].setShowWin(true);
-					handleShowWin(i ,1,false); 
+					_handleShowWinInternal(i ,1,false); 
 					forceWinVisFlag(winFlagsXOR[i], true);
 					_curFocusWin = winDispIdxXOR[i];
-					//setCamView();	//camera now handled by individual windows
-					//_dispWinFrames[idx].setInitCamView();
 				}
 			}
 		} else {//if turning off a window - need a default uncloseable window - for now just turn on next window
@@ -2238,7 +2236,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public final double clickValModMult(){return ((altIsPressed() ? .1 : 1.0) * (shiftIsPressed() ? 10.0 : 1.0));}	
-
+	
+	/**
+	 * Specify criteria for modifying click without dragging (i.e. shift is pressed or alt is pressed) 
+	 * @return
+	 */
 	public abstract boolean isClickModUIVal();
 
 	public final SidebarMenu getSideBarMenuWindow() {return sideBarMenu;}
