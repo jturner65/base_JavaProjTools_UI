@@ -404,11 +404,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//////////////////////////////
 		// End replace ////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////
-		
+		//set menu offset for custom UI objects
+		custMenuOffset = uiClkCoords[3] + (2.0f * AppMgr.getClkBoxDim());		
 		//run instancing window-specific initialization after all ui objects are built
 		initMe();
-		//set menu offset for custom UI objects
-		custMenuOffset = uiClkCoords[3] + (2.0f * AppMgr.getClkBoxDim());
+
 		//set any custom button names if necessary
 		setCustMenuBtnLabels();
 		//pass all flag states to initialized structures in instancing window handler
