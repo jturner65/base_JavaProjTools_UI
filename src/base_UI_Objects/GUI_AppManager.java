@@ -1130,18 +1130,28 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}
 		
 	/**
-	 * these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
-	 * @param btn
-	 * @param val
+	 * Handle showing a particular window from a menu button click
+	 * @param btn which button has been selected
+	 * @param val whether button is turned on or off
 	 */
-	public final void handleShowWin(int btn, int val){handleShowWin(btn, val, true);}					//display specific windows - multi-select/ always on if sel
+	public final void handleShowWinFromMenuClick(int btn, int val){handleShowWin(btn, val, true);}					//display specific windows - multi-select/ always on if sel
 	/**
 	 * these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
 	 * @param btn
 	 * @param val
-	 * @param callFlags
+	 * @param callFlags whether turned on/off by button click, or via programatically being set 
 	 */
-	public abstract void handleShowWin(int btn, int val, boolean callFlags);
+	public final void handleShowWin(int btn, int val, boolean callFlags) {
+		if(!callFlags){//called from setflags - only sets button state in UI to avoid infinite loop
+			setMenuBtnState(SidebarMenu.btnShowWinIdx,btn, val);
+		} else {//called from clicking on window buttons in UI
+			//val is btn state before transition 
+			boolean bVal = (val == 1?  false : true);
+			//each entry in this array should correspond to a clickable window
+			setWinVisFlag(winFlagsXOR[btn], bVal);
+		}
+	}
+	
 	/**
 	 * process to handle file io	- TODO	
 	 * @param _type
@@ -1208,8 +1218,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param val
 	 */
 	public final void handleMenuBtnDebugSel(int btn,int val) {
-		//set current window's debug state
-		_dispWinFrames[_curFocusWin].setThisWinDebugState(btn, val);	
+		//set current window's debug functions based on selection in sidebar debug button menu
+		_dispWinFrames[_curFocusWin].setThisWinMenuBtnDbgState(btn, val);	
 	}	
 	
 	protected void setMenuBtnState(int row, int col, int val) {

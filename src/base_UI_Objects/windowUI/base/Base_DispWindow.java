@@ -2184,6 +2184,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public float[] getUIClkCoords() {return uiClkCoords;}
 	
+	//////////////////////////////////////////////
+	/// Mouse handling
+	
+	
 	/**
 	 * Check inside all objects to see if passed mouse x,y is within hotspot
 	 * @param mouseX
@@ -2372,22 +2376,30 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		if(null!=trajMgr) {trajMgr.clearTmpDrawnTraj();}
 	}//handleMouseRelease	
 	
-	//release shift/control/alt keys
-	public final void endShiftKey(){
-		if(!dispFlags.getShowWin()){return;}
-		if(null!=trajMgr) {trajMgr.endShiftKey(getMsePoint(ri.getMouse_Raw()));}
-		endShiftKey_Indiv();
-	}
+	/**
+	 * Handle releasing the alt key
+	 */
 	public final void endAltKey(){
 		if(!dispFlags.getShowWin()){return;}
 		if(null!=trajMgr) {trajMgr.endAltKey(getMsePoint(ri.getMouse_Raw()));}
 		endAltKey_Indiv();
 	}	
+	/**
+	 * Handle releasing the cntl key
+	 */
 	public final void endCntlKey(){
 		if(!dispFlags.getShowWin()){return;}
 		if(null!=trajMgr) {trajMgr.endCntlKey(getMsePoint(ri.getMouse_Raw()));}
 		endCntlKey_Indiv();
-	}	
+	}
+	/**
+	 * Handle releasing the shift key
+	 */
+	public final void endShiftKey(){
+		if(!dispFlags.getShowWin()){return;}
+		if(null!=trajMgr) {trajMgr.endShiftKey(getMsePoint(ri.getMouse_Raw()));}
+		endShiftKey_Indiv();
+	}
 	/**
 	 * Set the value of the key and keycode pressed, passed by GUI_AppMgr
 	 * @param _key
@@ -2408,14 +2420,22 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		keyCodePressed = 0;
 	}
 	
-	//finds closest point to p in sPts - put dist in d, returns index
+	/**
+	 * finds closest point to p in sPts - put dist in d, returns index
+	 * @param p
+	 * @param d
+	 * @param _pts
+	 * @return
+	 */
 	public final int findClosestPt(myPoint p, double[] d, myPoint[] _pts){
 		int res = -1;
 		double mindist = 99999999, _d;
 		for(int i=0; i<_pts.length; ++i){_d = myPoint._dist(p,_pts[i]);if(_d < mindist){mindist = _d; d[0]=_d;res = i;}}	
 		return res;
 	}
-
+	/**
+	 * 
+	 */
 	public final void rebuildAllDrawnTrajs(){
 		if(null!=trajMgr) {trajMgr.rebuildAllDrawnTrajs();}
 	}//rebuildAllDrawnTrajs
@@ -2462,15 +2482,20 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	//UI controlled auxiliary/debug functionality	
 	public final void clickSideMenuBtn(int _row, int _funcOffset, int btnNum) {	curCstBtnRow = _row; curCstFuncBtnOffset = _funcOffset; curCustBtn[_row] = btnNum; custClickSetThisFrame = true;}
 		
-	public final void setThisWinDebugState(int btn,int val) {
+	/**
+	 * Handle this window's debug state/function based on what button was selected from side-bar debug menu
+	 * @param btn which button
+	 * @param val whether on or off
+	 */
+	public final void setThisWinMenuBtnDbgState(int btn,int val) {
 		if(val==0) {//turning on
-			_dispDbgMsg("handleSideMenuDebugSelEnable","Click Debug functionality on in " + winInitVals.winName + " : btn : " + btn);
+			_dispDbgMsg("setThisWinMenuBtnDbgState","Click Debug functionality on in " + winInitVals.winName + " : btn : " + btn);
 			handleSideMenuDebugSelEnable(btn);
-			_dispDbgMsg("handleSideMenuDebugSelEnable", "End Debug functionality on selection.");
+			_dispDbgMsg("setThisWinMenuBtnDbgState", "End Debug functionality on selection.");
 		} else {
-			_dispDbgMsg("handleSideMenuDebugSelDisable","Click Debug functionality off in " + winInitVals.winName + " : btn : " + btn);
+			_dispDbgMsg("setThisWinMenuBtnDbgState","Click Debug functionality off in " + winInitVals.winName + " : btn : " + btn);
 			handleSideMenuDebugSelDisable(btn);			
-			_dispDbgMsg("handleSideMenuDebugSelDisable", "End Debug functionality off selection.");
+			_dispDbgMsg("setThisWinMenuBtnDbgState", "End Debug functionality off selection.");
 		}
 	}
 	

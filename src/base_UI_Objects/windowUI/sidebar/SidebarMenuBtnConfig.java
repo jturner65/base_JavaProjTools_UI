@@ -337,7 +337,7 @@ public class SidebarMenuBtnConfig {
 		//if not momentary buttons, set wait for proc to true
 		setWaitForProc(row,col);
 		// click in window select button region
-		if((row == SidebarMenu.btnShowWinIdx) && _initBtnShowWin) {AppMgr.handleShowWin(col, val);}
+		if((row == SidebarMenu.btnShowWinIdx) && _initBtnShowWin) {AppMgr.handleShowWinFromMenuClick(col, val);}
 		// click in mouse-over button region
 		else if((row == btnMseOvrFuncIdx) && _initBtnMseFunc) {
 			if(val==0) {clearRowExceptPassedBtn(row,col);}

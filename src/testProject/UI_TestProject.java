@@ -3,7 +3,6 @@ package testProject;
 import java.util.HashMap;
 
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.windowUI.sidebar.SidebarMenu;
 import base_Utils_Objects.io.messaging.MsgCodes;
 import testProject.ui.UI_TestWindow2D;
 import testProject.ui.UI_TestWindow3D;
@@ -258,19 +257,6 @@ public class UI_TestProject extends GUI_AppManager {
 			default :  return menuRectVals;
 		}
 	}
-
-	@Override
-	public void handleShowWin(int btn, int val, boolean callFlags) {
-		if(!callFlags){//called from setflags - only sets button state in UI to avoid infinite loop
-			setMenuBtnState(SidebarMenu.btnShowWinIdx,btn, val);
-		} else {//called from clicking on buttons in UI
-			//val is btn state before transition 
-			boolean bVal = (val == 1?  false : true);
-			//each entry in this array should correspond to a clickable window
-			setWinVisFlag(winFlagsXOR[btn], bVal);
-		}
-	}
-	
 	
 	/**
 	 * return the number of visible window flags for this application
