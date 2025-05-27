@@ -78,7 +78,6 @@ public class DrawnSimpleTraj {
 	}
 
 	public void calcPerpPoints(){
-		//myVector dir = pa.U(myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), pa.c.getDrawSNorm()));
 		myVector dir = (myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), AppMgr.getDrawSNorm()))._normalize();
 		float mult =  .125f,
 		dist = mult * (float)myPoint._dist(edtCrvEndPts[0],edtCrvEndPts[1]);
@@ -106,7 +105,11 @@ public class DrawnSimpleTraj {
 		//win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","startEditEndPoint","Handle TrajClick 2 startEditEndPoint : " + name + " | Move endpoint : "+editEndPt);
 		return true;
 	}
-	//check if initiating an edit on an existing object, if so then set up edit
+	/**
+	 * check if initiating an edit on an existing object, if so then set up edit
+	 * @param mse
+	 * @return
+	 */
 	public boolean startEditObj(myPoint mse){
 		boolean doEdit = false; 
 		float chkDist = trajFlags[ownrWinIs3dIDX] ? msClkPt3DRad : msClkPtRad;
@@ -155,7 +158,6 @@ public class DrawnSimpleTraj {
 			drawnTraj.remakeDrawnTraj(false);
 			rebuildDrawnTraj();	
 		} else {//scale all traj points based on modification of pts 2 or 3 - only allow them to move along the perp axis			
-			//myVector abRotAxis = pa.U(myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), pa.c.getDrawSNorm()));
 			myVector abRotAxis = myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), AppMgr.getDrawSNorm())._normalize();
 			float dist = (float)myPoint._dist(edtCrvEndPts[2], edtCrvEndPts[3]);
 			double modAmt = diff._dot(abRotAxis);

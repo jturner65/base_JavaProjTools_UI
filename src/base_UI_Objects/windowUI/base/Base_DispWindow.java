@@ -2020,7 +2020,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	public void drawTraj3D(float animTimeMod, myPointf trans){
 		_dispWarnMsg("drawTraj3D","I should be overridden in 3d instancing class");
-//			pa.pushMatState();	
+//			ri.pushMatState();	
 //			if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
 //			TreeMap<String,ArrayList<myDrawnNoteTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
 //			if((tmpTreeMap != null) && (tmpTreeMap.size() != 0)) {
@@ -2029,7 +2029,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 //					if(null!=tmpAra){	for(int j =0; j<tmpAra.size();++j){tmpAra.get(j).drawMe(animTimeMod);}}
 //				}	
 //			}
-//			pa.popMatState();		
+//			ri.popMatState();		
 	}//drawTraj3D	
 	
 	/**

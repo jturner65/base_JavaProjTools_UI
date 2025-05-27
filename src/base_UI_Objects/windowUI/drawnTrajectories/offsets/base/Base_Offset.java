@@ -49,7 +49,6 @@ public abstract class Base_Offset {
 		ArrayList<myPoint> tmp = new ArrayList<myPoint>();
 		float angle = MyMathUtils.PI_F/(1.0f*capSize), sliceA = angle;			//10 slices
 		tmp.add(new myPoint(c, mult * -c.r, norm));
-		//for(int i=1;i<capSize-1;++i){	tmp.add(pa.R(tmp.get(i-1), sliceA, norm, tan, c));}
 		for(int i=1;i<capSize-1;++i){	tmp.add(tmp.get(i-1).rotMeAroundPt(sliceA, norm, tan, c));}
 		tmp.add(new myPoint(c, mult * c.r, norm));
 		return tmp;	

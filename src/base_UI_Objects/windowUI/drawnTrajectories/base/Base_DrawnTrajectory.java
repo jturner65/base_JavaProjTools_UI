@@ -391,10 +391,8 @@ public abstract class Base_DrawnTrajectory {
 	}
 
 	//find location of center of verts
-	//public myPoint calcCOV(){myPoint C = new myPoint();for(int i=0;i<pts.length;++i){C._add(pts[i]);} myPoint Ct = pa.P(1.0f/pts.length,C); COV=pa.P(Ct);return COV;}
 	public myPoint calcCOV(){myPoint C = new myPoint();for(int i=0;i<pts.length;++i){C._add(pts[i]);} myPoint Ct = myPoint._mult(C,1.0f/pts.length); COV=new myPoint(Ct);return COV;}
 	//find COV of passed verts
-	//public myPoint calcCOVOfAra(myPoint[] pts){myPoint C = pa.P();for(int i=0;i<pts.length;++i){C._add(pts[i]);}myPoint Ct = pa.P(1.0f/pts.length,C); return Ct;}
 	public myPoint calcCOVOfAra(myPoint[] pts){myPoint C = new myPoint();for(int i=0;i<pts.length;++i){C._add(pts[i]);}myPoint Ct = myPoint._mult(C,1.0f/pts.length); return Ct;}
 
 	
@@ -513,24 +511,24 @@ public abstract class Base_DrawnTrajectory {
 
 	/**
 	 * draw currently selected control point
-	 * @param pa
+	 * @param ri
 	 * @param i
 	 */
-	public void drawSelPoint(IRenderInterface pa, int i){
-		drawSelPoint(pa, i, new int[] {255,255,0});
+	public void drawSelPoint(IRenderInterface ri, int i){
+		drawSelPoint(ri, i, new int[] {255,255,0});
 	}
 	/**
 	 * draw currently selected control point with given highlight color
-	 * @param pa
+	 * @param ri
 	 * @param i
 	 * @param clr highlight color (first 3 idxs)
 	 */
-	public void drawSelPoint(IRenderInterface pa, int i, int[] clr){
-		pa.pushMatState();
-		pa.setStroke(clr,255);
-		if(trajFlags.getUsesCntlPts()){pa.showPtAsSphere(cntlPts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);} 
-		else {pa.showPtAsSphere(pts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);}
-		pa.popMatState();
+	public void drawSelPoint(IRenderInterface ri, int i, int[] clr){
+		ri.pushMatState();
+		ri.setStroke(clr,255);
+		if(trajFlags.getUsesCntlPts()){ri.showPtAsSphere(cntlPts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);} 
+		else {ri.showPtAsSphere(pts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);}
+		ri.popMatState();
 	}
 	
 	
@@ -601,7 +599,7 @@ public abstract class Base_DrawnTrajectory {
 	@SuppressWarnings("unchecked")
 	private <T extends myPoint> T[] _rotPtsAroundCOV(Class<T> cls, T[] _pts, float angle, myPoint cov, myVector _canvasNorm, myVector _covNorm) {
 		T[] tmp = (T[]) Array.newInstance(cls, _pts.length);
-		//for(int i=0; i<pts.length; ++i){tmp.add(pa.R(pts[i], angle, new myVector(_canvasNorm), _covNorm, cov));}
+		//for(int i=0; i<pts.length; ++i){tmp.add(ri.R(pts[i], angle, new myVector(_canvasNorm), _covNorm, cov));}
 		for(int i=0; i<_pts.length; ++i){tmp[i] = (T) _pts[i].rotMeAroundPt(angle, new myVector(_canvasNorm), _covNorm, cov);}		
 		return tmp;
 	}
@@ -637,7 +635,7 @@ public abstract class Base_DrawnTrajectory {
 	@SuppressWarnings("unchecked")
 	private <T extends myPoint> T[] _rotPtsAroundCOV(Class<T> cls, T[] _pts, double angle, myPoint cov, myVector _canvasNorm, myVector _covNorm) {
 		T[] tmp = (T[]) Array.newInstance(cls, _pts.length);
-		//for(int i=0; i<pts.length; ++i){tmp.add(pa.R(pts[i], angle, new myVector(_canvasNorm), _covNorm, cov));}
+		//for(int i=0; i<pts.length; ++i){tmp.add(ri.R(pts[i], angle, new myVector(_canvasNorm), _covNorm, cov));}
 		for(int i=0; i<_pts.length; ++i){tmp[i] = (T) _pts[i].rotMeAroundPt(angle, new myVector(_canvasNorm), _covNorm, cov);}		
 		return tmp;
 	}
@@ -765,16 +763,16 @@ public abstract class Base_DrawnTrajectory {
 	protected abstract void finalizeDrawing_Priv(boolean procPts);
 	
 
-	public void drawMe(IRenderInterface pa) {
-		pa.pushMatState();
-		pa.setFill(fillClr,255);
-		pa.setStroke(strkClr,255);
-			pa.setStrokeWt(1.0f);
-//			if(flags[useProcCurve]){pa.show(pts);} 
+	public void drawMe(IRenderInterface ri) {
+		ri.pushMatState();
+		ri.setFill(fillClr,255);
+		ri.setStroke(strkClr,255);
+			ri.setStrokeWt(1.0f);
+//			if(flags[useProcCurve]){ri.show(pts);} 
 //			else {			
-				pa.catmullRom2D(pts);
+				ri.catmullRom2D(pts);
 				//}
-		pa.popMatState();
+		ri.popMatState();
 //		if(flags[drawNorms] && (nAra != null)&& (tAra != null)&& (bAra != null)){drawNorms(pts, nAra,tAra,bAra,20);}
 //		drawCOV();
 	}
@@ -912,12 +910,12 @@ public abstract class Base_DrawnTrajectory {
 
 	public int getNumCntlPts() {return cntlPts.length;}
 	
-	public void drawCOV(IRenderInterface pa){		
+	public void drawCOV(IRenderInterface ri){		
 		if(COV == null) {return;}		
-		pa.pushMatState();
-		pa.setStroke(255,0,255,255);		
-		pa.showPtAsSphere(COV, 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);		
-		pa.popMatState();	
+		ri.pushMatState();
+		ri.setStroke(255,0,255,255);		
+		ri.showPtAsSphere(COV, 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);		
+		ri.popMatState();	
 	}
 	
 	public myPoint getPt(int i){return pts[i];}

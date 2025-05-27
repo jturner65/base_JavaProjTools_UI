@@ -115,7 +115,7 @@ public abstract class Base_UISimExec extends Base_SimExec {
 			ri.showText("Sim Time : " + String.format("%08d", curTime) + " secs ", 0, rtSideYVals[0]);
 			ri.showText("Sim Clock Time : " + String.format("%04d", curTime/3600) + " : " + String.format("%02d", (curTime/60)%60 )+ " : " + String.format("%02d", (curTime%60)), 150, rtSideYVals[0]);
 	//		rtSideYVals[0] += rtSideYVals[1];
-	//		pa.showText("Wall Clock Time : " + String.format("%04d", curTime/3600) + " : " + String.format("%02d", (curTime/60)%60 )+ " : " + String.format("%02d", (curTime%60)), 0, rtSideYVals[0]);
+	//		ri.showText("Wall Clock Time : " + String.format("%04d", curTime/3600) + " : " + String.format("%02d", (curTime/60)%60 )+ " : " + String.format("%02d", (curTime%60)), 0, rtSideYVals[0]);
 			rtSideYVals[0] += rtSideYVals[3];
 		
 			((Base_UISimulator) currSim).drawResultBar(ri, rtSideYVals);

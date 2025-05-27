@@ -25,18 +25,18 @@ public class ColorPoint extends myPoint{
 		rad = p.rad;
 	}
 	
-	public void show(IRenderInterface pa, myPoint P, double r, String txt) {
-		pa.pushMatState(); 
-		pa.drawSphere(P, r, 5); 
-		pa.setColorValFill(IRenderInterface.gui_Black, 255);pa.setColorValStroke(IRenderInterface.gui_Black,255);
+	public void show(IRenderInterface ri, myPoint P, double r, String txt) {
+		ri.pushMatState(); 
+		ri.drawSphere(P, r, 5); 
+		ri.setColorValFill(IRenderInterface.gui_Black, 255);ri.setColorValStroke(IRenderInterface.gui_Black,255);
 		double d = 1.1 * r;
-		pa.showTextAtPt(myPoint.ZEROPT, txt, new myVector(d,d,d));
-		pa.popMatState();
+		ri.showTextAtPt(myPoint.ZEROPT, txt, new myVector(d,d,d));
+		ri.popMatState();
 	} // render sphere of radius r and center P)
 
-	public void showColor(IRenderInterface pa ){
-		pa.setFill((int)x, (int)y, (int)z, 255); 
-		show(pa, this,rad, toString());
+	public void showColor(IRenderInterface ri ){
+		ri.setFill((int)x, (int)y, (int)z, 255); 
+		show(ri, this,rad, toString());
 	}
 	public String toString(){
 		String res = ""+ name + " R :"+x+" G : " + y  + " B : " + z;

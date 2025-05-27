@@ -7,7 +7,7 @@ import base_UI_Objects.windowUI.base.Base_DispWindow;
 
 
 public class ScrollBars{
-	public IRenderInterface pa;
+	public IRenderInterface ri;
 	public Base_DispWindow win;
 	public static int scrBarCnt = 0;
 	public int ID;
@@ -35,12 +35,12 @@ public class ScrollBars{
 	
 	public int[][] clrs;			//colors for thumb and up/down/left/right arrows
 	
-	public ScrollBars(IRenderInterface _pa,Base_DispWindow _win){
-		pa = _pa;
+	public ScrollBars(IRenderInterface _ri,Base_DispWindow _win){
+		ri = _ri;
 		win = _win;
 		ID = scrBarCnt++;
 		setSize();
-		clrs = new int[][]{ pa.getRndClr(),pa.getRndClr(),pa.getRndClr(),pa.getRndClr(),pa.getRndClr(),pa.getRndClr()};
+		clrs = new int[][]{ ri.getRndClr(),ri.getRndClr(),ri.getRndClr(),ri.getRndClr(),ri.getRndClr(),ri.getRndClr()};
 	}//myScrollBars
 	
 	public void setSize(){
@@ -65,24 +65,24 @@ public class ScrollBars{
 
 	}
 	public void drawMe(){
-		pa.pushMatState();
-		pa.setColorValFill(IRenderInterface.gui_LightGray,255);
-		pa.setColorValStroke(IRenderInterface.gui_Black,255);
-		pa.setStrokeWt(1.0f);
-		pa.drawRect(vScrlDims);
-		pa.drawRect(hScrlDims);
+		ri.pushMatState();
+		ri.setColorValFill(IRenderInterface.gui_LightGray,255);
+		ri.setColorValStroke(IRenderInterface.gui_Black,255);
+		ri.setStrokeWt(1.0f);
+		ri.drawRect(vScrlDims);
+		ri.drawRect(hScrlDims);
 		for(int i =0; i<arrowDims.length;++i){
-			pa.setFill(clrs[i],clrs[i][3]);
-			pa.drawRect(arrowDims[i]);
+			ri.setFill(clrs[i],clrs[i][3]);
+			ri.drawRect(arrowDims[i]);
 		}
-		pa.popMatState();
-		pa.pushMatState();
+		ri.popMatState();
+		ri.pushMatState();
 		for(int i =0; i<thmbs.length;++i){
-			pa.setFill(clrs[i + 4],clrs[i + 4][3]);
-			pa.drawRect(thmbs[i]);
+			ri.setFill(clrs[i + 4],clrs[i + 4][3]);
+			ri.drawRect(thmbs[i]);
 		}
 		
-		pa.popMatState();
+		ri.popMatState();
 	}//drawMe
 	
 	

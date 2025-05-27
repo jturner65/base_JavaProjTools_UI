@@ -38,8 +38,8 @@ public class ColorRamp  {
 	public Layer layer;
 
 	
-	public ColorRamp(IRenderInterface _p, GUI_AppManager _AppMgr){
-		ri = _p; 	 AppMgr = _AppMgr;
+	public ColorRamp(IRenderInterface _ri, GUI_AppManager _AppMgr){
+		ri = _ri; 	 AppMgr = _AppMgr;
 		layer = new Layer(50, 10);
 		float[] gridDims = AppMgr.get3dGridDims();
 		scaleVals = new float[]{gridDims[0]/255.0f,gridDims[1]/255.0f,gridDims[2]/255.0f};
@@ -63,7 +63,6 @@ public class ColorRamp  {
 	//raycast from mouse to see if clicking on clickable object
 	public int checkClickLoc(myPoint clickLoc, myVector mseDirVec){
 		myPoint rmpSpcClkLoc = transToRamp(clickLoc);	
-//		pa.msClkStr += "Click vals : mseX = " + String.format("%.5f", mseX) + " mseY = "+ String.format("%.5f", mseY);
 		for(int i = 0; i<2; ++i){			
 			if(myPoint._dist(rmpSpcClkLoc, usrPts.get(i)) < AppMgr.msClkEps )			{		return i;	}
 		}		
@@ -123,15 +122,7 @@ public class ColorRamp  {
 		grads.rebuildClrs((ColorPoint[])(clrPtsArrays).toArray(new ColorPoint[0]));
 		//}		
 	}//
-	
-//	public void drawGradients(){
-//		pa.pushMatrix();pa.pushStyle();
-//		if(pa.flags[pa.clrAll]){for(int i =0; i<this.grads.length; ++i){grads[i].drawMe(); }} 
-//		else {
-//		for(int i =0; i<this.grads.length; ++i){if(pa.flags[pa.clrRGB+i]){grads[i].drawMe(); }}}
-//		pa.popStyle();pa.popMatrix();
-//	}//drawGradientRectangle
-	
+		
 	public void showDebugOutput(){
 		double[] lab0 = MyColorUtils.RGBtoLAB(R0,G0,B0), lab1 = MyColorUtils.RGBtoLAB(R1,G1,B1);		 
 		AppMgr.getCurFocusDispWindow().getMsgObj().dispInfoMessage("myClrRamp","showDebugOutput",

@@ -1244,9 +1244,9 @@ public class UIObjectManager {
 		ri.setColorValStroke(IRenderInterface.gui_Black,255);
 		ri.drawRect(loc);		
 		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		//pa.translate(-xOff*.5f,-yOff*.5f);
+		//ri.translate(-xOff*.5f,-yOff*.5f);
 		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
-		//pa.translate(width, 0);
+		//ri.translate(width, 0);
 	}
 	
 	/**
