@@ -50,6 +50,8 @@ public class SidebarMenu extends Base_DispWindow{
 	 * Size of text height offset on creation TODO get rid of this value in favor of live updates
 	 */
 	private float initTextHeightOff;
+	private float txtHeightOffHalf;
+	private float xOffHalf;
 	/**
 	 * Size of button label on creation TODO get rid of this value in favor of live updates
 	 */
@@ -68,6 +70,8 @@ public class SidebarMenu extends Base_DispWindow{
 		
 		clkFlgsStY = (int) AppMgr.getClkBoxDim();
 		initTextHeightOff = AppMgr.getTextHeightOffset();
+		xOffHalf = AppMgr.getXOffsetHalf();
+		txtHeightOffHalf = 0.5f * initTextHeightOff;
 		initBtnLblYOff = AppMgr.getBtnLabelYOffset();
 		
 		//these have to be set before setupGUIObjsAras is called from initThisWin
@@ -263,8 +267,6 @@ public class SidebarMenu extends Base_DispWindow{
 	 */
 	@Override
 	protected final void drawMe(float animTimeMod) {
-		float txtHeightOffHalf = 0.5f * initTextHeightOff;
-		float xOffHalf = AppMgr.getXOffsetHalf();
 		ri.pushMatState();
 			ri.pushMatState();
 				AppMgr.drawSideBarStateLights(initTextHeightOff);				//lights that reflect various states
@@ -306,6 +308,14 @@ public class SidebarMenu extends Base_DispWindow{
 
 		return res;
 	}
+	/**
+	 * If the window is resized
+	 */
+	@Override
+	protected final void resizeMe(float scale) {
+		
+	}
+	
 	@Override
 	protected String[] getSaveFileDirNamesPriv() {return new String[]{"menuDir","menuFile"};	}
 	@Override
@@ -323,9 +333,7 @@ public class SidebarMenu extends Base_DispWindow{
 	@Override
 	protected final void closeMe() {}
 	@Override
-	protected final void showMe() {}
-	@Override
-	protected final void resizeMe(float scale) {}	
+	protected final void showMe() {}	
 	@Override
 	protected final void setCustMenuBtnLabels() {}
 	@Override

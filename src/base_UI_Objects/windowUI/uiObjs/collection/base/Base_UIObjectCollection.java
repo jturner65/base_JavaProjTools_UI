@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.collection.base;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
@@ -28,31 +28,31 @@ public abstract class Base_UIObjectCollection {
 	 */
 	protected Base_GUIObj[] guiObjsAra;
 	
-	/**
-	* array lists of idxs for label/read-only objects
-	*/	
-	private ArrayList<Integer> guiButtonIDXs;
-	/**
-	* array lists of idxs for float-based UI objects.
-	*/
-	private ArrayList<Integer> guiFloatValIDXs;	
-	/**
-	* array lists of idxs for integer/list-based objects
-	*/
-	private ArrayList<Integer> guiIntValIDXs;
-	/**
-	* array lists of idxs for label/read-only objects
-	*/	
-	private ArrayList<Integer> guiLabelValIDXs;
+//	/**
+//	* array lists of idxs for label/read-only objects
+//	*/	
+//	private ArrayList<Integer> guiButtonIDXs;
+//	/**
+//	* array lists of idxs for float-based UI objects.
+//	*/
+//	private ArrayList<Integer> guiFloatValIDXs;	
+//	/**
+//	* array lists of idxs for integer/list-based objects
+//	*/
+//	private ArrayList<Integer> guiIntValIDXs;
+//	/**
+//	* array lists of idxs for label/read-only objects
+//	*/	
+//	private ArrayList<Integer> guiLabelValIDXs;
 
 	public Base_UIObjectCollection(IRenderInterface _ri, float[] _uiClkCoords) {
 		ri=_ri;
 		System.arraycopy(_uiClkCoords, 0, uiClkCoords, 0, uiClkCoords.length);
 		//initialize arrays to hold idxs of int and float items being created.
-		guiButtonIDXs = new ArrayList<Integer>();
-		guiFloatValIDXs = new ArrayList<Integer>();
-		guiIntValIDXs = new ArrayList<Integer>();
-		guiLabelValIDXs = new ArrayList<Integer>();
+//		guiButtonIDXs = new ArrayList<Integer>();
+//		guiFloatValIDXs = new ArrayList<Integer>();
+//		guiIntValIDXs = new ArrayList<Integer>();
+//		guiLabelValIDXs = new ArrayList<Integer>();
 		guiObjsAra = new Base_GUIObj[0];
 	}
 
