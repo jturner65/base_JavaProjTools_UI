@@ -1,4 +1,4 @@
-package base_UI_Objects;
+package base_UI_Objects.renderer;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.GUI_AppManager;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -22,7 +23,7 @@ import processing.event.MouseEvent;
 import processing.opengl.PGL;
 import processing.opengl.PGraphics3D;
 
-public final class my_procApplet extends processing.core.PApplet implements IRenderInterface {
+public final class ProcessingRenderer extends processing.core.PApplet implements IRenderInterface {
 	
 	private static GUI_AppManager AppMgr;
 		
@@ -52,7 +53,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @param passedArgs
 	 */
 	public final static void _invokedMain(GUI_AppManager _appMgr, String[] passedArgs) {	
-		String[] appletArgs = new String[] { "base_UI_Objects.my_procApplet" };
+		String[] appletArgs = new String[] { "base_UI_Objects.renderer.ProcessingRenderer" };
 		AppMgr = _appMgr;
 		if (passedArgs != null) {processing.core.PApplet.main(processing.core.PApplet.concat(appletArgs, passedArgs)); } else {processing.core.PApplet.main(appletArgs);		    }
 	    
@@ -149,7 +150,7 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		PShape shape = bgrndSphereAra.get(idx);
 		drawRenderBackground(idx);
 		if(shape==null) {
-			AppMgr.msgObj.dispErrorMessage("my_procApplet","drawBkgndSphere","ERROR! No background sphere specified for idx :"+idx);
+			AppMgr.msgObj.dispErrorMessage("ProcessingRenderer","drawBkgndSphere","ERROR! No background sphere specified for idx :"+idx);
 			return;
 		}
 		shape(shape);	
@@ -272,7 +273,18 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	}
 	
 	/**
-	 * set orthographic projection matrix for camera (2d or 3d)
+	 * Set orthographic projection matrix for 2D camera
+	 * @param left left plane of clipping volume
+	 * @param right right plane of the clipping volume
+	 * @param bottom bottom plane of the clipping volume
+	 * @param top top plane of the clipping volume
+	 */
+	@Override
+	public void setOrtho(float left, float right, float bottom, float top) {
+		super.ortho(left, right, bottom, top);
+	}
+	/**
+	 * set orthographic projection matrix for 3D camera
 	 * @param left left plane of clipping volume
 	 * @param right right plane of the clipping volume
 	 * @param bottom bottom plane of the clipping volume
@@ -280,10 +292,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 	 * @param near maximum distance from the origin to the viewer
 	 * @param far maximum distance from the origin away from the viewer
 	 */
-	@Override
-	public void setOrtho(float left, float right, float bottom, float top) {
-		super.ortho(left, right, bottom, top);
-	}
 	@Override
 	public void setOrtho(float left, float right, float bottom, float top, float near, float far) {
 		super.ortho(left, right, bottom, top, near, far);
@@ -324,7 +332,6 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		  static final int TRIANGLE_STRIP  = 10;  // vertices
 		  static final int TRIANGLE_FAN    = 11;  // vertices
 		  
-		  DONOT SUPPORT QUAD PRIMS - have been deprecated/Removed from opengl
 		  static final int QUADS           = 17;  // vertices
 		  static final int QUAD_STRIP      = 18;  // vertices
 		  
@@ -365,6 +372,14 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 				beginShape(TRIANGLE_FAN);
 				break;
 			}
+			case GL_QUADS : {
+				beginShape(QUADS);
+				break;
+			}
+			case GL_QUAD_STRIP : {
+				beginShape(QUAD_STRIP);
+				break;
+			}			
 			default : {
 				beginShape(POLYGON);	
 				return;
@@ -1429,4 +1444,4 @@ public final class my_procApplet extends processing.core.PApplet implements IRen
 		return new Integer[]{(int)(((1.0f-t)*a[0])+t*b[0]),(int)(((1.0f-t)*a[1])+t*b[1]),(int)(((1.0f-t)*a[2])+t*b[2]),(int)(((1.0f-t)*a[3])+t*b[3])};
 	}
 
-}//my_procApplet
+}//ProcessingRenderer

@@ -20,6 +20,7 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.baseApp.Disp3DCanvas;
 import base_UI_Objects.baseApp.GUI_AppStateFlags;
+import base_UI_Objects.renderer.ProcessingRenderer;
 //import base_UI_Objects.windowUI.background.base.Base_WinBackground;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
@@ -365,7 +366,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public static <T extends GUI_AppManager> void invokeProcessingMain(T _appMgr, String[] _passedArgs) {
 		Java_AppManager.invokeMain(_appMgr, _passedArgs);
-		my_procApplet._invokedMain(_appMgr, _passedArgs);
+		ProcessingRenderer._invokedMain(_appMgr, _passedArgs);
 	}
 	
 	/**
@@ -419,7 +420,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * set level of smoothing to use for rendering (depending on rendering used, this may be ignored)
 	 */
-	protected abstract void setSmoothing();
+	public abstract void setSmoothing();
 
 	/**
 	 * whether or not we want to restrict window size on widescreen monitors

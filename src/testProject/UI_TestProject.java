@@ -64,7 +64,7 @@ public class UI_TestProject extends GUI_AppManager {
 	}
 
 	@Override
-	protected void setSmoothing() {		ri.setSmoothing(0);		}
+	public void setSmoothing() {		ri.setSmoothing(0);		}
 	/**
 	 * whether or not we want to restrict window size on widescreen monitors
 	 * 
@@ -98,7 +98,7 @@ public class UI_TestProject extends GUI_AppManager {
 	 * Called in pre-draw initial setup, before first init
 	 * potentially override setup variables on per-project basis.
 	 * Do not use for setting background color or Skybox anymore.
-	 *  	(Current settings in my_procApplet) 	
+	 *  	(Current settings in ProcessingRenderer) 	
 	 *  	strokeCap(PROJECT);
 	 *  	textSize(txtSz);
 	 *  	textureMode(NORMAL);			

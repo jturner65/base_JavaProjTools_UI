@@ -2,10 +2,10 @@ package base_UI_Objects.renderedObjs;
 
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
-import base_UI_Objects.my_procApplet;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
+import base_UI_Objects.renderer.ProcessingRenderer;
 import processing.core.PConstants;
 import processing.core.PShape;
 
@@ -135,8 +135,8 @@ public class JFish_RenderObj extends Base_RenderObj {
 	@Override
 	protected void drawMeIndiv(int animIDX) {
 		//draw animation index-specified deformed "jellyfish"
-		((my_procApplet) p).shape(objReps[type]);		
-		((my_procApplet) p).shape(bodyAra[type][animIDX]);
+		((ProcessingRenderer) p).shape(objReps[type]);		
+		((ProcessingRenderer) p).shape(bodyAra[type][animIDX]);
 	}
 	@Override
 	public final double getMaxAnimCounter() {return maxAnimCntr;}

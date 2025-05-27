@@ -2,7 +2,7 @@ package base_UI_Objects.renderedObjs.base;
 
 import base_Math_Objects.MyMathUtils;
 import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.my_procApplet;
+import base_UI_Objects.renderer.ProcessingRenderer;
 import processing.core.PShape;
 
 /**
@@ -366,10 +366,10 @@ public class RenderObj_Clr{
 			p.setStrokeWt(strkWt);
 			p.setStroke(hexColors[strokeIDX]);
 		} else {			p.noStroke();		}
-		if(getFlags(specIDX)){((my_procApplet) p).specular(hexColors[specIDX]);}
-		if(getFlags(emitIDX)){((my_procApplet) p).emissive(hexColors[emitIDX]);}
-		if(getFlags(ambIDX)){((my_procApplet) p).ambient(hexColors[ambIDX]);}
-		if(getFlags(shnIDX)){((my_procApplet) p).shininess(shininess);}
+		if(getFlags(specIDX)){((ProcessingRenderer) p).specular(hexColors[specIDX]);}
+		if(getFlags(emitIDX)){((ProcessingRenderer) p).emissive(hexColors[emitIDX]);}
+		if(getFlags(ambIDX)){((ProcessingRenderer) p).ambient(hexColors[ambIDX]);}
+		if(getFlags(shnIDX)){((ProcessingRenderer) p).shininess(shininess);}
 	}
 	
 	/**

@@ -1,7 +1,7 @@
 package base_UI_Objects.renderedObjs.base;
 
-import base_UI_Objects.my_procApplet;
 import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.renderer.ProcessingRenderer;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -188,12 +188,12 @@ public abstract class Base_RenderObj {
 	 */	
 	private PShape createBaseShape(boolean isEmpty, int meshType, float... args) {
 		if (isEmpty) {
-			return ((my_procApplet) p).createShape();
+			return ((ProcessingRenderer) p).createShape();
 		}
 		if (args.length == 0) {
-			return ((my_procApplet) p).createShape(meshType);
+			return ((ProcessingRenderer) p).createShape(meshType);
 		}
-		return ((my_procApplet) p).createShape(meshType, args);
+		return ((ProcessingRenderer) p).createShape(meshType, args);
 	}
 	
 	/**
@@ -354,7 +354,7 @@ public abstract class Base_RenderObj {
 	 * @param objID
 	 */
 	public final void drawMe(double animPhase, int objID){
-		//my_procApplet.AppMgr.drawAxes(10.0, 2.0f, new myPoint(), 255, false);
+		//ProcessingRenderer.AppMgr.drawAxes(10.0, 2.0f, new myPoint(), 255, false);
 		drawMeIndiv((int)(animPhase * numAnimFrames));
 	}
 	/**

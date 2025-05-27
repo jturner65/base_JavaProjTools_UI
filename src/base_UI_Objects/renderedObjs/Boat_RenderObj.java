@@ -4,10 +4,10 @@ import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_UI_Objects.my_procApplet;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
+import base_UI_Objects.renderer.ProcessingRenderer;
 import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PImage;
@@ -188,8 +188,8 @@ public class Boat_RenderObj extends Base_RenderObj {
 
 	@Override //representation-specific drawing code (i.e. oars settings for boats)
 	protected void drawMeIndiv(int animIDX){//which oars array instance of oars to show - oars move relative to speed of boid
-		((my_procApplet) p).shape(objReps[type]);		
-		((my_procApplet) p).shape(oars[animIDX]);
+		((ProcessingRenderer) p).shape(objReps[type]);		
+		((ProcessingRenderer) p).shape(oars[animIDX]);
 	}//drawMe
 	
 	private myPointf[] buildSailPtAra(float len){
