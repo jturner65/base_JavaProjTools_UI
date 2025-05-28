@@ -53,5 +53,11 @@ public class GUI_PrefixObj extends Base_GUIPrefixObj{
 			ri.drawRect(boxDim);
 		ri.popMatState();
 	}
+
+	@Override
+	public float getWidth() {return boxDim[2];}
+
+	@Override
+	public float getHeight() {return boxDim[3];	}
 	
 }//class GUI_PrefixOrnament

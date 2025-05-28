@@ -16,7 +16,7 @@ public abstract class Base_GUIObjRenderer {
 	/**
 	 * Object to either manage and display or not show an ornamental box in front of a UI element
 	 */
-	private final Base_GUIPrefixObj _ornament;
+	protected final Base_GUIPrefixObj _ornament;
 	/**
 	 * Text color value for main UI object label/text. 
 	 * For text rendering this is governed by fill (not stroke)

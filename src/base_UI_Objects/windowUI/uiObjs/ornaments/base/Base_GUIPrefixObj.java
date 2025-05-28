@@ -11,4 +11,7 @@ public abstract class Base_GUIPrefixObj{
 	public Base_GUIPrefixObj() {}
 	
 	public abstract void drawPrefixObj(IRenderInterface ri);
+	
+	public abstract float getWidth();
+	public abstract float getHeight();
 }//class Base_GUIOrnament

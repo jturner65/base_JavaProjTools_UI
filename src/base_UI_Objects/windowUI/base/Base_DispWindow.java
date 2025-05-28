@@ -39,7 +39,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected MessageObject msgObj;
 
 	/**
-	 * TODO Manager of all UI objects in this window
+	 * Manager of all UI objects in this window
 	 */
 	protected UIObjectManager uiMgr;
 
@@ -61,9 +61,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	//Counter of how many windows are built in the application. Used to specify unique ID for each new window
 	private static int winCnt = 0;
 	
-	//x,y location and width,height of clickable close/open box in upper right corner of closeable windows
+	/**
+	 * x,y location and width,height of clickable close/open box in upper right corner of closeable windows
+	 */
 	private float[] closeBox;	
-	//current visible screen width and height
+	/**
+	 * current visible screen width and height
+	 */
 	public float[] curVisScrDims;
 	
 	/**
@@ -91,12 +95,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Base_GUIObj that was clicked on for modification
 	 */
 	protected boolean msClickInUIObj;
-	
-	/**
-	 * object mouse moved over
-	 */
-	protected int msOvrObj;		
-
 	
 	/**
 	 * Boolean array of default behavior boolean values, if formatting is not otherwise specified
@@ -222,7 +220,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		curVisScrDims = new float[] {closedUIRtSideRecBox[0],winInitVals.rectDim[3]};
 		
 		msClickInUIObj = false;
-		msOvrObj = -1;
 		reInitInfoStr();
 		sceneOriginVal = new myPointf(winInitVals.sceneOriginVal);
 		focusTar = new myVectorf(winInitVals.initSceneFocusVal);
@@ -410,18 +407,21 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
+	@Override
 	public final void updateBoolValFromExecCode(int idx, boolean value) {uiMgr.updateBoolValFromExecCode(idx, value);}
 	/**
 	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
+	@Override
 	public final void updateIntValFromExecCode(int idx, int value) {uiMgr.updateIntValFromExecCode(idx, value);}
 	/**
 	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
+	@Override
 	public final void updateFloatValFromExecCode(int idx, float value) {uiMgr.updateFloatValFromExecCode(idx, value);}
 	
 	@Override
@@ -807,9 +807,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void drawWindowGuiObjs(boolean isDebug, float animTimeMod) {
 		//draw UI Objs
 		uiMgr.drawWindowGuiObjs(isDebug, dispFlags.getUseRndBtnClrs(), animTimeMod);
-//		drawGUIObjs(isDebug, animTimeMod);
-//		//draw all boolean-based buttons for this window
-//		drawAppFlagButtons(dispFlags.getUseRndBtnClrs());
 		//draw any custom menu objects for sidebar menu after buttons
 		ri.pushMatState();
 			//all sub menu drawing within push mat call
@@ -850,9 +847,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return count of -all- booleans to be managed by privFlags
 	 */
 	@Override
-	public int initAllOwnerUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
-		return initAllUIButtons(tmpBtnNamesArray);
-	}
+	public int initAllOwnerUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {	return initAllUIButtons(tmpBtnNamesArray);}
+	/**
+	 * Build button descriptive arrays : each object array holds true label, false label, and idx of button in owning child class
+	 * this must return count of -all- booleans managed by privFlags, not just those that are interactive buttons (some may be 
+	 * hidden to manage booleans that manage or record state)
+	 * @param tmpBtnNamesArray ArrayList of Object arrays to be built containing all button definitions. 
+	 * @return count of -all- booleans to be managed by privFlags
+	 */
 	protected abstract int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray);	
 	
 	/**
@@ -1265,12 +1267,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final float getTextHeightOffset() {return AppMgr.getTextHeightOffset();}	
 	
 	/**
-	 * handle a mouse click
-	 * @param mouseX x location on screen
-	 * @param mouseY y location on screen
+	 * Handle mouse interaction via a mouse click
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
 	 * @param mseBtn which button is pressed : 0 is left, 1 is right
-	 * @return
+	 * @return whether a UI object was clicked in
 	 */
+	@Override
 	public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
 		boolean mod = false;
 		//check if trying to close or open the window via click, if possible
@@ -1296,59 +1299,68 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}//handleMouseClick
 	/**
 	 * Implementing class' necessary functions for mouse click
-	 * @param mouseX
-	 * @param mouseY
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
 	 * @param mseClckInWorld
 	 * @param mseBtn
-	 * @return
+	 * @return whether a custom UI object was clicked in
 	 */
 	protected abstract boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn);
 
 	/**
-	 * Handle mouse move over window
-	 * @param mouseX
-	 * @param mouseY
-	 * @return
+	 * Handle mouse interaction via the mouse moving over a UI object
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
+	 * @return whether a UI object has the mouse pointer moved over it
 	 */
+	@Override
 	public final boolean handleMouseMove(int mouseX, int mouseY){
 		if(!dispFlags.getShowWin()){return false;}
-		//TODO replace with
-		msOvrObj = uiMgr.handleMouseMove(mouseX, mouseY);
-		if (msOvrObj != -1){return true;}
+		
+		boolean uiObjMseOver = uiMgr.handleMouseMove(mouseX, mouseY);
+		if (uiObjMseOver){return true;}
 		myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
 		if(hndlMouseMove_Indiv(mouseX, mouseY, mouseClickIn3D)){return true;}
-		msOvrObj = -1;
 		return false;
 	}//handleMouseMove
 	/**
 	 * Implementing class' necessary function for mouse movement
-	 * @param mouseX
-	 * @param mouseY
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
 	 * @param mseClckInWorld
-	 * @return
+	 * @return whether a custom UI object has the mouse pointer moved over it
 	 */
 	protected abstract boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld);	
 			
 	/**
-	 * Handle ticks from mouse wheel
+	 * Handle mouse interaction via the mouse wheel
 	 * @param ticks
 	 * @param mult amount to modify view based on sensitivity and whether shift is pressed or not
+	 * @return whether a UI object has been modified via the mouse wheel
 	 */
+	@Override
 	public final boolean handleMouseWheel(int ticks, float mult) {
-		if (dispFlags.getCanChgView()) {handleViewChange(true,(mult * ticks),0);}
+		if (msClickInUIObj) {
+			//modify object that was clicked in by mouse motion
+			boolean retVals[] = uiMgr.handleMouseWheel(ticks, mult);
+			if (retVals[1]){dispFlags.setUIObjMod(true);}
+			if (retVals[0]){return true;}			
+			
+		} else if (dispFlags.getCanChgView()) {handleViewChange(true,(mult * ticks),0);}
 		return true;
 	}//handleMouseWheel	
 
 	/**
-	 * vector for drag in 3D
-	 * @param mouseX
-	 * @param mouseY
-	 * @param pmouseX
-	 * @param pmouseY
-	 * @param mseDragInWorld
-	 * @param mseBtn
-	 * @return
+	 * Handle mouse interaction via the clicked mouse drag
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
+	 * @param pmouseX previous mouse x on screen
+	 * @param pmouseY previous mouse y on screen
+	 * @param mseDragInWorld vector of mouse drag in the world, for interacting with trajectories
+	 * @param mseBtn what mouse btn is pressed
+	 * @return whether a UI object has been modified via a drag action
 	 */
+	@Override
 	public final boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn){
 		boolean mod = false;
 		if(!dispFlags.getShowWin()){return mod;}
@@ -1385,13 +1397,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	/**
 	 * Sidebar menu calling main window's implementation code for drag
-	 * @param mouseX
-	 * @param mouseY
-	 * @param pmouseX
-	 * @param pmouseY
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
+	 * @param pmouseX previous mouse x on screen
+	 * @param pmouseY previous mouse y on screen
 	 * @param mouseClickIn3D
-	 * @param mseDragInWorld
-	 * @param mseBtn
+	 * @param mseDragInWorld vector of mouse drag in the world, for interacting with trajectories
+	 * @param mseBtn what mouse btn is pressed
 	 * @return
 	 */
 	public final boolean sideBarMenu_CallWinMseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
@@ -1399,13 +1411,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 	/**
 	 * Implementing class' necessary function for mouse drag
-	 * @param mouseX
-	 * @param mouseY
-	 * @param pmouseX
-	 * @param pmouseY
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
+	 * @param pmouseX previous mouse x on screen
+	 * @param pmouseY previous mouse y on screen
 	 * @param mouseClickIn3D
-	 * @param mseDragInWorld
-	 * @param mseBtn
+	 * @param mseDragInWorld vector of mouse drag in the world, for interacting with trajectories
+	 * @param mseBtn what mouse btn is pressed
 	 * @return
 	 */
 	protected abstract boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn);
@@ -1418,8 +1430,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public abstract void handleSideMenuMseOvrDispSel(int btn,boolean val);		
 
 	/**
-	 * 
+	 * Handle mouse interactive when the mouse button is released - in general consider this the end of a mouse-driven interaction
 	 */
+	@Override
 	public final void handleMouseRelease(){
 		if(!dispFlags.getShowWin()){return;}
 		boolean objModified = dispFlags.getUIObjMod();

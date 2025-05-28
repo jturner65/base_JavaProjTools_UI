@@ -76,7 +76,10 @@ public class UIObjectManager {
 	 * mouse button clicked - consumed for individual click mod
 	 */
 	private int msBtnClicked;
-
+	/**
+	 * object mouse moved over
+	 */
+	private int msOvrObj;	
 	/**
 	 * structure to facilitate communicating UI changes with functional code
 	 */
@@ -88,7 +91,7 @@ public class UIObjectManager {
 	 *  idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *  idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
 	 */
-	private final boolean[] dfltUIBehaviorVals = new boolean[]{true, false, false};	
+	public final boolean[] dfltUIBehaviorVals = new boolean[]{true, false, false};	
 	/**
 	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
 	 *  idx 0: whether multi-line(stacked) or not                                                  
@@ -96,7 +99,13 @@ public class UIObjectManager {
 	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 */
 	public final boolean[] dfltUIFmtVals =  new boolean[] {false, true, false};	
-	
+	/**
+	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
+	 *  idx 0: whether multi-line(stacked) or not                                                  
+	 *  idx 1: if true, build prefix ornament                                                      
+	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 */
+	public final boolean[] dfltMultiLineUIFmtVals =  new boolean[] {true, true, false};	
 	////////////////////////
 	/// owner's private state/functionality flags, (displayed in grid of 2-per-column buttons)
 	
@@ -218,7 +227,17 @@ public class UIObjectManager {
 	public final Object[] uiObjInitAra_Label(double initVal, String name) {
 		return uiObjInitAra_Label(initVal, name, dfltUIFmtVals);
 	}		
-	
+	/**
+	 * Build the object array that describes a label object that is multiLine
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default UI format boolean values for multi-line labels. Label objects' behavior is restricted
+	 * @return
+	 */
+	public final Object[] uiObjInitAra_LabelMultiLine(double initVal, String name) {
+		return uiObjInitAra_Label(initVal, name, dfltMultiLineUIFmtVals);
+	}		
+
 	/**
 	 * Build the object array that describes a integer object
 	 * @param initVal initial value for the object
@@ -244,7 +263,18 @@ public class UIObjectManager {
 	public final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Int(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}	
-		
+	/**
+	 * Build the object array that describes a integer object that is multi-line
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
+	 * @return
+	 */
+	public final Object[] uiObjInitAra_IntMultiLine(double[] minMaxMod, double initVal, String name) {
+		return uiObjInitAra_Int(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+	}	
+	
 	/**
 	 * Build the object array that describes a integer object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
@@ -281,6 +311,19 @@ public class UIObjectManager {
 	}
 	
 	/**
+	 * Build the object array that describes a float object that is multi-line
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
+	 * @return
+	 */
+	public final Object[] uiObjInitAra_FloatMultiLine(double[] minMaxMod, double initVal, String name) {
+		return uiObjInitAra_Float(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+	}
+	
+	
+	/**
 	 * Build the object array that describes a float object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
@@ -291,6 +334,7 @@ public class UIObjectManager {
 	public final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Float(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}
+
 	
 	/**
 	 * Build the object array that describes a float object
@@ -317,7 +361,10 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 * NOTE : this method uses the default UI format boolean values
+	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 * @return
 	 */
 	public final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
@@ -335,7 +382,19 @@ public class UIObjectManager {
 	public final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_List(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}
-	
+
+	/**
+	 * Build the object array that describes a list object that is multi-line
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default behavior and UI format boolean values for multi-line list box
+	 * @return
+	 */
+	public final Object[] uiObjInitAra_ListMultiLine(double[] minMaxMod, double initVal, String name) {
+		return uiObjInitAra_List(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+	}
+		
 	/**
 	 * Build the object array that describes a list object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
@@ -686,7 +745,8 @@ public class UIObjectManager {
 	public final int getFlagAraIdxOfBool(int idx) {
 		for(int i=0;i<privModFlgIdxs.length;++i) {if(idx == privModFlgIdxs[i]) {return i;}	}		
 		return -1;//not found
-	}	
+	}
+	
 	/**
 	 * set up initial colors for sim specific flags for display
 	 */
@@ -705,7 +765,7 @@ public class UIObjectManager {
 		}
 		privFlagButtonColors[0] = privFlagFalseColors;
 		privFlagButtonColors[1] = privFlagTrueColors;
-	}	
+	}// initPrivFlagColors
 	
 	/**
 	 * Set labels of boolean buttons for both true state and false state. Will be updated on next draw
@@ -1221,37 +1281,61 @@ public class UIObjectManager {
 	 * Handle mouse move over window - returns the object ID of the object the mouse is over
 	 * @param mouseX
 	 * @param mouseY
-	 * @return
+	 * @return Whether or not the mouse has moved over a valid UI object
 	 */
-	public final int handleMouseMove(int mouseX, int mouseY){
+	public final boolean handleMouseMove(int mouseX, int mouseY){
 		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
-			int idx = _checkInAllObjs(mouseX, mouseY);
-			if(idx >= 0) { return idx;	}
-		}
-		return -1;
+			msOvrObj = _checkInAllObjs(mouseX, mouseY);
+		} else {			msOvrObj = -1;		}
+		return msOvrObj != -1;
 	}//handleMouseMov
 	
 	/**
-	 * 
-	 * @param delX
-	 * @param delY
-	 * @param shiftPressed
-	 * @return
+	 * Handle mouse-driven modification to a UI object, by modAmt
+	 * @param modAmt the amount to modify the UI object
+	 * @return boolean array : 
+	 * 			idx 0 is if an object has been modified
+	 * 			idx 1 is if we should set setUIObjMod to true in caller 
 	 */
-	public final boolean[] handleMouseDrag(int delX, int delY, boolean shiftPressed) {
+	private final boolean[] _handleMouseModInternal(double modAmt) {
 		// idx 0 is if an object has been modified
 		// idx 1 is if we should set "setUIObjMod" to true
 		boolean[] retVals = new boolean[] {false, false};
 		if(msClickObj!=-1){	
 			//modify object that was clicked in by mouse motion
-			guiObjsAra[msClickObj].dragModVal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));
+			guiObjsAra[msClickObj].dragModVal(modAmt);
 			if(guiObjsAra[msClickObj].getIsDirty()) {
 				retVals[1] = true;
 				if(guiObjsAra[msClickObj].shouldUpdateWin(false)){setUIWinVals(msClickObj);}
 			}
 			retVals[0] = true;
 		}	
-		return retVals;
+		return retVals;	
+	}
+	
+	/**
+	 * Handle the mouse wheel changing providing interaction with UI objects.
+	 * @param ticks
+	 * @param mult
+	 * @return boolean array : 
+	 * 			idx 0 is if an object has been modified
+	 * 			idx 1 is if we should set setUIObjMod to true in caller 
+	 */
+	public final boolean[] handleMouseWheel(int ticks, float mult) {
+		return _handleMouseModInternal(ticks * mult);
+	}
+	
+	/**
+	 * Handle the mouse being dragged from within the confines of a selected object
+	 * @param delX
+	 * @param delY
+	 * @param shiftPressed
+	 * @return boolean array : 
+	 * 			idx 0 is if an object has been modified
+	 * 			idx 1 is if we should set setUIObjMod to true in caller 
+	 */
+	public final boolean[] handleMouseDrag(int delX, int delY, boolean shiftPressed) {
+		return _handleMouseModInternal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));
 	}//handleMouseDrag
 	
 	

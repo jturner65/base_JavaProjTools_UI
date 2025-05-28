@@ -1068,7 +1068,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		float y = d;
 		for (String txt : txtAra) {
 			showText(txt, d, y, d);
-			y+=10;
+			y+=AppMgr.getTextHeightOffset();
 		}
 	}	
 	/**

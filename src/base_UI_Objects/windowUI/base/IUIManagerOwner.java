@@ -3,6 +3,7 @@ package base_UI_Objects.windowUI.base;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 
 /**
@@ -108,6 +109,25 @@ public interface IUIManagerOwner {
 	 * @param val
 	 */
 	public void checkSetBoolAndUpdate(int idx, boolean val);
+
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
+	public void updateBoolValFromExecCode(int idx, boolean value);
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
+	public void updateIntValFromExecCode(int idx, int value);
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
+	public void updateFloatValFromExecCode(int idx, float value);
 	
 	/**
 	 * Switch structure only that handles priv flags being set or cleared. Called from WinAppPrivStateFlags structure
@@ -118,9 +138,55 @@ public interface IUIManagerOwner {
 	public void handleOwnerPrivFlags(int idx, boolean val, boolean oldVal);
 	
 	/**
-	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
+	 * Application-specific Debug mode functionality. Called only from privflags structure
 	 * @param val
 	 */
 	public void handlePrivFlagsDebugMode(boolean val);
+	
+	////////////////////////
+	/// Start Mouse interaction - these should provide adapter-like access to the uiManager's mouse handling routines
+	/**
+	 * Handle mouse interaction via a mouse click
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
+	 * @param mseBtn which button is pressed : 0 is left, 1 is right
+	 * @return whether a UI object was clicked in
+	 */
+	public boolean handleMouseClick(int mouseX, int mouseY, int mseBtn);
+	
+	/**
+	 * Handle mouse interaction via the mouse moving over a UI object
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
+	 * @return whether a UI object has the mouse pointer moved over it
+	 */	
+	public boolean handleMouseMove(int mouseX, int mouseY);
+	
+	/**
+	 * Handle mouse interaction via the mouse wheel
+	 * @param ticks
+	 * @param mult amount to modify view based on sensitivity and whether shift is pressed or not
+	 * @return whether a UI object has been modified via the mouse wheel
+	 */
+	public boolean handleMouseWheel(int ticks, float mult);
+	
+	/**
+	 * Handle mouse interaction via the clicked mouse drag
+	 * @param mouseX current mouse x on screen
+	 * @param mouseY current mouse y on screen
+	 * @param pmouseX previous mouse x on screen
+	 * @param pmouseY previous mouse y on screen
+	 * @param mseDragInWorld vector of mouse drag in the world, for interacting with trajectories
+	 * @param mseBtn what mouse btn is pressed
+	 * @return whether a UI object has been modified via a drag action
+	 */
+	public boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn);
 
+	/**
+	 * Handle mouse interactive when the mouse button is released - in general consider this the end of a mouse-driven interaction
+	 */	
+	public void handleMouseRelease();
+	////////////////////////
+	/// End Mouse interaction
+	
 }//interface IUIManagerOwner

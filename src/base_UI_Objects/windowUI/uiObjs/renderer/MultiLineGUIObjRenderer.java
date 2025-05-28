@@ -39,7 +39,7 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	public final float getMaxWidth() {
 		float labelWidth = ri.getTextWidth(owner.getLabel());
 		float dispWidth = ri.getTextWidth(owner.getValueAsString());
-		return (labelWidth > dispWidth ? labelWidth : dispWidth);
+		return 1.25f * (labelWidth > dispWidth ? labelWidth : dispWidth) + _ornament.getWidth();
 	}	
 	
 	/**
@@ -72,7 +72,7 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 		// End point x is width of text further than start x, lineHeight further than start y text
 		end = new myPointf(start.x + textWidth, start.y + newLineHeight, start.z);
 		// return the next object's start location
-		return new myPointf(end.x, end.y, start.z);	
+		return new myPointf(end.x, start.y, start.z);	
 	}
 
 }//MultiLineGUIObjRenderer
