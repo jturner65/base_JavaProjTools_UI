@@ -63,12 +63,12 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	@Override
 	protected final int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
 		// add an entry for each button, in the order they are wished to be displayed
-		// true tag, false tag, btn IDX
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Drawing Vis", "Render Visualization"},  drawVisIDX));  
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Experimenting", "Run Experiment"}, conductExpIDX));  
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
+		// true tag, false tag, btn IDX 
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Drawing Vis", "Render Visualization"},  drawVisIDX));  
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Experimenting", "Run Experiment"}, conductExpIDX));  
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
 
 		
 		return initSimPrivBtns(tmpBtnNamesArray);
@@ -191,11 +191,11 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		String[] simLayoutToUseList = getSimLayoutToUseList();
 		tmpListObjVals.put(gIDX_LayoutToUse, simLayoutToUseList);	
 		
-		tmpUIObjArray.put(gIDX_LayoutToUse, uiObjInitAra_List(new double[]{0,simLayoutToUseList.length-1, 1.0f}, 0.0, "Sim Layout To Use"));          				
-		tmpUIObjArray.put(gIDX_TimeStep, uiObjInitAra_Float(new double[]{0.00001f,10.0f,0.00001f}, 1.0*initDeltaT, "Sim Time Step"));  
-		tmpUIObjArray.put(gIDX_FrameTimeScale, uiObjInitAra_Float(new double[]{1.0f,10000.0f,1.0f}, 1.0*initFrameTimeScale, "Sim Speed Multiplier"));  
-		tmpUIObjArray.put(gIDX_ExpLength, uiObjInitAra_Int(new double[]{1.0f, 1440, 1.0f}, 720.0, "Experiment Duration"));    
-		tmpUIObjArray.put(gIDX_NumExpTrials, uiObjInitAra_Int(new double[]{1.0f, 100, 1.0f}, 1.0, "# Experimental Trials"));  
+		tmpUIObjArray.put(gIDX_LayoutToUse, uiMgr.uiObjInitAra_List(new double[]{0,simLayoutToUseList.length-1, 1.0f}, 0.0, "Sim Layout To Use"));          				
+		tmpUIObjArray.put(gIDX_TimeStep, uiMgr.uiObjInitAra_Float(new double[]{0.00001f,10.0f,0.00001f}, 1.0*initDeltaT, "Sim Time Step"));  
+		tmpUIObjArray.put(gIDX_FrameTimeScale, uiMgr.uiObjInitAra_Float(new double[]{1.0f,10000.0f,1.0f}, 1.0*initFrameTimeScale, "Sim Speed Multiplier"));  
+		tmpUIObjArray.put(gIDX_ExpLength, uiMgr.uiObjInitAra_Int(new double[]{1.0f, 1440, 1.0f}, 720.0, "Experiment Duration"));    
+		tmpUIObjArray.put(gIDX_NumExpTrials, uiMgr.uiObjInitAra_Int(new double[]{1.0f, 100, 1.0f}, 1.0, "# Experimental Trials"));  
 		
 		setupGUIObjsAras_Sim(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras
@@ -289,7 +289,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	@Override
 	protected final boolean simMe(float modAmtMillis) {//run simulation
 		boolean done = simExec.stepSimulation(modAmtMillis);
-		if(done) {privFlags.setFlag(conductExpIDX, false);}
+		if(done) {uiMgr.setPrivFlag(conductExpIDX, false);}
 		return simMePostExec_Indiv(modAmtMillis, done);	
 	}//simMe
 	/**

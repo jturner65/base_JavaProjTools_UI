@@ -86,14 +86,14 @@ public class UI_TestWindow2D extends Base_DispWindow {
 
 	@Override
 	public int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Debugging", "Enable Debug"}, Base_BoolFlags.debugIDX));
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Button 1 On", "Button 1 Off"}, button1_IDX));
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Button 2 On", "Button 2 Off"}, button2_IDX));
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Button 3 On", "Button 3 Off"}, button3_IDX));
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Button 4 On", "Button 4 Off"}, button4_IDX));
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Button 5 On", "Button 5 Off"}, button5_IDX));
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Button 6 On", "Button 6 Off"}, button6_IDX));
-		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] {"Button 7 On", "Button 7 Off"}, button7_IDX));
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Debugging", "Enable Debug"}, Base_BoolFlags.debugIDX));
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Button 1 On", "Button 1 Off"}, button1_IDX));
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Button 2 On", "Button 2 Off"}, button2_IDX));
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Button 3 On", "Button 3 Off"}, button3_IDX));
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Button 4 On", "Button 4 Off"}, button4_IDX));
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Button 5 On", "Button 5 Off"}, button5_IDX));
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Button 6 On", "Button 6 Off"}, button6_IDX));
+		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Button 7 On", "Button 7 Off"}, button7_IDX));
 		return numBasePrivFlags;
 	}
 
@@ -118,14 +118,14 @@ public class UI_TestWindow2D extends Base_DispWindow {
 		tmpListObjVals.put(gIDX_ListVal1, listOfNames1);
 		tmpListObjVals.put(gIDX_ListVal2, listOfNames2);
 			
-		tmpUIObjArray.put(gIDX_FloatVal1, uiObjInitAra_Float(new double[]{0,1.0f,.0001f}, floatVal1, "Float Value 1"));   	                                                            
-		tmpUIObjArray.put(gIDX_IntVal1, uiObjInitAra_Int(new double[]{1,10,1.0f}, 1.0, "Int Value 1"));   						                                                        
-		tmpUIObjArray.put(gIDX_ListVal1, uiObjInitAra_List(new double[]{0,listOfNames1.length-1,1.1f}, 0.0, "List of Names 1"));                                                                     
-		tmpUIObjArray.put(gIDX_IntVal2, uiObjInitAra_Int(new double[]{-50,50,1.0f}, 0.0, "Int Value 2"));   					                                                        
-		tmpUIObjArray.put(gIDX_IntVal3, uiObjInitAra_Int(new double[]{0,1000,1.0f}, 0.0, "Int Value 3"));   					
-		tmpUIObjArray.put(gIDX_FloatVal2, uiObjInitAra_Float(new double[]{0,10.0f,.0001f}, floatVal2, "Float Value 2"));   	                                                            
-		tmpUIObjArray.put(gIDX_ListVal2, uiObjInitAra_List(new double[]{0,listOfNames2.length-1,1.1f}, 0.0, "List of Names 2"));                                                                     
-		tmpUIObjArray.put(gIDX_FloatVal3, uiObjInitAra_Float(new double[]{1.0f,100.0f,.0001f}, floatVal3, "Float Value 3"));   	                                                            
+		tmpUIObjArray.put(gIDX_FloatVal1, uiMgr.uiObjInitAra_Float(new double[]{0,1.0f,.0001f}, floatVal1, "Float Value 1"));   	                                                            
+		tmpUIObjArray.put(gIDX_IntVal1, uiMgr.uiObjInitAra_Int(new double[]{1,10,1.0f}, 1.0, "Int Value 1"));   						                                                        
+		tmpUIObjArray.put(gIDX_ListVal1, uiMgr.uiObjInitAra_List(new double[]{0,listOfNames1.length-1,1.1f}, 0.0, "List of Names 1"));                                                                     
+		tmpUIObjArray.put(gIDX_IntVal2, uiMgr.uiObjInitAra_Int(new double[]{-50,50,1.0f}, 0.0, "Int Value 2"));   					                                                        
+		tmpUIObjArray.put(gIDX_IntVal3, uiMgr.uiObjInitAra_Int(new double[]{0,1000,1.0f}, 0.0, "Int Value 3"));   					
+		tmpUIObjArray.put(gIDX_FloatVal2, uiMgr.uiObjInitAra_Float(new double[]{0,10.0f,.0001f}, floatVal2, "Float Value 2"));   	                                                            
+		tmpUIObjArray.put(gIDX_ListVal2, uiMgr.uiObjInitAra_List(new double[]{0,listOfNames2.length-1,1.1f}, 0.0, "List of Names 2"));                                                                     
+		tmpUIObjArray.put(gIDX_FloatVal3, uiMgr.uiObjInitAra_Float(new double[]{1.0f,100.0f,.0001f}, floatVal3, "Float Value 3"));   	                                                            
 	}	
 	
 	@Override

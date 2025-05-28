@@ -188,9 +188,9 @@ public class SidebarMenu extends Base_DispWindow{
 	 * turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
 	 */
 	private final void clearAllBtnStates(){
-		if(privFlags.getFlag(mseClickedInBtnsIDX)) {
+		if(uiMgr.getPrivFlag(mseClickedInBtnsIDX)) {
 			btnConfig.clearAllBtnStates();
-			privFlags.setFlag(mseClickedInBtnsIDX, false);
+			uiMgr.setPrivFlag(mseClickedInBtnsIDX, false);
 		}
 	}//clearAllBtnStates
 		
@@ -225,7 +225,7 @@ public class SidebarMenu extends Base_DispWindow{
 			AppMgr.flipMainFlag(i);return true;	
 		} else if(btnConfig.checkInButtonRegion(mouseX, mouseY)) {//MyMathUtils.ptInRange((float)mouseX, (float)mouseY, UIAppButtonRegion[0], UIAppButtonRegion[1], UIAppButtonRegion[2], UIAppButtonRegion[3])){
 			boolean clkInBtnRegion = btnConfig.checkButtons(mouseX, mouseY, winInitVals.rectDim[2]);
-			if(clkInBtnRegion) { privFlags.setFlag(mseClickedInBtnsIDX, true);}
+			if(clkInBtnRegion) { uiMgr.setPrivFlag(mseClickedInBtnsIDX, true);}
 			return clkInBtnRegion;
 		}//in region where clickable buttons are - uiClkCoords[1] is bottom of buttons
 		return false;
@@ -285,7 +285,7 @@ public class SidebarMenu extends Base_DispWindow{
 						winInitVals.rectDim[2]);						//draw buttons
 			ri.popMatState();	
 			ri.pushMatState();
-				drawGUIObjs(AppMgr.isDebugMode(), animTimeMod);//draw what global user-modifiable fields are currently available 
+				uiMgr.drawGUIObjs(AppMgr.isDebugMode(), animTimeMod);//draw what global user-modifiable fields are currently available 
 			ri.popMatState();			
 			ri.pushMatState();
 				AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus
