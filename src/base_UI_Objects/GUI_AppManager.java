@@ -561,10 +561,18 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}
 	
 	/**
+	 * Based on textSize but slightly smaller for purely label/read only text
+	 * @return
+	 */
+	public final float getLabelTextHeightOffset() {
+		return 1.1f * getTextSize();
+	}
+	
+	/**
 	 * Base right side text menu per-line height offset
 	 */
 	public final float getRtSideTxtHeightOffset(){
-		return getTextHeightOffset();// - 4.0f;
+		return getLabelTextHeightOffset();// - 4.0f;
 	}
 	
 	/**
@@ -1691,10 +1699,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param tclr
 	 * @param txt
 	 */
-	public final void showOffsetText_RightSideMenu(int[] tclr, float mult,  String txt) {
+	public final void showOffsetText_RightSideMenu(int[] tclr, String txt) {
 		ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
 		ri.showText(txt,0.0f,0.0f,0.0f);
-		ri.translate(txt.length()*mult, 0.0f,0.0f);		
+		ri.translate(ri.getTextWidth(txt)*1.1f, 0.0f,0.0f);		
 	}
 	/**
 	 * 
@@ -2568,7 +2576,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final myPoint spiralCenter(myPoint A, myPoint B, myPoint C, myPoint D) {         // new spiral center
 		myVector AB=new myVector(A,B), CD=new myVector(C,D), AC=new myVector(A,C);
 		double m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
-		myVector rotAxis = myVector._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find f
+		myVector rotAxis = myVector._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find flock
 		
 		myVector rAB = myVector._rotAroundAxis(AB, rotAxis, MyMathUtils.HALF_PI_F);
 		double c=AB._dot(CD)/n,	s=rAB._dot(CD)/n;
@@ -2624,7 +2632,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final myPointf spiralCenter(myPointf A, myPointf B, myPointf C, myPointf D) {         // new spiral center
 		myVectorf AB=new myVectorf(A,B), CD=new myVectorf(C,D), AC=new myVectorf(A,C);
 		float m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
-		myVectorf rotAxis = myVectorf._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find f
+		myVectorf rotAxis = myVectorf._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find flock
 		
 		myVectorf rAB = myVectorf._rotAroundAxis(AB, rotAxis, MyMathUtils.HALF_PI_F);
 		float c=AB._dot(CD)/n,	s=rAB._dot(CD)/n;

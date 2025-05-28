@@ -1002,6 +1002,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			ri.drawRect(closedUIRtSideRecBox);
 		}		
 	}//drawRightSideMenu
+	/**
+	 * Draw implementation-specific text in right side menu.  Use the following
+	 * 			"float[] rtSideYOffVals = AppMgr.getRtSideYOffVals();"
+	 * to access appropriate right-side menu specific values
+	 * @param modAmtMillis
+	 */
 	protected abstract void drawRightSideInfoBarPriv(float modAmtMillis);
 	
 	/**
