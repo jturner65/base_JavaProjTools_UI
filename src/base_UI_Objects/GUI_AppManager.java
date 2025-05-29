@@ -1705,6 +1705,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.translate(ri.getTextWidth(txt)*1.1f, 0.0f,0.0f);		
 	}
 	/**
+	 * this will properly format and display a string of text, and will translate the width, so multiple strings can be displayed on the same line with different colors
+	 * @param tclr
+	 * @param txt
+	 */
+	public final void showOffsetText_RightSideMenu(int tclr, String txt) {
+		ri.setColorValFill(tclr, 255);ri.setColorValStroke(tclr, 255);
+		ri.showText(txt,0.0f,0.0f,0.0f);
+		ri.translate(ri.getTextWidth(txt)*1.1f, 0.0f,0.0f);		
+	}
+	
+	/**
 	 * 
 	 * @param d
 	 * @param tclr
