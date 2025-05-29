@@ -223,7 +223,21 @@ public abstract class Base_GUIObjRenderer {
 	 * @return
 	 */
 	public abstract float getMaxWidth();
-	
+	/**
+	 * Whether the gui object this renderer manages is multi-line or single line
+	 * @return
+	 */
+	public abstract boolean isMultiLine();
+	/**
+	 * Upper left corner of hotspot for the gui object this renderer draws
+	 * @return
+	 */
+	public final myPointf getStart() {return start;}
+	/**
+	 * Lower right corner of hotspot for the gui object this renderer draws
+	 * @return
+	 */
+	public final myPointf getEnd() {return end;}
 	
 	public final String getHotBoxLocString() {
 		return  rendererType+ " Rendered : Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";

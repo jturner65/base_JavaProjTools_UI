@@ -74,5 +74,10 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 		// return the next object's start location
 		return new myPointf(end.x, start.y, start.z);	
 	}
-
+	/**
+	 * Whether the gui object this renderer manages is multi-line or single line
+	 * @return
+	 */
+	@Override
+	public boolean isMultiLine() {return true;	}
 }//MultiLineGUIObjRenderer

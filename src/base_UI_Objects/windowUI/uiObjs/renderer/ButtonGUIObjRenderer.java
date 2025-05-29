@@ -57,7 +57,7 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 			_drawRectangle();	
 		ri.popMatState();
 		// show Button Text
-		ri.showText(owner.getLabel(), 0, 0);
+		ri.showText(owner.getValueAsString(), 0, 0);
 	}
 	
 	/**
@@ -85,5 +85,11 @@ public class ButtonGUIObjRenderer<E extends Enum<E>> extends Base_GUIObjRenderer
 
 	@Override
 	public float getMaxWidth() {return longestLabelLen;}
+	/**
+	 * Whether the gui object this renderer manages is multi-line or single line
+	 * @return
+	 */
+	@Override
+	public boolean isMultiLine() {return false;	}
 
 }//class ButtonGUIObjRenderer<E

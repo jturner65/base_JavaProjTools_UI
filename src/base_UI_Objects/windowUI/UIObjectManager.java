@@ -518,14 +518,21 @@ public class UIObjectManager {
 					guiStVals, guiBoolVals, guiFormatBoolVals, 
 					guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkRect[2]);
 			//Objects are created by here and assigned renderers
-			// Assign hotspots
+			// Assign hotspots for UI components
 			myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
+			boolean lastObjWasMultiLine = false;
 			for (int i = 0; i < guiObjsAra.length; ++i) {
+				if (lastObjWasMultiLine && (!guiObjsAra[i].isMultiLine())) {
+					newStPt.x = uiClkRect[0];
+					newStPt.y = guiObjsAra[i-1].getEnd().y;
+				}
 				// Get next newStPt as we calculate the hotspot region for every UI object
-				newStPt = guiObjsAra[i].reCalcHotSpot(newStPt, textHeightOffset, uiClkRect[0], uiClkRect[2]);			
+				newStPt = guiObjsAra[i].reCalcHotSpot(newStPt, textHeightOffset, uiClkRect[0], uiClkRect[2]);		
+				lastObjWasMultiLine = guiObjsAra[i].isMultiLine();
 			}
-			//Make a smaller padding amount for final row
-			uiClkRect[3] =  newStPt.y - .5f*textHeightOffset;
+			//specify the end of this block of UI clickable coordinates based on if last object was multi-line or not
+			uiClkRect[3] = lastObjWasMultiLine ?  guiObjsAra[guiObjsAra.length-1].getEnd().y : newStPt.y;							
+			uiClkRect[3] -= .5f*textHeightOffset;
 		}
 		// return final y coordinate
 		return uiClkRect[3];

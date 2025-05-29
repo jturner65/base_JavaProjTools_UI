@@ -195,26 +195,29 @@ public abstract class Base_GUIObj {
 	 */
 	protected void resetToInit_Indiv() {}
 	/**
-	 * 
+	 * Get this UI component's current value
 	 * @return
 	 */
 	public final double getVal(){return val;}
 	/**
-	 * 
+	 * Get this UI component's current minimum value
 	 * @return
 	 */
 	public final double getMinVal(){return minVal;}
 	/**
-	 * 
+	 * Get this UI component's current maximum value
 	 * @return
 	 */
 	public final double getMaxVal(){return maxVal;}
 	/**
-	 * 
+	 * Get this UI component's current per-input modification amount
 	 * @return
 	 */
 	public final double getModStep(){return modMult;}	
-	
+	/**
+	 * Get the difference between this UI component's current maximum and minimum values
+	 * @return
+	 */
 	public final double getMinMaxDiff() {return maxVal - minVal;}
 	
 	/**
@@ -328,13 +331,30 @@ public abstract class Base_GUIObj {
 	/**
 	 * Draw a highlight box around this object representing the click region this UI element will respond to
 	 */
-	public final void drawHighlight() { 	renderer.drawHighlight();}
+	public final void drawHighlight() { 	renderer.drawHighlight();}	
+	
+	/**
+	 * Upper left corner of hotspot for this gui object
+	 * @return
+	 */
+	public final myPointf getStart() {return renderer.getStart();}
+	/**
+	 * Lower right corner of hotspot for this gui object
+	 * @return
+	 */
+	public final myPointf getEnd() {return renderer.getEnd();}	
 		
 	/**
 	 * Return the type of this object as defined in GUIObj_Type enum
 	 * @return
 	 */
 	public final GUIObj_Type getObjType() {return objType;}
+	
+	/**
+	 * Whether this gui object is multi-line or single line
+	 * @return
+	 */
+	public final boolean isMultiLine() {return renderer.isMultiLine();}
 	
 	/**
 	 * Recalculate the renderer-managed interactive hotspot for this object
