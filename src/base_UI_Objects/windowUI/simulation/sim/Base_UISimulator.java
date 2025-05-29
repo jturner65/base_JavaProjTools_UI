@@ -1,7 +1,10 @@
 package base_UI_Objects.windowUI.simulation.sim;
 
+import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.simulation.simExec.Base_UISimExec;
+import base_UI_Objects.windowUI.simulation.ui.Base_UISimWindow;
 import base_Utils_Objects.sim.Base_Simulator;
 
 /**
@@ -11,6 +14,18 @@ import base_Utils_Objects.sim.Base_Simulator;
  *
  */
 public abstract class Base_UISimulator extends Base_Simulator {
+	/**
+	 * Owning window, or null if console application
+	 */
+	public final Base_UISimWindow win;
+	/**
+	 * Owning application
+	 */
+	public static GUI_AppManager AppMgr;
+	/**
+	 * ref to render interface, if window-based, or null if console
+	 */
+	public final IRenderInterface ri;
 	
 	/**
 	 * Build this UI-enabled simulator - must be owned by a UI-enabled exec 
@@ -19,6 +34,9 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 */
 	public Base_UISimulator(Base_UISimExec _exec, String _name, int _simLayoutToUse) {
 		super(_exec, _name, _simLayoutToUse);
+		win=((Base_UISimExec)exec).win;
+		ri = Base_DispWindow.ri;
+		AppMgr = Base_UISimWindow.AppMgr;
 	}
 
 	/**
@@ -68,26 +86,21 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	
 	/**
 	 * Render the pertinent data for this simulator
-	 * @param ri
 	 * @param animTimeMod in seconds, time that has passed since last draw call
-	 * @param win
 	 */
-	public final void drawMe(Base_DispWindow win, float animTimeMod) {
+	public final void drawMe(float animTimeMod) {
 		//scale animation by frameTimeScale
-		drawMe_Indiv(win, animTimeMod* frameTimeScale);
+		drawMe_Indiv(animTimeMod* frameTimeScale);
 	}
 	
 	/**
 	 * Render the pertinent data for the implementation simulator
-	 * @param ri
-	 * @param scaledAnimTimeMod time since last draw call, scaled by frameTimeScale
-	 * @param win
+	 * @param animTimeMod time since last draw call, scaled by frameTimeScale
 	 */
-	protected abstract void drawMe_Indiv(Base_DispWindow win, float animTimeMod);
+	protected abstract void drawMe_Indiv(float animTimeMod);
 	
 	/**
 	 * draw result information on right sidebar
-	 * @param ri
 	 * @param yVals float array holding : 
 	 * 		idx 0 : start y value for next text
 	 * 		idx 1 : per-line y offset for grouped text
@@ -95,9 +108,9 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
 	 * 		
 	 */
-	public final void drawResultBar(Base_DispWindow win,  float[] yVals ) {
+	public final void drawResultBar( float[] yVals ) {
 		//TODO: Add any simulation-agnostic information to display here
-		yVals[0] = drawResultBar_Indiv(win, yVals);
+		yVals[0] = drawResultBar_Indiv(yVals);
 		
 	}//drawResultBar
 	
@@ -111,5 +124,5 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
 	 * @return next yValue to draw text at
 	 */
-	protected abstract float drawResultBar_Indiv(Base_DispWindow win, float[] yVals);
+	protected abstract float drawResultBar_Indiv(float[] yVals);
 }//class Base_UISimulator

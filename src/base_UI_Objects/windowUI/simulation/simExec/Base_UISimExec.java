@@ -16,11 +16,11 @@ public abstract class Base_UISimExec extends Base_SimExec {
 	/**
 	 * Owning window, or null if console application
 	 */
-	protected final Base_UISimWindow win;
+	public final Base_UISimWindow win;
 	/**
 	 * Owning application
 	 */
-	protected static GUI_AppManager AppMgr;
+	public static GUI_AppManager AppMgr;
 	
 	/**
 	 * ref to render interface, if window-based, or null if console
@@ -116,15 +116,17 @@ public abstract class Base_UISimExec extends Base_SimExec {
 		//Draw any header info. yOffset is starting y for rest of text		
 		ri.pushMatState();
 			long curTime = (Math.round(getNowTime()/1000.0f));
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), currSim.getName() + " SIMULATION OUTPUT");
+			AppMgr.showOffsetText(0,IRenderInterface.gui_Yellow, currSim.getName() + " SIMULATION OUTPUT");
 			rtSideYVals[0] +=sideBarYDisp; ri.translate(0.0f,sideBarYDisp, 0.0f);
+			ri.pushMatState();
 			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255),"Sim Time : ");
 			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), String.format("%08d", curTime) + " secs ");
 			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255),"Sim Clock Time : ");
 			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), String.format("%04d", curTime/3600) + " : " + String.format("%02d", (curTime/60)%60 )+ " : " + String.format("%02d", (curTime%60)));
+			ri.popMatState();
 			rtSideYVals[0] +=rtSideYVals[3]; ri.translate(0.0f,rtSideYVals[3], 0.0f);
 	
-			((Base_UISimulator) currSim).drawResultBar(win, rtSideYVals);
+			((Base_UISimulator) currSim).drawResultBar(rtSideYVals);
 		ri.popMatState();
 	}//drawRightSideInfoBar
 	
