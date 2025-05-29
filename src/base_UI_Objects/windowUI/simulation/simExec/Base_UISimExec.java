@@ -1,6 +1,8 @@
 package base_UI_Objects.windowUI.simulation.simExec;
 
 import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.simulation.sim.Base_UISimulator;
 import base_UI_Objects.windowUI.simulation.ui.Base_UISimWindow;
 import base_Utils_Objects.simExec.Base_SimExec;
@@ -15,6 +17,10 @@ public abstract class Base_UISimExec extends Base_SimExec {
 	 * Owning window, or null if console application
 	 */
 	protected final Base_UISimWindow win;
+	/**
+	 * Owning application
+	 */
+	protected static GUI_AppManager AppMgr;
 	
 	/**
 	 * ref to render interface, if window-based, or null if console
@@ -37,8 +43,8 @@ public abstract class Base_UISimExec extends Base_SimExec {
 	
 	public Base_UISimExec(Base_UISimWindow _win, String _name, int _maxSimLayouts) {
 		super(_name, _maxSimLayouts);
-		if(_win != null) {	win = _win;		ri = Base_UISimWindow.ri;} 
-		else {				win = null;		ri = null;}
+		if(_win != null) {	win = _win;		AppMgr = Base_DispWindow.AppMgr;  ri = Base_UISimWindow.ri;} 
+		else {				win = null;	 	AppMgr = null;		ri = null;}
 	}	
 	
 	/**
@@ -105,20 +111,20 @@ public abstract class Base_UISimExec extends Base_SimExec {
 	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)	 
 	 */
 	public final void drawRightSideInfoBar(float modAmtMillis, float[] rtSideYVals) {
-		if(ri == null) {return;}
+		if(AppMgr == null) {return;}
+		float sideBarYDisp = rtSideYVals[1];
 		//Draw any header info. yOffset is starting y for rest of text		
 		ri.pushMatState();
 			long curTime = (Math.round(getNowTime()/1000.0f));
-			ri.setFill(255,255,0,255);	
-			ri.showText(currSim.getName() + " SIMULATION OUTPUT", 0, rtSideYVals[0]);rtSideYVals[0] += rtSideYVals[2];
-			ri.setFill(255,255,255,255);
-			ri.showText("Sim Time : " + String.format("%08d", curTime) + " secs ", 0, rtSideYVals[0]);
-			ri.showText("Sim Clock Time : " + String.format("%04d", curTime/3600) + " : " + String.format("%02d", (curTime/60)%60 )+ " : " + String.format("%02d", (curTime%60)), 150, rtSideYVals[0]);
-	//		rtSideYVals[0] += rtSideYVals[1];
-	//		ri.showText("Wall Clock Time : " + String.format("%04d", curTime/3600) + " : " + String.format("%02d", (curTime/60)%60 )+ " : " + String.format("%02d", (curTime%60)), 0, rtSideYVals[0]);
-			rtSideYVals[0] += rtSideYVals[3];
-		
-			((Base_UISimulator) currSim).drawResultBar(ri, rtSideYVals);
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), currSim.getName() + " SIMULATION OUTPUT");
+			rtSideYVals[0] +=sideBarYDisp; ri.translate(0.0f,sideBarYDisp, 0.0f);
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255),"Sim Time : ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), String.format("%08d", curTime) + " secs ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255),"Sim Clock Time : ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), String.format("%04d", curTime/3600) + " : " + String.format("%02d", (curTime/60)%60 )+ " : " + String.format("%02d", (curTime%60)));
+			rtSideYVals[0] +=rtSideYVals[3]; ri.translate(0.0f,rtSideYVals[3], 0.0f);
+	
+			((Base_UISimulator) currSim).drawResultBar(win, rtSideYVals);
 		ri.popMatState();
 	}//drawRightSideInfoBar
 	

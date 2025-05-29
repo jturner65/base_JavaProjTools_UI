@@ -1,6 +1,5 @@
 package base_UI_Objects.windowUI.simulation.sim;
 
-import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.simulation.simExec.Base_UISimExec;
 import base_Utils_Objects.sim.Base_Simulator;
@@ -73,9 +72,9 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 * @param animTimeMod in seconds, time that has passed since last draw call
 	 * @param win
 	 */
-	public final void drawMe(IRenderInterface ri, float animTimeMod, Base_DispWindow win) {
+	public final void drawMe(Base_DispWindow win, float animTimeMod) {
 		//scale animation by frameTimeScale
-		drawMe_Indiv(ri,animTimeMod* frameTimeScale, win);
+		drawMe_Indiv(win, animTimeMod* frameTimeScale);
 	}
 	
 	/**
@@ -84,7 +83,7 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 * @param scaledAnimTimeMod time since last draw call, scaled by frameTimeScale
 	 * @param win
 	 */
-	protected abstract void drawMe_Indiv(IRenderInterface ri, float scaledAnimTimeMod, Base_DispWindow win);
+	protected abstract void drawMe_Indiv(Base_DispWindow win, float animTimeMod);
 	
 	/**
 	 * draw result information on right sidebar
@@ -96,9 +95,9 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
 	 * 		
 	 */
-	public final void drawResultBar(IRenderInterface ri, float[] yVals) {
+	public final void drawResultBar(Base_DispWindow win,  float[] yVals ) {
 		//TODO: Add any simulation-agnostic information to display here
-		yVals[0] = drawResultBar_Indiv(ri, yVals);
+		yVals[0] = drawResultBar_Indiv(win, yVals);
 		
 	}//drawResultBar
 	
@@ -112,5 +111,5 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 * 		idx 3 : per-line y offset for text that is not grouped (slightly larger)
 	 * @return next yValue to draw text at
 	 */
-	protected abstract float drawResultBar_Indiv(IRenderInterface ri, float[] yVals);
+	protected abstract float drawResultBar_Indiv(Base_DispWindow win, float[] yVals);
 }//class Base_UISimulator
