@@ -734,7 +734,90 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	@Override
 	public void showText(String txt, float x, float y) {				text(txt,x,y);}
 	@Override
-	public void showText(String txt, float x, float y, float z ) {	text(txt,x,y,z);}
+	public void showText(String txt, float x, float y, float z ) {	text(txt,x,y,z);}	
+	@Override
+	public void showTextAtPt(myPoint P, String s) {text(s, (float)P.x, (float)P.y, (float)P.z); } // prints string s in 3D at P
+    @Override
+	public void showTextAtPt(myPoint P, String s, myVector D) {text(s, (float)(P.x+D.x), (float)(P.y+D.y), (float)(P.z+D.z));  } // prints string s in 3D at P+D	
+	@Override
+	public void showTextAtPt(myPointf P, String s) {text(s, P.x, P.y, P.z); } // prints string s in 3D at P	
+	@Override
+	public void showTextAtPt(myPointf P, String s, myVectorf D) {text(s, (P.x+D.x), (P.y+D.y),(P.z+D.z));  } // prints string s in 3D at P+D
+	/**
+	 * display an array of text at a location on screen
+	 * @param d initial y location
+	 * @param tclr text color
+ 	 * @param txtAra string array to display
+	 */
+	@Override
+	public void showTextAra(float d, String[] txtAra){
+		float y = d;
+		for (String txt : txtAra) {
+			showText(txt, d, y, d);
+			y+=AppMgr.getTextHeightOffset();
+		}
+	}	
+	/**
+	 * display an array of text at a location on screen
+	 * @param d initial y location
+	 * @param tclr text color
+ 	 * @param txtAra string array to display
+	 */
+	@Override
+	public void showTextAra(float d, int tclr, String[] txtAra){
+		setColorValFill(tclr, 255);setColorValStroke(tclr, 255);
+		showTextAra(d, txtAra);
+	}	
+
+	/**
+	 * show array displayed at specific point on screens
+	 * @param P
+	 * @param rad
+	 * @param det
+	 * @param clrs
+	 * @param txtAra
+	 */
+	@Override
+	public void showTextAra(myPointf P, float rad, int det, int[] clrs, String[] txtAra) {//only call with set fclr and sclr - idx0 == fill, idx 1 == strk, idx2 == txtClr
+		pushMatState(); 
+			setColorValFill(clrs[0],255); 
+			setColorValStroke(clrs[1],255);
+			drawSphere(P, rad, det);
+			translate(P.x,P.y,P.z); 
+			showTextAra(1.2f * rad, clrs[2], txtAra);
+		popMatState();
+	} // render sphere of radius r and center P)
+	
+	/**
+	 * draw a box at a point containing an array of text
+	 * @param P
+	 * @param rad
+	 * @param det
+	 * @param clrs
+	 * @param txtAra
+	 * @param rectDims
+	 */
+	@Override
+	public void showBoxTextAra(myPointf P, float rad, int det, int[] clrs, String[] txtAra, float[] rectDims) {
+		pushMatState();  		
+			setColorValFill(clrs[0],255); 
+			setColorValStroke(clrs[1],255);
+			translate(P.x,P.y,P.z);
+			drawSphere(myPointf.ZEROPT, rad, det);			
+			
+			pushMatState();  
+			//make sure box doesn't extend off screen
+				transToStayOnScreen(P,rectDims);
+				setColorValFill(IRenderInterface.gui_White,150);
+				setColorValStroke(IRenderInterface.gui_Black,255);
+				setStrokeWt(2.5f);
+				drawRect(rectDims);
+				translate(rectDims[0],0,0);
+				showTextAra(1.2f * rad, clrs[2], txtAra);
+			 popMatState();
+		 popMatState();
+	} // render sphere of radius r and center P)
+	
 	
 	/**
 	 * return the size, in pixels, of the passed text string, accounting for the currently set font dimensions
@@ -768,8 +851,6 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		if(fclr!= null){setFill(fclr,255);}
 		if(sclr!= null){setStroke(sclr,255);}
 	}	
-	
-
 	
 	///////////
 	// points
@@ -865,29 +946,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 
 	@Override
 	public void showVec( myPoint ctr, double len, myVector v){drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
-	
-	@Override
-	public void showTextAtPt(myPoint P, String s) {text(s, (float)P.x, (float)P.y, (float)P.z); } // prints string s in 3D at P
-	
-	@Override
-	public void showTextAtPt(myPoint P, String s, myVector D) {text(s, (float)(P.x+D.x), (float)(P.y+D.y), (float)(P.z+D.z));  } // prints string s in 3D at P+D
-	
-//	public void show(myPoint P, double rad, int fclr, int sclr, int tclr, String txt) {
-//		pushMatState(); 
-//		checkClrInts(fclr, sclr);
-//		sphereDetail(5);
-//		translate((float)P.x,(float)P.y,(float)P.z); 
-//		setColorValFill(tclr,255);setColorValStroke(tclr,255);
-//		AppMgr.showOffsetText(1.2f * (float)rad,tclr, txt);
-//		popMatState();} // render sphere of radius r and center P)
-//	
-//	public void show(myPoint P, double r, int fclr, int sclr) {
-//		pushMatState(); 
-//		checkClrInts(fclr, sclr);
-//		sphereDetail(5);
-//		translate((float)P.x,(float)P.y,(float)P.z); 
-//		sphere((float)r); 
-//		popMatState();} // render sphere of radius r and center P)
+
 	/**
 	 * Draw a shape from the passed myPoint ara
 	 * @param ara array of myPoints
@@ -1011,11 +1070,6 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	@Override
 	public void showVec( myPointf ctr, float len, myVectorf v){line(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
 	
-	@Override
-	public void showTextAtPt(myPointf P, String s) {text(s, P.x, P.y, P.z); } // prints string s in 3D at P
-	
-	@Override
-	public void showTextAtPt(myPointf P, String s, myVectorf D) {text(s, (P.x+D.x), (P.y+D.y),(P.z+D.z));  } // prints string s in 3D at P+D
 	/**
 	 * Draw a shape from the passed myPointf ara
 	 * @param ara array of myPointfs
@@ -1054,83 +1108,6 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		gl_endShape(true);
 	}  
 	
-	
-	/////////////
-	// show functions using color idxs 
-	/**
-	 * display an array of text at a location on screen
-	 * @param d initial y location
-	 * @param tclr text color
- 	 * @param txtAra string array to display
-	 */
-	@Override
-	public void showTextAra(float d, String[] txtAra){
-		float y = d;
-		for (String txt : txtAra) {
-			showText(txt, d, y, d);
-			y+=AppMgr.getTextHeightOffset();
-		}
-	}	
-	/**
-	 * display an array of text at a location on screen
-	 * @param d initial y location
-	 * @param tclr text color
- 	 * @param txtAra string array to display
-	 */
-	@Override
-	public void showTextAra(float d, int tclr, String[] txtAra){
-		setColorValFill(tclr, 255);setColorValStroke(tclr, 255);
-		showTextAra(d, txtAra);
-	}	
-
-	/**
-	 * show array displayed at specific point on screens
-	 * @param P
-	 * @param rad
-	 * @param det
-	 * @param clrs
-	 * @param txtAra
-	 */
-	@Override
-	public void showTextAra(myPointf P, float rad, int det, int[] clrs, String[] txtAra) {//only call with set fclr and sclr - idx0 == fill, idx 1 == strk, idx2 == txtClr
-		pushMatState(); 
-		setColorValFill(clrs[0],255); 
-		setColorValStroke(clrs[1],255);
-		drawSphere(P, rad, det);
-		translate(P.x,P.y,P.z); 
-		showTextAra(1.2f * rad, clrs[2], txtAra);
-		popMatState();
-	} // render sphere of radius r and center P)
-	
-	/**
-	 * draw a box at a point containing an array of text
-	 * @param P
-	 * @param rad
-	 * @param det
-	 * @param clrs
-	 * @param txtAra
-	 * @param rectDims
-	 */
-	@Override
-	public void showBoxTextAra(myPointf P, float rad, int det, int[] clrs, String[] txtAra, float[] rectDims) {
-		pushMatState();  		
-			setColorValFill(clrs[0],255); 
-			setColorValStroke(clrs[1],255);
-			translate(P.x,P.y,P.z);
-			drawSphere(myPointf.ZEROPT, rad, det);			
-			
-			pushMatState();  
-			//make sure box doesn't extend off screen
-				transToStayOnScreen(P,rectDims);
-				setColorValFill(IRenderInterface.gui_White,150);
-				setColorValStroke(IRenderInterface.gui_Black,255);
-				setStrokeWt(2.5f);
-				drawRect(rectDims);
-				translate(rectDims[0],0,0);
-				showTextAra(1.2f * rad, clrs[2], txtAra);
-			 popMatState();
-		 popMatState();
-	} // render sphere of radius r and center P)
 	
 	///end show functions
 	
@@ -1191,8 +1168,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 			gl_beginShape(); curveVertex3D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} curveVertex3D(ara[ara.length-1]);gl_endShape();
 			return;}		
 		gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} gl_endShape();		
-	}
-	
+	}	
 	protected final void curveVertex3D(myPoint P) {curveVertex((float)P.x,(float)P.y,(float)P.z);};                                           // curveVertex for shading or drawing
 
 

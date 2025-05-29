@@ -256,10 +256,12 @@ public class SidebarMenu extends Base_DispWindow{
 		ri.translate(0,clkFlgsStY);
 		AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
 	}//drawSideBarBooleans	
-
+	/**
+	 * For windows to draw on screen
+	 */
 	@Override
 	protected final void drawOnScreenStuffPriv(float modAmtMillis) {}
-	@Override//for windows to draw on screen
+	@Override
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {}
 	/**
 	 * Draw window/application-specific functionality
