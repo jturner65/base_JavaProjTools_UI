@@ -1693,10 +1693,400 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// showing functions
+	/**
+	 * This will properly format and display a string of text in white, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_White(String txt) {showOffsetText_RightSideMenu(255,255,255,255,txt);}
+	/**
+	 * This will properly format and display a string of text in black, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors. NOTE: generally the right side menu that
+	 * uses this text has a black background. Be warned.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Black(String txt) {showOffsetText_RightSideMenu(0,0,0,255,txt);}
+	/**
+	 * This will properly format and display a string of text in white, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Gray(String txt) {showOffsetText_RightSideMenu(165,165,165,255,txt);}
 	
 	/**
-	 * this will properly format and display a string of text, and will translate the width, so multiple strings can be displayed on the same line with different colors
-	 * @param tclr
+	 * This will properly format and display a string of text in Red, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Red(String txt) {showOffsetText_RightSideMenu(255,0,0,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Green(String txt) {showOffsetText_RightSideMenu(0,255,0,255,txt);}
+		
+	/**
+	 * This will properly format and display a string of text in Blue, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Blue(String txt) {showOffsetText_RightSideMenu(0,0,255,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Cyan, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Cyan(String txt) {showOffsetText_RightSideMenu(0,255,255,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Magenta, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Magenta(String txt) {showOffsetText_RightSideMenu(255,0,255,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Yellow, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Yellow(String txt) {showOffsetText_RightSideMenu(255,255,0,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Orange, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Orange(String txt) {showOffsetText_RightSideMenu(255,165,0,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Pink, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Pink(String txt) {showOffsetText_RightSideMenu(255,0,165,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Aqua, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Aqua(String txt) {showOffsetText_RightSideMenu(0,165,255,255,txt);}
+		
+	/**
+	 * This will properly format and display a string of text in Violet, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Violet(String txt) {showOffsetText_RightSideMenu(165,0,255,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Lime green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Lime(String txt) {showOffsetText_RightSideMenu(165,255,0,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Seafoam green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_Seafoam(String txt) {showOffsetText_RightSideMenu(0,255,165,255,txt);}
+
+	////////////////////////////////////
+	/// Light colors
+	
+	/**
+	 * This will properly format and display a string of text in white, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightGray(String txt) {showOffsetText_RightSideMenu(210,210,210,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Red, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightRed(String txt) {showOffsetText_RightSideMenu(255,165,165,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightGreen(String txt) {showOffsetText_RightSideMenu(165,255,165,255,txt);}
+		
+	/**
+	 * This will properly format and display a string of text in Blue, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightBlue(String txt) {showOffsetText_RightSideMenu(165,165,255,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Cyan, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightCyan(String txt) {showOffsetText_RightSideMenu(165,255,255,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Magenta, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightMagenta(String txt) {showOffsetText_RightSideMenu(255,165,255,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Yellow, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightYellow(String txt) {showOffsetText_RightSideMenu(255,255,165,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Orange, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightOrange(String txt) {showOffsetText_RightSideMenu(255,210,165,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Pink, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightPink(String txt) {showOffsetText_RightSideMenu(255,165,210,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Aqua, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightAqua(String txt) {showOffsetText_RightSideMenu(165,210,255,255,txt);}
+		
+	/**
+	 * This will properly format and display a string of text in Violet, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightViolet(String txt) {showOffsetText_RightSideMenu(210,165,255,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Lime green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightLime(String txt) {showOffsetText_RightSideMenu(210,255,165,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Seafoam green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_LightSeafoam(String txt) {showOffsetText_RightSideMenu(165,255,210,255,txt);}
+
+
+	////////////////////////////////////
+	/// Dark colors
+	
+	/**
+	 * This will properly format and display a string of text in white, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkGray(String txt) {showOffsetText_RightSideMenu(90,90,90,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Red, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkRed(String txt) {showOffsetText_RightSideMenu(165,0,0,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkGreen(String txt) {showOffsetText_RightSideMenu(0,165,0,255,txt);}
+		
+	/**
+	 * This will properly format and display a string of text in Blue, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkBlue(String txt) {showOffsetText_RightSideMenu(0,0,165,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Cyan, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkCyan(String txt) {showOffsetText_RightSideMenu(0,165,165,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Magenta, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkMagenta(String txt) {showOffsetText_RightSideMenu(165,0,165,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Yellow, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkYellow(String txt) {showOffsetText_RightSideMenu(165,165,0,255,txt);}	
+	
+	/**
+	 * This will properly format and display a string of text in Orange, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkOrange(String txt) {showOffsetText_RightSideMenu(165,90,0,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Pink, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkPink(String txt) {showOffsetText_RightSideMenu(165,0,90,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Aqua, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkAqua(String txt) {showOffsetText_RightSideMenu(0,90,165,255,txt);}
+		
+	/**
+	 * This will properly format and display a string of text in Violet, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkViolet(String txt) {showOffsetText_RightSideMenu(90,0,165,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Lime green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkLime(String txt) {showOffsetText_RightSideMenu(90,165,0,255,txt);}
+	
+	/**
+	 * This will properly format and display a string of text in Seafoam green, and will 
+	 * translate the width of the text, so multiple strings can be displayed on 
+	 * the same line with different colors.
+	 * 
+	 * @param txt
+	 */
+	public final void showMenuTxt_DarkSeafoam(String txt) {showOffsetText_RightSideMenu(0,165,90,255,txt);}
+
+		
+	/**
+	 * This will properly format and display a string of text in the passed color, and will translate the width,
+	 * so multiple strings can be displayed on the same line with different colors
+	 * @param r red component
+	 * @param g green component
+	 * @param b blue component
+	 * @param alpha alpha transparency
+	 * @param txt text to display
+	 */
+	public final void showOffsetText_RightSideMenu(int r, int g, int b, int alpha, String txt) {
+		ri.setFill(r,g,b,alpha);ri.setStroke(r,g,b,alpha);
+		ri.showText(txt,0.0f,0.0f,0.0f);
+		ri.translate(ri.getTextWidth(txt)*1.1f, 0.0f,0.0f);		
+	}
+	
+	/**
+	 * this will properly format and display a string of text in the passed color, and will translate the width, so multiple strings can be displayed on the same line with different colors
+	 * @param tclr 4 int array, with last value being 
 	 * @param txt
 	 */
 	public final void showOffsetText_RightSideMenu(int[] tclr, String txt) {
@@ -1706,7 +2096,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}
 	/**
 	 * this will properly format and display a string of text, and will translate the width, so multiple strings can be displayed on the same line with different colors
-	 * @param tclr
+	 * @param tclr color constant as defined in IRenderInterface
 	 * @param txt
 	 */
 	public final void showOffsetText_RightSideMenu(int tclr, String txt) {
@@ -1715,6 +2105,36 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.translate(ri.getTextWidth(txt)*1.1f, 0.0f,0.0f);		
 	}
 	
+	/**
+	 * 
+	 * @param d
+	 * @param tclr
+	 * @param txt
+	 */
+	public final void showOffsetText(float d, int[] tclr, String txt){
+		ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
+		ri.showText(txt, d, d,d); 
+	}
+	/**
+	 * 
+	 * @param loc
+	 * @param tclr
+	 * @param txt
+	 */
+	public final void showOffsetText(myPointf loc, int[] tclr, String txt){
+		ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
+		ri.showText(txt, loc.x, loc.y, loc.z); 
+	}	
+	/**
+	 * 
+	 * @param d
+	 * @param tclr
+	 * @param txt
+	 */
+	public final void showOffsetText2D(float d, int[] tclr, String txt){
+		ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
+		ri.showText(txt, d, d,0); 
+	}	
 	/**
 	 * 
 	 * @param d

@@ -110,6 +110,8 @@ public abstract class Base_UISimulator extends Base_Simulator {
 	 */
 	public final void drawResultBar( float[] yVals ) {
 		//TODO: Add any simulation-agnostic information to display here
+		
+		// implementation details
 		yVals[0] = drawResultBar_Indiv(yVals);
 		
 	}//drawResultBar

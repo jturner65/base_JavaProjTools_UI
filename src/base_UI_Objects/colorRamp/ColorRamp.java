@@ -50,10 +50,10 @@ public class ColorRamp  {
 		usrPts = new ArrayList<ColorPoint>();		
 		myPoint ptA =new myPoint(R0,G0,B0),
 		ptB= new myPoint(R1,G1,B1);
-		usrPts.add(new ColorPoint( "Point A", ptA.x, ptA.y, ptA.z, userPtRad));
+		usrPts.add(new ColorPoint("Point A", ptA.x, ptA.y, ptA.z, userPtRad));
 		usrPts.add(new ColorPoint("Point B",  ptB.x, ptB.y, ptB.z, userPtRad));
 		//linear interp
-		usrPts.add(new ColorPoint( "Point C", new myPoint(ptA, .5, ptB), userPtRad));	
+		usrPts.add(new ColorPoint("Point C", new myPoint(ptA, .5, ptB), userPtRad));	
 		ptsChanged();
 	}
 
