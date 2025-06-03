@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.jogamp.newt.opengl.GLWindow;
 
@@ -1495,7 +1494,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.pushMatState();
 		ri.translate(-p.x,-p.y,-p.z);
 		for(int i  = 0; i< 6; ++i){				
-			prjOnPlane = bndChkInCntrdBox3D(intersectPl(p, _boxNorms[i], _boxWallPts[i][0],_boxWallPts[i][1],_boxWallPts[i][2]));				
+			prjOnPlane = bndChkInCntrdBox3D(MyMathUtils.intersectPlane(p, _boxNorms[i], _boxWallPts[i][0],_boxWallPts[i][1],_boxWallPts[i][2]));				
 			ri.showPtAsSphere(prjOnPlane,5,5,IRenderInterface.rgbClrs[i/2],IRenderInterface.rgbClrs[i/2]);				
 		}
 		ri.popMatState();
@@ -1509,7 +1508,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		ri.pushMatState();
 		ri.translate(-p.x,-p.y,-p.z);
 		for(int i  = 0; i< 6; ++i){				
-			prjOnPlane = bndChkInCntrdBox3D(intersectPl(p, _boxNorms[i], _boxWallPts[i][0],_boxWallPts[i][1],_boxWallPts[i][2]));				
+			prjOnPlane = bndChkInCntrdBox3D(MyMathUtils.intersectPlane(p, _boxNorms[i], _boxWallPts[i][0],_boxWallPts[i][1],_boxWallPts[i][2]));				
 			ri.showPtAsSphere(prjOnPlane,5,5,IRenderInterface.rgbClrs[i/2],IRenderInterface.rgbClrs[i/2]);				
 		}
 		ri.popMatState();
@@ -2533,10 +2532,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	private final void initBaseFlags(){
 		_baseFlags = new int[1 + numBaseFlags/32];
 		_trueFlagColors = new int[numBaseFlags][3];		
-		ThreadLocalRandom tr = ThreadLocalRandom.current();
+		
 		for(int i = 0; i < numBaseFlags; ++i){ 
 			forceBaseFlag(i,false);
-			 _trueFlagColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150)};
+			 _trueFlagColors[i] = MyMathUtils.randomIntClrAra(150, 100, 150);					
 		}
 	}//initBaseFlags()
 	
@@ -2699,9 +2698,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final String[] shuffleStrList(String[] _list, String type){
 		String tmp = "";
-		ThreadLocalRandom tr = ThreadLocalRandom.current();
 		for(int i=(_list.length-1);i>0;--i){
-			int j = (int)(tr.nextDouble(0,(i+1)));
+			int j = (int)(MyMathUtils.randomDouble(0,(i+1)));
 			if (i==j) {continue;}
 			tmp = _list[i];
 			_list[i] = _list[j];

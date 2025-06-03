@@ -1,5 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.renderer.base;
 
+import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
@@ -98,7 +99,7 @@ public abstract class Base_GUIObjRenderer {
 		textClr = _textClr;
 		//build prefix ornament to display
 		if (buildPrefix && (_off != null)) {
-			int[] prefixClr = (matchLabelColor ? textClr : ri.getRndClr());
+			int[] prefixClr = (matchLabelColor ? textClr : MyMathUtils.randomIntClrAra());
 			System.arraycopy(prefixClr, 0, hlStrkClr, 0, hlStrkClr.length);
 			for(int i=0;i<3;++i ) {
 				hlStrkClr[i] = prefixClr[i];

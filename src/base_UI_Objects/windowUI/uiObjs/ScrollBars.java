@@ -1,6 +1,7 @@
 package base_UI_Objects.windowUI.uiObjs;
 
 import base_Render_Interface.IRenderInterface;
+import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
@@ -40,7 +41,8 @@ public class ScrollBars{
 		win = _win;
 		ID = scrBarCnt++;
 		setSize();
-		clrs = new int[][]{ ri.getRndClr(),ri.getRndClr(),ri.getRndClr(),ri.getRndClr(),ri.getRndClr(),ri.getRndClr()};
+		clrs = new int[6][];
+		for(int i=0;i<clrs.length;++i){	clrs[i]=MyMathUtils.randomIntClrAra();}
 	}//myScrollBars
 	
 	public void setSize(){

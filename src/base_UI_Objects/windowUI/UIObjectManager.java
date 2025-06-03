@@ -3,7 +3,6 @@ package base_UI_Objects.windowUI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
@@ -761,9 +760,8 @@ public class UIObjectManager {
 		privFlagButtonColors = new int[2][][];
 		int[][] privFlagTrueColors = new int[privFlagButtonLabels[0].length][4];
 		int[][] privFlagFalseColors = new int[privFlagTrueColors.length][4];
-		ThreadLocalRandom tr = ThreadLocalRandom.current();
 		for (int i = 0; i < privFlagTrueColors.length; ++i) { 
-			privFlagTrueColors[i] = new int[]{tr.nextInt(150),tr.nextInt(100),tr.nextInt(150), 255};
+			privFlagTrueColors[i] = MyMathUtils.randomIntClrAra(150, 100, 150);
 			if(privFlagButtonLabels[0][i].equals(privFlagButtonLabels[1][i])) {
 				privFlagFalseColors[i] = baseBtnFalseClr;
 			} else {

@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
@@ -497,12 +496,12 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 */
 	@Override
 	public void drawCircle3D(myPoint P, double r, myVector I, myVector J, int n) {
-		myPoint[] pts = AppMgr.buildCircleInscribedPoints(P,r,I,J,n);
+		myPoint[] pts = MyMathUtils.buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatState();noFill(); drawShapeFromPts(pts);popMatState();
 	}
 	@Override
 	public void drawCircle3D(myPointf P, float r, myVectorf I, myVectorf J, int n) {
-		myPointf[] pts = AppMgr.buildCircleInscribedPoints(P,r,I,J,n);
+		myPointf[] pts = MyMathUtils.buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatState();noFill(); drawShapeFromPts(pts);popMatState();
 	} 
 	
@@ -511,7 +510,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 */
 	@Override
 	public void drawStar2D(myPointf p, float r) {
-		myPointf[] pts = AppMgr.buildCircleInscribedPoints(p,r,myVectorf.FORWARD,myVectorf.RIGHT,6);
+		myPointf[] pts = MyMathUtils.buildCircleInscribedPoints(p,r,myVectorf.FORWARD,myVectorf.RIGHT,6);
 		drawTriangle2D(pts[0], pts[2],pts[4]);
 		drawTriangle2D(pts[1], pts[3],pts[5]);
 	}
