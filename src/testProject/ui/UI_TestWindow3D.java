@@ -3,7 +3,6 @@ package testProject.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.TreeMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
@@ -131,9 +130,9 @@ public class UI_TestWindow3D extends Base_DispWindow {
 		endLoc.set(-startLoc.x, -startLoc.y, -startLoc.z);
 	}
 	
-	protected float nextVal_f() {return ThreadLocalRandom.current().nextFloat() *2.0f - 1.0f;}
+	protected float nextVal_f() {return MyMathUtils.randomFloat() *2.0f - 1.0f;}
 	protected void setPtNewRandVal(myPointf V) {V.set(nextVal_f(),nextVal_f(),nextVal_f());}
-	protected double nextVal() {return ThreadLocalRandom.current().nextDouble(-1.0, 1.0);}
+	protected double nextVal() {return MyMathUtils.randomDouble(-1.0, 1.0);}
 	protected void setPtNewRandVal(myPoint V) {V.set(nextVal(),nextVal(),nextVal());}
 	
 	protected void calcNewEndPoints() {
