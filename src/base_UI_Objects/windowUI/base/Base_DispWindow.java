@@ -1543,7 +1543,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Get the number of usable threads the system supports.
 	 * @return
 	 */
-	public final int getNumThreadsAvailable() {return AppMgr.getNumThreadsAvailable();}
+	public final int getNumThreadsAvailable() {return GUI_AppManager.getNumThreadsAvailable();}
 	
 	
 	//setup the launch of UI-driven custom functions or debugging capabilities, which will execute next frame
