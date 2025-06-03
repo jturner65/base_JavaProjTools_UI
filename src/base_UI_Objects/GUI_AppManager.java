@@ -2720,25 +2720,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public myPointf[] getCanvasDrawPlanePts() {
 		return buildPlaneBoxBounds(_canvas.getCanvasCorners());
 	}
-	
-	/**
-	 * point normal form of plane - give a normal and a point and receive a 4-element array of the coefficients of the plane equation.
-	 * @param _n unit normal of plane
-	 * @param _p point on plane
-	 * @return eq : coefficients of the plane equation in the form eq[0]*x + eq[1]*y + eq[2]*z + eq[3] = 0
-	 */
-	public float[] getPlanarEqFromPointAndNorm(myVectorf _n, myPoint _p) {
-		return new float[] { _n.x, _n.y, _n.z, (float) (_n.x * -_p.x + _n.y * -_p.y + _n.z * -_p.z)};
-	}
-	/**
-	 * point normal form of plane - give a normal and a point and receive a 4-element array of the coefficients of the plane equation.
-	 * @param _n unit normal of plane
-	 * @param _p point on plane
-	 * @return eq : coefficients of the plane equation in the form eq[0]*x + eq[1]*y + eq[2]*z + eq[3] = 0
-	 */
-	public float[] getPlanarEqFromPointAndNorm(myVectorf _n, myPointf _p) {
-		return new float[] { _n.x, _n.y, _n.z, (_n.x * -_p.x + _n.y * -_p.y + _n.z * -_p.z)};
-	}	
 		
 	/**
 	 * This will take given set of points and will calculate a set of points that make up the 
@@ -2747,8 +2728,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public final myPointf[] buildPlaneBoxBounds(myPoint[] pts) {
-		myVectorf tmpNorm = myVectorf._cross(new myVectorf(pts[0], pts[1]), new myVectorf(pts[0], pts[2]))._normalize();
-		float[] eq = getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
+		myVector tmpNorm = myVector._cross(new myVector(pts[0], pts[1]), new myVector(pts[0], pts[2]))._normalize();
+		float[] eq = MyMathUtils.getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
 		//works because plane is built with unit normal in equation
 		return buildPlaneBoxBounds(eq);
 	}
@@ -2761,7 +2742,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final myPointf[] buildPlaneBoxBounds(myPointf[] pts) {
 		myVectorf tmpNorm = myVectorf._cross(new myVectorf(pts[0], pts[1]), new myVectorf(pts[0], pts[2]))._normalize();
-		float[] eq = getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
+		float[] eq = MyMathUtils.getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
 		//works because plane is built with unit normal in equation
 		return buildPlaneBoxBounds(eq);
 	}
@@ -2773,7 +2754,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @param RayDir
 	 * @return
 	 */
-	public myPointf rayIntersectPlane(float[] eq, myPointf rayOrig, myVectorf rayDir) {		
+	public myPointf rayintersectPlaneane(float[] eq, myPointf rayOrig, myVectorf rayDir) {		
 		Float denomVal = eq[0]* rayDir.x +eq[1]* rayDir.y+ eq[2]* rayDir.z;
 	    if (denomVal == 0.0f) {        return null;}
 	    Float tVal = - (eq[0]* rayOrig.x +eq[1]* rayOrig.y+ eq[2]* rayOrig.z + eq[3]) / denomVal;
@@ -2791,21 +2772,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final myPointf[] buildPlaneBoxBounds(float[] eq) {
 		//works because plane is built with unit normal in equation
 		myPointf planeOrigin = new myPointf(-eq[0]*eq[3],-eq[1]*eq[3],-eq[2]*eq[3]);
-		return calcPlaneWBBoxIntersectPoints(eq, planeOrigin);
-	}
-	
-	/**
-	 * find intersection between this object's plane and every edge of world axis aligned bound box.
-	 * Maximum out_point_count == 6, so out_points must point to 6-element array. 
-	 * Out_point_count == 0 mean no intersection. out_points are not sorted.
-	 * @param wBnds
-	 * @return
-	 */
-	private myPointf[] calcPlaneWBBoxIntersectPoints(float[] eq, myPointf planeOrigin){
+		//Find intersection between this object's plane and every edge of world axis aligned bound box.
 	    ArrayList<myPointf> ptsAra = new ArrayList<myPointf>();
 	    for(int i=0; i<_origPerDirAra.length;++i) {
 			for(int j=0;j<_origPerDirAra[i].length;++j) {
-			    myPointf p = rayIntersectPlane(eq, _origPerDirAra[i][j], _cubeDirAra[i]);
+			    myPointf p = rayintersectPlaneane(eq, _origPerDirAra[i][j], _cubeDirAra[i]);
 			    if(null!=p) {ptsAra.add(p);}
 			}
 	    }	    
@@ -2813,382 +2784,59 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	    	return new myPointf[0];
 	    }//no intersection
 	    //sort in cw order around normal
-	    TreeMap<Float, myPointf> ptsMap = sortBoundPoints(ptsAra, planeOrigin);
-	    return ptsMap.values().toArray(new myPointf[0]);
-	}	
-	
-	/**
-	 * sort points around normal, using first point in list as starting point
-	 * @param ptsAra
-	 * @return
-	 */
-	private TreeMap<Float, myPointf> sortBoundPoints(ArrayList<myPointf> ptsAra, myPointf planeOrigin){
-		TreeMap<Float, myPointf> resMap = new TreeMap<Float, myPointf>();
+		TreeMap<Float, myPointf> ptsMap = new TreeMap<Float, myPointf>();
 		myVectorf baseVec = new myVectorf(planeOrigin, ptsAra.get(0));
 		for(int i=0;i<ptsAra.size();++i) {
 			myPointf pt = ptsAra.get(i);
 			float res = (myVectorf._angleBetween_Xprod(new myVectorf(planeOrigin, pt),baseVec));
-			resMap.put(res, pt);
+			ptsMap.put(res, pt);
 		}		
-		return resMap;
-	}//sortBoundPoints
-	
-	/**
-	 * build a frame based on passed normal given two passed points
-	 * @param A
-	 * @param B
-	 * @param I normal to build frame around
-	 * @return vec array of {AB, Normal, Tangent}
-	 */
-	public myVector[] buildFrameAroundNormal(myPoint A, myPoint B, myVector C) {
-		myVector V = new myVector(A,B);
-		myVector norm = myVector._findNormToPlane(C,V);		
-		myVector tan = norm._cross(V)._normalize(); 
-		return new myVector[] {V,norm,tan};		
-	}
-	
-	/**
-	 * build a frame based on passed normal given two passed points
-	 * @param A
-	 * @param B
-	 * @param I normal to build frame around
-	 * @return vec array of {AB, Normal, Tangent}
-	 */
-	public myVectorf[] buildFrameAroundNormal(myPointf A, myPointf B, myVectorf C) {
-		myVectorf V = new myVectorf(A,B);
-		myVectorf norm = myVectorf._findNormToPlane(C,V);
-		myVectorf tan = norm._cross(V)._normalize(); 
-		return new myVectorf[] {V,norm,tan};		
+
+	    return ptsMap.values().toArray(new myPointf[0]);
 	}
 	
 	/**
 	 * build a frame based on world orientation given two passed points
-	 * @param A
-	 * @param B
+	 * @param A center point of endcap A
+	 * @param B center point of endcap B
 	 * @return vec array of {AB, ScreenNorm, ScreenTan}
 	 */
 	public myVector[] buildViewBasedFrame(myPoint A, myPoint B) {
-		return buildFrameAroundNormal(A, B, getDrawSNorm());		
+		return MyMathUtils.buildFrameAroundNormal(A, B, getDrawSNorm());		
 	}
 	
 	/**
 	 * build a frame based on world orientation given two passed points
-	 * @param A
-	 * @param B
-	 * @param I Screen normal
+	 * @param A center point of endcap A
+	 * @param B center point of endcap B
 	 * @return float vec array of {AB, ScreenNorm, ScreenTan}
 	 */
 	public myVectorf[] buildViewBasedFrame(myPointf A, myPointf B) {
-		return buildFrameAroundNormal(A, B, getDrawSNorm_f());
+		return MyMathUtils.buildFrameAroundNormal(A, B, getDrawSNorm_f());
 	}
 		
 	/**
 	 * Derive the points of a cylinder of radius r around axis through A and B
-	 * @param A center point of endcap
-	 * @param B center point of endcap
+	 * @param A center point of endcap A
+	 * @param B center point of endcap B
 	 * @param r desired radius of cylinder
 	 * @return array of points for cylinder
 	 */
 	public myPoint[] buildCylVerts(myPoint A, myPoint B, double r) {
-		myVector[] frame = buildFrameAroundNormal(A, B, getDrawSNorm());
-		myPoint[] resList = new myPoint[2 * MyMathUtils.preCalcCosVals.length];
-		double rca, rsa;
-		int idx = 0;
-		for(int i = 0; i<MyMathUtils.preCalcCosVals.length; ++i) {
-			rca = r*MyMathUtils.preCalcCosVals[i];
-			rsa = r*MyMathUtils.preCalcCosVals[i];
-			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2]); 
-			resList[idx++] = myPoint._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
-		}
-		return resList;
+		return MyMathUtils.buildCylVerts(A,B,r, getDrawSNorm());
 	}//build list of all cylinder vertices 
 	
 	/**
 	 * Derive the points of a cylinder of radius r around axis through A and B
-	 * @param A center point of endcap
-	 * @param B center point of endcap
+	 * @param A center point of endcap A
+	 * @param B center point of endcap B
 	 * @param r desired radius of cylinder
 	 * @return array of points for cylinder
 	 */
 	public myPointf[] buildCylVerts(myPointf A, myPointf B, float r) {
-		myVectorf[] frame = buildFrameAroundNormal(A, B, getDrawSNorm_f());
-		myPointf[] resList = new myPointf[2 * MyMathUtils.preCalcCosVals.length];
-		float rca, rsa;
-		int idx = 0;
-		for(int i = 0; i<MyMathUtils.preCalcCosVals.length; ++i) {
-			rca = r*MyMathUtils.preCalcCosVals_f[i];
-			rsa = r*MyMathUtils.preCalcSinVals_f[i];
-			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2]); 
-			resList[idx++] = myPointf._add(A,rca,frame[1],rsa,frame[2],1,frame[0]);				
-		}	
-		return resList;
+		return MyMathUtils.buildCylVerts(A,B,r, getDrawSNorm_f());
 	}//build list of all cylinder vertices 
 	
-	/**
-	 * Build a set of n points inscribed on a circle centered at p in plane I,J
-	 * @param p center point
-	 * @param r circle radius
-	 * @param I, J axes of plane
-	 * @param n # of points
-	 * @return array of n equal-arc-length points centered around p
-	 */
-	public synchronized myPoint[] buildCircleInscribedPoints(myPoint p, double r, myVector I, myVector J, int n) {
-		myPoint[] pts = new myPoint[n];
-		pts[0] = new myPoint(p,r,myVector._unit(I));
-		double a = (MyMathUtils.TWO_PI)/(1.0*n); 
-		for(int i=1;i<n;++i){pts[i] = pts[i-1].rotMeAroundPt(a,J,I,p);}
-		return pts;
-	}
-	/**
-	 * Build a set of n points inscribed on a circle centered at p in plane I,J
-	 * @param p center point
-	 * @param r circle radius
-	 * @param I, J axes of plane
-	 * @param n # of points
-	 * @return array of n equal-arc-length points centered around p
-	 */
-	public synchronized myPointf[] buildCircleInscribedPoints(myPointf p, float r, myVectorf I, myVectorf J, int n) {
-		myPointf[] pts = new myPointf[n];
-		pts[0] = new myPointf(p,r,myVectorf._unit(I));
-		float a = (MyMathUtils.TWO_PI_F)/(1.0f*n);
-		for(int i=1;i<n;++i){pts[i] = pts[i-1].rotMeAroundPt(a,J,I,p);}
-		return pts;
-	}
-	
-	/**
-	 * 
-	 * @param A
-	 * @param B
-	 * @param C
-	 * @param t
-	 * @return
-	 */
-	public final myPoint PtOnSpiral(myPoint A, myPoint B, myPoint C, double t) {
-		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
-		//so center will be coplanar to mp(A,B) and mp(B,C) - use mpCA midpoint to determine plane mpAB-mpBC plane?
-		myPoint mAB = new myPoint(A,.5, B), mBC = new myPoint(B,.5, C), mCA = new myPoint(C,.5, A);
-		myVector mI = myVector._unit(mCA,mAB), mTmp = myVector._cross(mI,myVector._unit(mCA,mBC)), mJ = myVector._unit(mTmp._cross(mI));	//I and J are orthonormal
-		double a =spiralAngle(A,B,B,C), s =spiralScale(A,B,B,C);
-		
-		//myPoint G = spiralCenter(a, s, A, B, mI, mJ); 
-		myPoint G = spiralCenter(A, mAB, B, mBC); 
-		//return new myPoint(G, Math.pow(s,t), R(A,t*a,mI,mJ,G));
-		return new myPoint(G, Math.pow(s,t), A.rotMeAroundPt(t*a,mI,mJ,G));
-	}	
-	/**
-	 * 
-	 * @param A
-	 * @param B
-	 * @param C
-	 * @param D
-	 * @return
-	 */
-	public double spiralAngle(myPoint A, myPoint B, myPoint C, myPoint D) {return myVector._angleBetween(new myVector(A,B),new myVector(C,D));}
-	/**
-	 * 
-	 * @param A
-	 * @param B
-	 * @param C
-	 * @param D
-	 * @return
-	 */
-	public double spiralScale(myPoint A, myPoint B, myPoint C, myPoint D) {return myPoint._dist(C,D)/ myPoint._dist(A,B);}
-
-	/**
-	 * spiral given 4 points, AB and CD are edges corresponding through rotation
-	 * @param A
-	 * @param B
-	 * @param C
-	 * @param D
-	 * @return
-	 */
-	public final myPoint spiralCenter(myPoint A, myPoint B, myPoint C, myPoint D) {         // new spiral center
-		myVector AB=new myVector(A,B), CD=new myVector(C,D), AC=new myVector(A,C);
-		double m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
-		myVector rotAxis = myVector._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find flock
-		
-		myVector rAB = myVector._rotAroundAxis(AB, rotAxis, MyMathUtils.HALF_PI_F);
-		double c=AB._dot(CD)/n,	s=rAB._dot(CD)/n;
-		double AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2, x=(a-m*( a*c+b*s)), y=(b-m*(-a*s+b*c)), d=1+m*(m-2*c);  if((c!=1)&&(m!=1)) { x/=d; y/=d; };
-		return new myPoint(new myPoint(A,x,AB),y,rAB);
-	}
-	/**
-	 * 
-	 * @param A
-	 * @param B
-	 * @param C
-	 * @param t
-	 * @return
-	 */
-	public final myPointf PtOnSpiral(myPointf A, myPointf B, myPointf C, float t) {
-		//center is coplanar to A and B, and coplanar to B and C, but not necessarily coplanar to A, B and C
-		//so center will be coplanar to mp(A,B) and mp(B,C) - use mpCA midpoint to determine plane mpAB-mpBC plane?
-		myPointf mAB = new myPointf(A,.5f, B), mBC = new myPointf(B,.5f, C), mCA = new myPointf(C,.5f, A);
-		myVectorf mI = myVectorf._unit(mCA,mAB), mTmp = myVectorf._cross(mI,myVectorf._unit(mCA,mBC)), mJ = myVectorf._unit(mTmp._cross(mI));	//I and J are orthonormal
-		float a =spiralAngle(A,B,B,C), s =spiralScale(A,B,B,C);
-		
-		//myPoint G = spiralCenter(a, s, A, B, mI, mJ); 
-		myPointf G = spiralCenter(A, mAB, B, mBC); 
-		return new myPointf(G, (float)Math.pow(s,t), A.rotMeAroundPt(t*a,mI,mJ,G));
-	}	
-	/**
-	 * 
-	 * @param A
-	 * @param B
-	 * @param C
-	 * @param D
-	 * @return
-	 */
-	public float spiralAngle(myPointf A, myPointf B, myPointf C, myPointf D) {return myVectorf._angleBetween(new myVectorf(A,B),new myVectorf(C,D));}
-	/**
-	 * 
-	 * @param A
-	 * @param B
-	 * @param C
-	 * @param D
-	 * @return
-	 */
-	public float spiralScale(myPointf A, myPointf B, myPointf C, myPointf D) {return myPointf._dist(C,D)/ myPointf._dist(A,B);}
-	
-	/**
-	 * spiral given 4 points, AB and CD are edges corresponding through rotation
-	 * @param A
-	 * @param B
-	 * @param C
-	 * @param D
-	 * @return
-	 */
-	public final myPointf spiralCenter(myPointf A, myPointf B, myPointf C, myPointf D) {         // new spiral center
-		myVectorf AB=new myVectorf(A,B), CD=new myVectorf(C,D), AC=new myVectorf(A,C);
-		float m=CD.magn/AB.magn, n=CD.magn*AB.magn;		
-		myVectorf rotAxis = myVectorf._unit(AB._cross(CD));		//expect ab and ac to be coplanar - this is the axis to rotate around to find flock
-		
-		myVectorf rAB = myVectorf._rotAroundAxis(AB, rotAxis, MyMathUtils.HALF_PI_F);
-		float c=AB._dot(CD)/n,	s=rAB._dot(CD)/n;
-		float AB2 = AB._dot(AB), a=AB._dot(AC)/AB2, b=rAB._dot(AC)/AB2, x=(a-m*( a*c+b*s)), y=(b-m*(-a*s+b*c)), d=1+m*(m-2*c);  if((c!=1)&&(m!=1)) { x/=d; y/=d; };
-		return new myPointf(new myPointf(A,x,AB),y,rAB);
-	}
-
-	/**
-	 * Return intersection point of vector T through point E in plane described by ABC
-	 * @param E point within cast vector/ray
-	 * @param T directional vector/ray
-	 * @param A point describing plane
-	 * @param B point describing plane
-	 * @param C point describing plane
-	 * @return
-	 */
-	public final myPoint intersectPl(myPoint E, myVectorf T, myPointf A, myPointf B, myPointf C) {
-		myPointf res = intersectPl(new myPointf(E.x, E.y, E.z), T, A, B, C);
-		return new myPoint(res.x, res.y, res.z);
-	}//intersectPl
-	/**
-	 * Return intersection point of vector T through point E in plane described by ABC
-	 * @param E point within cast vector/ray
-	 * @param T directional vector/ray
-	 * @param A point describing plane
-	 * @param B point describing plane
-	 * @param C point describing plane
-	 * @return
-	 */
-	public final myPointf intersectPl(myPointf E, myVectorf T, myPointf A, myPointf B, myPointf C) {
-		//vector through point and planar point
-		myVectorf EA=new myVectorf(E,A); 
-		//planar vectors
-		myVectorf AB=new myVectorf(A,B), AC=new myVectorf(A,C);
-		//find planar norm
-		myVectorf ACB = AC._cross(AB);
-		//project 
-		float t = (EA._dot(ACB) / T._dot(ACB));		
-		return (myPointf._add(E,t,T));		
-	}//intersectPl
-	/**
-	 * Return intersection point of vector T through point E in plane described by ABC
-	 * @param E point within cast vector/ray
-	 * @param T directional vector/ray
-	 * @param A point describing plane
-	 * @param B point describing plane
-	 * @param C point describing plane
-	 * @return
-	 */
-	public final myPoint intersectPl(myPoint E, myVector T, myPoint A, myPoint B, myPoint C) {
-		//vector through point and planar point
-		myVector EA=new myVector(E,A); 
-		//planar vectors
-		myVector AB=new myVector(A,B), AC=new myVector(A,C);
-		//find planar norm
-		myVector ACB = AC._cross(AB);
-		//project 
-		double t = (EA._dot(ACB) / T._dot(ACB));		
-		return (myPoint._add(E,t,T));		
-	}//intersectPl		
-	/**
-	 * if ray from E along V intersects sphere at C with radius r, return t when intersection occurs
-	 * @param E
-	 * @param V
-	 * @param C
-	 * @param r
-	 * @return t value along vector V where first intersection occurs
-	 */
-	public double intersectPt(myPoint E, myVector V, myPoint C, double r) { 
-		myVector Vce = new myVector(C,E);
-		double ta = 2 * V._dot(V),
-				b = 2 * V._dot(Vce), 
-				c = Vce._dot(Vce) - (r*r),
-				radical = (b*b) - 2 *(ta) * c;		//b^2 - 4ac
-		if(radical < 0) return -1;
-		double sqrtRad = Math.sqrt(radical);
-		double t1 = (b + sqrtRad)/ta, t2 = (b - sqrtRad)/ta;
-		if (t1 < t2) {return t1 > 0 ? t1 : t2;}	
-		return t2 > 0 ? t2 : t1;	
-		//return ((t1 > 0) && (t2 > 0) ? MyMathUtils.min(t1, t2) : ((t1 < 0 ) ? ((t2 < 0 ) ?-1 : t2) : t1) );
-	}	
-	
-	private static final double third = 1.0/3.0;
-	/**
-	 * Find a random position in a sphere centered at 0 of radius rad, using spherical coords as rand axes
-	 * @param rad
-	 * @return
-	 */
-	public final myPointf getRandPosInSphere(double rad){ return getRandPosInSphere(rad, new myPointf());}
-	/**
-	 * Find a random position in a sphere centered at ctr of radius rad, using spherical coords as rand axes
-	 * @param rad
-	 * @param ctr
-	 * @return
-	 */
-	public final myPointf getRandPosInSphere(double rad, myPointf ctr){
-		myPointf pos = new myPointf();
-		double u = ThreadLocalRandom.current().nextDouble(0,1),	
-			cosTheta = ThreadLocalRandom.current().nextDouble(-1,1),
-			phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F),
-			r = rad * Math.pow(u, third),
-			rSinTheta = r * (Math.sqrt(1.0 - (cosTheta * cosTheta)));			
-		pos.set(rSinTheta * Math.cos(phi), rSinTheta * Math.sin(phi),cosTheta*r);
-		pos._add(ctr);
-		return pos;
-	}
-	/**
-	 * Find a random position on a sphere's surface centered at 0 of radius rad, using spherical coords as rand axes
-	 * @param rad
-	 * @return
-	 */
-	public final myPointf getRandPosOnSphere(double rad){ return getRandPosOnSphere(rad, new myPointf());}
-	/**
-	 * Find a random position on a sphere's surface centered at ctr of radius rad, using spherical coords as rand axes
-	 * @param rad
-	 * @param ctr
-	 * @return
-	 */
-	public final myPointf getRandPosOnSphere(double rad, myPointf ctr){
-		myPointf pos = new myPointf();
-		double 	cosTheta = ThreadLocalRandom.current().nextDouble(-1,1),
-				phi = ThreadLocalRandom.current().nextDouble(0,MyMathUtils.TWO_PI_F), 
-				rSinTheta = rad* (Math.sqrt(1.0 - (cosTheta * cosTheta)));
-		pos.set(rSinTheta * Math.cos(phi), rSinTheta * Math.sin(phi),cosTheta * rad);
-		pos._add(ctr);
-		return pos;
-	}
 	/**
 	 * random location within coords[0] and coords[1] extremal corners of a cube - bnds is to give a margin of possible random values
 	 * @param coords
@@ -3196,55 +2844,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * @return
 	 */
 	public myVectorf getRandPosInCube(float[][] coords, float bnds){
-		ThreadLocalRandom tr = ThreadLocalRandom.current();
 		return new myVectorf(
-				tr.nextDouble(coords[0][0]+bnds,(coords[0][0] + coords[1][0] - bnds)),
-				tr.nextDouble(coords[0][1]+bnds,(coords[0][1] + coords[1][1] - bnds)),
-				tr.nextDouble(coords[0][2]+bnds,(coords[0][2] + coords[1][2] - bnds)));}		
-	
-	/** 
-	 * convert from spherical coords to cartesian. Returns Array :
-	 * 	idx0 : norm of vector through point from origin
-	 * 	idx1 : point
-	 * @param rad
-	 * @param thet
-	 * @param phi
-	 * @param scaleZ scaling factor to make ellipsoid
-	 * @return ara : norm, surface point == x,y,z of coords passed
-	 */
-	public myVectorf[] getXYZFromRThetPhi(double rad, double thet, double phi, double scaleZ) {
-		double sinThet = Math.sin(thet);	
-		myVectorf[] res = new myVectorf[2];
-		res[1] = new myVectorf(sinThet * Math.cos(phi) * rad, sinThet * Math.sin(phi) * rad,Math.cos(thet)*rad*scaleZ);
-		res[0] = myVectorf._normalize(res[1]);
-		return res;
-	}//
-	
-	
-	/** 
-	 * builds a list of N regularly placed vertices and normals for a sphere of radius rad centered at ctr
-	 * @param rad radius of sphere
-	 * @param N # of verts we want in result
-	 * @param scaleZ scaling factor for ellipsoid
-	 * @return list of points (as vectors) where each entry is a tuple of norm/point
-	 */
-	public myVectorf[][] getRegularSphereList(float rad, int N, float scaleZ) {
-		ArrayList<myVectorf[]> res = new ArrayList<myVectorf[]>();
-		//choose 1 point per dArea, where dArea is area of sphere parsed into N equal portions
-		double lclA = 4*MyMathUtils.PI/N, lclD = Math.sqrt(lclA);
-		int Mthet = (int) Math.round(MyMathUtils.PI/lclD), Mphi;
-		double dThet = MyMathUtils.PI/Mthet, dPhi = lclA/dThet, thet, phi, twoPiOvDPhi = MyMathUtils.TWO_PI/dPhi;
-		for(int i=0;i<Mthet;++i) {
-			thet = dThet * (i + 0.5f);
-			Mphi = (int) Math.round(twoPiOvDPhi * Math.sin(thet));
-			for (int j=0;j<Mphi; ++j) { 
-				phi = (MyMathUtils.TWO_PI*j)/Mphi;		
-				res.add(getXYZFromRThetPhi(rad, thet, phi, scaleZ));
-			}
-		}
-		return res.toArray(new myVectorf[0][]);
-	}//getRegularSphereList	
-		
+				MyMathUtils.randomDouble(coords[0][0]+bnds,(coords[0][0] + coords[1][0] - bnds)),
+				MyMathUtils.randomDouble(coords[0][1]+bnds,(coords[0][1] + coords[1][1] - bnds)),
+				MyMathUtils.randomDouble(coords[0][2]+bnds,(coords[0][2] + coords[1][2] - bnds)));}		
+			
 	public final myPoint bndChkInBox2D(myPoint p){p.set(MyMathUtils.max(0,MyMathUtils.min(p.x,_2DGridDimX)),MyMathUtils.max(0,MyMathUtils.min(p.y,_2DGridDimY)),0);return p;}
 	public final myPoint bndChkInBox3D(myPoint p){p.set(MyMathUtils.max(0,MyMathUtils.min(p.x,_3DGridDimX)), MyMathUtils.max(0,MyMathUtils.min(p.y,_3DGridDimY)),MyMathUtils.max(0,MyMathUtils.min(p.z,_3DGridDimZ)));return p;}	
 	public final myPoint bndChkInCntrdBox3D(myPoint p){
@@ -3276,14 +2880,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final int[] getClrFromCubeLoc(myPointf t){
 		return new int[]{(int)(255*(t.x-_cubeBnds[0][0])/_cubeBnds[1][0]),(int)(255*(t.y-_cubeBnds[0][1])/_cubeBnds[1][1]),(int)(255*(t.z-_cubeBnds[0][2])/_cubeBnds[1][2]),255};
 	}
-	
-	/**
-	 * any instancing-class-specific colors - colorVal set to be higher than IRenderInterface.gui_OffWhite
-	 * @param colorVal
-	 * @param alpha
-	 * @return
-	 */
-	public abstract int[] getClr_Custom(int colorVal, int alpha);
 
 	//set color based on passed point r= x, g = z, b=y
 	public final void fillAndShowLineByRBGPt(myPoint p, float x,  float y, float w, float h){

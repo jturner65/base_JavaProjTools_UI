@@ -129,7 +129,7 @@ public class Disp3DCanvas {
 	 */
 	public myPoint getPlInterSect(myPoint pt, myVector unitT){
 		 // return intersection point in canvas plane
-		return AppMgr.intersectPl(pt, unitT, canvas3D[0],canvas3D[1],canvas3D[2]);		
+		return MyMathUtils.intersectPlane(pt, unitT, canvas3D[0],canvas3D[1],canvas3D[2]);		
 	}//getPlInterSect	
 
 	/**

@@ -1391,27 +1391,8 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		}		
 	}//setcolorValFill
 
-	/**
-	 * any instancing-class-specific colors - colorVal set to be higher than IRenderInterface.gui_OffWhite
-	 * @param colorVal
-	 * @param alpha
-	 * @return
-	 */
 	@Override
-	public int[] getClr_Custom(int colorVal, int alpha) {return AppMgr.getClr_Custom(colorVal, alpha); }		
-	@Override
-	public final int[] getRndClr(int alpha){
-		return new int[]{ThreadLocalRandom.current().nextInt(256),
-					ThreadLocalRandom.current().nextInt(256),
-					ThreadLocalRandom.current().nextInt(256),alpha};	}
-	@Override
-	public final int[] getRndClrBright(int alpha){
-		return new int[]{ThreadLocalRandom.current().nextInt(50,256),
-				ThreadLocalRandom.current().nextInt(25,256),
-				ThreadLocalRandom.current().nextInt(80,256),alpha};	}
-	
-	@Override
-	public final int getRndClrIndex(){return ThreadLocalRandom.current().nextInt(0,IRenderInterface.gui_nextColorIDX);}		//return a random color flag value from IRenderInterface
+	public final int getRndClrIndex(){return MyMathUtils.randomInt(0,IRenderInterface.gui_nextColorIDX);}		//return a random color flag value from IRenderInterface
 		
 	@Override
 	public final Integer[] getClrMorph(int[] a, int[] b, double t){

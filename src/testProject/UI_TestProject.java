@@ -275,12 +275,6 @@ public class UI_TestProject extends GUI_AppManager {
 		}
 	}//setFlags  
 
-	@Override
-	public int[] getClr_Custom(int colorVal, int alpha) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	/**
 	 * Set minimum level of message object console messages to display for this application. If null then all messages displayed
 	 * @return
