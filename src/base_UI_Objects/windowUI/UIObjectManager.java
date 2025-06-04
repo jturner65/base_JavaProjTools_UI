@@ -895,9 +895,7 @@ public class UIObjectManager {
 	public final void resetUIVals(boolean forceVals){
 		for(int i=0; i<_guiObjsAra.length;++i){				_guiObjsAra[i].resetToInit();		}
 		if (!forceVals) {			setAllUIWinVals();		}
-	}//resetUIVals
-	
-	
+	}//resetUIVals	
 	
 	/**
 	 * manage loading pre-saved UI component values, if useful for this window's load/save (if so call from child window's implementation

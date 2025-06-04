@@ -641,68 +641,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param oldVal float value of old data in UIUpdater
 	 */
 	protected abstract void setUI_FloatValsCustom(int UIidx, float val, float oldVal);
-	
-	/**
-	 * 
-	 * @param file
-	 */
-	public final void loadFromFile(File file){
-		if (file == null) {
-			_dispWarnMsg("loadFromFile","Load was cancelled.");
-		    return;
-		} 
-		String[] res = fileIO.loadFileIntoStringAra(file.getAbsolutePath(), "Variable File Load successful", "Variable File Load Failed.");
-		int[] stIdx = {0};//start index for a particular window - make an array so it can be passed by ref and changed by windows
-		hndlFileLoad(file, res,stIdx);
-	}//loadFromFile
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public final String[] getSaveFileDirName() {
-		String[] vals = getSaveFileDirNamesPriv();
-		if((null==vals) || (vals.length != 2)) {return new String[0];}
-		String[] res = new String[] {
-			ssPathBase + vals[0] + File.separatorChar, vals[1]	
-		};
-		return res;
-	}	
-	/**
-	 * return relevant name information for files and directories to be used to build screenshots/saved files	
-	 * @return
-	 */
-	protected abstract String[] getSaveFileDirNamesPriv();
-
-	
-	
-	public final void saveToFile(File file){
-		if (file == null) {
-			_dispWarnMsg("saveToFile","Save was cancelled.");
-		    return;
-		} 
-		ArrayList<String> res = new ArrayList<String>();
-
-		res.addAll(hndlFileSave(file));	
-
-		fileIO.saveStrings(file.getAbsolutePath(), res);  
-	}//saveToFile	
-	
-	/**
-	 * manage loading pre-saved UI component values, if useful for this window's load/save (if so call from child window's implementation
-	 * @param vals
-	 * @param stIdx
-	 */
-	protected final void hndlFileLoad_GUI(String[] vals, int[] stIdx) {
-		uiMgr.hndlFileLoad_GUI(winInitVals.winName, vals, stIdx);		
-	}//hndlFileLoad_GUI
-	
-	/**
-	 * manage saving this window's UI component values.  if needed call from child window's implementation
-	 * @return
-	 */
-	protected final ArrayList<String> hndlFileSave_GUI(){		return uiMgr.hndlFileSave_GUI(winInitVals.winName);	}//
-	
+		
 	//////////////////////
 	//camera stuff
 	
@@ -1653,18 +1592,79 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public abstract void processTraj_Indiv(DrawnSimpleTraj drawnTraj);
 	
 	/**
+	 * 
+	 * @param file
+	 */
+	public final void loadFromFile(File file){
+		if (file == null) {
+			_dispWarnMsg("loadFromFile","Load was cancelled.");
+		    return;
+		} 
+		String[] res = fileIO.loadFileIntoStringAra(file.getAbsolutePath(), "Variable File Load successful", "Variable File Load Failed.");
+		int[] stIdx = {0};//start index for a particular window - make an array so it can be passed by ref and changed by windows
+		hndlFileLoad(file, res,stIdx);
+	}//loadFromFile
+	
+	/**
 	 * file io used from selectOutput/selectInput - take loaded params and process
 	 * @param file
 	 * @param vals
 	 * @param stIdx
 	 */
 	public abstract void hndlFileLoad(File file, String[] vals, int[] stIdx);
+	
+	/**
+	 * manage loading pre-saved UI component values, if useful for this window's load/save (if so call from child window's implementation
+	 * @param vals
+	 * @param stIdx
+	 */
+	protected final void hndlFileLoad_GUI(String[] vals, int[] stIdx) {		uiMgr.hndlFileLoad_GUI(winInitVals.winName, vals, stIdx);	}//hndlFileLoad_GUI
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public final String[] getSaveFileDirName() {
+		String[] vals = getSaveFileDirNamesPriv();
+		if((null==vals) || (vals.length != 2)) {return new String[0];}
+		String[] res = new String[] {
+			ssPathBase + vals[0] + File.separatorChar, vals[1]	
+		};
+		return res;
+	}	
+	/**
+	 * return relevant name information for files and directories to be used to build screenshots/saved files	
+	 * @return
+	 */
+	protected abstract String[] getSaveFileDirNamesPriv();	
+	/**
+	 * 
+	 * @param file
+	 */
+	public final void saveToFile(File file){
+		if (file == null) {
+			_dispWarnMsg("saveToFile","Save was cancelled.");
+		    return;
+		} 
+		ArrayList<String> res = new ArrayList<String>();
+
+		res.addAll(hndlFileSave(file));	
+
+		fileIO.saveStrings(file.getAbsolutePath(), res);  
+	}//saveToFile	
+	
 	/**
 	 * accumulate array of params to save
 	 * @param file
 	 * @return
 	 */
 	public abstract ArrayList<String> hndlFileSave(File file);	
+	
+	/**
+	 * manage saving this window's UI component values.  if needed call from child window's implementation
+	 * @return
+	 */
+	protected final ArrayList<String> hndlFileSave_GUI(){		return uiMgr.hndlFileSave_GUI(winInitVals.winName);	}//
 	
 	protected void _dispMessage(String funcName, String message, MsgCodes useCode) {		msgObj.dispMessage(className, funcName, message, useCode);}
 	
