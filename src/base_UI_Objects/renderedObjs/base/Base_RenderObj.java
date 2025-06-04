@@ -1,14 +1,14 @@
 package base_UI_Objects.renderedObjs.base;
 
-import base_Render_Interface.IRenderInterface;
-import base_UI_Objects.renderer.ProcessingRenderer;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import processing.core.PShape;
+import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.renderer.ProcessingRenderer;
 import processing.core.PConstants;
-import processing.core.PMatrix3D;
 import processing.core.PImage;
+import processing.core.PMatrix3D;
+import processing.core.PShape;
 
 /**
  * Base class describing a rendered mesh object

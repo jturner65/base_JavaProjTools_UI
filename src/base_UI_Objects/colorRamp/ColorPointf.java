@@ -1,7 +1,7 @@
 package base_UI_Objects.colorRamp;
 
-import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IRenderInterface;
 
 public class ColorPointf extends myPointf {

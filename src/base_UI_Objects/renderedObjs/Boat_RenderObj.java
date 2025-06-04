@@ -1,16 +1,16 @@
 package base_UI_Objects.renderedObjs;
 
-import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
+import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
 import base_UI_Objects.renderer.ProcessingRenderer;
 import processing.core.PConstants;
-import processing.core.PShape;
 import processing.core.PImage;
+import processing.core.PShape;
 
 /**
  * build a registered pre-rendered instantiatable object for each objRep - speeds up display by orders of magnitude

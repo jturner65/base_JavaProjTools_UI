@@ -2,11 +2,11 @@ package base_UI_Objects.windowUI.drawnTrajectories.offsets.base;
 
 import java.util.ArrayList;
 
-import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Render_Interface.IRenderInterface;
 
 /**
  * class to hold functionality to calculate offset "sidewalks"   
