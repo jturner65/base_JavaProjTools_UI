@@ -1,6 +1,5 @@
 package base_UI_Objects.windowUI.base;
 
-import java.util.ArrayList;
 import java.util.TreeMap;
 
 import base_Math_Objects.vectorObjs.doubles.myVector;
@@ -96,7 +95,7 @@ public interface IUIManagerOwner {
 	 * @param tmpBtnNamesArray ArrayList of Object arrays to be built containing all button definitions. 
 	 * @return count of -all- booleans to be managed by privFlags
 	 */
-	public int initAllOwnerUIButtons(ArrayList<Object[]> tmpBtnNamesArray);
+	public int initAllOwnerUIButtons(TreeMap<Integer,Object[]> tmpBtnNamesArray);
 	
 	/**
 	 * set initial values for private flags for instancing window - set before initMe is called

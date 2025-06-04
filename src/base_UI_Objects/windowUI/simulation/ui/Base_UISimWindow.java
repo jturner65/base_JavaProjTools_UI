@@ -1,6 +1,5 @@
 package base_UI_Objects.windowUI.simulation.ui;
 
-import java.util.ArrayList;
 import java.util.TreeMap;
 
 import base_Render_Interface.IRenderInterface;
@@ -61,20 +60,20 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	
 
 	@Override
-	protected final int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
+	protected final int initAllUIButtons(TreeMap<Integer, Object[]> tmpBtnNamesArray) {
 		// add an entry for each button, in the order they are wished to be displayed
-		// true tag, false tag, btn IDX 
-		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
-		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
-		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Drawing Vis", "Render Visualization"},  drawVisIDX));  
-		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Experimenting", "Run Experiment"}, conductExpIDX));  
-		tmpBtnNamesArray.add(uiMgr.uiObjInitAra_Btn(new String[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
-
-		
+		// true tag, false tag, btn IDX 		
+		int idx= 0;
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Drawing Vis", "Render Visualization"},  drawVisIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Experimenting", "Run Experiment"}, conductExpIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
+	
 		return initSimPrivBtns(tmpBtnNamesArray);
 	}
 		
-	protected abstract int initSimPrivBtns(ArrayList<Object[]> tmpBtnNamesArray);	
+	protected abstract int initSimPrivBtns(TreeMap<Integer, Object[]> tmpBtnNamesArray);	
 
 	/**
 	 * Get sweep experiment name for buttons

@@ -138,7 +138,7 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	@Override
 	//initialize all private-flag based UI buttons here - called by base class
-	protected final int initAllUIButtons(ArrayList<Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
+	protected final int initAllUIButtons(TreeMap<Integer, Object[]> tmpBtnLabelsArray){return numPrivFlags;}//
 	
 	
 	//window UI object not used for sidebar menu

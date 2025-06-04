@@ -847,7 +847,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return count of -all- booleans to be managed by privFlags
 	 */
 	@Override
-	public int initAllOwnerUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {	return initAllUIButtons(tmpBtnNamesArray);}
+	public int initAllOwnerUIButtons(TreeMap<Integer, Object[]> tmpBtnNamesArray) {	return initAllUIButtons(tmpBtnNamesArray);}
 	/**
 	 * Build button descriptive arrays : each object array holds true label, false label, and idx of button in owning child class
 	 * this must return count of -all- booleans managed by privFlags, not just those that are interactive buttons (some may be 
@@ -855,7 +855,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @param tmpBtnNamesArray ArrayList of Object arrays to be built containing all button definitions. 
 	 * @return count of -all- booleans to be managed by privFlags
 	 */
-	protected abstract int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray);	
+	protected abstract int initAllUIButtons(TreeMap<Integer, Object[]> tmpBtnNamesArray);	
 	
 	/**
 	 * draw box to hide window

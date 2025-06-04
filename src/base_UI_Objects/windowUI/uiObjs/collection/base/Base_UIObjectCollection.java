@@ -3,6 +3,7 @@ package base_UI_Objects.windowUI.uiObjs.collection.base;
 //import java.util.ArrayList;
 
 import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.windowUI.UIObjectManager;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.renderer.MultiLineGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.SingleLineGUIObjRenderer;
@@ -10,7 +11,7 @@ import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 
 /**
  * Implementations of this class will own 1 or more UI objects to be displayed
- * together
+ * together as a group/collection
  */
 public abstract class Base_UIObjectCollection {
 	/**
@@ -28,6 +29,11 @@ public abstract class Base_UIObjectCollection {
 	 */
 	protected Base_GUIObj[] guiObjsAra;
 	
+	/**
+	 * Owning UI Object manager
+	 */
+	protected UIObjectManager uiObjMgr;
+	
 //	/**
 //	* array lists of idxs for label/read-only objects
 //	*/	
@@ -44,10 +50,14 @@ public abstract class Base_UIObjectCollection {
 //	* array lists of idxs for label/read-only objects
 //	*/	
 //	private ArrayList<Integer> guiLabelValIDXs;
+	
+	// Class name to use for any debugging messages
+	//private final String dispMsgClassName;
 
 	public Base_UIObjectCollection(IRenderInterface _ri, float[] _uiClkCoords) {
 		ri=_ri;
 		System.arraycopy(_uiClkCoords, 0, uiClkCoords, 0, uiClkCoords.length);
+		//dispMsgClassName = this.getClass().getSimpleName();
 		//initialize arrays to hold idxs of int and float items being created.
 //		guiButtonIDXs = new ArrayList<Integer>();
 //		guiFloatValIDXs = new ArrayList<Integer>();
