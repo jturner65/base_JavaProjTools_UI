@@ -84,18 +84,17 @@ public interface IUIManagerOwner {
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpListObjVals
+	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
+	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * 				the first element is true label
+	 * 				the second element is false label
 	 */
-	public void setupOwnerGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
+	public void setupOwnerGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer,Object[]> tmpBtnNamesArray);
 	
 	/**
-	 * Build button descriptive arrays : each object array holds true label, false label, and idx of button in owning child class
-	 * this must return count of -all- booleans managed by privFlags, not just those that are interactive buttons (some may be 
-	 * hidden to manage booleans that manage or record state)
-	 * @param tmpBtnNamesArray ArrayList of Object arrays to be built containing all button definitions. 
-	 * @return count of -all- booleans to be managed by privFlags
+	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
 	 */
-	public int initAllOwnerUIButtons(TreeMap<Integer,Object[]> tmpBtnNamesArray);
+	public int getTotalNumOfPrivBools();
 	
 	/**
 	 * set initial values for private flags for instancing window - set before initMe is called

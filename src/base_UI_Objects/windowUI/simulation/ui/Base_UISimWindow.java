@@ -58,23 +58,6 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		super(_p, _AppMgr, _winIdx);
 	}
 	
-
-	@Override
-	protected final int initAllUIButtons(TreeMap<Integer, Object[]> tmpBtnNamesArray) {
-		// add an entry for each button, in the order they are wished to be displayed
-		// true tag, false tag, btn IDX 		
-		int idx= 0;
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Drawing Vis", "Render Visualization"},  drawVisIDX));  
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Experimenting", "Run Experiment"}, conductExpIDX));  
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
-	
-		return initSimPrivBtns(tmpBtnNamesArray);
-	}
-		
-	protected abstract int initSimPrivBtns(TreeMap<Integer, Object[]> tmpBtnNamesArray);	
-
 	/**
 	 * Get sweep experiment name for buttons
 	 * @return
@@ -183,10 +166,29 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 */
 	protected abstract boolean handleSimPrivFlags_Indiv(int idx, boolean val, boolean oldVal);	
 	
-
+	/**
+	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 *           the first element double array of min/max/mod values                                                   
+	 *           the 2nd element is starting value                                                                      
+	 *           the 3rd elem is label for object                                                                       
+	 *           the 4th element is object type (GUIObj_Type enum)
+	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
+	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * 				the first element is true label
+	 * 				the second element is false label
+	 * 				the third element is integer flag idx 
+	 */
 	@Override
-	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray,
-			TreeMap<Integer, String[]> tmpListObjVals) {
+	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray,TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer, Object[]> tmpBtnNamesArray) {
 		String[] simLayoutToUseList = getSimLayoutToUseList();
 		tmpListObjVals.put(gIDX_LayoutToUse, simLayoutToUseList);	
 		
@@ -196,15 +198,40 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		tmpUIObjArray.put(gIDX_ExpLength, uiMgr.uiObjInitAra_Int(new double[]{1.0f, 1440, 1.0f}, 720.0, "Experiment Duration"));    
 		tmpUIObjArray.put(gIDX_NumExpTrials, uiMgr.uiObjInitAra_Int(new double[]{1.0f, 100, 1.0f}, 1.0, "# Experimental Trials"));  
 		
-		setupGUIObjsAras_Sim(tmpUIObjArray, tmpListObjVals);
+		//TODO use the same obj map as tmpUIObjArray
+		int idx=0;
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Drawing Vis", "Render Visualization"},  drawVisIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Experimenting", "Run Experiment"}, conductExpIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
+
+		setupGUIObjsAras_Sim(tmpUIObjArray, tmpListObjVals, tmpBtnNamesArray);
 	}//setupGUIObjsAras
 	
 	/**
 	 * Set up gui objects specifically for sim windows
-	 * @param tmpUIObjArray
-	 * @param tmpListObjVals
+	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 *           the first element double array of min/max/mod values                                                   
+	 *           the 2nd element is starting value                                                                      
+	 *           the 3rd elem is label for object                                                                       
+	 *           the 4th element is object type (GUIObj_Type enum)
+	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
+	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * 				the first element is true label
+	 * 				the second element is false label
+	 * 				the third element is integer flag idx 
 	 */
-	protected abstract void setupGUIObjsAras_Sim(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
+	protected abstract void setupGUIObjsAras_Sim(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer,Object[]> tmpBtnNamesArray);
+		
 	/**
 	 * Return the list to use for sim layout
 	 * @return

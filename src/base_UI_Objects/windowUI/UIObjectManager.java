@@ -185,29 +185,31 @@ public class UIObjectManager {
 		System.arraycopy(_uiClickCoords, 0, _uiClkCoords, 0, _uiClkCoords.length);
 		
 		//////////////////////////////
-		//build ui objects
+		//build ui objects and buttons
 		// list box values - keyed by list obj IDX, value is string array of list obj values
 		TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
 		// ui object values - keyed by object idx, value is object array of describing values
 		TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
+		// ui button values : map keyed by objId of object arrays : {true label, false label, index in application}
+		TreeMap<Integer, Object[]> tmpBtnNamesArray = new TreeMap<Integer, Object[]>();
 		//  set up all gui objects for this window
 		//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
-		owner.setupOwnerGUIObjsAras(tmpUIObjArray,tmpListObjVals);			
+		// also set up all window-specific boolean buttons for this window
+		owner.setupOwnerGUIObjsAras(tmpUIObjArray,tmpListObjVals, tmpBtnNamesArray);			
+		//TODO merge this to build gui objs and priv buttons together (i.e. privButtons are gui objects)
 		//initialized for sidebar menu as well as for display windows
 		_guiObjsAra = new Base_GUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
 		//build ui objects
 		_uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, _uiClkCoords);		
-		
-		//////////////////////////////
-		//build UI boolean buttons - necessary for menu and not menu
-		TreeMap<Integer, Object[]> tmpBtnNamesArray = new TreeMap<Integer, Object[]>();
-		//  set up all window-specific boolean buttons for this window
-		// this must return -all- priv buttons, not just those that are interactive (some may be hidden to manage functional booleans)
-		int _numPrivFlags = owner.initAllOwnerUIButtons(tmpBtnNamesArray);
 		//initialize all private buttons based on values put in arraylist
 		_uiClkCoords[3] = _buildAllPrivButtons(tmpBtnNamesArray, _uiClkCoords);
-		// init specific sim flags
+		
+		// Get total number of booleans (not just buttons) for application
+		int _numPrivFlags = owner.getTotalNumOfPrivBools();
+		
+		// init specific application state flags and UI booleans
 		_privFlags = new WinAppPrivStateFlags(owner,_numPrivFlags);
+		
 		// set instance-specific initial flags
 		int[] trueFlagIDXs = owner.getOwnerFlagIDXsToInitToTrue();
 		//set local value for flags that should be initialized to true (without passing to instancing class handler yet)		

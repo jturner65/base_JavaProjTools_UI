@@ -72,22 +72,12 @@ public class UI_TestWindow3D extends Base_DispWindow {
 		endLoc = new myPointf();
 		setEndAndScalePoints();
 	}
-	
 
+	/**
+	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
+	 */
 	@Override
-	public int initAllUIButtons(TreeMap<Integer, Object[]> tmpBtnNamesArray) {
-		tmpBtnNamesArray.put(Base_BoolFlags.debugIDX, uiMgr.uiObjInitAra_Btn(new String[] {"Debugging", "Enable Debug"}, Base_BoolFlags.debugIDX));
-		tmpBtnNamesArray.put(button1_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 1 On", "Button 1 Off"}, button1_IDX));
-		tmpBtnNamesArray.put(button2_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 2 On", "Button 2 Off"}, button2_IDX));
-		tmpBtnNamesArray.put(button3_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 3 On", "Button 3 Off"}, button3_IDX));
-		tmpBtnNamesArray.put(button4_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 4 On", "Button 4 Off"}, button4_IDX));
-		tmpBtnNamesArray.put(button5_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 5 On", "Button 5 Off"}, button5_IDX));
-		tmpBtnNamesArray.put(button6_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 6 On", "Button 6 Off"}, button6_IDX));
-		tmpBtnNamesArray.put(button7_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 7 On", "Button 7 Off"}, button7_IDX));
-		tmpBtnNamesArray.put(button8_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 8 On", "Button 8 Off"}, button8_IDX));
-		tmpBtnNamesArray.put(button9_IDX, uiMgr.uiObjInitAra_Btn(new String[] {"Button 9 On", "Button 9 Off"}, button9_IDX));
-		return numBasePrivFlags;
-	}
+	public int getTotalNumOfPrivBools() {return numBasePrivFlags;}
 
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
@@ -97,13 +87,20 @@ public class UI_TestWindow3D extends Base_DispWindow {
 	 *           the 3rd elem is label for object                                                                       
 	 *           the 4th element is object type (GUIObj_Type enum)
 	 *           the 5th element is boolean array of : (unspecified values default to false)
-	 *           	{value is sent to owning window, 
-	 *           	value is sent on any modifications (while being modified, not just on release), 
-	 *           	changes to value must be explicitly sent to consumer (are not automatically sent)}    
-	 * @param tmpListObjVals
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
+	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * 				the first element is true label
+	 * 				the second element is false label
 	 */
 	@Override
-	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals){	
+	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer, Object[]> tmpBtnNamesArray){	
 		//build list select box values
 		//keyed by object idx (uiXXXIDX), entries are lists of values to use for list select ui objects
 		
@@ -114,6 +111,19 @@ public class UI_TestWindow3D extends Base_DispWindow {
 		tmpUIObjArray.put(gIDX_ListVal1, uiMgr.uiObjInitAra_List(new double[]{0,listOfNames.length-1,1.1f}, 0.0, "List of Names"));   				//uiTrainDataFrmtIDX                                                                        
 		tmpUIObjArray.put(gIDX_IntVal2, uiMgr.uiObjInitAra_Int(new double[]{-50,50,1.0f}, 0.0, "Int Value 2"));   				//uiTrainDataFrmtIDX                                                                        
 		tmpUIObjArray.put(gIDX_IntVal3, uiMgr.uiObjInitAra_Int(new double[]{0,1000,1.0f}, 0.0, "Int Value 3"));   				//uiTrainDataFrmtIDX
+		
+		int idx=0;
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Debugging", "Enable Debug"}, Base_BoolFlags.debugIDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 1 On", "Button 1 Off"}, button1_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 2 On", "Button 2 Off"}, button2_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 3 On", "Button 3 Off"}, button3_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 4 On", "Button 4 Off"}, button4_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 5 On", "Button 5 Off"}, button5_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 6 On", "Button 6 Off"}, button6_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 7 On", "Button 7 Off"}, button7_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 8 On", "Button 8 Off"}, button8_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 9 On", "Button 9 Off"}, button9_IDX));
+	
 	}	
 	
 
