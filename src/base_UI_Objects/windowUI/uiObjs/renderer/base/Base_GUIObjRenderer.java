@@ -65,6 +65,8 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	private final String rendererType;
 	
+	protected final float yOffset;
+	
 	/**
 	 * 
 	 * @param _ri render interface
@@ -98,6 +100,7 @@ public abstract class Base_GUIObjRenderer {
 		fillClr = _fillClr;
 		textClr = _textClr;
 		//build prefix ornament to display
+		yOffset = 0.75f * (float) _off[1];
 		if (buildPrefix && (_off != null)) {
 			int[] prefixClr = (matchLabelColor ? textClr : MyMathUtils.randomIntClrAra());
 			System.arraycopy(prefixClr, 0, hlStrkClr, 0, hlStrkClr.length);
@@ -194,7 +197,7 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	public final void draw() {
 		ri.pushMatState();
-			ri.translate(start.x,start.y,0);
+			ri.translate(start.x,start.y+yOffset,0);
 			_ornament.drawPrefixObj(ri);
 			//Text is colored by fill
 			ri.setFill(textClr,textClr[3]);

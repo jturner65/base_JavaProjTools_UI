@@ -1,22 +1,23 @@
 package base_UI_Objects.windowUI.base;
 
+import base_UI_Objects.windowUI.UIObjectManager;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 
 public class WinAppPrivStateFlags extends Base_BoolFlags {
 	/**
-	 * Owning display window
+	 * Manager of all UI objects in this window
 	 */
-	private final IUIManagerOwner owner;
+	protected UIObjectManager uiMgr;
 	
 	
-	public WinAppPrivStateFlags(IUIManagerOwner _owner, int _numFlags) {
+	public WinAppPrivStateFlags(UIObjectManager _uiMgr, int _numFlags) {
 		super(_numFlags);
-		owner = _owner;
+		uiMgr = _uiMgr;
 	}
 	
 	public WinAppPrivStateFlags(WinAppPrivStateFlags _otr) {
 		super(_otr);
-		owner = _otr.owner;
+		uiMgr = _otr.uiMgr;
 	}
 	
 	/**
@@ -24,7 +25,7 @@ public class WinAppPrivStateFlags extends Base_BoolFlags {
 	 */
 	@Override
 	protected void handleSettingDebug(boolean val) {
-		owner.handlePrivFlagsDebugMode(val);
+		uiMgr.handlePrivFlagsDebugMode(val);
 	}
 
 	/**
@@ -33,8 +34,8 @@ public class WinAppPrivStateFlags extends Base_BoolFlags {
 	@Override
 	protected void handleFlagSet_Indiv(int idx, boolean val, boolean oldVal) {
 		//update consumers of UI struct
-		owner.checkSetBoolAndUpdate(idx, val);
-		owner.handleOwnerPrivFlags(idx, val, oldVal);
+		uiMgr.checkSetBoolAndUpdate(idx, val);
+		uiMgr.handlePrivFlags(idx, val, oldVal);
 	}
 
 }//class WinAppPrivStateFlags

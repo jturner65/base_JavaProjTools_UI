@@ -11,6 +11,7 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
 /**
  * displays sidebar menu of interaction and functionality
@@ -120,7 +121,7 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
-	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 * @param tmpUIObjArray : map of GUIObj_Params, keyed by UI object idx, with values describing the UI object                    
 	 *           the first element double array of min/max/mod values                                                   
 	 *           the 2nd element is starting value                                                                      
 	 *           the 3rd elem is label for object                                                                       
@@ -133,13 +134,12 @@ public class SidebarMenu extends Base_DispWindow{
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
-	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpBtnNamesArray : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
 	 * 				the first element is true label
 	 * 				the second element is false label
 	 */
 	@Override
-	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer, Object[]> tmpBtnLabelsArray){}//setupGUIObjsAras
+	protected final void setupGUIObjsAras(TreeMap<Integer, GUIObj_Params> tmpUIObjArray, TreeMap<Integer, GUIObj_Params> tmpBtnNamesArray){}//setupGUIObjsAras
 	public void setAllFuncBtnLabels(int _funRowIDX, String[] BtnLabels) {btnConfig.setAllFuncBtnLabels(_funRowIDX, BtnLabels);}
 	
 	/**

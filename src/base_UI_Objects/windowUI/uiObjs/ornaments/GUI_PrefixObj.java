@@ -27,7 +27,7 @@ public class GUI_PrefixObj extends Base_GUIPrefixObj{
 	/**
 	 * Where to start drawing this UI object
 	 */
-	private float[] initDrawTrans;
+	private float initDrawTransX;
 	
 	public GUI_PrefixObj(double[] _off, int[] _fillColor) {
 		super();
@@ -37,7 +37,8 @@ public class GUI_PrefixObj extends Base_GUIPrefixObj{
 		double xOff = _off[0];
 		double yOff = _off[1];		
 		//relative location of center based on owning ui object's location
-		initDrawTrans = new float[]{(float)(xOff), (float)(.75f* yOff)};
+		// This translation has to be retained so that actual object can be shifted appropriately
+		initDrawTransX = (float)(xOff);
 		//translation to get to upper corner
 		boxDrawTrans = new float[]{(float)(-xOff * .5f), (float)(-yOff*.25f)};
 	}
@@ -45,7 +46,7 @@ public class GUI_PrefixObj extends Base_GUIPrefixObj{
 	@Override
 	public void drawPrefixObj(IRenderInterface ri) {
 		//outside push/pop because translating beyond the initial for both rectangle and UI object
-		ri.translate(initDrawTrans[0],initDrawTrans[1],0);
+		ri.translate(initDrawTransX,0,0);
 		ri.pushMatState();
 			ri.noStroke();
 			ri.setFill(bxclr,bxclr[3]);

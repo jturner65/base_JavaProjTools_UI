@@ -1,7 +1,7 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
-import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
 public class MenuGUIObj_Float extends Base_GUIObj {
 	/**
@@ -14,8 +14,9 @@ public class MenuGUIObj_Float extends Base_GUIObj {
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public MenuGUIObj_Float(int _objID, String _name, double[] _minMaxMod, double _initVal, boolean[] _flags) {
-		super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.FloatVal, _flags);	
+	public MenuGUIObj_Float(int _objID, GUIObj_Params objParams) {
+		super(_objID, objParams);
+		//super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.FloatVal, _flags);	
 	}
 	
 	//Float object has no manipulations during modification

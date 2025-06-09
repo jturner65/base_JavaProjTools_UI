@@ -2,6 +2,7 @@ package base_UI_Objects.windowUI;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.TreeMap;
 
 import base_Math_Objects.MyMathUtils;
@@ -12,15 +13,20 @@ import base_UI_Objects.windowUI.base.IUIManagerOwner;
 import base_UI_Objects.windowUI.base.WinAppPrivStateFlags;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Button;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_DispValue;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Float;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Int;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_List;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Switch;
+import base_UI_Objects.windowUI.uiObjs.renderer.ButtonGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.MultiLineGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.SingleLineGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 import base_Utils_Objects.io.messaging.MessageObject;
+import base_Utils_Objects.tools.flags.Base_BoolFlags;
 
 /**
  * This class will manage all aspects of UI object creation, placement, rendering and interaction.
@@ -52,20 +58,26 @@ public class UIObjectManager {
 	 */
 	private float[] _uiClkCoords;
 	/**
-	* array lists of idxs for toggle-able multi-state objects
+	* array list of idxs for multi-state objects not backed by a flags construct
 	*/	
 	private ArrayList<Integer> _guiButtonIDXs;
+	
 	/**
-	 * array lists of idxs for float-based UI objects.
+	 * Map of 2-state switch toggle objects connected to privFlags structures, keyed by privFlags key;
+	 */
+	private TreeMap<Integer,MenuGUIObj_Switch> _guiSwitchIDXMap;
+	
+	/**
+	 * array list of idxs for float-based UI objects.
 	 */
 	private ArrayList<Integer> _guiFloatValIDXs;
 	
 	/**
-	 * array lists of idxs for integer/list-based objects
+	 * array list of idxs for integer/list-based objects
 	 */
 	private ArrayList<Integer> _guiIntValIDXs;
 	/**
-	 * array lists of idxs for label/read-only objects
+	 * array list of idxs for label/read-only objects
 	 */	
 	private ArrayList<Integer> _guiLabelValIDXs;
 	/**
@@ -110,7 +122,22 @@ public class UIObjectManager {
 	 *  idx 1: if true, build prefix ornament                                                      
 	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 */
-	private static final boolean[] dfltMultiLineUIFmtVals =  new boolean[] {true, true, false};	
+	private static final boolean[] dfltMultiLineUIFmtVals =  new boolean[] {true, true, false};
+	/**
+	 * Boolean array of default UI format values for buttons, if formatting is not otherwise specified : 
+	 *  idx 0: whether multi-line(stacked) or not                                                  
+	 *  idx 1: if true, build prefix ornament                                                      
+	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 */
+	private static final boolean[] dfltUIButtonFmtVals =  new boolean[] {false, false, false};
+	/**
+	 * Boolean array of default button type format values, if not otherwise specified 
+	 *  idx 0: Whether this button should stay enabled until next draw frame                                                
+	 *  idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
+	 */
+	private static final boolean[] dfltUIButtonTypeVals =  new boolean[] {false, false};
+	
+	
 	////////////////////////
 	/// owner's private state/functionality flags, (displayed in grid of 2-per-column buttons)
 	
@@ -119,37 +146,19 @@ public class UIObjectManager {
 	 */	
 	private WinAppPrivStateFlags _privFlags;		
 	/**
-	 * Button labels for true or false value buttons
-	 */
-	private String[][] _privFlagButtonLabels; //needs to be in order of flags
-
-	/**
-	 * Colors for boolean buttons set to True or false based on child-class window specific values
-	 */
-	private int[][][] _privFlagButtonColors;
-	/**
 	 * Non random button color for true (idx 1) and false (idx 0);
 	 */
 	private final int[][] btnColors = new int[][] {new int[]{255,215,215,255}, new int[]{220,255,220,255}};
 	
-	/**
-	 * False button color to use if button labels are the same and using random colors
-	 */
-	private static final int[] baseBtnFalseClr = new int[]{180,180,180, 255};
-	
-	/**
-	 * only modifiable idx's will be shown as buttons - this needs to be in order of flag names
-	 */
-	private int[] _privModFlgIdxs;
-	/**
-	 * Click dimensions for each button
-	 */
-	private float[][] _privFlagBtns;	
+//	/**
+//	 * False button color to use if button labels are the same and using random colors
+//	 */
+//	private static final int[] baseBtnFalseClr = new int[]{180,180,180, 255};
 	/**
 	 * array of priv buttons to be cleared next frame - 
 	 * should always be empty except when buttons need to be cleared
 	 */
-	private ArrayList<Integer> _privBtnsToClear;
+	private ArrayList<Integer> _privFlagsToClear;
 	
 	// Class name to use for any debugging messages
 	private final String dispMsgClassName;
@@ -169,13 +178,13 @@ public class UIObjectManager {
 	 * UI object creation	
 	 */
 	public void initAllGUIObjects() {
-		_privBtnsToClear = new ArrayList<Integer>();
+		_privFlagsToClear = new ArrayList<Integer>();
 		//initialize arrays to hold idxs of int and float items being created.
 		_guiButtonIDXs = new ArrayList<Integer>();
+		_guiSwitchIDXMap = new TreeMap<Integer,MenuGUIObj_Switch>();
 		_guiFloatValIDXs = new ArrayList<Integer>();
 		_guiIntValIDXs = new ArrayList<Integer>();
 		_guiLabelValIDXs = new ArrayList<Integer>();
-		_guiObjsAra = new Base_GUIObj[0];
 		//////////////
 		// build all UI objects using specifications from instancing window
 		owner.initOwnerStateDispFlags();
@@ -186,29 +195,30 @@ public class UIObjectManager {
 		
 		//////////////////////////////
 		//build ui objects and buttons
-		// list box values - keyed by list obj IDX, value is string array of list obj values
-		TreeMap<Integer, String[]> tmpListObjVals = new TreeMap<Integer, String[]>();
 		// ui object values - keyed by object idx, value is object array of describing values
-		TreeMap<Integer, Object[]> tmpUIObjArray = new TreeMap<Integer, Object[]>();
+		TreeMap<Integer, GUIObj_Params> tmpUIObjMap = new TreeMap<Integer, GUIObj_Params>();
 		// ui button values : map keyed by objId of object arrays : {true label, false label, index in application}
-		TreeMap<Integer, Object[]> tmpBtnNamesArray = new TreeMap<Integer, Object[]>();
+		TreeMap<Integer, GUIObj_Params> tmpBtnNamesArray = new TreeMap<Integer, GUIObj_Params>();
 		//  set up all gui objects for this window
 		//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
 		// also set up all window-specific boolean buttons for this window
-		owner.setupOwnerGUIObjsAras(tmpUIObjArray,tmpListObjVals, tmpBtnNamesArray);			
+		owner.setupOwnerGUIObjsAras(tmpUIObjMap, tmpBtnNamesArray);
+		// TODO : eventually get rid of this stuff
+		for (Map.Entry<Integer, GUIObj_Params> entry : tmpBtnNamesArray.entrySet()) {
+			tmpUIObjMap.put(entry.getKey(),new GUIObj_Params(entry.getValue()));
+		}
+		
 		//TODO merge this to build gui objs and priv buttons together (i.e. privButtons are gui objects)
-		//initialized for sidebar menu as well as for display windows
-		_guiObjsAra = new Base_GUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
 		//build ui objects
-		_uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, _uiClkCoords);		
-		//initialize all private buttons based on values put in arraylist
-		_uiClkCoords[3] = _buildAllPrivButtons(tmpBtnNamesArray, _uiClkCoords);
+		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size()]; // list of modifiable gui objects
+		// Build UI Objects
+		_uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjMap, _uiClkCoords);
 		
 		// Get total number of booleans (not just buttons) for application
 		int _numPrivFlags = owner.getTotalNumOfPrivBools();
 		
 		// init specific application state flags and UI booleans
-		_privFlags = new WinAppPrivStateFlags(owner,_numPrivFlags);
+		_privFlags = new WinAppPrivStateFlags(this,_numPrivFlags);
 		
 		// set instance-specific initial flags
 		int[] trueFlagIDXs = owner.getOwnerFlagIDXsToInitToTrue();
@@ -227,28 +237,28 @@ public class UIObjectManager {
 	public final void initUIClickCoords(float[] cpy){System.arraycopy(cpy, 0, _uiClkCoords, 0, _uiClkCoords.length);}
 	
 	/**
-	 * Build the object array that describes a label object
+	 * Build the GUIObj_Params that describes a label object
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_Label(double initVal, String name) {
+	public final GUIObj_Params uiObjInitAra_Label(double initVal, String name) {
 		return uiObjInitAra_Label(initVal, name, dfltUIFmtVals);
 	}		
 	/**
-	 * Build the object array that describes a label object that is multiLine
+	 * Build the GUIObj_Params that describes a label object that is multiLine
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * NOTE : this method uses the default UI format boolean values for multi-line labels. Label objects' behavior is restricted
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_LabelMultiLine(double initVal, String name) {
+	public final GUIObj_Params uiObjInitAra_LabelMultiLine(double initVal, String name) {
 		return uiObjInitAra_Label(initVal, name, dfltMultiLineUIFmtVals);
 	}		
 
 	/**
-	 * Build the object array that describes a integer object
+	 * Build the GUIObj_Params that describes a integer object
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
@@ -257,35 +267,35 @@ public class UIObjectManager {
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_Label(double initVal, String name, boolean[] boolFmtVals) {
-		return new Object[] {new double[0], initVal, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, boolFmtVals};	
+	public final GUIObj_Params uiObjInitAra_Label(double initVal, String name, boolean[] boolFmtVals) {
+		return new GUIObj_Params(name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, boolFmtVals);
 	}
 	
 	/**
-	 * Build the object array that describes a integer object
+	 * Build the GUIObj_Params that describes a integer object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * NOTE : this method uses the default behavior and UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name) {
+	public final GUIObj_Params uiObjInitAra_Int(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Int(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}	
 	/**
-	 * Build the object array that describes a integer object that is multi-line
+	 * Build the GUIObj_Params that describes a integer object that is multi-line
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_IntMultiLine(double[] minMaxMod, double initVal, String name) {
+	public final GUIObj_Params uiObjInitAra_IntMultiLine(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Int(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
 	}	
 	
 	/**
-	 * Build the object array that describes a integer object
+	 * Build the GUIObj_Params that describes a integer object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
@@ -296,12 +306,12 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+	public final GUIObj_Params uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
 		return uiObjInitAra_Int(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
 	}	
 	
 	/**
-	 * Build the object array that describes a integer object
+	 * Build the GUIObj_Params that describes a integer object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
@@ -315,38 +325,41 @@ public class UIObjectManager {
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
-		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.IntVal,boolVals, boolFmtVals};	
+	public final GUIObj_Params uiObjInitAra_Int(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
+		GUIObj_Params obj = new GUIObj_Params(name, GUIObj_Type.IntVal, boolVals, boolFmtVals);
+		obj.setMinMaxMod(minMaxMod);
+		obj.initVal = initVal;
+		return obj;
 	}
 	
 	/**
-	 * Build the object array that describes a float object that is multi-line
+	 * Build the GUIObj_Params that describes a float object that is multi-line
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_FloatMultiLine(double[] minMaxMod, double initVal, String name) {
+	public final GUIObj_Params uiObjInitAra_FloatMultiLine(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Float(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
 	}
 	
 	
 	/**
-	 * Build the object array that describes a float object
+	 * Build the GUIObj_Params that describes a float object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * NOTE : this method uses the default behavior and UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name) {
+	public final GUIObj_Params uiObjInitAra_Float(double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Float(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}
 
 	
 	/**
-	 * Build the object array that describes a float object
+	 * Build the GUIObj_Params that describes a float object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
@@ -357,12 +370,12 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+	public final GUIObj_Params uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
 		return uiObjInitAra_Float(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
 	}
 	
 	/**
-	 * Build the object array that describes a float object
+	 * Build the GUIObj_Params that describes a float object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
@@ -376,36 +389,66 @@ public class UIObjectManager {
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
-		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.FloatVal,boolVals, boolFmtVals};	
+	public final GUIObj_Params uiObjInitAra_Float(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
+		GUIObj_Params obj = new GUIObj_Params(name, GUIObj_Type.FloatVal, boolVals, boolFmtVals);
+		obj.setMinMaxMod(minMaxMod);
+		obj.initVal = initVal;
+		return obj;
 	}
 
 	/**
-	 * Build the object array that describes a list object
-	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * Build the GUIObj_Params that describes a list object
 	 * @param initVal initial value for the object
 	 * @param name name of the object
+	 * @param list of elements this object manages
 	 * NOTE : this method uses the default behavior and UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name) {
-		return uiObjInitAra_List(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
+	public final GUIObj_Params uiObjInitAra_List(double initVal, String name, String[] listElems) {
+		return uiObjInitAra_List(new double[] {0, listElems.length-1, 1}, initVal, name, listElems);
 	}
 
 	/**
-	 * Build the object array that describes a list object that is multi-line
-	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * Build the GUIObj_Params that describes a list object that is multi-line
 	 * @param initVal initial value for the object
 	 * @param name name of the object
+	 * @param list of elements this object manages
 	 * NOTE : this method uses the default behavior and UI format boolean values for multi-line list box
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_ListMultiLine(double[] minMaxMod, double initVal, String name) {
-		return uiObjInitAra_List(minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+	public final GUIObj_Params uiObjInitAra_ListMultiLine(double initVal, String name, String[] listElems) {
+		return uiObjInitAra_List(new double[] {0, listElems.length-1, 1}, initVal, name, listElems);
 	}
-		
+
+
 	/**
-	 * Build the object array that describes a list object
+	 * Build the GUIObj_Params that describes a list object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param list of elements this object manages
+	 * NOTE : this method uses the default behavior and UI format boolean values
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_List(double[] minMaxMod, double initVal, String name, String[] listElems) {
+		return uiObjInitAra_List(minMaxMod, initVal, name, listElems, dfltUIBehaviorVals, dfltUIFmtVals);
+	}
+
+	/**
+	 * Build the GUIObj_Params that describes a list object that is multi-line
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param list of elements this object manages
+	 * NOTE : this method uses the default behavior and UI format boolean values for multi-line list box
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_ListMultiLine(double[] minMaxMod, double initVal, String name, String[] listElems) {
+		return uiObjInitAra_List(minMaxMod, initVal, name, listElems, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+	}
+	
+	/**
+	 * Build the GUIObj_Params that describes a list object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
@@ -416,12 +459,12 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_List(minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
+	public final GUIObj_Params uiObjInitAra_List(double[] minMaxMod, double initVal, String name, String[] listElems, boolean[] boolVals) {
+		return uiObjInitAra_List(minMaxMod, initVal, name, listElems, boolVals, dfltUIFmtVals);
 	}	
 	
 	/**
-	 * Build the object array that describes a list object
+	 * Build the GUIObj_Params that describes a list object that is multi-line
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
@@ -432,121 +475,112 @@ public class UIObjectManager {
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	public final Object[] uiObjInitAra_List(double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
-		return new Object[] {minMaxMod, initVal, name, GUIObj_Type.ListVal,boolVals, boolFmtVals};	
+	public final GUIObj_Params uiObjInitAra_ListMultiLine(double[] minMaxMod, double initVal, String name, String[] listElems, boolean[] boolVals) {
+		return uiObjInitAra_List(minMaxMod, initVal, name, listElems, boolVals, dfltMultiLineUIFmtVals);
 	}	
 	
 	/**
-	 * Build the object array that describes a button object
-	 * @param labels the list of labels this button supports. The size of the list is the number of states the button will handle.
-	 * @param btnIdx the index of the button, for UI lookup
-	 * @return
-	 */
-	public final Object[] uiObjInitAra_Btn(String[] labels, int btnIdx) {
-		return new Object[] {labels, btnIdx};
-	}
-	
-	/**
-	 * build ui objects from maps, keyed by ui object idx, with value being data
-	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
-	 *           the first element double array of min/max/mod values                                                   
-	 *           the 2nd element is starting value                                                                      
-	 *           the 3rd elem is label for object                                                                       
-	 *           the 4th element is object type (GUIObj_Type enum)
-	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 * Build the GUIObj_Params that describes a list object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 *           }    
-	 * @param tmpListObjVals : map of list object data
-	 * @param uiClkRect : 4-element array of upper corner x,y lower corner x,y coordinates for ui rectangular region
-	 * @return y coordinate for end of ui region
+	 * @return
 	 */
-	private float _buildGUIObjsForMenu(
-			TreeMap<Integer, Object[]> tmpUIObjArray, 
-			TreeMap<Integer, String[]> tmpListObjVals, 
-			float[] uiClkRect) {
-		int numGUIObjs = tmpUIObjArray.size();
-		if(numGUIObjs > 0) {			
-			double[][] guiMinMaxModVals = new double[numGUIObjs][3];			//min max mod values
-			double[] guiStVals = new double[numGUIObjs];						//starting values
-			String[] guiObjNames = new String[numGUIObjs];						//display labels for UI components	
-			//TODO Get guiColors from user input 
-			int[][][] guiColors = new int[numGUIObjs][2][4];		
-			
-			//idx 0 is value is sent to owning window, 
-			//idx 1 is value is sent on any modifications, 
-			//idx 2 is if true, then changes to value are not sent to UIDataUpdater structure automatically
-			boolean[][] guiBoolVals = new boolean[numGUIObjs][];				//array of UI flags for UI objects
-			// idx 0: whether multi-line(stacked) or not
-			// idx 1: if true, build prefix ornament
-			// idx 2: if true and prefix ornament is built, make it the same color as the text fill color. 
-			boolean[][] guiFormatBoolVals = new boolean[numGUIObjs][];		
-					
-			GUIObj_Type[] guiObjTypes = new GUIObj_Type[numGUIObjs];
-			float textHeightOffset = AppMgr.getTextHeightOffset();
-			//format for object and renderer
-			boolean[] formatAra;
-			for (int i = 0; i < numGUIObjs; ++i) {
-				Object[] obj = tmpUIObjArray.get(i);
-				if (obj.length == 6) {
-					// object has been built with extended format array specified				
-					formatAra = (boolean[])obj[5];
-				} else {
-					// Not specified, use default values - {false (single line), true (use prefix), false (don't use label color for prefix)}
-					formatAra = dfltUIFmtVals;
-				}
-				guiMinMaxModVals[i] = (double[]) obj[0];
-				guiStVals[i] = (Double)(obj[1]);
-				guiObjNames[i] = (String)obj[2];
-				guiObjTypes[i] = (GUIObj_Type)obj[3];
-				//TODO Get guiColors from user input/configuration
-				guiColors[i] = new int[][] {
-							{0,0,0,255}, //stroke
-							{0,0,0,255}, // fill
-						};
+	public final GUIObj_Params uiObjInitAra_List(double[] minMaxMod, double initVal, String name, String[] listElems, boolean[] boolVals, boolean[] boolFmtVals) {
+		GUIObj_Params obj = new GUIObj_Params(name, GUIObj_Type.ListVal, boolVals, boolFmtVals);
+		obj.setMinMaxMod(minMaxMod);
+		obj.initVal = initVal;
+		obj.setListVals(listElems);	
+		return obj;	
+	}	
+	/**
+	 * Build the GUIObj_Params that describes a button object - boolean button
+	 * @param name the name of this button
+	 * @param labels the list of labels that describe the valid states for this button
+	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(String name, String trueLabel, String falseLabel, int boolFlagIdx) {
+		return uiObjInitAra_Btn(name, new String[]{falseLabel, trueLabel}, 0, boolFlagIdx, dfltUIBehaviorVals, dfltUIButtonTypeVals);
+	}
+
+	/**
+	 * Build the GUIObj_Params that describes a button object
+	 * @param name the name of this button
+	 * @param labels the list of labels that describe the valid states for this button
+	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(String name, String[] labels, int boolFlagIdx) {
+		return uiObjInitAra_Btn(name, labels, 0, boolFlagIdx, dfltUIBehaviorVals, dfltUIButtonTypeVals);
+	}
 	
-				boolean[] tmpAra = (boolean[])obj[4];
-				guiBoolVals[i] = new boolean[(tmpAra.length < 5 ? 5 : tmpAra.length)];
-				int idx = 0;
-				for (boolean val : tmpAra) {
-					guiBoolVals[i][idx++] = val;
-				}
-				guiFormatBoolVals[i] = new boolean[(formatAra.length < 3 ? 3 : formatAra.length)];
-				idx = 0;
-				for (boolean val : formatAra) {
-					guiFormatBoolVals[i][idx++] = val;
-				}
-			}		
-			//build all objects using these values 
-			_buildAllObjects(guiObjNames, guiMinMaxModVals, 
-					guiStVals, guiBoolVals, guiFormatBoolVals, 
-					guiObjTypes, guiColors, tmpListObjVals, AppMgr.getUIOffset(), uiClkRect[2]);
-			//Objects are created by here and assigned renderers
-			// Assign hotspots for UI components
-			myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
-			boolean lastObjWasMultiLine = false;
-			for (int i = 0; i < _guiObjsAra.length; ++i) {
-				if (lastObjWasMultiLine && (!_guiObjsAra[i].isMultiLine())) {
-					newStPt.x = uiClkRect[0];
-					newStPt.y = _guiObjsAra[i-1].getEnd().y;
-				}
-				// Get next newStPt as we calculate the hotspot region for every UI object
-				newStPt = _guiObjsAra[i].reCalcHotSpot(newStPt, textHeightOffset, uiClkRect[0], uiClkRect[2]);		
-				lastObjWasMultiLine = _guiObjsAra[i].isMultiLine();
-			}
-			//specify the end of this block of UI clickable coordinates based on if last object was multi-line or not
-			uiClkRect[3] = lastObjWasMultiLine ?  _guiObjsAra[_guiObjsAra.length-1].getEnd().y : newStPt.y;							
-			uiClkRect[3] -= .5f*textHeightOffset;
+	/**
+	 * Build the GUIObj_Params that describes a button object
+	 * @param name the name of this button
+	 * @param labels the list of labels that describe the valid states for this button
+	 * @param initVal the initial state this button should have
+	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(String name, String[] labels, double initVal, int boolFlagIdx) {
+		return uiObjInitAra_Btn(name, labels, initVal, boolFlagIdx, dfltUIBehaviorVals, dfltUIButtonTypeVals);
+	}
+	
+	/**
+	 * Build the GUIObj_Params that describes a button object
+	 * @param name the name of this button
+	 * @param labels the list of labels that describe the valid states for this button
+	 * @param btnIdx the index of this button
+	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
+	 * @param boolVals 
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(String name, String[] labels, double initVal, int boolFlagIdx, boolean[] configBoolVals) {
+		return uiObjInitAra_Btn(name, labels, initVal, boolFlagIdx, configBoolVals, dfltUIButtonTypeVals);		
+	}
+	/**
+	 * Build the GUIObj_Params that describes a button object
+	 * @param name the name of this button
+	 * @param labels the list of labels that describe the valid states for this button
+	 * @param btnIdx the index of this button
+	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
+	 * @param boolVals
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(String name, String[] labels, double initVal, int boolFlagIdx, boolean[] configBoolVals, boolean[] buttonFlags) {
+		//String _name, GUIObj_Type _objType, int _boolFlagIDX, boolean[] _configFlags, boolean[] _formatVals, boolean[] _buttonFlags
+		GUIObj_Params obj;
+		if (boolFlagIdx == -1) { 
+			// Not a toggle
+			obj = new GUIObj_Params(name, GUIObj_Type.Button, boolFlagIdx, configBoolVals, dfltUIButtonFmtVals, dfltUIButtonTypeVals);
+		} else {
+			// boolean flag toggle, attached to privFlags
+			obj = new GUIObj_Params(name, GUIObj_Type.Switch, boolFlagIdx, configBoolVals, dfltUIButtonFmtVals, dfltUIButtonTypeVals);
 		}
-		// return final y coordinate
-		return uiClkRect[3];
-	}//_buildGUIObjsForMenu
-		
+		obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
+		obj.initVal = initVal;
+		obj.setListVals(labels);
+		// set object colors
+		obj.setBtnColors(_getButtonColors(labels.length));
+		return obj;		
+	}
+	
+	private int[][] _getButtonColors(int numBtns){
+		if(numBtns == 2) {			return btnColors;		}
+		int[][] res= new int[numBtns][4];
+		for(int i=0;i<numBtns;++i) {res[i] = MyMathUtils.randomIntClrAra(150, 100, 150);}
+		return res;
+	}
+	
 	/**
 	 * Build the renderer for a UI object 
 	 * @param _owner
@@ -566,201 +600,113 @@ public class UIObjectManager {
 			double[] _off,
 			float _menuWidth,
 			int[][] _colors, 
-			boolean[] guiFormatBoolVals) {
+			boolean[] guiFormatBoolVals, int[][] _btnColors) {
 		
 		int[] _strkClr = _colors[0];
 		int[] _fillClr= _colors[1]; 
+		if (_btnColors != null) {
+			return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _strkClr, _btnColors);
+		}
 		if (guiFormatBoolVals[0]) {
 			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
 		} else {
 			return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);			
 		}
-	}
+	}	
 	
-	/**
-	 * This will build objects sequentially using the values provided
-	 * @param guiObjNames name of each object
-	 * @param corners 2-element point array of upper left and lower right corners for object
-	 * @param guiMinMaxModVals array of 3 element arrays of min and max value and base modifier
-	 * @param guiStVals array of per-object initial values
-	 * @param guiBoolVals array of boolean flags describing each object's behavior
-	 * @param guiFormatBoolVals array of boolean flags describing how the object should be constructed
-	 * 				idx 0 : Should be multiline
-	 * 				idx 1 : Should have ornament
-	 * 				idx 2 : Ornament color should match label color 
-	 * @param guiObjTypes array of per-object types
-	 * @param guiColors 2-element array of int colors, idx0 == stroke, idx1 == fill
-	 * @param tmpListObjVals map keyed by object idx where the value is a string array of elements to put in a list object
-	 * @param UI_Off Either the ui offset to use for a prefixing ornament before the object's label, or null
-	 * @param menuWidth Width of left side menu bar 
-	 */
-	private void _buildAllObjects(
-			String[] guiObjNames, 
-			double[][] guiMinMaxModVals, 
-			double[] guiStVals, 
-			boolean[][] guiBoolVals,
-			boolean[][] guiFormatBoolVals,
-			GUIObj_Type[] guiObjTypes, 
-			int[][][] guiColors,
-			TreeMap<Integer, String[]> tmpListObjVals, 
-			double[] UI_off,
-			float menuWidth) {
-		int numListObjs = 0;
-		for(int i =0; i< guiObjNames.length; ++i){
-			switch(guiObjTypes[i]) {
-				case IntVal : {
-					_guiObjsAra[i] = new MenuGUIObj_Int(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
-					_guiIntValIDXs.add(i);
-					break;}
-				case ListVal : {
-					++numListObjs;
-					_guiObjsAra[i] = new MenuGUIObj_List(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i], tmpListObjVals.get(i));
-					_guiIntValIDXs.add(i);
-					break;}
-				case FloatVal : {
-					_guiObjsAra[i] = new MenuGUIObj_Float(i, guiObjNames[i], guiMinMaxModVals[i], guiStVals[i], guiBoolVals[i]);
-					_guiFloatValIDXs.add(i);
-					break;}
-				case LabelVal :{
-					_guiObjsAra[i] = new MenuGUIObj_DispValue(i, guiObjNames[i], guiStVals[i]);					
-					_guiLabelValIDXs.add(i);
-					break;}
-				case Button  :{
-					_guiButtonIDXs.add(i);
-					//TODO
-					_dispWarnMsg("_buildAllObjects", "Instantiating a Button UI object not yet supported for ID : "+i);
-					break;
-				}
-				default : {
-					_dispWarnMsg("_buildAllObjects", "Attempting to instantiate unknown UI object for a " + guiObjTypes[i].toStrBrf());
-					break;				
-				}				
-			}//switch
-			var renderer = _buildObjRenderer(_guiObjsAra[i], UI_off, menuWidth, guiColors[i], guiFormatBoolVals[i]);
-			_guiObjsAra[i].setRenderer(renderer);			
-		}
-		if(numListObjs != tmpListObjVals.size()) {
-			_dispWarnMsg("_buildAllObjects", "Error!!!! # of specified list select UI objects ("+numListObjs+") does not match # of passed lists ("+tmpListObjVals.size()+") - some or all of specified list objects will not display properly.");
-		}	
-	}//_buildAllObjects	
-	
+	private final float _buildGUIObjsForMenu(TreeMap<Integer, GUIObj_Params> tmpUIObjMap, float[] uiClkRect) {
+		if(tmpUIObjMap.size() > 0) {
 
-	/**
-	 * calculate button length
-	 */
-	private float _calcBtnLength(String tStr, String fStr){return MyMathUtils.max(ri.getTextWidth(tStr), ri.getTextWidth(fStr));}
-	
-	private void _setBtnDims(int idx, float xStart, float yEnd, float oldBtnLen, float btnLen) {_privFlagBtns[idx]= new float[] {xStart+oldBtnLen, yEnd, btnLen, AppMgr.getTextHeightOffset() };}
-	
-	/**
-	 * Take populated arraylist of object arrays describing private buttons and use these to initialize actual button arrays
-	 * @param tmpBtnNamesArray arraylist of object arrays, each entry in object array holding a true string, a false string and an integer idx for the button
-	 */	
-	private float _buildAllPrivButtons(TreeMap<Integer, Object[]> tmpBtnNamesArray, float[] uiClkRect) {
-		// finalize setup for UI toggle buttons - convert to arrays
-		_privFlagButtonLabels = new String[2][];
-		String[] truePrivFlagLabels = new String[tmpBtnNamesArray.size()];
-		String[] falsePrivFlagLabels = new String[truePrivFlagLabels.length];
-		_privModFlgIdxs = new int[truePrivFlagLabels.length];
-		for (int i = 0; i < truePrivFlagLabels.length; ++i) {
-			Object[] tmpAra = tmpBtnNamesArray.get(i);
-			String[] labelAra = (String[])tmpAra[0];
-			truePrivFlagLabels[i] = labelAra[0];
-			falsePrivFlagLabels[i] = labelAra[1];
-			_privModFlgIdxs[i] = (int) tmpAra[1];
-		}
-		_privFlagButtonLabels[0]=falsePrivFlagLabels;
-		_privFlagButtonLabels[1]=truePrivFlagLabels;		
-		return _buildPrivBtnRects(0, truePrivFlagLabels.length, uiClkRect);
-	}//_buildAllPrivButtons
-	
-	/**
-	 * set up boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
-	 * @param yDisp displacement for button to be drawn
-	 * @param numBtns number of buttons to make
-	 */
-	private float _buildPrivBtnRects(float yDisp, int numBtns, float[] uiClkRect){
-		_privFlagBtns = new float[numBtns][];
-		if (numBtns == 0) {	return uiClkRect[3];	}
-		float yOffset = AppMgr.getTextHeightOffset();
-		float maxBtnLen = 0.98f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
-		uiClkRect[3] += yOffset;
-		float oldBtnLen = 0;
-		boolean lastBtnHalfStLine = false, startNewLine = true;
-		for(int i=0; i<numBtns; ++i){						//clickable button regions - as rect,so x,y,w,h - need to be in terms of sidebar menu 
-			float btnLen = _calcBtnLength(_privFlagButtonLabels[1][i].trim(),_privFlagButtonLabels[0][i].trim());
-			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
-			//_dispDbgMsg("_buildPrivBtnRects","i: "+i+" len : " +btnLen+" cap 1: " + truePrivFlagLabels[i].trim()+"|"+falsePrivFlagLabels[i].trim());
-			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
-				btnLen = maxBtnLen;
-				if(lastBtnHalfStLine){//make last button full size, and make button this button on another line
-					_privFlagBtns[i-1][2] = maxBtnLen;
-					uiClkRect[3] += yOffset;
+			float textHeightOffset = AppMgr.getTextHeightOffset();			
+			//TODO Get guiColors from user input 
+			for (Map.Entry<Integer, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
+				int i = entry.getKey();
+				GUIObj_Params argObj = entry.getValue();
+				//Stroke and fill colors for renderer
+				int[][] guiColors = new int[][] {
+					{0,0,0,255}, //stroke
+					{0,0,0,255}, // fill
+				};			
+				switch(argObj.objType) {
+					case IntVal : {
+						_guiObjsAra[i] = new MenuGUIObj_Int(i, argObj);
+						_guiIntValIDXs.add(i);
+						break;}
+					case ListVal : {
+						_guiObjsAra[i] = new MenuGUIObj_List(i, argObj);
+						_guiIntValIDXs.add(i);
+						break;}
+					case FloatVal : {
+						_guiObjsAra[i] = new MenuGUIObj_Float(i, argObj);
+						_guiFloatValIDXs.add(i);
+						break;}
+					case LabelVal :{
+						_guiObjsAra[i] = new MenuGUIObj_DispValue(i, argObj);					
+						_guiLabelValIDXs.add(i);
+						break;}
+					case Switch : {						
+						_guiObjsAra[i] = new MenuGUIObj_Switch(i, argObj);
+						_guiSwitchIDXMap.put(((MenuGUIObj_Switch)_guiObjsAra[i]).getBoolFlagIDX(), ((MenuGUIObj_Switch)_guiObjsAra[i]));
+						break;}
+					case Button  :{ 
+						_guiObjsAra[i] = new MenuGUIObj_Button(i, argObj);
+						_guiButtonIDXs.add(i);
+						//_dispWarnMsg("_buildGUIObjsForMenu", "Instantiating a Button UI object not yet supported for ID : "+i);
+						break;
+					}
+					default : {
+						_dispWarnMsg("_buildGUIObjsForMenu", "Attempting to instantiate unknown UI object for a " + argObj.objType.toStrBrf());
+						break;				
+					}				
+				}//switch
+				var renderer = _buildObjRenderer(_guiObjsAra[i], AppMgr.getUIOffset(), uiClkRect[2], guiColors, argObj.getCreationFormatVal(), argObj.getBtnColors());
+				_guiObjsAra[i].setRenderer(renderer);			
+			}		
+			
+			//Objects are created by here and assigned renderers
+			// Assign hotspots for UI components
+			myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
+			boolean lastObjWasMultiLine = false;
+			for (int i = 0; i < _guiObjsAra.length; ++i) {
+				boolean isGUIBtn = (_guiObjsAra[i].getObjType() == GUIObj_Type.Button);
+				if (lastObjWasMultiLine && (!_guiObjsAra[i].isMultiLine())) {
+					newStPt.x = uiClkRect[0];
+					newStPt.y = _guiObjsAra[i-1].getEnd().y;
 				}
-				_setBtnDims(i, uiClkRect[0], uiClkRect[3], 0, btnLen);
-				uiClkRect[3] += yOffset;
-				startNewLine = true;
-				lastBtnHalfStLine = false;
-			} else {//button len should be half width unless this button started a new line
-				btnLen = halfBtnLen;
-				if(startNewLine){//button is starting new line
-					lastBtnHalfStLine = true;
-					_setBtnDims(i, uiClkRect[0], uiClkRect[3], 0, btnLen);
-					startNewLine = false;
-				} else {//should only get here if 2nd of two <1/2 width buttons in a row
-					lastBtnHalfStLine = false;
-					_setBtnDims(i, uiClkRect[0], uiClkRect[3], oldBtnLen, btnLen);
-					uiClkRect[3] += yOffset;
-					startNewLine = true;					
-				}
-			}			
-			oldBtnLen = btnLen;
-		}
-		if(lastBtnHalfStLine){//set last button full length if starting new line
-			_privFlagBtns[numBtns-1][2] = maxBtnLen;
-			uiClkRect[3] += yOffset;
-		}
+				float txHtOffset = 
+						isGUIBtn ||(_guiObjsAra[i].getObjType() == GUIObj_Type.LabelVal) ? 
+								AppMgr.getLabelTextHeightOffset() : 
+									AppMgr.getTextHeightOffset();
+				// Get next newStPt as we calculate the hotspot region for every UI object
+				newStPt = _guiObjsAra[i].reCalcHotSpot(newStPt, txHtOffset, uiClkRect[0], uiClkRect[2]);		
+				lastObjWasMultiLine = _guiObjsAra[i].isMultiLine();
+			}
+			//specify the end of this block of UI clickable coordinates based on if last object was multi-line or not
+			uiClkRect[3] = lastObjWasMultiLine ?  _guiObjsAra[_guiObjsAra.length-1].getEnd().y : newStPt.y;							
+			uiClkRect[3] -= .5f*textHeightOffset;
+		}//more than 1 UI object
+		// return final y coordinate
 		uiClkRect[3] += AppMgr.getRowStYOffset();
-		_initPrivFlagColors();
 		return uiClkRect[3];
-	}//_buildPrivBtnRects
-	
+	}//_buildGUIObjsForMenu
+		
 	/**
-	 * Find index in flag name arrays of passed boolean IDX
-	 * @param idx
+	 * Convenience method to build debug button, since used as first button in many applications.
 	 * @return
 	 */
-	public final int getFlagAraIdxOfBool(int idx) {
-		for(int i=0;i<_privModFlgIdxs.length;++i) {if(idx == _privModFlgIdxs[i]) {return i;}	}		
-		return -1;//not found
+	public GUIObj_Params buildDebugButton(String trueLabel, String falseLabel) {
+		return uiObjInitAra_Btn("Debug Button", trueLabel, falseLabel, Base_BoolFlags.debugIDX);
 	}
 	
 	/**
-	 * set up initial colors for sim specific flags for display
-	 */
-	private void _initPrivFlagColors(){
-		_privFlagButtonColors = new int[2][][];
-		int[][] _privFlagTrueColors = new int[_privFlagButtonLabels[0].length][4];
-		int[][] _privFlagFalseColors = new int[_privFlagTrueColors.length][4];
-		for (int i = 0; i < _privFlagTrueColors.length; ++i) { 
-			_privFlagTrueColors[i] = MyMathUtils.randomIntClrAra(150, 100, 150);
-			if(_privFlagButtonLabels[0][i].equals(_privFlagButtonLabels[1][i])) {
-				_privFlagFalseColors[i] = baseBtnFalseClr;
-			} else {
-				_privFlagFalseColors[i] = new int[]{0,255-_privFlagTrueColors[i][1],255-_privFlagTrueColors[i][2], 255};
-			}
-		}
-		_privFlagButtonColors[0] = _privFlagFalseColors;
-		_privFlagButtonColors[1] = _privFlagTrueColors;
-	}// _initPrivFlagColors
-	
-	/**
-	 * Set labels of boolean buttons for both true state and false state. Will be updated on next draw
+	 * Set labels of GUI Switch objects for both true state and false state. Will be updated on next draw
 	 * @param idx idx of button label to set
 	 * @param tLbl new true label
 	 * @param fLbl new false label
 	 */
-	public void setButtonLabels(int idx, String tLbl, String fLbl) {_privFlagButtonLabels[1][idx] = tLbl;_privFlagButtonLabels[0][idx] = fLbl;}
+	public void setGUISwitchLabels(int idx, String tLbl, String fLbl) {
+		this._guiSwitchIDXMap.get(idx).setBooleanLabelVals(new String[] {fLbl, tLbl}, false);
+	}
 	
 	/**
 	 * Pass all flag states to initialized structures in instancing window handler
@@ -807,7 +753,7 @@ public class UIObjectManager {
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateBoolValFromExecCode(int idx, boolean value) {_privFlags.setFlag(idx, value);_uiUpdateData.setBoolValue(idx, value);}
+	public final void updateBoolValFromExecCode(int idx, boolean value) {setPrivFlag(idx, value);_uiUpdateData.setBoolValue(idx, value);}
 	/**
 	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
@@ -820,7 +766,6 @@ public class UIObjectManager {
 	 * @param value value to set
 	 */
 	public final void updateFloatValFromExecCode(int idx, float value) {_guiObjsAra[idx].setVal(value);_uiUpdateData.setFloatValue(idx, value);}
-	
 	
 	/***
 	 * Set UI values by object type, sending value to owner and updater
@@ -861,8 +806,30 @@ public class UIObjectManager {
 			case LabelVal : {
 				_dispWarnMsg("setUIWinVals", "Attempting to process the value `" + UIobj.getValueAsString()+"` from the `" + UIobj.getName()+ "` label object.");				
 				break;}
+			case Switch : {
+				// Let flag state drive everything
+				MenuGUIObj_Switch switchObj = ((MenuGUIObj_Switch)UIobj);
+				boolean boolVal = switchObj.getValueAsBoolean();
+				// Don't use object UI idx, use priv flags idx
+				int flagIDX = switchObj.getBoolFlagIDX();
+				//boolean origVal = _uiUpdateData.getBoolValue(flagIDX);
+				setPrivFlag(flagIDX, boolVal);
+				if(checkAndSetBoolValue(flagIDX, boolVal)) {
+					if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
+					//was Special per-obj boolean handling, if pertinent
+					// ---FLAGS STRUCTURE SHOULD HANDLE THIS ALREADY---
+				}								
+				//_dispWarnMsg("setUIWinVals", "Attempting set " +boolVal + " as the value for the Switch boolean button UI object : " + objType.toStrBrf());
+				break;}
 			case Button : {
-				_dispWarnMsg("setUIWinVals", "Attempting to set a value for an unsupported Button UI object : " + objType.toStrBrf());
+				// button acts like integer input
+				int ival = UIobj.getValueAsInt();
+				int origVal = _uiUpdateData.getIntValue(UIidx);
+				if(checkAndSetIntVal(UIidx, ival)) {
+					if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
+					//Special per-obj int handling, if pertinent
+					owner.setUI_OwnerIntValsCustom(UIidx, ival, origVal);
+				}
 				break;}
 			default : {
 				_dispWarnMsg("setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
@@ -952,10 +919,10 @@ public class UIObjectManager {
 	 * call after single draw - will clear window-based priv buttons that are momentary
 	 */
 	public final void clearAllPrivBtns() {
-		if(_privBtnsToClear.size() == 0) {return;}
+		if(_privFlagsToClear.size() == 0) {return;}
 		// only clear button if button is currently set to true, otherwise concurrent modification error
-		for (Integer idx : _privBtnsToClear) {if (_privFlags.getFlag(idx)) {_privFlags.setFlag(idx, false);}}
-		_privBtnsToClear.clear();
+		for (Integer idx : _privFlagsToClear) {if (_privFlags.getFlag(idx)) {setPrivFlag(idx, false);}}
+		_privFlagsToClear.clear();
 	}//clearPrivBtns
 	
 	/**
@@ -968,14 +935,20 @@ public class UIObjectManager {
 	 * add a button to clear after next draw
 	 * @param idx index of button to clear
 	 */
-	public final void addPrivBtnToClear(int idx) {		_privBtnsToClear.add(idx);	}
+	public final void addPrivBtnToClear(int idx) {		_privFlagsToClear.add(idx);	}
 
 	/**
 	 * sets flag values without calling instancing window flag handler - only for init!
 	 * @param idxs
 	 * @param val
 	 */
-	private void _initPassedPrivFlagsToTrue(int[] idxs) { 	_privFlags.setAllFlagsToTrue(idxs);	}	
+	private void _initPassedPrivFlagsToTrue(int[] idxs) { 	
+		_privFlags.setAllFlagsToTrue(idxs);
+		for(int idx=0;idx<idxs.length;++idx) {
+			MenuGUIObj_Switch obj = _guiSwitchIDXMap.get(idxs[idx]);
+			if (obj != null) {	obj.setValueFromBoolean(true);}
+		}
+	}	
 	
 	/**
 	 * Access private flag values
@@ -998,23 +971,50 @@ public class UIObjectManager {
 	public final int getPrivFlagAsInt(int idx) {			return _privFlags.getFlagsAsInt(idx);}
 	
 	/**
-	 * Set private flag values
+	 * Set private flag values. Make sure UI object follows flag state if exists for this falg
 	 * @param idx
 	 * @param val
 	 */
-	public final void setPrivFlag(int idx, boolean val) {		_privFlags.setFlag(idx, val);}
+	public final void setPrivFlag(int idx, boolean val) {
+		_privFlags.setFlag(idx, val);
+		MenuGUIObj_Switch obj = _guiSwitchIDXMap.get(idx);
+		if (obj != null) {	obj.setValueFromBoolean(val);}
+	}
+		
+	/**
+	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
+	 * @param enable
+	 */
+	public final void handlePrivFlagsDebugMode(boolean enable) {
+		_dispDbgMsg("handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ enable +".");
+		owner.handleOwnerPrivFlagsDebugMode(enable);
+		_dispDbgMsg("handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ enable +".");
+	}
+	
+	/**
+	 * Switch structure only that handles priv flags being set or cleared. Called from UI Manager
+	 * @param idx
+	 * @param val new value for this index
+	 * @param oldVal previous value for this index
+	 */
+	public void handlePrivFlags(int idx, boolean val, boolean oldVal) {
+		_dispDbgMsg("handlePrivFlagsDebugMode", "Start App-specific boolean flag handling, called for idx "+ idx+ " with val " +val +" old value "+ oldVal +".");
+		owner.handleOwnerPrivFlags(idx, val, oldVal);
+		_dispDbgMsg("handlePrivFlagsDebugMode", "End App-specific boolean flag handling, called for idx "+ idx+ " with val " +val +" old value "+ oldVal +".");
+	}
+	
 	
 	/**
 	 * Validate that the passed idx exists in the list of objects 
 	 * @param idx index of potential objects
 	 * @param len number of objects stored in object array
-	 * @param calFunc the name of the calling function (for error message) 
+	 * @param callFunc the name of the calling function (for error message) 
 	 * @param desc the process being attempted on the UI object (for error message)
 	 * @return whether or not the passed index corresponds to a valid location in the array of UI objects
 	 */
-	private boolean _validateUIObjectIdx(int idx, int len, String calFunc, String desc) {
+	private boolean _validateUIObjectIdx(int idx, int len, String callFunc, String desc) {
 		if (!MyMathUtils.inRange(idx, 0, len)){
-			msgObj.dispErrorMessage(dispMsgClassName, calFunc, 
+			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
 				"Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
 			return false;
 		}		
@@ -1024,22 +1024,71 @@ public class UIObjectManager {
 	/**
 	 * Validate whether the passed UI object is a listVal object
 	 * @param obj the object to check
-	 * @param calFunc the name of the calling function (for error message) 
+	 * @param callFunc the name of the calling function (for error message) 
 	 * @param desc the process being attempted on the UI object (for error message)
 	 * @return whether the passed UI object is a listVal object
 	 */
-	private boolean _validateIdxIsListObj(Base_GUIObj obj, String calFunc, String desc) {
+	private boolean _validateIdxIsListObj(Base_GUIObj obj, String callFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.ListVal) {
-			msgObj.dispErrorMessage(dispMsgClassName, calFunc, 
+			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
 					"Attempting to access illegal List UI object to "+desc+" (object :"+obj.getName()+" is not a list object). Aborting.");
+			return false;
+		}
+		return true;
+	}	
+	
+	/**
+	 * Validate whether the passed UI object is a button object
+	 * @param obj the object to check
+	 * @param callFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether the passed UI object is a listVal object
+	 */
+	private boolean _validateIdxIsButtonObj(Base_GUIObj obj, String callFunc, String desc) {
+		if (obj.getObjType() != GUIObj_Type.Button) {
+			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
+					"Attempting to access illegal Button object to "+desc+" (object :"+obj.getName()+" is not a button). Aborting.");
+			return false;
+		}
+		return true;
+	}	
+	
+	/**
+	 * Validate whether the passed UI object is a 2-state toggleable switch object backed by privFlags
+	 * @param obj the object to check
+	 * @param callFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether the passed UI object is a listVal object
+	 */
+	private boolean _validateIdxIsSwitchObj(Base_GUIObj obj, String callFunc, String desc) {
+		if (obj.getObjType() != GUIObj_Type.Switch) {
+			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
+					"Attempting to access illegal Switch object to "+desc+" (object :"+obj.getName()+" is not a 2-state switch). Aborting.");
 			return false;
 		}
 		return true;
 	}
 	
 	/**
+	 * Validate that the passed list of values to be used for a toggle switch is the appropriate length (must be 2)
+	 * @param listVals
+	 * @param callFunc
+	 * @param desc
+	 * @return
+	 */
+	private boolean _validateSwitchListValues(String[] listVals, String callFunc, String desc) {
+		if(listVals.length != 2) {
+			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
+					"Attempting to access illegal Switch object to "+desc+" (the length of the list of values (" + listVals.length+ ") must be 2). Aborting.");
+			return false;
+		}
+		return true;
+	}
+		
+	
+	/**
 	 * Sets the passed UI object's new max value
-	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes
+	 * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes
 	 * @param maxVal
 	 * @return whether modification was performed or not
 	 */
@@ -1051,7 +1100,7 @@ public class UIObjectManager {
 	
 	/**
 	 * Sets the passed UI object's new min value
-	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes.
+	 * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes.
 	 * @param minVal
 	 * @return whether modification was performed or not
 	 */
@@ -1062,7 +1111,7 @@ public class UIObjectManager {
 	
 	/**
 	 * Force a value to be set in the numeric UI object at the passed idx
-	 * @param idx index in numeric UI object array to access. If out of range, aborts without performing any changes and returns -Double.MAX_VALUE
+	 * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes and returns -Double.MAX_VALUE
 	 * @param val
 	 * @return value being set, or -Double.MAX_VALUE if idx is out of range
 	 */
@@ -1113,8 +1162,59 @@ public class UIObjectManager {
 	}
 	
 	/**
+	 * Specify a state for a button to be in based on the passed string
+	 * @param idx
+	 * @param val
+	 * @return
+	 */
+	public int[] setDispUIButtonState(int idx, String val) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsAra.length, "setDispUIButtonState", "display passed state")) || 
+				(!_validateIdxIsButtonObj(_guiObjsAra[idx], "setDispUIButtonState", "display passed state"))){return new int[0];}
+		return ((MenuGUIObj_Button) _guiObjsAra[idx]).setStateByLabel(val);
+	}
+	
+	/**
+	 * Set all the state names in the uiObjIdx Button Object, if it exists, and is a button
+	 * @param uiObjIdx the button obj's index
+	 * @param values the new state names to set for the button
+	 * @param setAsDefault whether or not these new values should be set as the default states for this button
+	 * @return
+	 */
+	public int setAllUIButtonStates(int uiObjIdx, String[] values, boolean setAsDefault) {		
+		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsAra.length, "setAllUIButtonStates", "set/replace all button states")) || 
+				(!_validateIdxIsButtonObj(_guiObjsAra[uiObjIdx], "setAllUIButtonStates", "set/replace all button states"))){return -1;}
+		return ((MenuGUIObj_Button) _guiObjsAra[uiObjIdx]).setStateLabels(values, setAsDefault);
+	}	
+	
+	/**
+	 * Specify the state for a 2-state toggle switch object backed by privFlags to be in based on the passed string
+	 * @param idx
+	 * @param val
+	 * @return
+	 */
+	public int[] setDispUISwitchState(int idx, String val) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsAra.length, "setDispUISwitchState", "display passed state")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsAra[idx], "setDispUISwitchState", "display passed state"))){return new int[0];}
+		return ((MenuGUIObj_Switch) _guiObjsAra[idx]).setStateByLabel(val);
+	}
+	
+	/**
+	 * Set all the state names in the uiObjIdx 2-state toggle switch object backed by privFlags, if it exists, and is a button
+	 * @param uiObjIdx the button obj's index
+	 * @param values the new state names to set for the button
+	 * @param setAsDefault whether or not these new values should be set as the default states for this button
+	 * @return
+	 */
+	public int setAllUISwitchStates(int uiObjIdx, String[] values, boolean setAsDefault) {		
+		if (!_validateSwitchListValues(values, "setAllUISwitchStates","set/replace both switch states") ||			
+				(!_validateUIObjectIdx(uiObjIdx, _guiObjsAra.length, "setAllUISwitchStates", "set/replace both switch states")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsAra[uiObjIdx], "setAllUISwitchStates", "set/replace both switch states"))){return -1;}
+		return ((MenuGUIObj_Switch) _guiObjsAra[uiObjIdx]).setStateLabels(values, setAsDefault);
+	}
+		
+	/**
 	 * Retrieve the min value of a numeric UI object
-	 * @param idx index in numeric UI object array to access.
+	 * @param idx index in numeric UI object array for the object to access.
 	 * @return min value allowed, or Double.MAX_VALUE if idx out of range
 	 */
 	public double getMinUIValue(int idx) {
@@ -1124,7 +1224,7 @@ public class UIObjectManager {
 	
 	/**
 	 * Retrieve the max value of a numeric UI object
-	 * @param idx index in numeric UI object array to access.
+	 * @param idx index in numeric UI object array for the object to access.
 	 * @return max value allowed, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getMaxUIValue(int idx) {
@@ -1134,7 +1234,7 @@ public class UIObjectManager {
 	
 	/**
 	 * Retrieve the mod step value of a numeric UI object
-	 * @param idx index in numeric UI object array to access.
+	 * @param idx index in numeric UI object array for the object to access.
 	 * @return mod value of UI object, or 0 if idx out of range
 	 */
 	public double getModStep(int idx) {
@@ -1144,7 +1244,7 @@ public class UIObjectManager {
 	
 	/**
 	 * Retrieve the value of a numeric UI object
-	 * @param idx index in numeric UI object array to access.
+	 * @param idx index in numeric UI object array for the object to access.
 	 * @return the current value of the UI object, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getUIValue(int idx) {
@@ -1154,7 +1254,7 @@ public class UIObjectManager {
 	
 	/**
 	 * Get the string representation of the passed integer listIdx from the UI Object at UIidx
-	 * @param UIidx index in numeric UI object array to access.
+	 * @param UIidx index in numeric UI object array for the object to access.
 	 * @param listIdx index in list of elements to access
 	 * @return the string value at the requested index, or "" if not a valid request
 	 */
@@ -1165,6 +1265,30 @@ public class UIObjectManager {
 	}
 	
 	/**
+	 * Get the string representation of the passed integer buttonIdx from the UI Object at UIidx
+	 * @param UIidx index in numeric UI object array for the object to access.
+	 * @param buttonStIdx index in list of elements to access
+	 * @return the string value at the requested index, or "" if not a valid request
+	 */
+	public String getButtonStateStr(int UIidx, int buttonStIdx) {		
+		if ((!_validateUIObjectIdx(UIidx, _guiObjsAra.length, "getButtonStateStr", "get a button state at specified idx")) || 
+				(!_validateIdxIsButtonObj(_guiObjsAra[UIidx], "getButtonStateStr", "get a button state at specified idx"))){return "";}
+		return ((MenuGUIObj_Button) _guiObjsAra[UIidx]).getStateLabel(buttonStIdx);
+	}
+		
+	/**
+	 * Get the string representation of the passed integer switchIdx from the UI Object at UIidx
+	 * @param UIidx index in numeric UI object array for the object to access.
+	 * @param switchStIdx either 0 or 1
+	 * @return the string value at the requested index, or "" if not a valid request
+	 */
+	public String getSwitchStateStr(int UIidx, int switchStIdx) {		
+		if ((!_validateUIObjectIdx(UIidx, _guiObjsAra.length, "getSwitchStateStr", "get a switch state at specified idx")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsAra[UIidx], "getSwitchStateStr", "get a switch state at specified idx"))){return "";}
+		return ((MenuGUIObj_Button) _guiObjsAra[UIidx]).getStateLabel(switchStIdx);
+	}
+			
+	/**
 	 * This has to be called after UI structs are built and set - this creates and populates the 
 	 * structure that serves to communicate UI data to consumer from UI Window.
 	 */
@@ -1174,12 +1298,19 @@ public class UIObjectManager {
 		_uiUpdateData = owner.buildOwnerUIDataUpdateObject();
 		if (_uiUpdateData == null) {return;}
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
-		for (Integer idx : _guiIntValIDXs) {				intValues.put(idx, _guiObjsAra[idx].getValueAsInt());}		
+		for (Integer idx : _guiIntValIDXs) {			intValues.put(idx, _guiObjsAra[idx].getValueAsInt());}		
+		//TODO 
+		//for (Integer idx : _guiButtonIDXs) {			intValues.put(idx, _guiObjsAra[idx].getValueAsInt());}	
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		for (Integer idx : _guiFloatValIDXs) {			floatValues.put(idx, _guiObjsAra[idx].getValueAsFloat());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
 		//TODO 
-		//for (Integer idx : _guiButtonIDXs) {			boolValues.put(idx, _guiObjsAra[idx].getValueAsFloat());}
+//		for (var switchIdxs : _guiSwitchIDXMap.entrySet()) {
+//			int flagIdx = switchIdxs.getKey();
+//			int idx = switchIdxs.getValue();
+//			MenuGUIObj_Switch toggleObj = ((MenuGUIObj_Switch)_guiObjsAra[idx]);
+//			boolValues.put(flagIdx, toggleObj.getValueAsBoolean());
+//		}
 		
 		for(Integer i=0; i < _privFlags.numFlags;++i) {		boolValues.put(i, _privFlags.getFlag(i));}	
 		_uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
@@ -1215,28 +1346,6 @@ public class UIObjectManager {
 	}	
 	
 	/**
-	 * check if mouse location is in UI buttons, and handle button click if so
-	 * @param mouseX
-	 * @param mouseY
-	 * @return
-	 */
-	private boolean _checkUIButtons(int mouseX, int mouseY){
-		if(0==_privFlagBtns.length) {return false;}
-		boolean mod = false;
-		//keep checking -see if clicked in UI buttons (flag-based buttons)
-		for(int i = 0;i<_privFlagBtns.length;++i){
-			mod = msePtInRect(mouseX, mouseY, _privFlagBtns[i]); 
-			//_dispDbgMsg("_checkUIButtons","Handle mouse click in window : "+ ID + " : (" + mouseX+","+mouseY+") : "+mod + ": btn rect : "+_privFlagBtns[i][0]+","+_privFlagBtns[i][1]+","+_privFlagBtns[i][2]+","+_privFlagBtns[i][3]);
-			if (mod){ 
-				_privFlags.toggleFlag(_privModFlgIdxs[i]);
-				//setPrivFlags(_privModFlgIdxs[i],!getPrivFlags(_privModFlgIdxs[i])); 
-				return mod;
-			}			
-		}
-		return mod;
-	}//_checkUIButtons	
-	
-	/**
 	 * handle a mouse click
 	 * @param mouseX x location on screen
 	 * @param mouseY y location on screen
@@ -1262,7 +1371,7 @@ public class UIObjectManager {
 				retVals[0] = true;
 			}
 		}			
-		if(!retVals[0]) {			retVals[0] = _checkUIButtons(mouseX, mouseY);	}
+		//if(!retVals[0]) {			retVals[0] = _checkUIButtons(mouseX, mouseY);	}
 		return _msClickObj != null;
 	}//handleMouseClick
 	
@@ -1278,7 +1387,7 @@ public class UIObjectManager {
 	}	
 	
 	/**
-	 * Handle mouse move over window - returns the object ID of the object the mouse is over
+	 * Handle mouse move (without a button pressed) over the window - returns the object ID of the object the mouse is over
 	 * @param mouseX
 	 * @param mouseY
 	 * @return Whether or not the mouse has moved over a valid UI object
@@ -1324,7 +1433,7 @@ public class UIObjectManager {
 	public final boolean[] handleMouseWheel(int ticks, float mult) {return _handleMouseModInternal(ticks * mult);}
 	
 	/**
-	 * Handle the mouse being dragged from within the confines of a selected object
+	 * Handle the mouse being dragged (i.e. moved with a button pressed) from within the confines of a selected object
 	 * @param delX
 	 * @param delY
 	 * @param shiftPressed
@@ -1332,7 +1441,7 @@ public class UIObjectManager {
 	 * 			idx 0 is if an object has been modified
 	 * 			idx 1 is if we should set setUIObjMod to true in caller 
 	 */
-	public final boolean[] handleMouseDrag(int delX, int delY, boolean shiftPressed) {return _handleMouseModInternal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));}	
+	public final boolean[] handleMouseDrag(int delX, int delY, int mseBtn, boolean shiftPressed) {return _handleMouseModInternal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));}	
 	
 	/**
 	 * Set UI value for object based on non-drag modification such as click - either at initial click or when click is released
@@ -1343,7 +1452,7 @@ public class UIObjectManager {
 	/**
 	 * Handle UI functionality when mouse is released in owner
 	 * @param objModified whether object was clicked on but not changed - this will change cause the release to increment the object's value
-	 * @return whether or not _privBtnsToClear has buttons to clear.
+	 * @return whether or not _privFlagsToClear has buttons to clear.
 	 */
 	public final boolean handleMouseRelease(boolean objModified) {
 		if(_msClickObj != null) {
@@ -1357,22 +1466,11 @@ public class UIObjectManager {
 			_msClickObj = null;	
 		}
 		_msBtnClicked = -1;
-		return _privBtnsToClear.size() > 0;
+		return _privFlagsToClear.size() > 0;
 	}//handleMouseRelease
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// End Mouse and keyboard handling; Start UI object rendering	
-	
-	/**
-	 * Draw this window's gui objects in sidebar menu
-	 * @param animTimeMod
-	 */
-	public final void drawWindowGuiObjs(boolean isDebug, boolean usRndBtnClrs, float animTimeMod) {
-		//draw UI Objs
-		drawGUIObjs(isDebug, animTimeMod);
-		//draw all boolean-based buttons for this window
-		drawAppFlagButtons(usRndBtnClrs);
-	}//drawWindowGuiObjs	
 	
 	/**
 	 * Draw the UI clickable region rectangle
@@ -1403,42 +1501,42 @@ public class UIObjectManager {
 		ri.popMatState();	
 	}//drawAllGuiObjs
 	
-	/**
-	 * Draw a series of strings in a row
-	 * @param txt
-	 * @param loc
-	 * @param clrAra
-	 */
-	private final void _dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
-		ri.setFill(clrAra, clrAra[3]);
-		ri.setColorValStroke(IRenderInterface.gui_Black,255);
-		ri.drawRect(loc);		
-		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		//ri.translate(-xOff*.5f,-yOff*.5f);
-		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
-		//ri.translate(width, 0);
-	}
-	
-	/**
-	 * Draw application-specific flag buttons
-	 * @param useRandBtnClrs
-	 */
-	private final void drawAppFlagButtons(boolean useRandBtnClrs) {
-		ri.pushMatState();	
-		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		if(useRandBtnClrs){
-			for(int i =0; i<_privModFlgIdxs.length; ++i){
-				int btnFlagIdx = _privFlags.getFlag(_privModFlgIdxs[i])  ? 1 : 0;
-				_dispBttnAtLoc(_privFlagButtonLabels[btnFlagIdx][i],_privFlagBtns[i],_privFlagButtonColors[btnFlagIdx][i]);	
-			}
-		} else {
-			for(int i =0; i<_privModFlgIdxs.length; ++i){
-				int btnFlagIdx = _privFlags.getFlag(_privModFlgIdxs[i])  ? 1 : 0;
-				_dispBttnAtLoc(_privFlagButtonLabels[btnFlagIdx][i],_privFlagBtns[i],btnColors[btnFlagIdx]);	
-			}	
-		}		
-		ri.popMatState();	
-	}//drawAppFlagButtons
+//	/**
+//	 * Draw a series of strings in a row
+//	 * @param txt
+//	 * @param loc
+//	 * @param clrAra
+//	 */
+//	private final void _dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
+//		ri.setFill(clrAra, clrAra[3]);
+//		ri.setColorValStroke(IRenderInterface.gui_Black,255);
+//		ri.drawRect(loc);		
+//		ri.setColorValFill(IRenderInterface.gui_Black,255);
+//		//ri.translate(-xOff*.5f,-yOff*.5f);
+//		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
+//		//ri.translate(width, 0);
+//	}
+//	
+//	/**
+//	 * Draw application-specific flag buttons
+//	 * @param useRandBtnClrs
+//	 */
+//	private final void drawAppFlagButtons(boolean useRandBtnClrs) {
+//		ri.pushMatState();	
+//		ri.setColorValFill(IRenderInterface.gui_Black,255);
+//		if(useRandBtnClrs){
+//			for(int i =0; i<_privModFlgIdxs.length; ++i){
+//				int btnFlagIdx = _privFlags.getFlag(_privModFlgIdxs[i])  ? 1 : 0;
+//				_dispBttnAtLoc(_privFlagButtonLabels[btnFlagIdx][i],_privFlagBtns[i],_privFlagButtonColors[btnFlagIdx][i]);	
+//			}
+//		} else {
+//			for(int i =0; i<_privModFlgIdxs.length; ++i){
+//				int btnFlagIdx = _privFlags.getFlag(_privModFlgIdxs[i])  ? 1 : 0;
+//				_dispBttnAtLoc(_privFlagButtonLabels[btnFlagIdx][i],_privFlagBtns[i],btnColors[btnFlagIdx]);	
+//			}	
+//		}		
+//		ri.popMatState();	
+//	}//drawAppFlagButtons
 	
 	/**
 	 * What to do after the owner has finished draw command

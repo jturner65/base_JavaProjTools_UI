@@ -4,6 +4,7 @@ import java.util.TreeMap;
 
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
 /**
  *	Describes the methods that must be implemented in a construct that will own a UIObjectManager
@@ -71,7 +72,7 @@ public interface IUIManagerOwner {
 	
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
-	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 * @param tmpUIObjArray : map of GUIObj_Params, keyed by UI object idx, with values describing the UI object                    
 	 *           the first element double array of min/max/mod values                                                   
 	 *           the 2nd element is starting value                                                                      
 	 *           the 3rd elem is label for object                                                                       
@@ -84,12 +85,12 @@ public interface IUIManagerOwner {
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
-	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpBtnNamesArray : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
 	 * 				the first element is true label
 	 * 				the second element is false label
+	 * 				the third element is integer flag idx 
 	 */
-	public void setupOwnerGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer,Object[]> tmpBtnNamesArray);
+	public void setupOwnerGUIObjsAras(TreeMap<Integer, GUIObj_Params> tmpUIObjArray, TreeMap<Integer, GUIObj_Params> tmpBtnNamesArray);
 	
 	/**
 	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
@@ -139,7 +140,7 @@ public interface IUIManagerOwner {
 	 * Application-specific Debug mode functionality. Called only from privflags structure
 	 * @param val
 	 */
-	public void handlePrivFlagsDebugMode(boolean val);
+	public void handleOwnerPrivFlagsDebugMode(boolean val);
 	
 	////////////////////////
 	/// Start Mouse interaction - these should provide adapter-like access to the uiManager's mouse handling routines

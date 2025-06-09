@@ -99,29 +99,30 @@ public abstract class Base_GUIObj {
 	 * @param _flags any preset behavior flags
 	 * @param _off offset before text
 	 */
-	public Base_GUIObj(int _objID, String _name, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags){
+	//public Base_GUIObj(int _objID, String _name, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags){
+	public Base_GUIObj(int _objID, GUIObj_Params objParams){
 		objID = _objID;
 		ID = GUIObjID++;
-		name = _name;
+		name = objParams.name;
 		setLabelFromName();
 		origLabel = label;
 		//type of object
-		objType = _objType;
+		objType = objParams.objType;
 		//UI Object state
 		initStateFlags();
 		//UI Object configuration
 		initConfigFlags();
 		
-		int numToInit = (_flags.length < numConfigFlags ? _flags.length : numConfigFlags);
-		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_flags[i]);	}
+		int numToInit = (objParams.configFlags.length < numConfigFlags ? objParams.configFlags.length : numConfigFlags);
+		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,objParams.configFlags[i]);	}
 		
-		minVal=_minMaxMod[0]; maxVal = _minMaxMod[1]; setNewMod(_minMaxMod[2]);
+		minVal=objParams.minMaxMod[0]; maxVal = objParams.minMaxMod[1]; setNewMod(objParams.minMaxMod[2]);
 		//setNewMod sets formatStr
 		origFormatStr = formatStr;
-		val = _initVal;
+		val = objParams.initVal;
 		initVals = new double[4];
-		for(int i=0;i<_minMaxMod.length;++i) {initVals[i]=_minMaxMod[i];}
-		initVals[3] = _initVal;	
+		for(int i=0;i<objParams.minMaxMod.length;++i) {initVals[i]=objParams.minMaxMod[i];}
+		initVals[3] = objParams.initVal;
 	}
 	
 	/**
@@ -221,13 +222,31 @@ public abstract class Base_GUIObj {
 	public final double getMinMaxDiff() {return maxVal - minVal;}
 	
 	/**
-	 * Make sure val adheres to specified bounds
+	 * Make sure val adheres to specified bounds. May be overridden if object should act differently at boundaries (i.e. torroid)
 	 * @param _val
 	 * @return
 	 */
 	protected double forceBounds(double _val) {
 		if (_val < minVal) {return minVal;}
 		if (_val > maxVal) {return maxVal;}
+		return _val;
+	}
+	
+	/**
+	 * Make sure _val adheres to specified bounds, wrapping around torroidally if necessary
+	 * @param _val
+	 * @return
+	 */
+	protected double forceBoundsTorroidal(double _val) {
+		double diff = maxVal - minVal;
+		if (_val <= maxVal) {
+			if(_val >= minVal) {				return _val;	}		//in correct range 		
+			// val is less than minVal, so move it by distVal-sized blocks until it is not
+			while (val < minVal) {val += diff;}	
+		}
+		// val is greater than maxVal, so mod it to be in window [minVal,maxVal]
+		// by shifting to [0,maxVal-minVal] first and then shifting back
+		_val = ((_val - minVal) % diff) + minVal;
 		return _val;
 	}
 	
@@ -271,7 +290,8 @@ public abstract class Base_GUIObj {
 		val = forceBounds(_newVal);	
 		if (oldVal != val) {setIsDirty(true);}		
 		return val;
-	}	
+	}
+	
 	/**
 	 * Modify this object by passed mod value, scaled by modMult. This is called during drag
 	 * @param mod

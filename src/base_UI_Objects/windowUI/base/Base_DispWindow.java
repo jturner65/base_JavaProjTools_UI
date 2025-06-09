@@ -16,6 +16,7 @@ import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.drawnTrajectories.TrajectoryManager;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.ScrollBars;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_Utils_Objects.io.file.FileIOManager;
 import base_Utils_Objects.io.messaging.MessageObject;
 import base_Utils_Objects.io.messaging.MsgCodes;
@@ -205,8 +206,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		ri=_p;
 		AppMgr = _AppMgr;
 		msgObj = AppMgr.msgObj;
-		uiMgr = new UIObjectManager(ri, this, AppMgr, msgObj);
-		
 		className = this.getClass().getSimpleName();
 		ID = winCnt++;
 		dispFlagWinIDX = _winIdx;
@@ -215,7 +214,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		//base screenshot path based on launch time
 		ssFolderDir = winInitVals.winName+"_"+getNowDateTimeString();
 		ssPathBase = AppMgr.getApplicationPath() +File.separatorChar + ssFolderDir + File.separatorChar;
-
+	
 		closeBox = new float[4];
 		float boxWidth = 1.1f*winInitVals.rectDim[0];
 		UIRtSideRectBox = new float[] {winInitVals.rectDim[2]-boxWidth,0,boxWidth, winInitVals.rectDim[3]};		
@@ -228,6 +227,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		focusTar = new myVectorf(winInitVals.initSceneFocusVal);
 		//initialize the camera
 		setInitCamView();
+		uiMgr = new UIObjectManager(ri, this, AppMgr, msgObj);
 	}//ctor
 	
 	/**
@@ -336,7 +336,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
-	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 * @param tmpUIObjArray : map of GUIObj_Params, keyed by UI object idx, with values describing the UI object                    
 	 *           the first element double array of min/max/mod values                                                   
 	 *           the 2nd element is starting value                                                                      
 	 *           the 3rd elem is label for object                                                                       
@@ -349,19 +349,18 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
-	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpBtnNamesArray : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
 	 * 				the first element is true label
 	 * 				the second element is false label
 	 */
 	@Override
-	public void setupOwnerGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals,TreeMap<Integer, Object[]> tmpBtnNamesArray) {
-		setupGUIObjsAras(tmpUIObjArray,tmpListObjVals, tmpBtnNamesArray);	
+	public void setupOwnerGUIObjsAras(TreeMap<Integer, GUIObj_Params> tmpUIObjArray, TreeMap<Integer, GUIObj_Params> tmpBtnNamesArray) {
+		setupGUIObjsAras(tmpUIObjArray,tmpBtnNamesArray);	
 	}
 	
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
-	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
+	 * @param tmpUIObjArray : map of GUIObj_Params, keyed by UI object idx, with values describing the UI object                    
 	 *           the first element double array of min/max/mod values                                                   
 	 *           the 2nd element is starting value                                                                      
 	 *           the 3rd elem is label for object                                                                       
@@ -374,12 +373,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
-	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpBtnNamesArray : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
 	 * 				the first element is true label
 	 * 				the second element is false label
 	 */
-	protected abstract void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer, Object[]> tmpBtnNamesArray);		
+	protected abstract void setupGUIObjsAras(TreeMap<Integer, GUIObj_Params> tmpUIObjArray, TreeMap<Integer, GUIObj_Params> tmpBtnNamesArray);		
 	
 	/**
 	 * Called by privFlags bool struct, to update uiUpdateData when boolean flags have changed
@@ -507,11 +505,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected abstract void handleDispFlagsDebugMode_Indiv(boolean val);
 
 	/**
-	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
+	 * Application-specific Debug mode functionality (application-specific). Called only from UI manager
 	 * @param enable
 	 */
 	@Override
-	public final void handlePrivFlagsDebugMode(boolean enable) {
+	public final void handleOwnerPrivFlagsDebugMode(boolean enable) {
 		_dispDbgMsg("handlePrivFlagsDebugMode", "Start App-specific Debug, called from App-specific Debug flags with value "+ enable +".");
 		handlePrivFlagsDebugMode_Indiv(enable);
 		_dispDbgMsg("handlePrivFlagsDebugMode", "End App-specific Debug, called from App-specific Debug flags with value "+ enable +".");
@@ -524,7 +522,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected abstract void handlePrivFlagsDebugMode_Indiv(boolean val);
 
 	/**
-	 * Switch structure only that handles priv flags being set or cleared. Called from WinAppPrivStateFlags structure
+	 * Switch structure only that handles priv flags being set or cleared. Called from UI Manager
 	 * @param idx
 	 * @param val new value for this index
 	 * @param oldVal previous value for this index
@@ -754,7 +752,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final void drawWindowGuiObjs(boolean isDebug, float animTimeMod) {
 		//draw UI Objs
-		uiMgr.drawWindowGuiObjs(isDebug, dispFlags.getUseRndBtnClrs(), animTimeMod);
+		uiMgr.drawGUIObjs(isDebug, animTimeMod);
 		//draw any custom menu objects for sidebar menu after buttons
 		ri.pushMatState();
 			//all sub menu drawing within push mat call
@@ -1316,7 +1314,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			//any generic dragging stuff - need flag to determine if trajectory is being entered		
 			//modify object that was clicked in by mouse motion
 			
-			boolean retVals[] = uiMgr.handleMouseDrag(delX, delY, shiftPressed);
+			boolean retVals[] = uiMgr.handleMouseDrag(delX, delY, mseBtn, shiftPressed);
 			if (retVals[1]){dispFlags.setUIObjMod(true);}
 			if (retVals[0]){return true;}
 
