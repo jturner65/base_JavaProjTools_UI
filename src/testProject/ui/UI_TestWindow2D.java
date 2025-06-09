@@ -127,14 +127,14 @@ public class UI_TestWindow2D extends Base_DispWindow {
 		tmpUIObjArray.put(gIDX_FloatVal3, uiMgr.uiObjInitAra_Float(new double[]{1.0f,100.0f,.0001f}, floatVal3, "Float Value 3"));   	                                                            
 
 		int idx=0;
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Debugging", "Enable Debug"}, Base_BoolFlags.debugIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 1 On", "Button 1 Off"}, button1_IDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 2 On", "Button 2 Off"}, button2_IDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 3 On", "Button 3 Off"}, button3_IDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 4 On", "Button 4 Off"}, button4_IDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 5 On", "Button 5 Off"}, button5_IDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 6 On", "Button 6 Off"}, button6_IDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Button 7 On", "Button 7 Off"}, button7_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Debugging", "Enable Debug"}, Base_BoolFlags.debugIDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Button 1 On", "Button 1 Off"}, button1_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Button 2 On", "Button 2 Off"}, button2_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Button 3 On", "Button 3 Off"}, button3_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Button 4 On", "Button 4 Off"}, button4_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Button 5 On", "Button 5 Off"}, button5_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Button 6 On", "Button 6 Off"}, button6_IDX));
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Button 7 On", "Button 7 Off"}, button7_IDX));
 
 	}	
 	

@@ -458,7 +458,7 @@ public abstract class Base_GUIObj {
 	 * @return
 	 */
 	public final String[] getUIDispAsMultiLine() {
-		return new String[] {getLabel(), getValueAsString()};		
+		return new String[]{getLabel(), getValueAsString()};		
 	}	
 	
 	/**

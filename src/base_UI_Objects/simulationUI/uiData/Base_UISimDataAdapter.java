@@ -1,8 +1,8 @@
-package base_UI_Objects.windowUI.simulation.uiData;
+package base_UI_Objects.simulationUI.uiData;
 
 import java.util.Map;
 
-import base_UI_Objects.windowUI.simulation.simExec.Base_UISimExec;
+import base_UI_Objects.simulationUI.simExec.Base_UISimExec;
 import base_Utils_Objects.sim.Base_SimDataAdapter;
 
 /**

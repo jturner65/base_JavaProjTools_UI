@@ -122,7 +122,7 @@ public class UI_TestProject extends GUI_AppManager {
 	protected void initAllDispWindows() {
 		showInfo = true;
 		String[] _winTitles = new String[]{"","UI Test Window 3D 1","UI Test Window 3D 2","UI Test Window 2D"},
-				_winDescr = new String[] {"", "Light Background Test 3D Window 1","Dark Background Test 3D Window 2","Test 2D Window"};
+				_winDescr = new String[]{"", "Light Background Test 3D Window 1","Dark Background Test 3D Window 2","Test 2D Window"};
 
 		//instanced window dims when open and closed - only showing 1 open at a time - and init cam vals
 		float[][] _floatDims  = getDefaultWinAndCameraDims();	

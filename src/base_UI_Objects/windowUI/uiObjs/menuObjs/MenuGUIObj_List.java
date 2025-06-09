@@ -10,7 +10,7 @@ public class MenuGUIObj_List extends MenuGUIObj_Int {
 	/**
 	 * List of different values to be displayed for this list-based object
 	 */
-	private String[] listVals = new String[] {"None"};
+	private String[] listVals = new String[]{"None"};
 	
 	/**
 	 * Original list of different values to be displayed for this list based-object
@@ -92,7 +92,7 @@ public class MenuGUIObj_List extends MenuGUIObj_Int {
 	 * @return returns current val cast to int as idx
 	 */
 	public final int setListVals(String[] vals, boolean setAsDefault) {
-		if((null == vals) || (vals.length == 0)) {	listVals = new String[] {"List Not Initialized!"};	} 
+		if((null == vals) || (vals.length == 0)) {	listVals = new String[]{"List Not Initialized!"};	} 
 		else {
 			listVals = new String[vals.length];
 			System.arraycopy(vals, 0, listVals, 0, vals.length);

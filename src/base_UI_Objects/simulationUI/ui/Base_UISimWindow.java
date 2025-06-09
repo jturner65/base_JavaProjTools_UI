@@ -1,11 +1,11 @@
-package base_UI_Objects.windowUI.simulation.ui;
+package base_UI_Objects.simulationUI.ui;
 
 import java.util.TreeMap;
 
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.simulationUI.simExec.Base_UISimExec;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
-import base_UI_Objects.windowUI.simulation.simExec.Base_UISimExec;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 
 public abstract class Base_UISimWindow extends Base_DispWindow {
@@ -200,11 +200,11 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		
 		//TODO use the same obj map as tmpUIObjArray
 		int idx=0;
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Drawing Vis", "Render Visualization"},  drawVisIDX));  
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Experimenting", "Run Experiment"}, conductExpIDX));  
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[] {"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Visualization Debug", "Enable Debug"}, Base_BoolFlags.debugIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Resetting Simulation", "Reset Simulation"},   resetSimIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Drawing Vis", "Render Visualization"},  drawVisIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Experimenting", "Run Experiment"}, conductExpIDX));  
+		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment"}, conductSweepExpIDX));  
 
 		setupGUIObjsAras_Sim(tmpUIObjArray, tmpListObjVals, tmpBtnNamesArray);
 	}//setupGUIObjsAras

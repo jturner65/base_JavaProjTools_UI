@@ -1,10 +1,10 @@
-package base_UI_Objects.windowUI.simulation.sim;
+package base_UI_Objects.simulationUI.sim;
 
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.simulationUI.simExec.Base_UISimExec;
+import base_UI_Objects.simulationUI.ui.Base_UISimWindow;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
-import base_UI_Objects.windowUI.simulation.simExec.Base_UISimExec;
-import base_UI_Objects.windowUI.simulation.ui.Base_UISimWindow;
 import base_Utils_Objects.sim.Base_Simulator;
 
 /**

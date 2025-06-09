@@ -1615,7 +1615,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final String[] getSaveFileDirName() {
 		String[] vals = getSaveFileDirNamesPriv();
 		if((null==vals) || (vals.length != 2)) {return new String[0];}
-		String[] res = new String[] {
+		String[] res = new String[]{
 			ssPathBase + vals[0] + File.separatorChar, vals[1]	
 		};
 		return res;

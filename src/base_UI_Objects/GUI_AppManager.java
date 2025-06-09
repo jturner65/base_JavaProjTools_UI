@@ -905,7 +905,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 		 * @param _sceneCenterVal center of scene, for drawing objects
 		 * @param _initSceneFocusVal initial focus target for camera
 		 */
-		winInitVals[dispMenuIDX] = new GUI_AppWinVals(dispMenuIDX, new String[] {"UI Window", "User Controls"}, new boolean[4],
+		winInitVals[dispMenuIDX] = new GUI_AppWinVals(dispMenuIDX, new String[]{"UI Window", "User Controls"}, new boolean[4],
 				new float[][] {new float[]{0,0, menuWidth, _viewHeight}, new float[]{0,0, hideWinWidth, _viewHeight},getInitCameraValues()},
 				new int[][] {new int[]{255,255,255,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,255},new int[]{0,0,0,200},new int[]{255,255,255,255}},
 				_sceneOriginValsAra[0], _sceneFcsValsAra[0]);
@@ -985,7 +985,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 */
 	public final GUI_AppWinVals buildGUI_AppWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals, myPointf _sceneCenterVal, myVectorf _initSceneFocusVal) {
-		return new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+		return new GUI_AppWinVals(_winIdx, new String[]{_title, _descr}, _dispFlags,
 				_floatVals, _intClrVals, _sceneCenterVal, _initSceneFocusVal); 
 	}//buildGUI_AppWinVals
 	/**
@@ -1041,7 +1041,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final GUI_AppWinVals buildGUI_AppWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
 			float[][] _floatVals, int[][] _intClrVals) {
 		int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
-		return new GUI_AppWinVals(_winIdx, new String[] {_title, _descr}, _dispFlags,
+		return new GUI_AppWinVals(_winIdx, new String[]{_title, _descr}, _dispFlags,
 				_floatVals, _intClrVals, _sceneOriginValsAra[scIdx], _sceneFcsValsAra[scIdx]); 
 	}//buildGUI_AppWinVals
 	

@@ -51,7 +51,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param passedArgs
 	 */
 	public final static void _invokedMain(GUI_AppManager _appMgr, String[] passedArgs) {	
-		String[] appletArgs = new String[] { "base_UI_Objects.renderer.ProcessingRenderer" };
+		String[] appletArgs = new String[]{"base_UI_Objects.renderer.ProcessingRenderer" };
 		AppMgr = _appMgr;
 		if (passedArgs != null) {processing.core.PApplet.main(processing.core.PApplet.concat(appletArgs, passedArgs)); } else {processing.core.PApplet.main(appletArgs);		    }
 	    
