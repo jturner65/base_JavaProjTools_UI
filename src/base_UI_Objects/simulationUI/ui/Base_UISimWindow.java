@@ -181,9 +181,9 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
-	 * 				the first element is true label
-	 * 				the second element is false label
+	 * @param tmpBtnNamesArray : map of GUIObj_Params holding the format for how to build buttons, keyed by sequential value == objId
+	 * 				the first element is name
+	 * 				the second element is array of labels, last element is index in button array
 	 */
 	@Override
 	protected final void setupGUIObjsAras(TreeMap<Integer, GUIObj_Params> tmpUIObjArray, TreeMap<Integer, GUIObj_Params> tmpBtnNamesArray) {		
