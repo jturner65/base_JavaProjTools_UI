@@ -99,7 +99,6 @@ public abstract class Base_GUIObj {
 	 * @param _flags any preset behavior flags
 	 * @param _off offset before text
 	 */
-	//public Base_GUIObj(int _objID, String _name, double[] _minMaxMod, double _initVal, GUIObj_Type _objType, boolean[] _flags){
 	public Base_GUIObj(int _objID, GUIObj_Params objParams){
 		objID = _objID;
 		ID = GUIObjID++;
@@ -363,6 +362,15 @@ public abstract class Base_GUIObj {
 	 * @return
 	 */
 	public final myPointf getEnd() {return renderer.getEnd();}	
+	
+	/**
+	 * Set the upper left coordinates and width and height
+	 * @param _points : idx 0 is upper left corner, idx 1 is lower right corner
+	 */
+	public final void setHotSpot(myPointf[] _points) {
+		renderer.setStart(_points[0]);
+		renderer.setEnd(_points[1]);
+	}
 		
 	/**
 	 * Return the type of this object as defined in GUIObj_Type enum
@@ -389,6 +397,12 @@ public abstract class Base_GUIObj {
 	public final myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {
 		return renderer.reCalcHotSpot(newStart, lineHeight, menuStartX, menuWidth);
 	}
+	
+	/**
+	 * Return the max width feasible for this UI object (based on possible values + label length if any)
+	 * @return
+	 */
+	public final float getMaxWidth() {	return renderer.getMaxWidth();}
 
 	/**
 	 * Set this UI object's value based on string tokens from file

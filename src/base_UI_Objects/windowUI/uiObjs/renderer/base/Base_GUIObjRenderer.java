@@ -43,11 +43,11 @@ public abstract class Base_GUIObjRenderer {
 	/**
 	 * x,y coords of top left corner for clickable region
 	 */
-	protected myPointf start;
+	protected myPointf start = new myPointf();
 	/**
 	 * x,y coords of bottom right corner for clickable region
 	 */
-	protected myPointf end;
+	protected myPointf end = new myPointf();
 	
 	/**
 	 * The allowable width of the printable area. Single line UI objects will be this wide, 
@@ -233,15 +233,25 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	public abstract boolean isMultiLine();
 	/**
-	 * Upper left corner of hotspot for the gui object this renderer draws
+	 * Get upper left corner coordinates of hotspot for the gui object this renderer draws
 	 * @return
 	 */
-	public final myPointf getStart() {return start;}
+	public final myPointf getStart() {return start;}	
 	/**
-	 * Lower right corner of hotspot for the gui object this renderer draws
+	 * Set upper left corner coordinates of hotspot for the gui object this renderer draws
+	 */
+	public final void setStart(myPointf _start) {start.set(_start);}
+	
+	/**
+	 * Get lower right corner coordinates of hotspot for the gui object this renderer draws
 	 * @return
 	 */
 	public final myPointf getEnd() {return end;}
+
+	/**
+	 * Set lower right corner coordinates of hotspot for the gui object this renderer draws
+	 */
+	public final void setEnd(myPointf _end) {end.set(_end);} 
 	
 	public final String getHotBoxLocString() {
 		return  rendererType+ " Rendered : Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";

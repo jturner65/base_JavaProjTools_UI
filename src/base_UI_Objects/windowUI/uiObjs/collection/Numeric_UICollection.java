@@ -11,12 +11,12 @@ import base_UI_Objects.windowUI.uiObjs.collection.base.Base_UIObjectCollection;
  */
 public class Numeric_UICollection extends Base_UIObjectCollection {	
 	
-	public Numeric_UICollection(IRenderInterface _ri, float[] _uiClkCoords, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer, Object[]> tmpUIObjArray) {
+	public Numeric_UICollection(IRenderInterface _ri, float[] _uiClkCoords, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer, Object[]> tmpUIObjMap) {
 		super(_ri, _uiClkCoords);
-		guiObjsAra = new Base_GUIObj[tmpUIObjArray.size()]; // list of modifiable gui objects
+		guiObjsAra = new Base_GUIObj[tmpUIObjMap.size()]; // list of modifiable gui objects
 		
 		//build ui objects
-		//uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjArray, tmpListObjVals, uiClkCoords);	
+		//uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjMap, tmpListObjVals, uiClkCoords);	
 
 	}
 

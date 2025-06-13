@@ -131,7 +131,7 @@ public class MenuGUIObj_Button extends MenuGUIObj_List {
 	 * @return
 	 */
 	public final boolean getIsWaitingOnProc() {				return getShouldWaitOnProc() && getBtnTypeFlags(waitingOnProcIDX);}
-	
+
 	/**
 	 * Return this button to its initial state
 	 */

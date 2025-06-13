@@ -11,7 +11,10 @@ public class GUIObj_Params {
 	 * The name for the object
 	 */
 	public final String name;
-	
+	/**
+	 * The unique object index
+	 */
+	public final int objIdx;
 	/**
 	 * Type of the gui object to build
 	 */
@@ -66,8 +69,9 @@ public class GUIObj_Params {
 	 * @param _renderCreationFrmtVals format values to describe and pass to renderer
 	 * @param _buttonFlags
 	 */
-	public GUIObj_Params(String _name, GUIObj_Type _objType, int _boolFlagIDX, boolean[] _configFlags, boolean[] _renderCreationFrmtVals, boolean[] _buttonFlags) {
+	public GUIObj_Params(int _objIdx, String _name, GUIObj_Type _objType, int _boolFlagIDX, boolean[] _configFlags, boolean[] _renderCreationFrmtVals, boolean[] _buttonFlags) {
 		name = _name;
+		objIdx = _objIdx;
 		objType = _objType;
 		boolFlagIDX = _boolFlagIDX;
 		renderCreationFrmtVals = new boolean[_renderCreationFrmtVals.length];
@@ -78,8 +82,8 @@ public class GUIObj_Params {
 		System.arraycopy(_buttonFlags, 0, buttonFlags, 0, _buttonFlags.length);
 	}
 
-	public GUIObj_Params(String _name, GUIObj_Type _objType, boolean[] _configFlags, boolean[] _renderCreationFrmtVals) {
-		this(_name, _objType, -1, _configFlags, _renderCreationFrmtVals, new boolean[0]);
+	public GUIObj_Params(int _objIdx, String _name, GUIObj_Type _objType, boolean[] _configFlags, boolean[] _renderCreationFrmtVals) {
+		this(_objIdx, _name, _objType, -1, _configFlags, _renderCreationFrmtVals, new boolean[0]);
 	}
 	
 	/**
@@ -88,6 +92,7 @@ public class GUIObj_Params {
 	 */
 	public GUIObj_Params(GUIObj_Params otr) {
 		name=otr.name;
+		objIdx = otr.objIdx;
 		objType=otr.objType;
 		boolFlagIDX=otr.boolFlagIDX;
 		System.arraycopy(otr.minMaxMod, 0, minMaxMod, 0, otr.minMaxMod.length);		

@@ -58,9 +58,10 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 		// show Button Text
 		ri.showText(owner.getValueAsString(), 0, 0);
 	}
-	
-	private static boolean isFirstButton = true;
 	/**
+	 * TODO come up with a mechanism to perform this - it must be aware and able to modify previous button's hotspot. 
+	 * For now, this is done in UIObjectManager.
+	 * 
 	 * Recalculate the lower right location of the hotspot for the owning UI object
 	 * Buttons are dependent on the size of their neighbors for their own size, shrinking or stretching to fit, 
 	 * depending on the space available, so this function will not successfully automate this process for buttons, 
@@ -75,17 +76,7 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	 */
 	@Override
 	public myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {
-		//set based on passed new start
-		float halfWidth =  menuWidth*.5f;
-		float[] startXendX = (isFirstButton ? new float[] {newStart.x, halfWidth} : new float[] {halfWidth, menuWidth} );
-		start = new myPointf(startXendX[0],newStart.y, newStart.z);
-		float buttonHeight = 1.1f * lineHeight;
-		// End point x is width of text further than start x, lineHeight further than start y text
-		end = new myPointf(startXendX[1], start.y + buttonHeight, start.z);
-		// return the next object's start location
-		float nextPtY = (isFirstButton ? start.y : end.y);
-		isFirstButton = !isFirstButton;
-		return new myPointf(newStart.x, nextPtY, start.z);	
+		return new myPointf(newStart);	
 	}
 
 	@Override
