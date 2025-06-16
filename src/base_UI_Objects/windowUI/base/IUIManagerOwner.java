@@ -86,13 +86,13 @@ public interface IUIManagerOwner {
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
 	 * 				the second element is true label
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBtnObjMap);
+	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
 	
 	/**
 	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)

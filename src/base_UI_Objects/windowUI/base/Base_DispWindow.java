@@ -355,17 +355,17 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
 	 * 				the second element is true label
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBtnObjMap) {
+	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
 		// build the Non button UI objects
 		setupGUIObjsAras(tmpUIObjMap);
 		// build the button region, using the existing size of the non-button map as a start index
-		setupGUIBtnAras(tmpUIObjMap.size(), tmpUIBtnObjMap);
+		setupGUIBoolSwitchAras(tmpUIObjMap.size(), tmpUIBoolSwitchObjMap);
 	}
 	
 	/**
@@ -390,13 +390,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * Build UI button objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
 	 * @param firstIdx : the first index to use in the map/as the objIdx
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
 	 * 				the second element is true label
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	protected abstract void setupGUIBtnAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBtnObjMap);		
+	protected abstract void setupGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);		
 	
 	/**
 	 * Called by privFlags bool struct, to update uiUpdateData when boolean flags have changed
@@ -1087,13 +1087,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * clear button next frame - to act like momentary switch.  will also clear UI object
 	 * @param idx
 	 */
-	protected final void clearBtnNextFrame(int idx) {uiMgr.clearBtnNextFrame(idx);}
+	protected final void clearSwitchNextFrame(int idx) {uiMgr.clearSwitchNextFrame(idx);}
 		
 	/**
 	 * add a button to clear after next draw
 	 * @param idx index of button to clear
 	 */
-	protected final void addPrivBtnToClear(int idx) {uiMgr.addPrivBtnToClear(idx);}
+	protected final void addPrivSwitchToClear(int idx) {uiMgr.addPrivSwitchToClear(idx);}
 	
 	/**
 	 * Access private flag values

@@ -128,7 +128,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	protected final void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal) {
 		switch(idx){
 			case resetSimIDX			: {
-				if(val) {simExec.resetSimExec(true); addPrivBtnToClear(resetSimIDX);}break;}
+				if(val) {simExec.resetSimExec(true); addPrivSwitchToClear(resetSimIDX);}break;}
 			case drawVisIDX				:{
 				simExec.setDoDrawViz(val);break;}
 			case conductExpIDX			: {
@@ -137,7 +137,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 					simExec.setConductSweepExperiment(true);
 					simExec.initializeTrials(getUIDataUpdater().getIntValue(gIDX_ExpLength), getUIDataUpdater().getIntValue(gIDX_NumExpTrials));
 					AppMgr.setSimIsRunning(true);
-					addPrivBtnToClear(conductExpIDX);
+					addPrivSwitchToClear(conductExpIDX);
 				} 
 				break;}
 			case conductSweepExpIDX			: {
@@ -146,7 +146,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 					simExec.setConductSweepExperiment(false);
 					simExec.initializeTrials(getUIDataUpdater().getIntValue(gIDX_ExpLength), getUIDataUpdater().getIntValue(gIDX_NumExpTrials));
 					AppMgr.setSimIsRunning(true);
-					addPrivBtnToClear(conductSweepExpIDX);
+					addPrivSwitchToClear(conductSweepExpIDX);
 				} 
 				break;}				
 			default :{
@@ -217,36 +217,36 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	/**
 	 * Build UI button objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
 	 * @param firstIdx : the first index to use in the map/as the objIdx
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
 	 * 				the second element is true label
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
 	@Override
-	protected final void setupGUIBtnAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBtnObjMap) {		
+	protected final void setupGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {		
 
 		//By here all non-button objects should be created already
 		//TODO use the same obj map as tmpUIObjMap
 		int idx=firstIdx;
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Visualization Debug", "Enable Debug"));  
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Reset_Sim", "Resetting Simulation", "Reset Simulation", resetSimIDX));  
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Draw_Vis", "Drawing Vis", "Render Visualization",  drawVisIDX));  
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Run_Experiment", "Experimenting", "Run Experiment", conductExpIDX));  
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Sweep_Expermient", "Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment", conductSweepExpIDX));  
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Visualization Debug", "Enable Debug"));  
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Reset_Sim", "Resetting Simulation", "Reset Simulation", resetSimIDX));  
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Draw_Vis", "Drawing Vis", "Render Visualization",  drawVisIDX));  
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Run_Experiment", "Experimenting", "Run Experiment", conductExpIDX));  
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Sweep_Expermient", "Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment", conductSweepExpIDX));  
 
-		setupGUIBtnAras_Sim(tmpUIBtnObjMap);
+		setupGUIBtnAras_Sim(tmpUIBoolSwitchObjMap);
 	}//setupGUIObjsAras
 
 	/**
 	 * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing sim windows to add to button region
-	 * USE tmpUIBtnObjMap.size() for start idx
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * USE tmpUIBoolSwitchObjMap.size() for start idx
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is true label
 	 * 				the second element is false label
 	 * 				the third element is integer flag idx 
 	 */
-	protected abstract void setupGUIBtnAras_Sim(TreeMap<String, GUIObj_Params> tmpUIBtnObjMap);
+	protected abstract void setupGUIBtnAras_Sim(TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
 	
 	/**
 	 * Return the list to use for sim layout

@@ -198,15 +198,15 @@ public class UIObjectManager {
 		// ui object values - keyed by object idx, value is object array of describing values
 		TreeMap<String, GUIObj_Params> tmpUIObjMap = new TreeMap<String, GUIObj_Params>();
 		// ui button values : map keyed by objId of object arrays : {true label, false label, index in application}
-		TreeMap<String, GUIObj_Params> tmpUIBtnObjMap = new TreeMap<String, GUIObj_Params>();
+		TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap = new TreeMap<String, GUIObj_Params>();
 		//  Get configurations for all UI objects from owner implementation.
-		owner.setupOwnerGUIObjsAras(tmpUIObjMap, tmpUIBtnObjMap);
+		owner.setupOwnerGUIObjsAras(tmpUIObjMap, tmpUIBoolSwitchObjMap);
 		
 		//TODO merge this to build gui objs and priv buttons together (i.e. privButtons are gui objects)
 		//build ui objects
-		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size() + tmpUIBtnObjMap.size()]; // list of modifiable gui objects
+		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size() + tmpUIBoolSwitchObjMap.size()]; // list of modifiable gui objects
 		// Build UI Objects
-		_uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjMap, tmpUIBtnObjMap, _uiClkCoords);
+		_uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjMap, tmpUIBoolSwitchObjMap, _uiClkCoords);
 		
 		// Get total number of booleans (not just buttons) for application
 		int _numPrivFlags = owner.getTotalNumOfPrivBools();
@@ -550,13 +550,13 @@ public class UIObjectManager {
 		GUIObj_Params obj;
 		String[] labels = new String[]{falseLabel, trueLabel};
 		// boolean flag toggle, attached to a privFlags, 
-		// TODO : develop multi-line renderer for buttons. Until then always use
+		// TODO : develop multi-line renderer for buttons. Until then always use default
 		obj = new GUIObj_Params(objIdx, name, GUIObj_Type.Switch, boolFlagIdx, configBoolVals, dfltRenderUIBtnFmtVals, buttonFlags);
 		obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
 		obj.initVal = initVal;
 		obj.setListVals(labels);
 		// set object colors
-		obj.setBtnColors(_getButtonColors(labels.length));
+		obj.setBtnColors(btnColors);
 		return obj;		
 	}
 	
@@ -620,12 +620,15 @@ public class UIObjectManager {
 	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels, double initVal, boolean[] configBoolVals, boolean[] buttonTypeFlags) {
 		GUIObj_Params obj;
 		// Not a toggle
+		// TODO : develop multi-line renderer for buttons. Until then always use default
 		obj = new GUIObj_Params(objIdx, name, GUIObj_Type.Button, -1, configBoolVals, dfltRenderUIBtnFmtVals, buttonTypeFlags);		
 		obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
 		obj.initVal = (initVal >= 0 ? (initVal < labels.length ? initVal : labels.length) : 0);
 		obj.setListVals(labels);
-		// set object colors
-		obj.setBtnColors(_getButtonColors(labels.length));
+		// set random object state colors
+		int[][] resClrs= new int[labels.length][4];
+		for(int i=0;i<labels.length;++i) {resClrs[i] = MyMathUtils.randomIntClrAra(150, 100, 150);}
+		obj.setBtnColors(resClrs);
 		return obj;		
 	}
 		
@@ -635,15 +638,6 @@ public class UIObjectManager {
 	 */
 	public GUIObj_Params buildDebugButton(int objIdx, String trueLabel, String falseLabel) {
 		return uiObjInitAra_Switch(objIdx, "Debug Button", trueLabel, falseLabel, Base_BoolFlags.debugIDX);
-	}
-	
-	
-	
-	private int[][] _getButtonColors(int numBtns){
-		if(numBtns == 2) {			return btnColors;		}
-		int[][] res= new int[numBtns][4];
-		for(int i=0;i<numBtns;++i) {res[i] = MyMathUtils.randomIntClrAra(150, 100, 150);}
-		return res;
 	}
 	
 	/**
@@ -741,13 +735,13 @@ public class UIObjectManager {
 		if(tmpUIObjMap.size() > 0) {
 			float textHeightOffset = AppMgr.getTextHeightOffset();
 
-			// build non-button objects
-			int btnIdx = 0;
+			// build non-flag-backed switch objects
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
 				int i = entry.getValue().objIdx;
-				++btnIdx;
 				_buildObj(i, entry, uiClkRect);		
 			}
+
+			int btnIdx = tmpUIObjMap.size();
 			// build button objects : object idx is after all non-button objects have been built
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIBtnMap.entrySet()) {
 				_buildObj(btnIdx++, entry, uiClkRect);		
@@ -1111,13 +1105,13 @@ public class UIObjectManager {
 	 * clear button next frame - to act like momentary switch.  will also clear UI object
 	 * @param idx
 	 */
-	public final void clearBtnNextFrame(int idx) {addPrivBtnToClear(idx);		checkAndSetBoolValue(idx, false);}
+	public final void clearSwitchNextFrame(int idx) {addPrivSwitchToClear(idx);		checkAndSetBoolValue(idx, false);}
 		
 	/**
 	 * add a button to clear after next draw
 	 * @param idx index of button to clear
 	 */
-	public final void addPrivBtnToClear(int idx) {		_privFlagsToClear.add(idx);	}
+	public final void addPrivSwitchToClear(int idx) {		_privFlagsToClear.add(idx);	}
 
 	/**
 	 * sets flag values without calling instancing window flag handler - only for init!

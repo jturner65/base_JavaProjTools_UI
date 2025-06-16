@@ -118,26 +118,27 @@ public class UI_TestWindow2D extends Base_DispWindow {
 		tmpUIObjMap.put("gIDX_ListVal2", uiMgr.uiObjInitAra_List(gIDX_ListVal2, 0.0, "List of Names 2", listOfNames2));                                                                     
 		tmpUIObjMap.put("gIDX_FloatVal3", uiMgr.uiObjInitAra_Float(gIDX_FloatVal3, new double[]{1.0f,100.0f,.0001f}, floatVal3, "Float Value 3"));   	                                                            
 	}//setupGUIObjsAras
+	
 	/**
 	 * Build UI button objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
 	 * @param firstIdx : the first index to use in the map/as the objIdx
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is true label
 	 * 				the second element is false label
 	 * 				the third element is integer flag idx 
 	 */
 	@Override
-	protected final void setupGUIBtnAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBtnObjMap) {
+	protected final void setupGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
 		int idx=firstIdx;
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Debugging", "Enable Debug"));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button1_IDX","Button 1 On", "Button 1 Off", button1_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button2_IDX","Button 2 On", "Button 2 Off", button2_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button3_IDX","Button 3 On", "Button 3 Off", button3_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button4_IDX","Button 4 On", "Button 4 Off", button4_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button5_IDX","Button 5 On", "Button 5 Off", button5_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button6_IDX","Button 6 On", "Button 6 Off", button6_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button7_IDX","Button 7 On", "Button 7 Off", button7_IDX));
-	}//setupGUIBtnAras
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Debugging", "Enable Debug"));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button1_IDX","Button 1 On", "Button 1 Off", button1_IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button2_IDX","Button 2 On", "Button 2 Off", button2_IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button3_IDX","Button 3 On", "Button 3 Off", button3_IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button4_IDX","Button 4 On", "Button 4 Off", button4_IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button5_IDX","Button 5 On", "Button 5 Off", button5_IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button6_IDX","Button 6 On", "Button 6 Off", button6_IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button7_IDX","Button 7 On", "Button 7 Off", button7_IDX));
+	}//setupGUIBoolSwitchAras
 	
 	@Override
 	protected UIDataUpdater buildUIDataUpdateObject() {

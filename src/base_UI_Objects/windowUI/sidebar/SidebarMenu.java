@@ -141,13 +141,13 @@ public class SidebarMenu extends Base_DispWindow{
 	
 	/**
 	 * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing DES sim windows to add to button region
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is true label
 	 * 				the second element is false label
 	 * 				the third element is integer flag idx 
 	 */
 	@Override
-	protected final void setupGUIBtnAras(int firstIdx,TreeMap<String, GUIObj_Params> tmpUIBtnObjMap) {}
+	protected final void setupGUIBoolSwitchAras(int firstIdx,TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {}
 	
 	public void setAllFuncBtnLabels(int _funRowIDX, String[] BtnLabels) {btnConfig.setAllFuncBtnLabels(_funRowIDX, BtnLabels);}
 	
