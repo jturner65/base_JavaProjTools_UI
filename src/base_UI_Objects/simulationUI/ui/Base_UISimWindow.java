@@ -230,10 +230,10 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		//TODO use the same obj map as tmpUIObjMap
 		int idx=firstIdx;
 		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Visualization Debug", "Enable Debug"));  
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "Reset_Sim", "Resetting Simulation", "Reset Simulation", resetSimIDX));  
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "Draw_Vis", "Drawing Vis", "Render Visualization",  drawVisIDX));  
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "Run_Experiment", "Experimenting", "Run Experiment", conductExpIDX));  
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "Sweep_Expermient", "Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment", conductSweepExpIDX));  
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Reset_Sim", "Resetting Simulation", "Reset Simulation", resetSimIDX));  
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Draw_Vis", "Drawing Vis", "Render Visualization",  drawVisIDX));  
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Run_Experiment", "Experimenting", "Run Experiment", conductExpIDX));  
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Sweep_Expermient", "Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment", conductSweepExpIDX));  
 
 		setupGUIBtnAras_Sim(tmpUIBtnObjMap);
 	}//setupGUIObjsAras

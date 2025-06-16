@@ -1232,7 +1232,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		boolean showWin = dispFlags.getShowWin();
 		if(!showWin){return mod;}
 		boolean[] retVals = new boolean[] {false,false};
-		msClickInUIObj = uiMgr.handleMouseClick(mouseX, mouseY, mseBtn, retVals);
+		msClickInUIObj = uiMgr.handleMouseClick(mouseX, mouseY, mseBtn, AppMgr.isClickModUIVal(), retVals);
 		if (retVals[1]){dispFlags.setUIObjMod(true);}
 		if (retVals[0]){return true;}
 		

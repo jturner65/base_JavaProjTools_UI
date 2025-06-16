@@ -130,13 +130,13 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	protected final void setupGUIBtnAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBtnObjMap) {
 		int idx=firstIdx;
 		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Debugging", "Enable Debug"));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button1_IDX",new String[]{"Button 1 On", "Button 1 Off"}, button1_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button2_IDX",new String[]{"Button 2 On", "Button 2 Off"}, button2_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button3_IDX",new String[]{"Button 3 On", "Button 3 Off"}, button3_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button4_IDX",new String[]{"Button 4 On", "Button 4 Off"}, button4_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button5_IDX",new String[]{"Button 5 On", "Button 5 Off"}, button5_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button6_IDX",new String[]{"Button 6 On", "Button 6 Off"}, button6_IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button7_IDX",new String[]{"Button 7 On", "Button 7 Off"}, button7_IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button1_IDX","Button 1 On", "Button 1 Off", button1_IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button2_IDX","Button 2 On", "Button 2 Off", button2_IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button3_IDX","Button 3 On", "Button 3 Off", button3_IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button4_IDX","Button 4 On", "Button 4 Off", button4_IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button5_IDX","Button 5 On", "Button 5 Off", button5_IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button6_IDX","Button 6 On", "Button 6 Off", button6_IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button7_IDX","Button 7 On", "Button 7 Off", button7_IDX));
 	}//setupGUIBtnAras
 	
 	@Override

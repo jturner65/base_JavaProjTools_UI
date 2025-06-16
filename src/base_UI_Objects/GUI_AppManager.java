@@ -30,6 +30,8 @@ import base_Utils_Objects.appManager.Java_AppManager;
 
 /**
  * this class manages all common functionality for a gui application, independent of renderer
+ * 
+ * The primary application class should inherit from this class
  * @author john
  *
  */

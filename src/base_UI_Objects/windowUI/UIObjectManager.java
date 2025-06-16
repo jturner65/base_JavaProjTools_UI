@@ -29,8 +29,7 @@ import base_Utils_Objects.io.messaging.MessageObject;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 
 /**
- * This class will manage all aspects of UI object creation, placement, rendering and interaction.
- * TODO Build an interface with necessary methods for this construct for its owner to interact with.
+ * This class manages all aspects of UI object creation, placement, rendering and interaction.
  * @author John Turner
  *
  */
@@ -131,7 +130,7 @@ public class UIObjectManager {
 	 *  idx 1: if true, build prefix ornament                                                      
 	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 */
-	private static final boolean[] dfltUIButtonFmtVals =  new boolean[] {false, false, false};
+	private static final boolean[] dfltRenderUIBtnFmtVals =  new boolean[] {false, false, false};
 	/**
 	 * Boolean array of default button type format values, if not otherwise specified 
 	 *  idx 0: Whether this button should stay enabled until next draw frame                                                
@@ -152,17 +151,15 @@ public class UIObjectManager {
 	 */
 	private final int[][] btnColors = new int[][] {new int[]{255,215,215,255}, new int[]{220,255,220,255}};
 	
-//	/**
-//	 * False button color to use if button labels are the same and using random colors
-//	 */
-//	private static final int[] baseBtnFalseClr = new int[]{180,180,180, 255};
 	/**
 	 * array of priv buttons to be cleared next frame - 
 	 * should always be empty except when buttons need to be cleared
 	 */
 	private ArrayList<Integer> _privFlagsToClear;
 	
-	// Class name to use for any debugging messages
+	/**
+	 *  Class name to use for any debugging messages
+	 */
 	private final String dispMsgClassName;
 	
 	public UIObjectManager(IRenderInterface _ri, IUIManagerOwner _owner, GUI_AppManager _AppMgr, MessageObject _msgObj) {
@@ -202,10 +199,9 @@ public class UIObjectManager {
 		TreeMap<String, GUIObj_Params> tmpUIObjMap = new TreeMap<String, GUIObj_Params>();
 		// ui button values : map keyed by objId of object arrays : {true label, false label, index in application}
 		TreeMap<String, GUIObj_Params> tmpUIBtnObjMap = new TreeMap<String, GUIObj_Params>();
-		//  set up all gui objects for this window
-		//setup all ui objects and record final y value in sidebar menu for UI Objects in this window
-		// also set up all window-specific boolean buttons for this window
+		//  Get configurations for all UI objects from owner implementation.
 		owner.setupOwnerGUIObjsAras(tmpUIObjMap, tmpUIBtnObjMap);
+		
 		//TODO merge this to build gui objs and priv buttons together (i.e. privButtons are gui objects)
 		//build ui objects
 		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size() + tmpUIBtnObjMap.size()]; // list of modifiable gui objects
@@ -233,7 +229,7 @@ public class UIObjectManager {
 	 * @param cpy
 	 */
 	public final void initUIClickCoords(float[] cpy){System.arraycopy(cpy, 0, _uiClkCoords, 0, _uiClkCoords.length);}
-	
+
 	/**
 	 * Build the GUIObj_Params that describes a label object
 	 * @param initVal initial value for the object
@@ -266,7 +262,9 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Label(int objIdx, double initVal, String name, boolean[] boolFmtVals) {
-		return new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, boolFmtVals);
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, boolFmtVals);
+		obj.initVal = initVal;
+		return obj;
 	}
 	
 	/**
@@ -279,17 +277,6 @@ public class UIObjectManager {
 	 */
 	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
-	}	
-	/**
-	 * Build the GUIObj_Params that describes a integer object that is multi-line
-	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-	 * @param initVal initial value for the object
-	 * @param name name of the object
-	 * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
-	 * @return
-	 */
-	public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String name) {
-		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
 	}	
 	
 	/**
@@ -306,6 +293,30 @@ public class UIObjectManager {
 	 */
 	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
 		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
+	}	
+	
+	/**
+	 * Build the GUIObj_Params that describes a integer object that is multi-line
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String name) {
+		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+	}	
+	
+	/**
+	 * Build the GUIObj_Params that describes a integer object that is multi-line
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the defaultmulti-line enabled UI format boolean values
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, boolVals, dfltMultiLineUIFmtVals);
 	}	
 	
 	/**
@@ -330,20 +341,7 @@ public class UIObjectManager {
 		obj.initVal = initVal;
 		return obj;
 	}
-	
-	/**
-	 * Build the GUIObj_Params that describes a float object that is multi-line
-	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-	 * @param initVal initial value for the object
-	 * @param name name of the object
-	 * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
-	 * @return
-	 */
-	public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String name) {
-		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
-	}
-	
-	
+		
 	/**
 	 * Build the GUIObj_Params that describes a float object
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
@@ -355,7 +353,6 @@ public class UIObjectManager {
 	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name) {
 		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
 	}
-
 	
 	/**
 	 * Build the GUIObj_Params that describes a float object
@@ -371,6 +368,34 @@ public class UIObjectManager {
 	 */
 	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
 		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
+	}
+		
+	/**
+	 * Build the GUIObj_Params that describes a float object that is multi-line
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String name) {
+		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+	}
+
+	/**
+	 * Build the GUIObj_Params that describes a float object
+	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
+	 * @param initVal initial value for the object
+	 * @param name name of the object
+	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 * NOTE : this method uses the default multi-line enabled UI format boolean values
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
+		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, boolVals, dfltMultiLineUIFmtVals);
 	}
 	
 	/**
@@ -474,6 +499,7 @@ public class UIObjectManager {
 	
 	/**
 	 * Build the GUIObj_Params that describes a list object
+	 * @param objIdx the index of this object in the guiObjAra
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
@@ -493,55 +519,26 @@ public class UIObjectManager {
 		obj.initVal = initVal;
 		obj.setListVals(listElems);	
 		return obj;	
-	}	
-	/**
-	 * Build the GUIObj_Params that describes a button object - boolean button
-	 * @param name the name of this button
-	 * @param labels the list of labels that describe the valid states for this button
-	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
-	 * @return
-	 */
-	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String trueLabel, String falseLabel, int boolFlagIdx) {
-		return uiObjInitAra_Btn(objIdx, name, new String[]{falseLabel, trueLabel}, 0, boolFlagIdx, dfltUIBehaviorVals, dfltUIButtonTypeVals);
 	}
-
+	
+	
 	/**
-	 * Build the GUIObj_Params that describes a button object
-	 * @param name the name of this button
-	 * @param labels the list of labels that describe the valid states for this button
-	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
+	 * Build the GUIObj_Params that describes a boolean switch object, backed by a flag structure
+	 * @param objIdx the index of this object in the guiObjAra
+	 * @param name the name of this switch
+	 * @param trueLabel - label for this switch's true state
+	 * @param falseLabel - label for this switch's false state
+	 * @param boolFlagIdx the index of the boolean flag that interacts with this switch
+	 * NOTE : this method uses the default behavior and UI format boolean values for switch object
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels, int boolFlagIdx) {
-		return uiObjInitAra_Btn(objIdx, name, labels, 0, boolFlagIdx, dfltUIBehaviorVals, dfltUIButtonTypeVals);
+	public final GUIObj_Params uiObjInitAra_Switch(int objIdx, String name, String trueLabel, String falseLabel, int boolFlagIdx) {
+		return uiObjInitAra_Switch(objIdx, name, trueLabel, falseLabel, 0, boolFlagIdx, dfltUIBehaviorVals, dfltUIButtonTypeVals);
 	}
 	
 	/**
-	 * Build the GUIObj_Params that describes a button object
-	 * @param name the name of this button
-	 * @param labels the list of labels that describe the valid states for this button
-	 * @param initVal the initial state this button should have
-	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
-	 * @return
-	 */
-	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels, double initVal, int boolFlagIdx) {
-		return uiObjInitAra_Btn(objIdx, name, labels, initVal, boolFlagIdx, dfltUIBehaviorVals, dfltUIButtonTypeVals);
-	}
-	
-	/**
-	 * Build the GUIObj_Params that describes a button object
-	 * @param name the name of this button
-	 * @param labels the list of labels that describe the valid states for this button
-	 * @param btnIdx the index of this button
-	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
-	 * @param boolVals 
-	 * @return
-	 */
-	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels, double initVal, int boolFlagIdx, boolean[] configBoolVals) {
-		return uiObjInitAra_Btn(objIdx, name, labels, initVal, boolFlagIdx, configBoolVals, dfltUIButtonTypeVals);		
-	}
-	/**
-	 * Build the GUIObj_Params that describes a button object
+	 * Build the GUIObj_Params that describes a boolean switch object, backed by a flag structure
+	 * @param objIdx the index of this object in the guiObjAra
 	 * @param name the name of this button
 	 * @param labels the list of labels that describe the valid states for this button
 	 * @param btnIdx the index of this button
@@ -549,15 +546,12 @@ public class UIObjectManager {
 	 * @param boolVals
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels, double initVal, int boolFlagIdx, boolean[] configBoolVals, boolean[] buttonFlags) {
+	public final GUIObj_Params uiObjInitAra_Switch(int objIdx, String name, String trueLabel, String falseLabel, double initVal, int boolFlagIdx, boolean[] configBoolVals, boolean[] buttonFlags) {
 		GUIObj_Params obj;
-		if (boolFlagIdx == -1) { 
-			// Not a toggle
-			obj = new GUIObj_Params(objIdx, name, GUIObj_Type.Button, boolFlagIdx, configBoolVals, dfltUIButtonFmtVals, dfltUIButtonTypeVals);
-		} else {
-			// boolean flag toggle, attached to privFlags
-			obj = new GUIObj_Params(objIdx, name, GUIObj_Type.Switch, boolFlagIdx, configBoolVals, dfltUIButtonFmtVals, dfltUIButtonTypeVals);
-		}
+		String[] labels = new String[]{falseLabel, trueLabel};
+		// boolean flag toggle, attached to a privFlags, 
+		// TODO : develop multi-line renderer for buttons. Until then always use
+		obj = new GUIObj_Params(objIdx, name, GUIObj_Type.Switch, boolFlagIdx, configBoolVals, dfltRenderUIBtnFmtVals, buttonFlags);
 		obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
 		obj.initVal = initVal;
 		obj.setListVals(labels);
@@ -565,6 +559,85 @@ public class UIObjectManager {
 		obj.setBtnColors(_getButtonColors(labels.length));
 		return obj;		
 	}
+	
+	/**
+	 * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a listbox)
+	 * @param objIdx the index of this object in the guiObjAra
+	 * @param name the name of this button
+	 * @param labels the list of labels that describe the valid states for this button
+	 * NOTE : this method uses the default UI behavior and button type behavior values for button object
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels) {
+		return uiObjInitAra_Btn(objIdx, name, labels, 0, dfltUIBehaviorVals, dfltUIButtonTypeVals);
+	}
+	
+	/**
+	 * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a listbox)
+	 * @param objIdx the index of this object in the guiObjAra
+	 * @param name the name of this button
+	 * @param initVal the initial state this button should have
+	 * @param labels the list of labels that describe the valid states for this button
+	 * NOTE : this method uses the default UI behavior and button type behavior values for button object
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, double initVal, String name, String[] labels) {
+		return uiObjInitAra_Btn(objIdx, name, labels, initVal, dfltUIBehaviorVals, dfltUIButtonTypeVals);
+	}
+
+	/**
+	 * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a listbox)
+	 * @param objIdx the index of this object in the guiObjAra
+	 * @param name the name of this button
+	 * @param labels the list of labels that describe the valid states for this button
+	 * @param initVal the initial value to be enabled for this button
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     * NOTE : this method uses the default button type behavior values for button object
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, double initVal, String name, String[] labels, boolean[] configBoolVals) {
+		return uiObjInitAra_Btn(objIdx, name, labels, initVal, configBoolVals, dfltUIButtonTypeVals);		
+	}
+
+	/**
+	 * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a listbox)
+	 * @param objIdx the index of this object in the guiObjAra
+	 * @param name the name of this button
+	 * @param labels the list of labels that describe the valid states for this button
+	 * @param initVal the initial value to be enabled for this button
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 * @param buttonFmtFlags boolean array of default button type format values, if not otherwise specified 
+	 *  			idx 0: Whether this button should stay enabled until next draw frame                                                
+	 *  			idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
+	 * @return
+	 */
+	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels, double initVal, boolean[] configBoolVals, boolean[] buttonTypeFlags) {
+		GUIObj_Params obj;
+		// Not a toggle
+		obj = new GUIObj_Params(objIdx, name, GUIObj_Type.Button, -1, configBoolVals, dfltRenderUIBtnFmtVals, buttonTypeFlags);		
+		obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
+		obj.initVal = (initVal >= 0 ? (initVal < labels.length ? initVal : labels.length) : 0);
+		obj.setListVals(labels);
+		// set object colors
+		obj.setBtnColors(_getButtonColors(labels.length));
+		return obj;		
+	}
+		
+	/**
+	 * Convenience method to build debug button, since used as first button in many applications.
+	 * @return
+	 */
+	public GUIObj_Params buildDebugButton(int objIdx, String trueLabel, String falseLabel) {
+		return uiObjInitAra_Switch(objIdx, "Debug Button", trueLabel, falseLabel, Base_BoolFlags.debugIDX);
+	}
+	
+	
 	
 	private int[][] _getButtonColors(int numBtns){
 		if(numBtns == 2) {			return btnColors;		}
@@ -658,7 +731,6 @@ public class UIObjectManager {
 		_guiObjsAra[guiObjIDX].setRenderer(renderer);		
 	}//_buildObj
 	
-	
 	/**
 	 * 
 	 * @param tmpUIObjMap
@@ -704,7 +776,7 @@ public class UIObjectManager {
 			uiClkRect[3] = lastObjWasMultiLine ?  _guiObjsAra[_guiObjsAra.length-1].getEnd().y : newStPt.y;
 			uiClkRect[3] += .5f*textHeightOffset;
 			// now address buttons' clickable regions	
-			if(_guiButtonIDXMap.size() > 0) {			uiClkRect[3] =_buildPrivBtnRects(uiClkRect);	}			
+			if(_guiButtonIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(uiClkRect);	}			
 						
 		}// UI objects exist
 		// return final y coordinate
@@ -721,7 +793,7 @@ public class UIObjectManager {
 	 * set up boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
 	 * @param numBtns number of buttons to make
 	 */
-	private float _buildPrivBtnRects(float[] uiClkRect){
+	private float _buildHotSpotRects(float[] uiClkRect){
 		float yOffset = AppMgr.getTextHeightOffset();
 		float maxBtnLen = 0.98f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
 		//uiClkRect[3] += yOffset;
@@ -782,16 +854,8 @@ public class UIObjectManager {
 		}		
 		uiClkRect[3] += AppMgr.getRowStYOffset();
 		return uiClkRect[3];
-	}//_buildPrivBtnRects
-	
-	/**
-	 * Convenience method to build debug button, since used as first button in many applications.
-	 * @return
-	 */
-	public GUIObj_Params buildDebugButton(int objIdx, String trueLabel, String falseLabel) {
-		return uiObjInitAra_Btn(objIdx, "Debug Button", trueLabel, falseLabel, Base_BoolFlags.debugIDX);
-	}
-	
+	}//_buildHotSpotRects
+
 	/**
 	 * Set labels of GUI Switch objects for both true state and false state. Will be updated on next draw
 	 * @param idx idx of button label to set
@@ -799,7 +863,7 @@ public class UIObjectManager {
 	 * @param fLbl new false label
 	 */
 	public void setGUISwitchLabels(int idx, String tLbl, String fLbl) {
-		this._guiSwitchIDXMap.get(idx).setBooleanLabelVals(new String[] {fLbl, tLbl}, false);
+		_guiSwitchIDXMap.get(idx).setBooleanLabelVals(new String[] {fLbl, tLbl}, false);
 	}
 	
 	/**
@@ -861,6 +925,79 @@ public class UIObjectManager {
 	 */
 	public final void updateFloatValFromExecCode(int idx, float value) {_guiObjsAra[idx].setVal(value);_uiUpdateData.setFloatValue(idx, value);}
 	
+	/**
+	 * Set the uiUpdateData structure and update the owner if the value has changed for an int-based UIobject (integer or list)
+	 * @param UIobj object being set/modified
+	 * @param UIidx the index of the object in _uiUpdateData
+	 */
+	public final void setUI_IntVal(Base_GUIObj UIobj, int UIidx) {
+		int ival = UIobj.getValueAsInt();
+		int origVal = _uiUpdateData.getIntValue(UIidx);
+		if(checkAndSetIntVal(UIidx, ival)) {
+			if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
+			//Special per-obj int handling, if pertinent
+			owner.setUI_OwnerIntValsCustom(UIidx, ival, origVal);
+		}
+	}//setUI_IntVal
+	/**
+	 * Set the uiUpdateData structure and update the owner if the value has changed for an list-based UIobject (i.e. special case of int object)
+	 * @param UIobj object being set/modified
+	 * @param UIidx the index of the object in _uiUpdateData
+	 */
+	public final void setUI_ListVal(Base_GUIObj UIobj, int UIidx) {	setUI_IntVal(UIobj, UIidx);	}//setUI_ListVal
+	
+	/**
+	 * Set the uiUpdateData structure and update the owner if the value has changed for a non-boolean-flag-based button object (i.e. special case of list object)
+	 * @param UIobj object being set/modified
+	 * @param UIidx the index of the object in _uiUpdateData
+	 */
+	public final void setUI_BtnVal(Base_GUIObj UIobj, int UIidx) {	setUI_ListVal(UIobj, UIidx);	}//setUI_ListVal
+	
+	/**
+	 * Set the uiUpdateData structure and update the owner if the value has changed for a boolean switch backed by the privFlags structure
+	 * @param UIobj object being set/modified
+	 * @param UIidx the index of the object in _uiUpdateData
+	 */
+	public final void setUI_SwitchVal(Base_GUIObj UIobj, int UIidx) {
+		// Let flag state drive everything
+		MenuGUIObj_Switch switchObj = ((MenuGUIObj_Switch)UIobj);
+		boolean boolVal = switchObj.getValueAsBoolean();
+		// Don't use object UI idx, use priv flags idx
+		int flagIDX = switchObj.getBoolFlagIDX();
+		//boolean origVal = _uiUpdateData.getBoolValue(flagIDX);
+		setPrivFlag(flagIDX, boolVal);
+		if(checkAndSetBoolValue(flagIDX, boolVal)) {
+			if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
+			//was Special per-obj boolean handling, if pertinent
+			// ---FLAGS STRUCTURE SHOULD HANDLE THIS ALREADY---
+		}								
+		//_dispWarnMsg("setUIWinVals", "Attempting set " +boolVal + " as the value for the Switch boolean button UI object : " + objType.toStrBrf());		
+	}
+	/**
+	 * Set the uiUpdateData structure and update the owner if the value has changed for a float-based UIobject
+	 * @param UIobj object being set/modified
+	 * @param UIidx the index of the object in _uiUpdateData
+	 */
+	public final void setUI_FloatVal(Base_GUIObj UIobj, int UIidx) {
+		float val = UIobj.getValueAsFloat();
+		float origVal = _uiUpdateData.getFloatValue(UIidx);
+		if(checkAndSetFloatVal(UIidx, val)) {
+			if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
+			//Special per-obj float handling, if pertinent
+			owner.setUI_OwnerFloatValsCustom(UIidx, val, origVal);
+		}		
+	}
+	
+	/**
+	 * Set the uiUpdateData structure and update the owner if the value has changed for a label. Currently a NO-OP, since labels are not intended to be backed by UI updates.
+	 * @param UIobj
+	 * @param UIidx
+	 */
+	public final void setUI_LabelVal(Base_GUIObj UIobj, int UIidx) {
+		_dispWarnMsg("setUIWinVals", "Attempting to process the value `" + UIobj.getValueAsString()+"` from the `" + UIobj.getName()+ "` label object.");	
+	}
+		
+	
 	/***
 	 * Set UI values by object type, sending value to owner and updater
 	 * @param UIobj object to set value of
@@ -870,61 +1007,12 @@ public class UIObjectManager {
 		//Determine whether int (int or list) or float
 		GUIObj_Type objType = UIobj.getObjType();
 		switch (objType) {
-			case IntVal : {
-				int ival = UIobj.getValueAsInt();
-				int origVal = _uiUpdateData.getIntValue(UIidx);
-				if(checkAndSetIntVal(UIidx, ival)) {
-					if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
-					//Special per-obj int handling, if pertinent
-					owner.setUI_OwnerIntValsCustom(UIidx, ival, origVal);
-				}
-				break;}
-			case ListVal : {
-				int ival = UIobj.getValueAsInt();
-				int origVal = _uiUpdateData.getIntValue(UIidx);
-				if(checkAndSetIntVal(UIidx, ival)) {
-					if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
-					//Special per-obj int (list idx)-related handling, if pertinent
-					owner.setUI_OwnerIntValsCustom(UIidx, ival, origVal);
-				}
-				break;}
-			case FloatVal : {
-				float val = UIobj.getValueAsFloat();
-				float origVal = _uiUpdateData.getFloatValue(UIidx);
-				if(checkAndSetFloatVal(UIidx, val)) {
-					if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
-					//Special per-obj float handling, if pertinent
-					owner.setUI_OwnerFloatValsCustom(UIidx, val, origVal);
-				}
-				break;}
-			case LabelVal : {
-				_dispWarnMsg("setUIWinVals", "Attempting to process the value `" + UIobj.getValueAsString()+"` from the `" + UIobj.getName()+ "` label object.");				
-				break;}
-			case Switch : {
-				// Let flag state drive everything
-				MenuGUIObj_Switch switchObj = ((MenuGUIObj_Switch)UIobj);
-				boolean boolVal = switchObj.getValueAsBoolean();
-				// Don't use object UI idx, use priv flags idx
-				int flagIDX = switchObj.getBoolFlagIDX();
-				//boolean origVal = _uiUpdateData.getBoolValue(flagIDX);
-				setPrivFlag(flagIDX, boolVal);
-				if(checkAndSetBoolValue(flagIDX, boolVal)) {
-					if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
-					//was Special per-obj boolean handling, if pertinent
-					// ---FLAGS STRUCTURE SHOULD HANDLE THIS ALREADY---
-				}								
-				//_dispWarnMsg("setUIWinVals", "Attempting set " +boolVal + " as the value for the Switch boolean button UI object : " + objType.toStrBrf());
-				break;}
-			case Button : {
-				// button acts like integer input
-				int ival = UIobj.getValueAsInt();
-				int origVal = _uiUpdateData.getIntValue(UIidx);
-				if(checkAndSetIntVal(UIidx, ival)) {
-					if(UIobj.shouldUpdateConsumer()) {owner.updateOwnerCalcObjUIVals();}
-					//Special per-obj int handling, if pertinent
-					owner.setUI_OwnerIntValsCustom(UIidx, ival, origVal);
-				}
-				break;}
+			case IntVal : {			setUI_IntVal(UIobj, UIidx);			break;}
+			case ListVal : {		setUI_ListVal(UIobj, UIidx);		break;}
+			case FloatVal : {		setUI_FloatVal(UIobj, UIidx);		break;}
+			case LabelVal : {		setUI_LabelVal(UIobj, UIidx);		break;}
+			case Button : {			setUI_BtnVal(UIobj, UIidx);			break;}
+			case Switch : {			setUI_SwitchVal(UIobj, UIidx);		break;}
 			default : {
 				_dispWarnMsg("setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());
 				break;}
@@ -1439,12 +1527,14 @@ public class UIObjectManager {
 	 * @param mouseX x location on screen
 	 * @param mouseY y location on screen
 	 * @param mseBtn which button is pressed : 0 is left, 1 is right
+	 * @param isClickModUIVal whether criteria for modifying click without dragging have been specified for this application (i.e. shift is pressed or alt is pressed) 
 	 * @param retVals : idx 0 is if an object has been modified
 	 * 					idx 1 is if we should set "setUIObjMod" to true
 	 * @return _msClickObj
 	 */
-	public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn, boolean[] retVals){
+	public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn, boolean isClickModUIVal, boolean[] retVals){
 		_msClickObj = null;
+		//TODO TRACK UI COLLECTION OBJECT THAT IS CURRENTLY ACTIVE
 		if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
 			int idx = _checkInAllObjs(mouseX, mouseY);
 			if(idx >= 0) {
@@ -1452,7 +1542,7 @@ public class UIObjectManager {
 				_msBtnClicked = mseBtn; 
 				_msClickObj = _guiObjsAra[idx];
 				_msClickObj.setHasFocus();
-				if(AppMgr.isClickModUIVal()){//allows for click-mod without dragging
+				if(isClickModUIVal){//allows for click-mod without dragging
 					_setUIObjValFromClickAlone(_msClickObj);
 					//Check if modification from click has changed the value of the object
 					if(_msClickObj.getIsDirty()) {retVals[1] = true;}
@@ -1460,7 +1550,6 @@ public class UIObjectManager {
 				retVals[0] = true;
 			}
 		}			
-		//if(!retVals[0]) {			retVals[0] = _checkUIButtons(mouseX, mouseY);	}
 		return _msClickObj != null;
 	}//handleMouseClick
 	
@@ -1519,7 +1608,9 @@ public class UIObjectManager {
 	 * 			idx 0 is if an object has been modified
 	 * 			idx 1 is if we should set setUIObjMod to true in caller 
 	 */
-	public final boolean[] handleMouseWheel(int ticks, float mult) {return _handleMouseModInternal(ticks * mult);}
+	public final boolean[] handleMouseWheel(int ticks, float mult) {
+		//TODO USE UI COLLECTION OBJECT THAT IS CURRENTLY ACTIVE
+		return _handleMouseModInternal(ticks * mult);}
 	
 	/**
 	 * Handle the mouse being dragged (i.e. moved with a button pressed) from within the confines of a selected object
@@ -1530,7 +1621,9 @@ public class UIObjectManager {
 	 * 			idx 0 is if an object has been modified
 	 * 			idx 1 is if we should set setUIObjMod to true in caller 
 	 */
-	public final boolean[] handleMouseDrag(int delX, int delY, int mseBtn, boolean shiftPressed) {return _handleMouseModInternal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));}	
+	public final boolean[] handleMouseDrag(int delX, int delY, int mseBtn, boolean shiftPressed) {
+		//TODO USE UI COLLECTION OBJECT THAT IS CURRENTLY ACTIVE		
+		return _handleMouseModInternal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));}	
 	
 	/**
 	 * Set UI value for object based on non-drag modification such as click - either at initial click or when click is released
@@ -1590,43 +1683,6 @@ public class UIObjectManager {
 		ri.popMatState();	
 	}//drawAllGuiObjs
 	
-//	/**
-//	 * Draw a series of strings in a row
-//	 * @param txt
-//	 * @param loc
-//	 * @param clrAra
-//	 */
-//	private final void _dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
-//		ri.setFill(clrAra, clrAra[3]);
-//		ri.setColorValStroke(IRenderInterface.gui_Black,255);
-//		ri.drawRect(loc);		
-//		ri.setColorValFill(IRenderInterface.gui_Black,255);
-//		//ri.translate(-xOff*.5f,-yOff*.5f);
-//		ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
-//		//ri.translate(width, 0);
-//	}
-//	
-//	/**
-//	 * Draw application-specific flag buttons
-//	 * @param useRandBtnClrs
-//	 */
-//	private final void drawAppFlagButtons(boolean useRandBtnClrs) {
-//		ri.pushMatState();	
-//		ri.setColorValFill(IRenderInterface.gui_Black,255);
-//		if(useRandBtnClrs){
-//			for(int i =0; i<_privModFlgIdxs.length; ++i){
-//				int btnFlagIdx = _privFlags.getFlag(_privModFlgIdxs[i])  ? 1 : 0;
-//				_dispBttnAtLoc(_privFlagButtonLabels[btnFlagIdx][i],_privFlagBtns[i],_privFlagButtonColors[btnFlagIdx][i]);	
-//			}
-//		} else {
-//			for(int i =0; i<_privModFlgIdxs.length; ++i){
-//				int btnFlagIdx = _privFlags.getFlag(_privModFlgIdxs[i])  ? 1 : 0;
-//				_dispBttnAtLoc(_privFlagButtonLabels[btnFlagIdx][i],_privFlagBtns[i],btnColors[btnFlagIdx]);	
-//			}	
-//		}		
-//		ri.popMatState();	
-//	}//drawAppFlagButtons
-	
 	/**
 	 * What to do after the owner has finished draw command
 	 */
@@ -1634,36 +1690,35 @@ public class UIObjectManager {
 		//last thing per draw - clear btns that have been set to clear after 1 frame of display
 		if (clearPrivBtns) {clearAllPrivBtns();}
 		
-	}
-	
+	}	
 	
 	/**
 	 * Shorthand to display general information
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
-	protected void _dispInfoMsg(String funcName, String message) {msgObj.dispInfoMessage(dispMsgClassName, funcName, message);}
+	public final void _dispInfoMsg(String funcName, String message) {msgObj.dispInfoMessage(dispMsgClassName, funcName, message);}
 		
 	/**
 	 * Shorthand to display a debug message
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
-	protected void _dispDbgMsg(String funcName, String message) {msgObj.dispDebugMessage(dispMsgClassName, funcName, message);}
+	public final void _dispDbgMsg(String funcName, String message) {msgObj.dispDebugMessage(dispMsgClassName, funcName, message);}
 	
 	/**
 	 * Shorthand to display a warning message
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
-	protected void _dispWarnMsg(String funcName, String message) {msgObj.dispWarningMessage(dispMsgClassName, funcName, message);}
+	public final void _dispWarnMsg(String funcName, String message) {msgObj.dispWarningMessage(dispMsgClassName, funcName, message);}
 	
 	/**
 	 * Shorthand to display an error message
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
-	protected void _dispErrMsg(String funcName, String message) {msgObj.dispErrorMessage(dispMsgClassName, funcName, message);}
+	public final void _dispErrMsg(String funcName, String message) {msgObj.dispErrorMessage(dispMsgClassName, funcName, message);}
 	
 	
 	/**
