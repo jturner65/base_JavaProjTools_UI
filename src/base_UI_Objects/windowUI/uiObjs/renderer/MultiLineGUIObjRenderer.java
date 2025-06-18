@@ -25,7 +25,7 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	}
 
 	@Override
-	protected void _drawUIData() {
+	protected void _drawUIData(boolean isClicked) {
 		ri.showTextAra(0, owner.getUIDispAsMultiLine());	
 	}
 	/**
@@ -36,6 +36,7 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * TODO : possibly support more than 2 lines?
 	 * @return
 	 */
+	@Override
 	public final float getMaxWidth() {
 		float labelWidth = ri.getTextWidth(owner.getLabel());
 		float dispWidth = ri.getTextWidth(owner.getValueAsString());
@@ -80,4 +81,9 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 */
 	@Override
 	public boolean isMultiLine() {return true;	}
+	
+	// No need to do this, the width is recalculated on every call
+	@Override
+	public void updateWidth() {}
+
 }//MultiLineGUIObjRenderer

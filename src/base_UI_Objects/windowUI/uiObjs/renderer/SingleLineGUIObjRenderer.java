@@ -27,7 +27,7 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	}
 
 	@Override
-	protected void _drawUIData() {
+	protected void _drawUIData(boolean isClicked) {
 		ri.showText(owner.getUIDispAsSingleLine(), 0,0);
 	}
 		
@@ -35,8 +35,9 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * Return the maximum width of the owning UI object in the display.
 	 * @return
 	 */
+	@Override
 	public final float getMaxWidth() {
-		return ri.getTextWidth(owner.getLabel() + owner.getValueAsString());
+		return ri.getTextWidth(owner.getLabel() + owner.getValueAsString()) + this._ornament.getWidth();
 	}
 	
 	/**
@@ -62,5 +63,9 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 */
 	@Override
 	public boolean isMultiLine() {return false;	}
+	
+	// No need to do this, the width is recalculated on every call
+	@Override
+	public void updateWidth() {}
 
 }//class SingleLineGUIObjRenderer

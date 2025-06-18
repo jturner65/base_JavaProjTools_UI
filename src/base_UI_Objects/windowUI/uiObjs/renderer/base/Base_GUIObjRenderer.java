@@ -64,7 +64,9 @@ public abstract class Base_GUIObjRenderer {
 	 * The type of this renderer, for debug purposes
 	 */
 	private final String rendererType;
-	
+	/**
+	 * Catch-all y-offset corresponding to a previs
+	 */
 	protected final float yOffset;
 	
 	/**
@@ -101,7 +103,7 @@ public abstract class Base_GUIObjRenderer {
 		textClr = _textClr;
 		//build prefix ornament to display
 		yOffset = 0.75f * (float) _off[1];
-		if (buildPrefix && (_off != null)) {
+		if (buildPrefix) {
 			int[] prefixClr = (matchLabelColor ? textClr : MyMathUtils.randomIntClrAra());
 			System.arraycopy(prefixClr, 0, hlStrkClr, 0, hlStrkClr.length);
 			for(int i=0;i<3;++i ) {
@@ -172,7 +174,7 @@ public abstract class Base_GUIObjRenderer {
 	/**
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
 	 */
-	public final void drawDebug() {		
+	public final void drawDebug(boolean isClicked) {		
 		ri.pushMatState();
 			ri.setStrokeWt(1.0f);
 			_animCount += _animMod;
@@ -184,33 +186,34 @@ public abstract class Base_GUIObjRenderer {
 			ri.drawLine(start.x, start.y,0, end.x, end.y, 0);
 			ri.drawLine(start.x, end.y,0, end.x, start.y, 0);			
 		ri.popMatState();
-		draw();
+		draw(isClicked);
 	}//drawDebug
 	
 	/**
-	 * Draw rectangle for object - debug, button, etc
+	 * Draw rectangle for object - debug, button, etc - relative to absolute origin
 	 */
 	protected void _drawRectangle() {		ri.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);	}
 	
 	/**
 	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
-	public final void draw() {
+	public final void draw(boolean isClicked) {
+		if(isClicked) {drawHighlight();}
 		ri.pushMatState();
 			ri.translate(start.x,start.y+yOffset,0);
 			_ornament.drawPrefixObj(ri);
 			//Text is colored by fill
 			ri.setFill(textClr,textClr[3]);
-			ri.setStroke(strkClr,strkClr[3]);	
+			ri.setStroke(strkClr,strkClr[3]);
 			//draw specifics for this UI object
-			_drawUIData();
+			_drawUIData(isClicked);
 		ri.popMatState();
 	}//draw
-
+	
 	/**
 	 * Draw UI Data String - usually {label}{data value}
 	 */
-	protected abstract void _drawUIData();
+	protected abstract void _drawUIData(boolean isClicked);
 	
 	/**
 	 * Recalculate the lower right location of the hotspot for the owning UI object
@@ -252,6 +255,18 @@ public abstract class Base_GUIObjRenderer {
 	 * Set lower right corner coordinates of hotspot for the gui object this renderer draws
 	 */
 	public final void setEnd(myPointf _end) {end.set(_end);} 
+	
+	/**
+	 * Get the width and height of the hotspot for the gui object this renderer draws
+	 * @return
+	 */
+	public final float[] getHotSpotDims() {return new float[] {end.x-start.x, end.y-start.y};}
+
+	
+	/**
+	 * Function to update width calc when values change
+	 */
+	public abstract void updateWidth();
 	
 	public final String getHotBoxLocString() {
 		return  rendererType+ " Rendered : Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";

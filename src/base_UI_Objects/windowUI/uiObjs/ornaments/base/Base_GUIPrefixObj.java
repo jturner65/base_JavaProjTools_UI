@@ -14,4 +14,5 @@ public abstract class Base_GUIPrefixObj{
 	
 	public abstract float getWidth();
 	public abstract float getHeight();
+	
 }//class Base_GUIOrnament

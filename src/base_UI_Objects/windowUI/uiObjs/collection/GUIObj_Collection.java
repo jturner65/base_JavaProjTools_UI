@@ -299,7 +299,7 @@ public class GUIObj_Collection {
 				//found in list of UI objects
 				_msBtnClicked = mseBtn; 
 				_msClickObj = _guiObjsAra[idx];
-				_msClickObj.setHasFocus();
+				_msClickObj.setIsClicked();
 				if(isClicModUIVal){//allows for click-mod without dragging
 					_setUIObjValFromClickAlone(_msClickObj);
 					//Check if modification from click has changed the value of the object

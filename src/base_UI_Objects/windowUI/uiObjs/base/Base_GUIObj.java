@@ -69,7 +69,7 @@ public abstract class Base_GUIObj {
 	private static final int 
 		debugIDX 			= 0,
 		showIDX				= 1,					// show this component
-		objHasFocusIDX		= 2,					// object currently has focus - set true upon click entry, false on click release
+		objIsClickedIDX		= 2,					// object currently has focus - set true upon click entry, false on click release
 		valChangedIDX   	= 3,					// object value is dirty/clean
 		rendererSetIDX 		= 4;					// whether or not the renderer has been built and assigned
 	private static final int numStateFlags = 5;	// # of internal state booleans
@@ -144,7 +144,7 @@ public abstract class Base_GUIObj {
 		switch (idx) {//special actions for each flag
 		case debugIDX 				:{break;}
 		case showIDX				:{break;}
-		case objHasFocusIDX			:{break;}
+		case objIsClickedIDX			:{break;}
 		case valChangedIDX 			:{break;}
 		case rendererSetIDX			:{break;}
 		}
@@ -163,9 +163,9 @@ public abstract class Base_GUIObj {
 		}
 	}//setFlag	
 		
-	public void setHasFocus() {setStateFlags(objHasFocusIDX, true);}
-	public void clearFocus() {setStateFlags(objHasFocusIDX, false);}
-	public boolean getHasFocus() {return getStateFlags(objHasFocusIDX);}
+	public void setIsClicked() {setStateFlags(objIsClickedIDX, true);}
+	public void clearFocus() {setStateFlags(objIsClickedIDX, false);}
+	public boolean getIsClicked() {return getStateFlags(objIsClickedIDX);}
 	
 	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
 	public boolean getIsDirty() {return getStateFlags(valChangedIDX);}
@@ -340,12 +340,12 @@ public abstract class Base_GUIObj {
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
 	 * @param animTimeMod animation time modifier to enable this object to blink
 	 */
-	public final void drawDebug() {			renderer.drawDebug();}
+	public final void drawDebug() {			renderer.drawDebug(getIsClicked());}
 	
 	/**
 	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
-	public final void draw() {				renderer.draw();}//draw
+	public final void draw() {				renderer.draw(getIsClicked());}//draw
 	
 	/**
 	 * Draw a highlight box around this object representing the click region this UI element will respond to

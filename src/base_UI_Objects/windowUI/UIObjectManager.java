@@ -686,7 +686,6 @@ public class UIObjectManager {
 			{0,0,0,255}, //stroke
 			{0,0,0,255}, // fill
 		};			
-		_dispWarnMsg("_buildGUIObjsForMenu", "Obj : "+guiObjIDX+" is a "+argObj.objType);
 		switch(argObj.objType) {
 			case IntVal : {
 				_guiObjsAra[guiObjIDX] = new MenuGUIObj_Int(guiObjIDX, argObj);
@@ -717,7 +716,7 @@ public class UIObjectManager {
 				break;
 			}
 			default : {
-				_dispWarnMsg("_buildGUIObjsForMenu", "Attempting to instantiate unknown UI object for a " + argObj.objType.toStrBrf());
+				_dispWarnMsg("_buildObj", "Attempting to instantiate unknown UI object for a " + argObj.objType.toStrBrf());
 				break;				
 			}				
 		}//switch
@@ -1535,7 +1534,7 @@ public class UIObjectManager {
 				//found in list of UI objects
 				_msBtnClicked = mseBtn; 
 				_msClickObj = _guiObjsAra[idx];
-				_msClickObj.setHasFocus();
+				_msClickObj.setIsClicked();
 				if(isClickModUIVal){//allows for click-mod without dragging
 					_setUIObjValFromClickAlone(_msClickObj);
 					//Check if modification from click has changed the value of the object
@@ -1670,8 +1669,6 @@ public class UIObjectManager {
 			for(int i =0; i<_guiObjsAra.length; ++i){_guiObjsAra[i].drawDebug();}
 			_drawUIRect();
 		} else {			
-			//mouse highlight
-			if (_msClickObj != null) {	_msClickObj.drawHighlight();	}
 			for(int i =0; i<_guiObjsAra.length; ++i){_guiObjsAra[i].draw();}
 		}	
 		ri.popMatState();	

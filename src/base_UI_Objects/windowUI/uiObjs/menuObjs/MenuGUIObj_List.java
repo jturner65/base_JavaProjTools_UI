@@ -10,12 +10,12 @@ public class MenuGUIObj_List extends MenuGUIObj_Int {
 	/**
 	 * List of different values to be displayed for this list-based object
 	 */
-	private String[] listVals = new String[]{"None"};
+	protected String[] listVals = new String[]{"None"};
 	
 	/**
 	 * Original list of different values to be displayed for this list based-object
 	 */
-	private String[] origListVals;
+	protected String[] origListVals;
 	
 	/**
 	 * 
@@ -30,7 +30,6 @@ public class MenuGUIObj_List extends MenuGUIObj_Int {
 	 */
 	public MenuGUIObj_List(int _objID, GUIObj_Params objParams) {
 		super(_objID, objParams);
-		//super(_objID, _name, _minMaxMod, _initVal, _objType, _flags);
 		setListVals(objParams.getListVals(), true);
 	}
 
@@ -93,9 +92,10 @@ public class MenuGUIObj_List extends MenuGUIObj_Int {
 		double curVal = getVal();
 		setNewMax(listVals.length-1);
 		curVal = setVal(curVal);
+		if(renderer != null) {		renderer.updateWidth();		}
 		return (int) curVal;		
 	}
-	
+		
 	/**
 	 * Get the number of entries this list UI object supports
 	 */

@@ -12,10 +12,12 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	// 1 4-element color per supported state
 	protected int[][] colors;
 	
+	protected final int[] clickedColor = {150,150,150,255};
+	
 	/**
 	 * Length of the longest label in the state labels array
 	 */
-	protected final float longestLabelLen;
+	protected float longestLabelLen;
 	
 	/**
 	 * 
@@ -30,33 +32,45 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 		super(_ri, _owner, _offset, _menuWidth, _txtColor, _txtColor,false, false, "Button Renderer");
 		colors = new int[_labelColors.length][4];
 		for(int i=0;i<_labelColors.length; ++i) {	System.arraycopy(_labelColors, 0, colors, 0, colors.length);}
-		float longLbl = 0, curLblLen;
-		String[] stateLabels = ((MenuGUIObj_Button) owner).getStateLabels();
-		for(String label : stateLabels) {
-			curLblLen = ri.getTextWidth(label);
-			longLbl = (longLbl < curLblLen ? curLblLen : longLbl);
-		}
-		longestLabelLen = longLbl;
+		updateWidth();
 	}
 	
 	protected int[] getStateColor() {return colors[((MenuGUIObj_Button) owner).getButtonState()];}
 	
+	protected final int[][] onColors = new int[][] {{255,255,255,255}, {55,55,55,255}};
+	protected final int[][] offColors = new int[][] {{55,55,55,255},{255,255,255,255}};	
 	/**
 	 * Need to use this since we already have moved to start.x/y
 	 */
-	protected void _drawButtonRect() { ri.drawRect(0,-yOffset, end.x-start.x, end.y-start.y);}
+	protected final float lineWidth = 1.0f;
 
 	@Override
-	protected void _drawUIData() {
+	protected void _drawUIData(boolean isClicked) {
 		ri.pushMatState();
 			ri.setStrokeWt(1.0f);
 			ri.setStroke(strkClr, strkClr[3]);
-			int[] clr = getStateColor();
+			int[] clr = isClicked ? clickedColor : getStateColor();
 			ri.setFill(clr, clr[3]);
-			_drawButtonRect();	
+			float[] dims = getHotSpotDims();
+			// draw primary rectangle
+			ri.drawRect(0,-yOffset, dims[0], dims[1]);
+			// draw edges 
+			int[][] clrs = isClicked ?  onColors : offColors;
+			
+			float yUpOffLine = -yOffset+lineWidth;
+			float yLowOffLine = -yOffset+dims[1]-lineWidth;
+
+			ri.setStrokeWt(lineWidth);
+			ri.setStroke(clrs[0], clrs[0][3]);
+			ri.drawLine(lineWidth, yLowOffLine, 0, dims[0]-lineWidth, yLowOffLine, 0);//bottom line
+			ri.drawLine(dims[0]-lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yLowOffLine, 0);//right side line
+			
+			ri.setStroke(clrs[1], clrs[1][3]);
+			ri.drawLine(lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yUpOffLine, 0); // top line
+			ri.drawLine(lineWidth, yUpOffLine, 0, lineWidth, yLowOffLine, 0);
 		ri.popMatState();
 		// show Button Text
-		ri.showText(owner.getValueAsString(), 0, 0);
+		ri.showText(owner.getValueAsString(), yOffset, 0);
 	}
 	/**
 	 * TODO come up with a mechanism to perform this - it must be aware and able to modify previous button's hotspot. 
@@ -80,12 +94,24 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	}
 
 	@Override
-	public float getMaxWidth() {return longestLabelLen;}
+	public float getMaxWidth() {return yOffset+ longestLabelLen + _ornament.getWidth();}
 	/**
 	 * Whether the gui object this renderer manages is multi-line or single line
 	 * @return
 	 */
 	@Override
 	public boolean isMultiLine() {return false;	}
-
+	/**
+	 * When the state values change in the underlying button, the longest label needs to be re-determined
+	 */
+	@Override
+	public void updateWidth() {
+		float longLbl = 0, curLblLen;
+		String[] stateLabels = ((MenuGUIObj_Button) owner).getStateLabels();
+		for(String label : stateLabels) {
+			curLblLen = ri.getTextWidth(label);
+			longLbl = (longLbl < curLblLen ? curLblLen : longLbl);
+		}
+		longestLabelLen = longLbl;		
+	}
 }//class ButtonGUIObjRenderer<E
