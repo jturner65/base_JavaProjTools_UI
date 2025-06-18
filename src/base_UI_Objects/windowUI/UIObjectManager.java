@@ -789,7 +789,6 @@ public class UIObjectManager {
 	private float _buildHotSpotRects(float[] uiClkRect){
 		float yOffset = AppMgr.getTextHeightOffset();
 		float maxBtnLen = 0.98f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
-		//uiClkRect[3] += yOffset;
 		float oldBtnLen = 0;
 		// toggle flags to control how next button is built
 		boolean lastBtnHalfStLine = false, startNewLine = true;

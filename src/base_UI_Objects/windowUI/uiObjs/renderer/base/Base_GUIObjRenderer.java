@@ -257,6 +257,12 @@ public abstract class Base_GUIObjRenderer {
 	public final void setEnd(myPointf _end) {end.set(_end);} 
 	
 	/**
+	 * Get the center point of the hotspot
+	 * @return
+	 */
+	public final myPointf getCenter() {return myPointf._average(start, end);}
+	
+	/**
 	 * Get the width and height of the hotspot for the gui object this renderer draws
 	 * @return
 	 */

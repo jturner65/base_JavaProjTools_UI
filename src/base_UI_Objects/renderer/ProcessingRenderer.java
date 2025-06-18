@@ -61,14 +61,14 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * Initialize render interface implementation.
 	 */
 	@Override
-	public void initRenderInterface() {
+	public final void initRenderInterface() {
 		bgrndSphereAra = new HashMap<Integer, PShape>();
 		bgrndColorAra = new HashMap<Integer, int[]>();
 	}
 	
 	//processing being run in eclipse uses settings for variable size dimensions
 	@Override
-	public void settings(){	
+	public final void settings(){	
 		AppMgr.setIRenderInterface(this);
 		int[] desDims = AppMgr.getIdealAppWindowDims();
 		size(desDims[0], desDims[1],P3D);	
@@ -85,7 +85,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param alpha
 	 */	
 	@Override
-	public void setRenderBackground(int idx, int r, int g, int b, int alpha) {
+	public final void setRenderBackground(int idx, int r, int g, int b, int alpha) {
 		bgrndColorAra.put(idx, new int[] {r,g,b,alpha});
 	}
 	
@@ -95,7 +95,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param filename Texture to use for background skybox sphere
 	 */
 	@Override
-	public void loadBkgndSphere(int idx, String filename) {
+	public final void loadBkgndSphere(int idx, String filename) {
 		//save current sphere detail
 		int sPrevDet = getSphereDetail();
 		setSphereDetail(100);
@@ -112,13 +112,13 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	}
 	
 	@Override
-	public void setup() {
+	public final void setup() {
 		colorMode(RGB, 255, 255, 255, 255);
 		//setup default stroke ends.  ROUND is very slow, SQUARE  makes points invisible	
 		strokeCap(PROJECT);
 		textSize(AppMgr.getTextSize());
 		textureMode(NORMAL);			
-		rectMode(CORNER);	
+		setDefaultRectMode();
 		sphereDetail(4);
 		//Set up application
 		AppMgr.setupApp(width, height);
@@ -127,12 +127,14 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		frameRate(frate);
 	}//setup()
 	
+	private void setDefaultRectMode() {	rectMode(CORNER);}
+	
 	/**
 	 * Draw the specified window's background color
 	 * @param idx the idx of the background to draw
 	 */
 	@Override
-	public void drawRenderBackground(int idx) {
+	public final void drawRenderBackground(int idx) {
 		int[] bGroundAra = bgrndColorAra.get(idx);
 		if (bGroundAra == null) {
 			bGroundAra = getClr(gui_White, 255);
@@ -144,7 +146,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param idx the idx of the skybox to draw
 	 */
 	@Override
-	public void drawBkgndSphere(int idx) {
+	public final void drawBkgndSphere(int idx) {
 		PShape shape = bgrndSphereAra.get(idx);
 		drawRenderBackground(idx);
 		if(shape==null) {
@@ -205,7 +207,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * main draw loop - override if handling draw differently
 	 */
 	@Override
-	public void draw(){
+	public final void draw(){
 		//returns whether actually drawn or not
 		if(!AppMgr.mainSimAndDrawLoop()) {return;}
 	}//draw	
@@ -215,7 +217,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param windowTitle string to display in the window titlebar
 	 */
 	@Override
-	public void setWindowTitle(String winTitle) {
+	public final void setWindowTitle(String winTitle) {
 		//display window title
 		surface.setTitle(winTitle);		
 	}	
@@ -228,7 +230,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * 				light for dark backgrounds and dark for light backgrounds. 
 	 */
 	@Override
-	public void drawCanvas(myVector eyeToMse, myPointf[] canvas3D, int[] color){
+	public final void drawCanvas(myVector eyeToMse, myPointf[] canvas3D, int[] color){
 		disableLights();
 		pushMatState();
 		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
@@ -254,7 +256,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param far far component of the clipping plane (> near)
 	 */
 	@Override
-	public void setFrustum(float left, float right, float bottom, float top, float near, float far) {
+	public final void setFrustum(float left, float right, float bottom, float top, float near, float far) {
 		super.frustum(left, right, bottom, top, near, far);
 	}
 	
@@ -266,7 +268,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param zFar Z position of far clipping plane 
 	 */
 	@Override
-	public void setPerspective(float fovy, float ar, float zNear, float zFar) {
+	public final void setPerspective(float fovy, float ar, float zNear, float zFar) {
 		super.perspective(fovy, ar, zNear, zFar);
 	}
 	
@@ -278,7 +280,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param top top plane of the clipping volume
 	 */
 	@Override
-	public void setOrtho(float left, float right, float bottom, float top) {
+	public final void setOrtho(float left, float right, float bottom, float top) {
 		super.ortho(left, right, bottom, top);
 	}
 	/**
@@ -291,15 +293,15 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param far maximum distance from the origin away from the viewer
 	 */
 	@Override
-	public void setOrtho(float left, float right, float bottom, float top, float near, float far) {
+	public final void setOrtho(float left, float right, float bottom, float top, float near, float far) {
 		super.ortho(left, right, bottom, top, near, far);
 	}
 	
 	
 	@Override
-	public void gl_normal(float x, float y, float z) {super.normal(x,y,z);}                                          // changes normal for smooth shading
+	public final void gl_normal(float x, float y, float z) {super.normal(x,y,z);}                                          // changes normal for smooth shading
 	@Override
-	public void gl_vertex(float x, float y, float z) {super.vertex(x,y,z);}                                             // vertex for shading or drawing
+	public final void gl_vertex(float x, float y, float z) {super.vertex(x,y,z);}                                             // vertex for shading or drawing
 
 	/**
 	 * set fill color by value during shape building
@@ -307,7 +309,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param alpha 
 	 */
 	@Override
-	public void gl_setFill(int r, int g, int b, int alpha) {super.fill(r,g,b,alpha);}
+	public final void gl_setFill(int r, int g, int b, int alpha) {super.fill(r,g,b,alpha);}
 
 	/**
 	 * set stroke color by value during shape building
@@ -315,7 +317,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param alpha 
 	 */
 	@Override
-	public void gl_setStroke(int r, int g, int b, int alpha) {super.stroke(r,g,b,alpha);}	
+	public final void gl_setStroke(int r, int g, int b, int alpha) {super.stroke(r,g,b,alpha);}	
 	
 	
 	/**
@@ -338,7 +340,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * 
 	 */
 	@Override
-	public void gl_beginShape(GL_PrimStyle primType) {
+	public final void gl_beginShape(GL_PrimStyle primType) {
 		switch (primType) {
 			case GL_POINTS : {
 				beginShape(POINTS);
@@ -388,18 +390,18 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * type needs to be -1 for blank, otherwise will be CLOSE, regardless of passed value
 	 */
 	@Override
-	public void gl_endShape(boolean isClosed) {		
+	public final void gl_endShape(boolean isClosed) {		
 		if(isClosed) {			endShape(CLOSE);		}
 		else {				endShape();		}
 	}
 	
 	@Override
-	public void drawSphere(float rad) {sphere(rad);}
+	public final void drawSphere(float rad) {sphere(rad);}
 	//internal value tracking current sphere detail
 	private int sphereDtl = 4;
 
 	@Override
-	public void setSphereDetail(int det) {sphereDtl=det;sphereDetail(det);}
+	public final void setSphereDetail(int det) {sphereDtl=det;sphereDetail(det);}
 
 	@Override
 	public int getSphereDetail() {return sphereDtl;}
@@ -409,13 +411,13 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param x,y,x rad, y rad
 	 */
 	@Override
-	public void drawEllipse2D(float x, float y, float xr, float yr) {ellipse(x,y,xr,yr);}
+	public final void drawEllipse2D(float x, float y, float xr, float yr) {ellipse(x,y,xr,yr);}
 
 	
 	@Override
-	public void drawLine(float x1, float y1, float z1, float x2, float y2, float z2){line(x1,y1,z1,x2,y2,z2 );}
+	public final void drawLine(float x1, float y1, float z1, float x2, float y2, float z2){line(x1,y1,z1,x2,y2,z2 );}
 	@Override
-	public void drawLine(myPointf a, myPointf b, int stClr, int endClr){
+	public final void drawLine(myPointf a, myPointf b, int stClr, int endClr){
 		gl_beginShape(GL_PrimStyle.GL_LINES);
 		setStrokeWt(1.0f);
 		setColorValStroke(stClr, 255);
@@ -425,7 +427,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		gl_endShape();
 	}
 	@Override
-	public void drawLine(myPointf a, myPointf b, int[] stClr, int[] endClr){
+	public final void drawLine(myPointf a, myPointf b, int[] stClr, int[] endClr){
 		gl_beginShape(GL_PrimStyle.GL_LINES);
 		setStrokeWt(1.0f);
 		setStroke(stClr, 255);
@@ -445,7 +447,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param ptPosZ per point z value
 	 */
 	@Override
-	public void drawPointCloudWithColors(int numPts, int ptIncr, int[][] ptClrIntAra, float[] ptPosX, float[] ptPosY, float[] ptPosZ) {
+	public final void drawPointCloudWithColors(int numPts, int ptIncr, int[][] ptClrIntAra, float[] ptPosX, float[] ptPosY, float[] ptPosZ) {
 		gl_beginShape(GL_PrimStyle.GL_POINTS);
 		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
 			setStroke(ptClrIntAra[i][0], ptClrIntAra[i][1], ptClrIntAra[i][2], 255);
@@ -464,7 +466,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param ptPosZ per point z value
 	 */
 	@Override
-	public void drawPointCloudWithColor(int numPts, int ptIncr, int[] ptClrIntAra, float[] ptPosX, float[] ptPosY, float[] ptPosZ) {
+	public final void drawPointCloudWithColor(int numPts, int ptIncr, int[] ptClrIntAra, float[] ptPosX, float[] ptPosY, float[] ptPosZ) {
 		gl_beginShape(GL_PrimStyle.GL_POINTS);
 		setStroke(ptClrIntAra[0], ptClrIntAra[1], ptClrIntAra[2], 255);
 		for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {	
@@ -477,13 +479,13 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * draw a box centered at origin with passed dimensions, in 3D
 	 */
 	@Override
-	public void drawBox3D(int x, int y, int z) {box(x,y,z);};
+	public final void drawBox3D(int x, int y, int z) {box(x,y,z);};
 	/**
 	 * draw a rectangle in 2D using the passed values as x,y,w,h
 	 * @param a 4 element array : x,y,w,h
 	 */
 	@Override
-	public void drawRect(float a, float b, float c, float d){rect(a,b,c,d);}				//rectangle from array of floats : x, y, w, h
+	public final void drawRect(float a, float b, float c, float d){rect(a,b,c,d);}				//rectangle from array of floats : x, y, w, h
 	
 	/**
 	 * draw a circle centered at P with specified radius r in plane proscribed by passed axes using n number of points
@@ -494,12 +496,12 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param n # of points to use
 	 */
 	@Override
-	public void drawCircle3D(myPoint P, double r, myVector I, myVector J, int n) {
+	public final void drawCircle3D(myPoint P, double r, myVector I, myVector J, int n) {
 		myPoint[] pts = MyMathUtils.buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatState();noFill(); drawShapeFromPts(pts);popMatState();
 	}
 	@Override
-	public void drawCircle3D(myPointf P, float r, myVectorf I, myVectorf J, int n) {
+	public final void drawCircle3D(myPointf P, float r, myVectorf I, myVectorf J, int n) {
 		myPointf[] pts = MyMathUtils.buildCircleInscribedPoints(P,r,I,J,n);
 		pushMatState();noFill(); drawShapeFromPts(pts);popMatState();
 	} 
@@ -508,7 +510,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * draw a 6 pointed star centered at p inscribed in circle radius r
 	 */
 	@Override
-	public void drawStar2D(myPointf p, float r) {
+	public final void drawStar2D(myPointf p, float r) {
 		myPointf[] pts = MyMathUtils.buildCircleInscribedPoints(p,r,myVectorf.FORWARD,myVectorf.RIGHT,6);
 		drawTriangle2D(pts[0], pts[2],pts[4]);
 		drawTriangle2D(pts[1], pts[3],pts[5]);
@@ -520,7 +522,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param c
 	 */
 	@Override
-	public void drawTriangle2D(myPointf a, myPointf b, myPointf c) {triangle(a.x,a.y, b.x, b.y, c.x, c.y);}
+	public final void drawTriangle2D(myPointf a, myPointf b, myPointf c) {triangle(a.x,a.y, b.x, b.y, c.x, c.y);}
 	/**
 	 * draw a triangle at 3 locations in 2D (only uses x,y)
 	 * @param a
@@ -528,11 +530,11 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param c
 	 */
 	@Override
-	public void drawTriangle2D(myPoint a, myPoint b, myPoint c) {triangle((float)a.x,(float)a.y,(float) b.x, (float)b.y,(float) c.x,(float) c.y);}
+	public final void drawTriangle2D(myPoint a, myPoint b, myPoint c) {triangle((float)a.x,(float)a.y,(float) b.x, (float)b.y,(float) c.x,(float) c.y);}
 	
 	
 	@Override
-	public void drawCylinder_NoFill(myPoint A, myPoint B, double r, int clr1, int clr2) {
+	public final void drawCylinder_NoFill(myPoint A, myPoint B, double r, int clr1, int clr2) {
 		myPoint[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
@@ -546,7 +548,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		gl_endShape();
 	}
 	@Override
-	public void drawCylinder_NoFill(myPointf A, myPointf B, float r, int clr1, int clr2) {
+	public final void drawCylinder_NoFill(myPointf A, myPointf B, float r, int clr1, int clr2) {
 		myPointf[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
@@ -561,7 +563,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	}
 
 	@Override
-	public void drawCylinder(myPoint A, myPoint B, double r, int clr1, int clr2) {
+	public final void drawCylinder(myPoint A, myPoint B, double r, int clr1, int clr2) {
 		myPoint[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
@@ -575,7 +577,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	}
 	
 	@Override
-	public void drawCylinder(myPointf A, myPointf B, float r, int clr1, int clr2) {
+	public final void drawCylinder(myPointf A, myPointf B, float r, int clr1, int clr2) {
 		myPointf[] vertList = AppMgr.buildCylVerts(A, B, r);
 		int[] c1 = getClr(clr1, 255);
 		int[] c2 = getClr(clr2, 255);
@@ -595,9 +597,9 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 // transformations
 	
 	@Override
-	public void translate(float x, float y){super.translate(x,y);}
+	public final void translate(float x, float y){super.translate(x,y);}
 	@Override
-	public void translate(float x, float y, float z){super.translate(x,y,z);}
+	public final void translate(float x, float y, float z){super.translate(x,y,z);}
 	
 	/**
 	 * this will translate the passed box dimensions to keep them on the screen
@@ -606,7 +608,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param rectDims box dimensions 
 	 */
 	@Override
-	public void transToStayOnScreen(myPointf P, float[] rectDims) {
+	public final void transToStayOnScreen(myPointf P, float[] rectDims) {
 		float xLocSt = P.x + rectDims[0], xLocEnd = xLocSt + rectDims[2];
 		float yLocSt = P.y + rectDims[1], yLocEnd = yLocSt + rectDims[3];
 		float transX = 0.0f, transY = 0.0f;
@@ -616,14 +618,14 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	}
 
 	@Override
-	public void rotate(float thet, float x, float y, float z) {super.rotate(thet, x, y, z);}
+	public final void rotate(float thet, float x, float y, float z) {super.rotate(thet, x, y, z);}
 
 	@Override
-	public void scale(float x) {super.scale(x);}
+	public final void scale(float x) {super.scale(x);}
 	@Override
-	public void scale(float x,float y) {super.scale(x, y);}
+	public final void scale(float x,float y) {super.scale(x, y);}
 	@Override
-	public void scale(float x,float y,float z) {super.scale(x,y,z);}
+	public final void scale(float x,float y,float z) {super.scale(x,y,z);}
 
 	
 
@@ -637,7 +639,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * called by papplet super
 	 */
 	@Override
-	public void keyPressed(){
+	public final void keyPressed(){
 		if(key==CODED) {	AppMgr.checkAndSetSACKeys(keyCode);		} 
 		else {				AppMgr.sendKeyPressToWindows(key,keyCode);	}
 	}	
@@ -645,27 +647,27 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * called by papplet super
 	 */
 	@Override
-	public void keyReleased(){		AppMgr.checkKeyReleased(key==CODED, keyCode);}	
+	public final void keyReleased(){		AppMgr.checkKeyReleased(key==CODED, keyCode);}	
 	/**
 	 * called by papplet super
 	 */
 	@Override
-	public void mouseMoved(){		AppMgr.mouseMoved(mouseX, mouseY);}
+	public final void mouseMoved(){		AppMgr.mouseMoved(mouseX, mouseY);}
 	/**
 	 * called by papplet super
 	 */
 	@Override
-	public void mousePressed() {	AppMgr.mousePressed(mouseX, mouseY, (mouseButton == LEFT), (mouseButton == RIGHT));}		
+	public final void mousePressed() {	AppMgr.mousePressed(mouseX, mouseY, (mouseButton == LEFT), (mouseButton == RIGHT));}		
 	/**
 	 * called by papplet super
 	 */
 	@Override
-	public void mouseDragged(){		AppMgr.mouseDragged(mouseX, mouseY, pmouseX, pmouseY,(mouseButton == LEFT), (mouseButton == RIGHT));	}
+	public final void mouseDragged(){		AppMgr.mouseDragged(mouseX, mouseY, pmouseX, pmouseY,(mouseButton == LEFT), (mouseButton == RIGHT));	}
 	/**
 	 * called by papplet super
 	 */
 	@Override
-	public void mouseWheel(MouseEvent event) {
+	public final void mouseWheel(MouseEvent event) {
 		//ticks is how much the wheel has moved one way or the other
 		int ticks = event.getCount();		
 		AppMgr.mouseWheel(ticks);	
@@ -674,7 +676,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * called by papplet super
 	 */
 	@Override
-	public void mouseReleased(){	AppMgr.mouseReleased();	}
+	public final void mouseReleased(){	AppMgr.mouseReleased();	}
 		
 	///////////////////////
 	// display directives
@@ -682,26 +684,26 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * opengl hint directive to not check for depth - use this to display text on screen
 	 */
 	@Override
-	public void setBeginNoDepthTest() {hint(PConstants.DISABLE_DEPTH_TEST);}
+	public final void setBeginNoDepthTest() {hint(PConstants.DISABLE_DEPTH_TEST);}
 	/**
 	 * opengl hint directive to start checking depth again
 	 */
 	@Override
-	public void setEndNoDepthTest() {	hint(PConstants.ENABLE_DEPTH_TEST);}
+	public final void setEndNoDepthTest() {	hint(PConstants.ENABLE_DEPTH_TEST);}
 
 	/**
 	 * disable lights in scene
 	 */
 	@Override
-	public void disableLights() { noLights();}
+	public final void disableLights() { noLights();}
 	/**
 	 * enable lights in scene
 	 */
 	@Override
-	public void enableLights(){ lights();}	
+	public final void enableLights(){ lights();}	
 
 	@Override
-	public void bezier(myPoint A, myPoint B, myPoint C, myPoint D) {bezier((float)A.x,(float)A.y,(float)A.z,(float)B.x,(float)B.y,(float)B.z,(float)C.x,(float)C.y,(float)C.z,(float)D.x,(float)D.y,(float)D.z);} // draws a cubic Bezier curve with control points A, B, C, D
+	public final void bezier(myPoint A, myPoint B, myPoint C, myPoint D) {bezier((float)A.x,(float)A.y,(float)A.z,(float)B.x,(float)B.y,(float)B.z,(float)C.x,(float)C.y,(float)C.z,(float)D.x,(float)D.y,(float)D.z);} // draws a cubic Bezier curve with control points A, B, C, D
 	@Override
 	public final myPoint bezierPoint(myPoint[] C, float t) {return new myPoint(bezierPoint((float)C[0].x,(float)C[1].x,(float)C[2].x,(float)C[3].x,(float)t),bezierPoint((float)C[0].y,(float)C[1].y,(float)C[2].y,(float)C[3].y,(float)t),bezierPoint((float)C[0].z,(float)C[1].z,(float)C[2].z,(float)C[3].z,(float)t)); }
 	@Override
@@ -714,7 +716,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param v float v texture coordinate (0-1)
 	 */
 	@Override
-	public void vTextured(myPointf P, float u, float v) {vertex(P.x,P.y,P.z,u,v);}
+	public final void vTextured(myPointf P, float u, float v) {vertex(P.x,P.y,P.z,u,v);}
 	/**
 	 * Set a vertex's UV texture coordinates
 	 * @param P myPoint for vertex
@@ -722,7 +724,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param v double v texture coordinate (0-1)
 	 */
 	@Override
-	public void vTextured(myPoint P, double u, double v) {vertex((float)P.x,(float)P.y,(float)P.z,(float)u,(float)v);}                      
+	public final void vTextured(myPoint P, double u, double v) {vertex((float)P.x,(float)P.y,(float)P.z,(float)u,(float)v);}                      
 	
 	/////////////
 	// show functions 
@@ -730,17 +732,17 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	/////////////
 	// text
 	@Override
-	public void showText(String txt, float x, float y) {				text(txt,x,y);}
+	public final void showText(String txt, float x, float y) {				text(txt,x,y);}
 	@Override
-	public void showText(String txt, float x, float y, float z ) {	text(txt,x,y,z);}	
+	public final void showText(String txt, float x, float y, float z ) {	text(txt,x,y,z);}	
 	@Override
-	public void showTextAtPt(myPoint P, String s) {text(s, (float)P.x, (float)P.y, (float)P.z); } // prints string s in 3D at P
+	public final void showTextAtPt(myPoint P, String s) {text(s, (float)P.x, (float)P.y, (float)P.z); } // prints string s in 3D at P
     @Override
-	public void showTextAtPt(myPoint P, String s, myVector D) {text(s, (float)(P.x+D.x), (float)(P.y+D.y), (float)(P.z+D.z));  } // prints string s in 3D at P+D	
+	public final void showTextAtPt(myPoint P, String s, myVector D) {text(s, (float)(P.x+D.x), (float)(P.y+D.y), (float)(P.z+D.z));  } // prints string s in 3D at P+D	
 	@Override
-	public void showTextAtPt(myPointf P, String s) {text(s, P.x, P.y, P.z); } // prints string s in 3D at P	
+	public final void showTextAtPt(myPointf P, String s) {text(s, P.x, P.y, P.z); } // prints string s in 3D at P	
 	@Override
-	public void showTextAtPt(myPointf P, String s, myVectorf D) {text(s, (P.x+D.x), (P.y+D.y),(P.z+D.z));  } // prints string s in 3D at P+D
+	public final void showTextAtPt(myPointf P, String s, myVectorf D) {text(s, (P.x+D.x), (P.y+D.y),(P.z+D.z));  } // prints string s in 3D at P+D
 	/**
 	 * display an array of text at a location on screen
 	 * @param d initial y location
@@ -748,7 +750,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
  	 * @param txtAra string array to display
 	 */
 	@Override
-	public void showTextAra(float d, String[] txtAra){
+	public final void showTextAra(float d, String[] txtAra){
 		float y = d;
 		for (String txt : txtAra) {
 			showText(txt, d, y, d);
@@ -762,7 +764,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
  	 * @param txtAra string array to display
 	 */
 	@Override
-	public void showTextAra(float d, int tclr, String[] txtAra){
+	public final void showTextAra(float d, int tclr, String[] txtAra){
 		setColorValFill(tclr, 255);setColorValStroke(tclr, 255);
 		showTextAra(d, txtAra);
 	}	
@@ -776,7 +778,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param txtAra
 	 */
 	@Override
-	public void showTextAra(myPointf P, float rad, int det, int[] clrs, String[] txtAra) {//only call with set fclr and sclr - idx0 == fill, idx 1 == strk, idx2 == txtClr
+	public final void showTextAra(myPointf P, float rad, int det, int[] clrs, String[] txtAra) {//only call with set fclr and sclr - idx0 == fill, idx 1 == strk, idx2 == txtClr
 		pushMatState(); 
 			setColorValFill(clrs[0],255); 
 			setColorValStroke(clrs[1],255);
@@ -796,7 +798,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param rectDims
 	 */
 	@Override
-	public void showBoxTextAra(myPointf P, float rad, int det, int[] clrs, String[] txtAra, float[] rectDims) {
+	public final void showBoxTextAra(myPointf P, float rad, int det, int[] clrs, String[] txtAra, float[] rectDims) {
 		pushMatState();  		
 			setColorValFill(clrs[0],255); 
 			setColorValStroke(clrs[1],255);
@@ -816,6 +818,65 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		 popMatState();
 	} // render sphere of radius r and center P)
 	
+	/////////////
+	// centered text	
+
+	////////////////////
+	// showing centered text	
+	/**
+	 * display text centered at x,y location
+	 * @param txt
+	 * @param ctrX x location of center
+	 * @param y
+	 */
+	@Override
+	public final void showCenteredText(String txt, float ctrX, float y) {
+		// find width of text, subtract 1/2 from x value
+		float xMod = textWidth(txt) *.5f;
+		text(txt,ctrX-xMod,y);
+	}
+	
+	/**
+	 * display text centered at x,y,z location
+	 * @param txt
+	 * @param x
+	 * @param y
+	 * @param z
+	 */
+	@Override
+	public final void showCenteredText(String txt, float ctrX, float y, float z ) {
+		// find width of text, subtract 1/2 from x value
+		float xMod = textWidth(txt) *.5f;
+		text(txt,ctrX-xMod,y,z);		
+	}
+	
+	/**
+	 * display an array of text centered at a location on screen. Color needs to have been specified before calling.
+	 * @param ctrX x location of center
+	 * @param initY initial y location
+ 	 * @param txtAra string array to display
+	 */	
+	@Override
+	public final void showCenteredTextAra(float ctrX, float initY, String[] txtAra) {
+		float y = initY;
+		for (String txt : txtAra) {
+			showCenteredText(txt, initY, y, initY);
+			y+=AppMgr.getTextHeightOffset();
+		}	
+	}
+	
+	/**
+	 * display an array of text centered at a location on screen
+	 * @param ctrX x location of center
+	 * @param initY initial y location
+	 * @param tclr text color
+ 	 * @param txtAra string array to display
+	 */
+	@Override
+	public final void showCenteredTextAra(float ctrX, float initY, int tclr, String[] txtAra) {
+		setColorValFill(tclr, 255);setColorValStroke(tclr, 255);
+		showCenteredTextAra(ctrX, initY, txtAra);		
+	}
 	
 	/**
 	 * return the size, in pixels, of the passed text string, accounting for the currently set font dimensions
@@ -829,16 +890,16 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param size
 	 */
 	@Override
-	public void setTextSize(float fontSize) {super.textSize(fontSize);}
+	public final void setTextSize(float fontSize) {super.textSize(fontSize);}
 
 	///////////
 	// end text	
 	
 	@Override
-	public void setNoFill() {noFill();}
+	public final void setNoFill() {noFill();}
 	
 	@Override
-	public void setNoStroke(){noStroke();}
+	public final void setNoStroke(){noStroke();}
 	
 	private void checkClrInts(int fclr, int sclr) {
 		if(fclr > -1){setColorValFill(fclr,255); } else if(fclr <= -2) {noFill();}		
@@ -854,7 +915,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	// points
 	
 	@Override
-	public void drawSphere(myPoint P, double rad, int det) {
+	public final void drawSphere(myPoint P, double rad, int det) {
 		pushMatState(); 
 		sphereDetail(det);
 		translate(P.x,P.y,P.z); 
@@ -875,7 +936,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param sclr scale color index
 	 */
 	@Override
-	public void showPtAsSphere(myPoint P, double r, int det, int fclr, int sclr) {
+	public final void showPtAsSphere(myPoint P, double r, int det, int fclr, int sclr) {
 		pushMatState();
 		checkClrInts(fclr, sclr);
 		drawSphere(P, r, det);
@@ -890,7 +951,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param sclr scale color array
 	 */
 	@Override
-	public void showPtAsSphere(myPoint P, double r, int det, int[] fclr, int[] sclr) {
+	public final void showPtAsSphere(myPoint P, double r, int det, int[] fclr, int[] sclr) {
 		pushMatState(); 
 		checkClrIntArrays(fclr, sclr);
 		drawSphere(P, r, det);
@@ -905,7 +966,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param sclr scale color index
 	 */
 	@Override
-	public void showPtAsCircle(myPoint P, double r, int fclr, int sclr) {
+	public final void showPtAsCircle(myPoint P, double r, int fclr, int sclr) {
 		pushMatState(); 
 		checkClrInts(fclr, sclr);
 		drawEllipse2D(P,(float)r);				
@@ -920,7 +981,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param sclr scale color array
 	 */
 	@Override
-	public void showPtAsCircle(myPoint P, double r, int[] fclr, int[] sclr) {
+	public final void showPtAsCircle(myPoint P, double r, int[] fclr, int[] sclr) {
 		pushMatState(); 
 		checkClrIntArrays(fclr, sclr);
 		drawEllipse2D(P,(float)r);						
@@ -936,21 +997,21 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param flat
 	 */
 	@Override
-	public void showPtWithText(myPoint P, double r, String s, myVector D, int clr, boolean flat){
+	public final void showPtWithText(myPoint P, double r, String s, myVector D, int clr, boolean flat){
 		if(flat) {			showPtAsCircle(P,r, clr, clr);} 
 		else {			showPtAsSphere(P,r,5, gui_Black, gui_Black);		}
 		pushStyle();setColorValFill(clr,255);showTextAtPt(P,s,D);popStyle();
 	}
 
 	@Override
-	public void showVec( myPoint ctr, double len, myVector v){drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
+	public final void showVec( myPoint ctr, double len, myVector v){drawLine(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
 
 	/**
 	 * Draw a shape from the passed myPoint ara
 	 * @param ara array of myPoints
 	 */
 	@Override
-	public void drawShapeFromPts(myPoint[] ara) {
+	public final void drawShapeFromPts(myPoint[] ara) {
 		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP); 
 		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
 		gl_endShape(true);
@@ -961,7 +1022,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param norm surface normal for resultant shape
 	 */
 	@Override
-	public void drawShapeFromPts(myPoint[] ara, myVector norm) {
+	public final void drawShapeFromPts(myPoint[] ara, myVector norm) {
 		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
 		gl_normal(norm); 
 		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
@@ -977,7 +1038,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * as there are points for shape
 	 */
 	@Override
-	public void drawShapeFromPts(myPoint[] ara, myVector[] normAra) {
+	public final void drawShapeFromPts(myPoint[] ara, myVector[] normAra) {
 		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP); 
 		for(int i=0;i<ara.length;++i){gl_normal(normAra[i]);gl_vertex(ara[i]);} 
 		gl_endShape(true);
@@ -989,7 +1050,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	// float points (pointf)
 	
 	@Override
-	public void drawSphere(myPointf P, float rad, int det) {
+	public final void drawSphere(myPointf P, float rad, int det) {
 		pushMatState(); 
 		sphereDetail(det);
 		translate(P.x,P.y,P.z); 
@@ -1007,7 +1068,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param sclr scale color index
 	 */
 	@Override
-	public void showPtAsSphere(myPointf P, float r,int det, int fclr, int sclr) {
+	public final void showPtAsSphere(myPointf P, float r,int det, int fclr, int sclr) {
 		pushMatState(); 
 		checkClrInts(fclr, sclr);
 		drawSphere(P,(float)r, det);
@@ -1022,7 +1083,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param sclr scale color array
 	 */
 	@Override
-	public void showPtAsSphere(myPointf P, float r, int det, int[] fclr, int[] sclr){
+	public final void showPtAsSphere(myPointf P, float r, int det, int[] fclr, int[] sclr){
 		pushMatState(); 
 		checkClrIntArrays(fclr, sclr);
 		drawSphere(P,(float)r, det);
@@ -1036,7 +1097,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param sclr scale color index
 	 */
 	@Override
-	public void showPtAsCircle(myPointf P, float r, int fclr, int sclr) {		
+	public final void showPtAsCircle(myPointf P, float r, int fclr, int sclr) {		
 		pushMatState(); 
 		checkClrInts(fclr, sclr);
 		drawEllipse2D(P,(float)r);		
@@ -1051,7 +1112,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param sclr scale color array
 	 */
 	@Override
-	public void showPtAsCircle(myPointf P, float r, int[] fclr, int[] sclr) {		
+	public final void showPtAsCircle(myPointf P, float r, int[] fclr, int[] sclr) {		
 		pushMatState(); 
 		checkClrIntArrays(fclr, sclr);
 		drawEllipse2D(P,(float)r);					
@@ -1059,21 +1120,21 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	} // render sphere of radius r and center P)
 
 	@Override
-	public void showPtWithText(myPointf P, float r, String s, myVectorf D, int clr, boolean flat){
+	public final void showPtWithText(myPointf P, float r, String s, myVectorf D, int clr, boolean flat){
 		if(flat) {			showPtAsCircle(P,r, clr, clr);} 
 		else {			showPtAsSphere(P,r,5, gui_Black, gui_Black);		}
 		pushStyle();setColorValFill(clr,255);showTextAtPt(P,s,D);popStyle();
 	}
 	
 	@Override
-	public void showVec( myPointf ctr, float len, myVectorf v){line(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
+	public final void showVec( myPointf ctr, float len, myVectorf v){line(ctr.x,ctr.y,ctr.z,ctr.x+(v.x)*len,ctr.y+(v.y)*len,ctr.z+(v.z)*len);}
 	
 	/**
 	 * Draw a shape from the passed myPointf ara
 	 * @param ara array of myPointfs
 	 */
 	@Override
-	public void drawShapeFromPts(myPointf[] ara) {
+	public final void drawShapeFromPts(myPointf[] ara) {
 		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP); 
 		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
 		gl_endShape(true);
@@ -1084,7 +1145,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param norm myVectorf surface normal for resultant shape
 	 */
 	@Override
-	public void drawShapeFromPts(myPointf[] ara, myVectorf norm) {
+	public final void drawShapeFromPts(myPointf[] ara, myVectorf norm) {
 		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
 		gl_normal(norm); 
 		for(int i=0;i<ara.length;++i){gl_vertex(ara[i]);} 
@@ -1100,7 +1161,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * as there are points for shape
 	 */
 	@Override
-	public void drawShapeFromPts(myPointf[] ara, myVectorf[] normAra) {
+	public final void drawShapeFromPts(myPointf[] ara, myVectorf[] normAra) {
 		gl_beginShape(GL_PrimStyle.GL_LINE_LOOP);
 		for(int i=0;i<ara.length;++i){gl_normal(normAra[i]);gl_vertex(ara[i]);} 
 		gl_endShape(true);
@@ -1117,7 +1178,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param pts
 	 */
 	@Override
-	public void catmullRom2D(myPointf[] ara) {
+	public final void catmullRom2D(myPointf[] ara) {
 		if(ara.length < 4){
 			if(ara.length == 0){return;}
 			gl_beginShape(); curveVertex2D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} curveVertex2D(ara[ara.length-1]);gl_endShape();
@@ -1132,7 +1193,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param pts
 	 */
 	@Override
-	public void catmullRom2D(myPoint[] ara) {
+	public final void catmullRom2D(myPoint[] ara) {
 		if(ara.length < 4){
 			if(ara.length == 0){return;}
 			gl_beginShape(); curveVertex2D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} curveVertex2D(ara[ara.length-1]);gl_endShape();
@@ -1146,7 +1207,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param pts
 	 */
 	@Override
-	public void catmullRom3D(myPointf[] ara) {
+	public final void catmullRom3D(myPointf[] ara) {
 		if(ara.length < 4){
 			if(ara.length == 0){return;}
 			gl_beginShape(); curveVertex3D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} curveVertex3D(ara[ara.length-1]);gl_endShape();
@@ -1160,7 +1221,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param pts
 	 */
 	@Override
-	public void catmullRom3D(myPoint[] ara) {
+	public final void catmullRom3D(myPoint[] ara) {
 		if(ara.length < 4){
 			if(ara.length == 0){return;}
 			gl_beginShape(); curveVertex3D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} curveVertex3D(ara[ara.length-1]);gl_endShape();
@@ -1192,7 +1253,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param smthLvl 0 == no smoothing,  	int: either 2, 3, 4, or 8 depending on the renderer
 	 */
 	@Override
-	public void setSmoothing(int smthLvl) {
+	public final void setSmoothing(int smthLvl) {
 		if (smthLvl == 0) {	noSmooth();	}
 		else {			smooth(smthLvl);}
 	}
@@ -1203,7 +1264,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param y
 	 */
 	@Override
-	public void setLocation(int x, int y) {
+	public final void setLocation(int x, int y) {
 		surface.setLocation(x, y);		
 	}
 	/**
@@ -1211,17 +1272,17 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	 * @param camVals
 	 */
 	@Override
-	public void setCameraWinVals(float[] camVals) {		camera(camVals[0],camVals[1],camVals[2],camVals[3],camVals[4],camVals[5],camVals[6],camVals[7],camVals[8]);}
+	public final void setCameraWinVals(float[] camVals) {		camera(camVals[0],camVals[1],camVals[2],camVals[3],camVals[4],camVals[5],camVals[6],camVals[7],camVals[8]);}
 	/**
 	 * used to handle camera location/motion
 	 */
 	@Override
-	public void setCamOrient(float rx, float ry){rotateX(rx);rotateY(ry); rotateX(MyMathUtils.HALF_PI_F);		}//sets the rx, ry, pi/2 orientation of the camera eye	
+	public final void setCamOrient(float rx, float ry){rotateX(rx);rotateY(ry); rotateX(MyMathUtils.HALF_PI_F);		}//sets the rx, ry, pi/2 orientation of the camera eye	
 	/**
 	 * used to draw text on screen without changing mode - reverses camera orientation setting
 	 */
 	@Override
-	public void unSetCamOrient(float rx, float ry){rotateX(-MyMathUtils.HALF_PI_F); rotateY(-ry);   rotateX(-rx); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
+	public final void unSetCamOrient(float rx, float ry){rotateX(-MyMathUtils.HALF_PI_F); rotateY(-ry);   rotateX(-rx); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
 
 	/**
 	 * return x screen value for 3d point
@@ -1358,16 +1419,16 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	/////////////////////
 
 	@Override
-	public void setFill(int r, int g, int b, int alpha){fill(r,g,b,alpha);}
+	public final void setFill(int r, int g, int b, int alpha){fill(r,g,b,alpha);}
 	@Override
-	public void setStroke(int r, int g, int b, int alpha){stroke(r,g,b,alpha);}
+	public final void setStroke(int r, int g, int b, int alpha){stroke(r,g,b,alpha);}
 	/**
 	 * set stroke weight
 	 */
 	@Override
-	public void setStrokeWt(float stW) {	strokeWeight(stW);}
+	public final void setStrokeWt(float stW) {	strokeWeight(stW);}
 	@Override
-	public void setColorValFill(int colorVal, int alpha){
+	public final void setColorValFill(int colorVal, int alpha){
 		if(colorVal == gui_TransBlack) {
 			fill(0x00010100);//	have to use hex so that alpha val is not lost    TODO not taking care of alpha here
 		} else {
@@ -1375,11 +1436,11 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		}	
 	}//setcolorValFill
 	@Override
-	public void setColorValStroke(int colorVal, int alpha){
+	public final void setColorValStroke(int colorVal, int alpha){
 		setStroke(getClr(colorVal, alpha), alpha);		
 	}//setcolorValStroke	
 	@Override
-	public void setColorValFillAmb(int colorVal, int alpha){
+	public final void setColorValFillAmb(int colorVal, int alpha){
 		if(colorVal == gui_TransBlack) {
 			fill(0x00010100);//	have to use hex so that alpha val is not lost    
 			ambient(0,0,0);
@@ -1398,5 +1459,6 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 		if(t==0){return new Integer[]{a[0],a[1],a[2],a[3]};} else if(t==1){return new Integer[]{b[0],b[1],b[2],b[3]};}
 		return new Integer[]{(int)(((1.0f-t)*a[0])+t*b[0]),(int)(((1.0f-t)*a[1])+t*b[1]),(int)(((1.0f-t)*a[2])+t*b[2]),(int)(((1.0f-t)*a[3])+t*b[3])};
 	}
+
 
 }//ProcessingRenderer

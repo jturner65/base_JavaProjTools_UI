@@ -9,16 +9,19 @@ import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
  * 
  */
 public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
-	// 1 4-element color per supported state
+	/**
+	 *  1 4-element color per supported state
+	 */
 	protected int[][] colors;
-	
-	protected final int[] clickedColor = {150,150,150,255};
 	
 	/**
 	 * Length of the longest label in the state labels array
 	 */
 	protected float longestLabelLen;
 	
+	protected final float yUpOffLine;
+	protected final float yLowOffLine;
+
 	/**
 	 * 
 	 * @param _ri
@@ -33,54 +36,52 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 		colors = new int[_labelColors.length][4];
 		for(int i=0;i<_labelColors.length; ++i) {	System.arraycopy(_labelColors, 0, colors, 0, colors.length);}
 		updateWidth();
+		yUpOffLine = -yOffset+lineWidth;
+		yLowOffLine = -yOffset-lineWidth;
 	}
 	
-	protected int[] getStateColor() {return colors[((MenuGUIObj_Button) owner).getButtonState()];}
+	protected int[] getStateColor() {return colors[((MenuGUIObj_Button) owner).getButtonState()];}	
 	
-	protected final int[][] onColors = new int[][] {{255,255,255,255}, {55,55,55,255}};
-	protected final int[][] offColors = new int[][] {{55,55,55,255},{255,255,255,255}};	
+	protected static final int[] clickedColor = {150,160,170,255};
+	protected static final int[][] edgeColors = new int[][] {{255,255,255,255}, {55,55,55,255}};
 	/**
 	 * Need to use this since we already have moved to start.x/y
 	 */
 	protected final float lineWidth = 1.0f;
+	
+	private void _drawButton(int[] clr, int onIdx, int offIdx) {
+		ri.setStrokeWt(1.0f);
+		ri.setStroke(strkClr, strkClr[3]);
+		ri.setFill(clr, clr[3]);
+		float[] dims = getHotSpotDims();
+		// draw primary rectangle
+		ri.drawRect(0,-yOffset, dims[0], dims[1]);
+		
+		// draw 3d button edges			
+		ri.setStrokeWt(lineWidth);
+		//bottom/right
+		ri.setStroke(edgeColors[onIdx], edgeColors[onIdx][3]);
+		ri.drawLine(lineWidth, yLowOffLine+dims[1], 0, dims[0]-lineWidth, yLowOffLine+dims[1], 0);//bottom line
+		ri.drawLine(dims[0]-lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yLowOffLine+dims[1], 0);//right side line
+		//top/left
+		ri.setStroke(edgeColors[offIdx], edgeColors[offIdx][3]);
+		ri.drawLine(lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yUpOffLine, 0); // top line
+		ri.drawLine(lineWidth, yUpOffLine, 0, lineWidth, yLowOffLine+dims[1], 0);		
+	}//_drawButton
 
 	@Override
 	protected void _drawUIData(boolean isClicked) {
 		ri.pushMatState();
-			ri.setStrokeWt(1.0f);
-			ri.setStroke(strkClr, strkClr[3]);
-			int[] clr = isClicked ? clickedColor : getStateColor();
-			ri.setFill(clr, clr[3]);
-			float[] dims = getHotSpotDims();
-			// draw primary rectangle
-			ri.drawRect(0,-yOffset, dims[0], dims[1]);
-			// draw edges 
-			int[][] clrs = isClicked ?  onColors : offColors;
-			
-			float yUpOffLine = -yOffset+lineWidth;
-			float yLowOffLine = -yOffset+dims[1]-lineWidth;
-
-			ri.setStrokeWt(lineWidth);
-			ri.setStroke(clrs[0], clrs[0][3]);
-			ri.drawLine(lineWidth, yLowOffLine, 0, dims[0]-lineWidth, yLowOffLine, 0);//bottom line
-			ri.drawLine(dims[0]-lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yLowOffLine, 0);//right side line
-			
-			ri.setStroke(clrs[1], clrs[1][3]);
-			ri.drawLine(lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yUpOffLine, 0); // top line
-			ri.drawLine(lineWidth, yUpOffLine, 0, lineWidth, yLowOffLine, 0);
+			if(isClicked) {			_drawButton(clickedColor, 0, 1); 
+			} else {					_drawButton(getStateColor(), 1,0);}
 		ri.popMatState();
-		// show Button Text
-		ri.showText(owner.getValueAsString(), yOffset, 0);
+		// show Button Text		
+		ri.showText(owner.getValueAsString(), yOffset , 0);
+		//ri.showCenteredText(owner.getValueAsString(), (end.x - start.x)*.5f , 0);
 	}
 	/**
 	 * TODO come up with a mechanism to perform this - it must be aware and able to modify previous button's hotspot. 
-	 * For now, this is done in UIObjectManager.
-	 * 
-	 * Recalculate the lower right location of the hotspot for the owning UI object
-	 * Buttons are dependent on the size of their neighbors for their own size, shrinking or stretching to fit, 
-	 * depending on the space available, so this function will not successfully automate this process for buttons, 
-	 * and instead should be used to set the start and end points for the button after the values have been already
-	 * calculated.
+	 * For now, this is done in UIObjectManager. Or, conversely, get rid of this being in the renderer
 	 * 
 	 * @param newStartPoint new upper left point proposal.
 	 * @param lineHeight the height of a single line of text

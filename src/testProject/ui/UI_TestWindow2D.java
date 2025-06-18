@@ -72,16 +72,10 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	}
 
 	@Override
-	protected void initDispFlags() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void initDispFlags() {}
 
 	@Override
-	protected void initMe() {
-		// TODO Auto-generated method stub
-
-	}	
+	protected void initMe() {}	
 	
 	/**
 	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
@@ -156,246 +150,125 @@ public class UI_TestWindow2D extends Base_DispWindow {
 			ri.drawEllipse2D(circleCenter, 100);
 		ri.popMatState();	
 	}
-	
-	@Override
-	protected boolean simMe(float modAmtSec) {
-		//calc new circle center
-		return false;
-	}
-	
-	@Override
-	protected void updateCalcObjUIVals() {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
-	protected void handleDispFlagsDebugMode_Indiv(boolean val) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void handlePrivFlagsDebugMode_Indiv(boolean val) {}
 
 	@Override
-	protected void handlePrivFlagsDebugMode_Indiv(boolean val) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal) {}
 
 	@Override
-	protected void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal) {
-		// TODO Auto-generated method stub
-
-	}
+	protected int[] getFlagIDXsToInitToTrue() {return null;}
 
 	@Override
-	protected int[] getFlagIDXsToInitToTrue() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	protected void setUI_IntValsCustom(int UIidx, int ival, int oldVal) {}
 
 	@Override
-	protected void setUI_IntValsCustom(int UIidx, int ival, int oldVal) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void setUI_FloatValsCustom(int UIidx, float val, float oldVal) {}
 
 	@Override
-	protected void setUI_FloatValsCustom(int UIidx, float val, float oldVal) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void drawCustMenuObjs(float animTimeMod) {}
 
 	@Override
-	protected void drawCustMenuObjs(float animTimeMod) {
-		// TODO Auto-generated method stub
-
-	}
+	public void handleSideMenuMseOvrDispSel(int btn, boolean val) {}
 
 	@Override
-	public void handleSideMenuMseOvrDispSel(int btn, boolean val) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void handleSideMenuDebugSelEnable(int btn) {}
 
 	@Override
-	protected void handleSideMenuDebugSelEnable(int btn) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void handleSideMenuDebugSelDisable(int btn) {}
 
 	@Override
-	protected void handleSideMenuDebugSelDisable(int btn) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void launchMenuBtnHndlr(int funcRow, int btn, String label) {}
 
 	@Override
-	protected void launchMenuBtnHndlr(int funcRow, int btn, String label) {
-		// TODO Auto-generated method stub
-
-	}
+	protected String[] getSaveFileDirNamesPriv() {return null;}
 
 	@Override
-	protected String[] getSaveFileDirNamesPriv() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	protected void initDrwnTraj_Indiv() {}
 
 	@Override
-	protected void initDrwnTraj_Indiv() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void addSScrToWin_Indiv(int newWinKey) {}
 
 	@Override
-	protected void addSScrToWin_Indiv(int newWinKey) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void addTrajToScr_Indiv(int subScrKey, String newTrajKey) {}
 
 	@Override
-	protected void addTrajToScr_Indiv(int subScrKey, String newTrajKey) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void delSScrToWin_Indiv(int idx) {}
 
 	@Override
-	protected void delSScrToWin_Indiv(int idx) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void delTrajToScr_Indiv(int subScrKey, String newTrajKey) {}
 
 	@Override
-	protected void delTrajToScr_Indiv(int subScrKey, String newTrajKey) {
-		// TODO Auto-generated method stub
-
-	}
+	protected myPoint getMsePtAs3DPt(myPoint mseLoc) {return null;}
 
 	@Override
-	protected myPoint getMsePtAs3DPt(myPoint mseLoc) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	protected void setVisScreenDimsPriv() {}
 
 	@Override
-	protected void setVisScreenDimsPriv() {
-		// TODO Auto-generated method stub
-
-	}
+	protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld) {return false;}
 
 	@Override
-	protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {return false;}
 
 	@Override
 	protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D,
-			myVector mseDragInWorld, int mseBtn) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+			myVector mseDragInWorld, int mseBtn) {return false;}
 
 	@Override
-	protected void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc) {}
 
 	@Override
-	protected void hndlMouseRel_Indiv() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void hndlMouseRel_Indiv() {}
 
 	@Override
-	protected void endShiftKey_Indiv() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void endShiftKey_Indiv() {}
 
 	@Override
-	protected void endAltKey_Indiv() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void endAltKey_Indiv() {}
 
 	@Override
-	protected void endCntlKey_Indiv() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void endCntlKey_Indiv() {}
 
 	@Override
-	protected void setCustMenuBtnLabels() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void setCustMenuBtnLabels() {}
+	
+	@Override
+	public void processTraj_Indiv(DrawnSimpleTraj drawnTraj) {}
 
 	@Override
-	public void processTraj_Indiv(DrawnSimpleTraj drawnTraj) {
-		// TODO Auto-generated method stub
-
-	}
+	public void hndlFileLoad(File file, String[] vals, int[] stIdx) {}
 
 	@Override
-	public void hndlFileLoad(File file, String[] vals, int[] stIdx) {
-		// TODO Auto-generated method stub
-
-	}
+	public ArrayList<String> hndlFileSave(File file) {return null;}
 
 	@Override
-	public ArrayList<String> hndlFileSave(File file) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	protected void resizeMe(float scale) {}
 
 	@Override
-	protected void resizeMe(float scale) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void showMe() {}
 
 	@Override
-	protected void showMe() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void closeMe() {}
 
 	@Override
-	protected void closeMe() {
-		// TODO Auto-generated method stub
-
-	}
+	protected boolean simMe(float modAmtSec) {return false;}
 
 	@Override
-	protected void stopMe() {
-		// TODO Auto-generated method stub
-
-	}
+	protected void stopMe() {}
 
 	@Override
-	protected void setCamera_Indiv(float[] camVals) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void setCamera_Indiv(float[] camVals) {}
 
 	@Override
-	protected void drawRightSideInfoBarPriv(float modAmtMillis) {
-		// TODO Auto-generated method stub
-
-	}
+	protected void drawRightSideInfoBarPriv(float modAmtMillis) {}
 
 	@Override
-	protected void drawOnScreenStuffPriv(float modAmtMillis) {
-		// TODO Auto-generated method stub
+	protected void drawOnScreenStuffPriv(float modAmtMillis) {}
 
-	}
+	@Override
+	protected void updateCalcObjUIVals() {}
 
+	@Override
+	protected void handleDispFlagsDebugMode_Indiv(boolean val) {}
 }//class UI_TestWindow2D
