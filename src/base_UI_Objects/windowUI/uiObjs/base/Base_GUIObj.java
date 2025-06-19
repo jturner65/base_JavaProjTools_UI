@@ -148,7 +148,7 @@ public abstract class Base_GUIObj {
 		case valChangedIDX 			:{break;}
 		case rendererSetIDX			:{break;}
 		}
-	}//setFlag	
+	}//setStateFlags	
 	
 	private void initConfigFlags(){			uiConfigFlags = new int[1 + numConfigFlags/32]; for(int i = 0; i<numConfigFlags; ++i){setConfigFlags(i,false);}	}
 	private boolean getConfigFlags(int idx){	int bitLoc = 1<<(idx%32);return (uiConfigFlags[idx/32] & bitLoc) == bitLoc;}	
@@ -161,10 +161,10 @@ public abstract class Base_GUIObj {
 		case explicitUIDataUpdateIDX 	:{break;}	
 		case objectIsReadOnlyIDX		:{break;}
 		}
-	}//setFlag	
+	}//setConfigFlags	
 		
 	public void setIsClicked() {setStateFlags(objIsClickedIDX, true);}
-	public void clearFocus() {setStateFlags(objIsClickedIDX, false);}
+	public void clearIsClicked() {setStateFlags(objIsClickedIDX, false);}
 	public boolean getIsClicked() {return getStateFlags(objIsClickedIDX);}
 	
 	protected void setIsDirty(boolean isDirty) {setStateFlags(valChangedIDX, isDirty);}
@@ -382,7 +382,7 @@ public abstract class Base_GUIObj {
 	 * Whether this gui object is multi-line or single line
 	 * @return
 	 */
-	public final boolean isMultiLine() {return renderer.isMultiLine();}
+	public final boolean isMultiLine() {return renderer.getIsMultiLine();}
 	
 	/**
 	 * Recalculate the renderer-managed interactive hotspot for this object

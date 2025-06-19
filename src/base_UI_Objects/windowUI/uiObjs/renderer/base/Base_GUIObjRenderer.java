@@ -268,11 +268,10 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	public final float[] getHotSpotDims() {return new float[] {end.x-start.x, end.y-start.y};}
 
-	
 	/**
-	 * Function to update width calc when values change
+	 * Update the renderer based on new/modified state of the UI object
 	 */
-	public abstract void updateWidth();
+	public abstract void updateFromObject();
 	
 	public final String getHotBoxLocString() {
 		return  rendererType+ " Rendered : Upper Left crnr click zone : ["+ start.x +","+start.y+"]| Lower Right crnr click zone : ["+ end.x +","+end.y+"]";

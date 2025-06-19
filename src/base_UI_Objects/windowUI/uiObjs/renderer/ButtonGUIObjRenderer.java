@@ -90,23 +90,17 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	 * @return the next object's new start location
 	 */
 	@Override
-	public myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {
-		return new myPointf(newStart);	
-	}
+	public myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {	return new myPointf(newStart);}
 
 	@Override
 	public float getMaxWidth() {return yOffset+ longestLabelLen + _ornament.getWidth();}
+
 	/**
-	 * Whether the gui object this renderer manages is multi-line or single line
-	 * @return
+	 * Update renderer when the state values change in the underlying button (i.e. the longest label needs to be re-determined)
 	 */
-	@Override
-	public boolean isMultiLine() {return false;	}
-	/**
-	 * When the state values change in the underlying button, the longest label needs to be re-determined
-	 */
-	@Override
-	public void updateWidth() {
+	@Override	
+	public final void updateFromObject() {
+		// update the width
 		float longLbl = 0, curLblLen;
 		String[] stateLabels = ((MenuGUIObj_Button) owner).getStateLabels();
 		for(String label : stateLabels) {
@@ -114,5 +108,14 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 			longLbl = (longLbl < curLblLen ? curLblLen : longLbl);
 		}
 		longestLabelLen = longLbl;		
+	}//updateFromObject
+
+	@Override
+	protected int[][] getRectStrkFillClr(boolean isClicked) {
+		if(isClicked) {
+			return rectClickStrkFillColor;
+		} else {
+			return new int[][] { rectClickStrkFillColor[0], getStateColor()};
+		}		
 	}
 }//class ButtonGUIObjRenderer<E

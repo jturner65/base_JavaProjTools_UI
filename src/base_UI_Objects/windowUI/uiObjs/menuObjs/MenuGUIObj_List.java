@@ -92,7 +92,7 @@ public class MenuGUIObj_List extends MenuGUIObj_Int {
 		double curVal = getVal();
 		setNewMax(listVals.length-1);
 		curVal = setVal(curVal);
-		if(renderer != null) {		renderer.updateWidth();		}
+		if(renderer != null) {		renderer.updateFromObject();		}
 		return (int) curVal;		
 	}
 		

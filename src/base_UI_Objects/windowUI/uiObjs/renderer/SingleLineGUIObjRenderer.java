@@ -58,14 +58,11 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	}
 	
 	/**
-	 * Whether the gui object this renderer manages is multi-line or single line
-	 * @return
+	 * Update renderer when the state/label values change in the underlying UI object
 	 */
-	@Override
-	public boolean isMultiLine() {return false;	}
-	
-	// No need to do this, the width is recalculated on every call
-	@Override
-	public void updateWidth() {}
+	@Override	
+	public final void updateFromObject() {
+		
+	}
 
 }//class SingleLineGUIObjRenderer

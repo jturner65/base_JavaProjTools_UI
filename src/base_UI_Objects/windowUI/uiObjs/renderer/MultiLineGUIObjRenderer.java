@@ -75,15 +75,13 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 		// return the next object's start location
 		return new myPointf(end.x, start.y, start.z);	
 	}
-	/**
-	 * Whether the gui object this renderer manages is multi-line or single line
-	 * @return
-	 */
-	@Override
-	public boolean isMultiLine() {return true;	}
 	
-	// No need to do this, the width is recalculated on every call
-	@Override
-	public void updateWidth() {}
+	/**
+	 * Update renderer when the state/label values change in the underlying UI object
+	 */
+	@Override	
+	public final void updateFromObject() {
+		
+	}
 
 }//MultiLineGUIObjRenderer

@@ -1017,19 +1017,19 @@ public class UIObjectManager {
 	 * Set UI values by object type, sending value to owner and updater
 	 * @param UIidx index of object within gui obj ara
 	 */
-	public final void setUIWinVals(int UIidx) {		_setUIWinValsInternal(_guiObjsAra[UIidx], UIidx);	}//setUIWinVals	
+	public final void setUIWinVals(int UIidx) {			_setUIWinValsInternal(_guiObjsAra[UIidx], UIidx);	}//setUIWinVals	
 	
 	/**
 	 * Set UI values by object type, sending value to owner and updater
 	 * @param UIidx index of object within gui obj ara
 	 */
-	public final void setUIWinVals(Base_GUIObj UIobj) {		_setUIWinValsInternal(UIobj, UIobj.getObjID());	}//setUIWinVals	
+	public final void setUIWinVals(Base_GUIObj UIobj) {	_setUIWinValsInternal(UIobj, UIobj.getObjID());	}//setUIWinVals	
 	
 	/**
 	 * Reset guiObj given by passed index to starting value
 	 * @param uiIdx
 	 */
-	public final void resetUIObj(int uiIdx) {_guiObjsAra[uiIdx].resetToInit();setUIWinVals(uiIdx);}
+	public final void resetUIObj(int uiIdx) {				_guiObjsAra[uiIdx].resetToInit();setUIWinVals(uiIdx);}
 	
 	/**
 	 * Reset all values to be initial values. 
@@ -1636,7 +1636,7 @@ public class UIObjectManager {
 				_setUIObjValFromClickAlone(_msClickObj);
 			} 		
 			setAllUIWinVals();
-			_msClickObj.clearFocus();
+			_msClickObj.clearIsClicked();
 			_msClickObj = null;	
 		}
 		_msBtnClicked = -1;
