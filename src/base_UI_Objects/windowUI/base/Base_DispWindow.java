@@ -181,7 +181,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	/**
 	 * These ints hold the index of which custom functions or debug functions should be launched. 
 	 * These are set when the sidebar menu is clicked and these processes are requested, and they 
-	 * are set to -1 when these processes are launched.  this is so the buttons can be turned on
+	 * are set to -1 when these processes are launched. this is so the buttons can be turned on
 	 * before the process starts.
 	 * Using this is sub-optimal solution - needs an index per sidebar button on each row; using
 	 * more than necessary, otherwise will crash if btn idx >= curCustBtn.length
@@ -340,7 +340,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected abstract UIDataUpdater buildUIDataUpdateObject();
 	
 	/**
-	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * Build all UI objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
 	 * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
 	 * 			- The object IDX                   
 	 *          - A double array of min/max/mod values                                                   
@@ -352,24 +352,34 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
 	 *          - A boolean array of renderer format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * 				idx 0 : Should be multiline
+	 * 				idx 1 : Text should be centered (default is false)
+	 * 				idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				idx 3 : Should have ornament
+	 * 				idx 4 : Ornament color should match label color
+	 */
+	@Override
+	public final void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap) {
+		// build the Non button UI objects
+		setupGUIObjsAras(tmpUIObjMap);
+	}
+	/**
+	 * Build UI button objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
+	 * @param firstIdx : the first index to use in the map/as the objIdx
 	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
 	 * 				the second element is true label
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
-		// build the Non button UI objects
-		setupGUIObjsAras(tmpUIObjMap);
+	@Override
+	public final void setupOwnerGUIBtnsAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
 		// build the button region, using the existing size of the non-button map as a start index
-		setupGUIBoolSwitchAras(tmpUIObjMap.size(), tmpUIBoolSwitchObjMap);
+		setupGUIBoolSwitchAras(firstIdx, tmpUIBoolSwitchObjMap);
 	}
-	
+		
 	/**
-	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * Build all UI objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
 	 * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
 	 * 			- The object IDX                   
 	 *          - A double array of min/max/mod values                                                   
@@ -381,14 +391,16 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
 	 *          - A boolean array of renderer format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * 				idx 0 : Should be multiline
+	 * 				idx 1 : Text should be centered (default is false)
+	 * 				idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				idx 3 : Should have ornament
+	 * 				idx 4 : Ornament color should match label color
 	 */
 	protected abstract void setupGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap);
 	
 	/**
-	 * Build UI button objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * Build UI button objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
 	 * @param firstIdx : the first index to use in the map/as the objIdx
 	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
@@ -513,7 +525,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final void setIsGlobalDebugMode(boolean dbg) {dispFlags.setIsDebug(dbg);}
 
 	/**
-	 * UI code-level Debug mode functionality. Called only from flags structure from GUI_AppManager debug button.  Enables debug mode in all windows!
+	 * UI code-level Debug mode functionality. Called only from flags structure from GUI_AppManager debug button. Enables debug mode in all windows!
 	 * @param enable
 	 */
 	public final void handleDispFlagsDebugMode(boolean enable) {
@@ -606,7 +618,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public final String getAppFileSubdirName() {		return ssFolderDir;	}
 	
 	/**
-	 * This returns a date-time string properly formatted to be used in file names or file paths.  Time is when called
+	 * This returns a date-time string properly formatted to be used in file names or file paths. Time is when called
 	 * @return
 	 */
 	public final String getNowDateTimeString() {
@@ -631,7 +643,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	}
 	
 	/**
-	 * Called if float-handling guiObjs[UIidx] has new data which updated UI adapter.  
+	 * Called if float-handling guiObjs[UIidx] has new data which updated UI adapter. 
 	 * Intended to support custom per-object handling by owning window.
 	 * Only called if data changed!
 	 * @param UIidx Index of gui obj with new data
@@ -654,7 +666,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected abstract void setUI_IntValsCustom(int UIidx, int ival, int oldVal);
 	
 	/**
-	 * Called if float-handling guiObjs[UIidx] has new data which updated UI adapter.  
+	 * Called if float-handling guiObjs[UIidx] has new data which updated UI adapter. 
 	 * Intended to support custom per-object handling by owning window.
 	 * Only called if data changed!
 	 * @param UIidx Index of gui obj with new data
@@ -948,7 +960,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		}		
 	}//drawRightSideMenu
 	/**
-	 * Draw implementation-specific text in right side menu.  Use the following
+	 * Draw implementation-specific text in right side menu. Use the following
 	 * 			"float[] rtSideYOffVals = AppMgr.getRtSideYOffVals();"
 	 * to access appropriate right-side menu specific values
 	 * @param modAmtMillis
@@ -1084,7 +1096,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	protected abstract void stopMe();
 		
 	/**
-	 * clear button next frame - to act like momentary switch.  will also clear UI object
+	 * clear button next frame - to act like momentary switch. will also clear UI object
 	 * @param idx
 	 */
 	protected final void clearSwitchNextFrame(int idx) {uiMgr.clearSwitchNextFrame(idx);}
@@ -1443,7 +1455,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	// INDIV Version for setValueKey?
 	
 	/**
-	 * Clear the values of the key and keycode that was pressed.  Called by GUI_AppMgr
+	 * Clear the values of the key and keycode that was pressed. Called by GUI_AppMgr
 	 */
 	public final void endValueKeyPress() {
 		if(!dispFlags.getShowWin()){return;}
@@ -1537,7 +1549,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * check if either custom function or debugging has been launched and process if so, skip otherwise.latched by a frame so that button can be turned on
 	 */
 	private final void checkCustMenuUIObjs() {
-		//was set last frame and processed, so latch to launch request.  
+		//was set last frame and processed, so latch to launch request. 
 		//this will enable buttons to be displayed even if their processing only takes a single cycle
 		if (custClickSetThisFrame) { custClickSetThisFrame = false;custFuncDoLaunch=true;return;}	 
 		//no function has been requested to launch
@@ -1664,7 +1676,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	public abstract ArrayList<String> hndlFileSave(File file);	
 	
 	/**
-	 * manage saving this window's UI component values.  if needed call from child window's implementation
+	 * manage saving this window's UI component values. if needed call from child window's implementation
 	 * @return
 	 */
 	protected final ArrayList<String> hndlFileSave_GUI(){		return uiMgr.hndlFileSave_GUI(winInitVals.winName);	}//

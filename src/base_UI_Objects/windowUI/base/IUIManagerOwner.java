@@ -71,7 +71,7 @@ public interface IUIManagerOwner {
 	public UIDataUpdater getUIDataUpdater();
 	
 	/**
-	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * Build all UI objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
 	 * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
 	 * 			- The object IDX                   
 	 *          - A double array of min/max/mod values                                                   
@@ -83,16 +83,24 @@ public interface IUIManagerOwner {
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
 	 *          - A boolean array of renderer format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * 				idx 0 : Should be multiline
+	 * 				idx 1 : Text should be centered (default is false)
+	 * 				idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				idx 3 : Should have ornament
+	 * 				idx 4 : Ornament color should match label color
+	 */
+	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap);
+	
+	/**
+	 * Build UI button objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
+	 * @param firstIdx : the first index to use in the map/as the objIdx
 	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
 	 * 				the second element is true label
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
+	public void setupOwnerGUIBtnsAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
 	
 	/**
 	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)

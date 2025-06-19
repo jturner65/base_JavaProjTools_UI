@@ -128,7 +128,7 @@ public class GUIObj_Collection {
 		_guiLabelValIDXMap = new TreeMap<Integer, GUIObj_DispValue>();	
 		//build ui objects' holder
 		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size()];
-		if(tmpUIObjMap.size() > 0) {
+		if(_guiObjsAra.length > 0) {
 			//build objects
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
 				int i = entry.getValue().objIdx;

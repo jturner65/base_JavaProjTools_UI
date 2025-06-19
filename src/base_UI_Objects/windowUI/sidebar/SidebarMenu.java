@@ -120,7 +120,7 @@ public class SidebarMenu extends Base_DispWindow{
 	}//getParentWindowUIClkCoords
 	
 	/**
-	 * Build all custom UI objects to be shown in left side bar menu for this window. This is for instancing sim windows
+	 * Build all UI objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
 	 * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
 	 * 			- The object IDX                   
 	 *          - A double array of min/max/mod values                                                   
@@ -132,9 +132,11 @@ public class SidebarMenu extends Base_DispWindow{
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
 	 *          - A boolean array of renderer format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * 				idx 0 : Should be multiline
+	 * 				idx 1 : Text should be centered (default is false)
+	 * 				idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				idx 3 : Should have ornament
+	 * 				idx 4 : Ornament color should match label color
 	 */
 	@Override
 	protected final void setupGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap) {}

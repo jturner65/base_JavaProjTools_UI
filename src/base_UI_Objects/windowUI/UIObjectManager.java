@@ -219,14 +219,13 @@ public class UIObjectManager {
 		//build ui objects and buttons
 		// ui object values - keyed by object idx, value is object array of describing values
 		TreeMap<String, GUIObj_Params> tmpUIObjMap = new TreeMap<String, GUIObj_Params>();
+		//  Get configurations for all UI objects from owner implementation.
+		owner.setupOwnerGUIObjsAras(tmpUIObjMap);
 		// ui button values : map keyed by objId of object arrays : {true label, false label, index in application}
 		TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap = new TreeMap<String, GUIObj_Params>();
-		//  Get configurations for all UI objects from owner implementation.
-		owner.setupOwnerGUIObjsAras(tmpUIObjMap, tmpUIBoolSwitchObjMap);
-		
+		//  Get configurations for all UI buttons from owner implementation.
+		owner.setupOwnerGUIBtnsAras(tmpUIObjMap.size(), tmpUIBoolSwitchObjMap);
 		//TODO merge this to build gui objs and priv buttons together (i.e. privButtons are gui objects)
-		//build ui objects
-		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size() + tmpUIBoolSwitchObjMap.size()]; // list of modifiable gui objects
 		// Build UI Objects
 		_uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjMap, tmpUIBoolSwitchObjMap, _uiClkCoords);
 		
@@ -766,7 +765,9 @@ public class UIObjectManager {
 	 * @return
 	 */
 	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBtnMap, float[] uiClkRect) {
-		if(tmpUIObjMap.size() > 0) {
+		//build ui objects
+		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size() + tmpUIBtnMap.size()]; // list of modifiable gui objects
+		if(_guiObjsAra.length > 0) {
 
 			// build non-flag-backed switch objects
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
@@ -1031,7 +1032,7 @@ public class UIObjectManager {
 		GUIObj_Type objType = UIobj.getObjType();
 		switch (objType) {
 			case IntVal : {			setUI_IntVal(UIobj, UIidx);			break;}
-			case ListVal : {		setUI_ListVal(UIobj, UIidx);		break;}
+			case ListVal : {			setUI_ListVal(UIobj, UIidx);			break;}
 			case FloatVal : {		setUI_FloatVal(UIobj, UIidx);		break;}
 			case LabelVal : {		setUI_LabelVal(UIobj, UIidx);		break;}
 			case Button : {			setUI_BtnVal(UIobj, UIidx);			break;}
