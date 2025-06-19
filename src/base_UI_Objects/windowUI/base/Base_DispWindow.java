@@ -263,22 +263,16 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 */
 	public final void initThisWin(boolean _isMenu){
 		dispFlags = new WinDispStateFlags(this);	
-		
-		//////////////////////////////
-		// TODO replace this with UI Manager
+		// build all ui objects
 		uiMgr.initAllGUIObjects();
-		//
-
 		//set menu offset for custom UI objects
 		custMenuOffset = uiMgr.getUIClkCoords()[3] + (2.0f * AppMgr.getClkBoxDim());		
 		//run instancing window-specific initialization after all ui objects are built
 		initMe();
-
 		//set any custom button names if necessary
 		setCustMenuBtnLabels();
 		//pass all flag states to initialized structures in instancing window handler
-		uiMgr.refreshPrivFlags();
-		
+		uiMgr.refreshPrivFlags();		
 		_setClosedBox();		
 		if((!_isMenu) && (dispFlags.getHasScrollBars())){scbrs = new ScrollBars[4];	for(int i =0; i<scbrs.length;++i){scbrs[i] = new ScrollBars(ri, this);}}
 		dispFlags.setIs3DWin(winInitVals.dispWinIs3D());

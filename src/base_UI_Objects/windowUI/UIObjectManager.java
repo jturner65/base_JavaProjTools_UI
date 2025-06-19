@@ -79,13 +79,13 @@ public class UIObjectManager {
 	 */
 	private TreeMap<Integer,GUIObj_Int>  _guiIntValIDXMap;
 	/**
-	 * array list of idxs for label/read-only objects, keyed by objIdx
+	 * Map list of idxs for label/read-only objects, keyed by objIdx
 	 */	
 	private TreeMap<Integer, GUIObj_DispValue> _guiLabelValIDXMap;
 	/**
-	 * Numeric Gui Objects
+	 * Map of all objects, keyed by objIdx
 	 */
-	private Base_GUIObj[] _guiObjsAra;
+	private TreeMap<Integer,Base_GUIObj> _guiObjsIDXMap;
 	/**
 	 * Base_GUIObj that was clicked on for modification
 	 */
@@ -720,42 +720,42 @@ public class UIObjectManager {
 	 */
 	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
 		GUIObj_Params argObj = entry.getValue();
+		Base_GUIObj obj = null;
 		switch(argObj.objType) {
 			case IntVal : {
-				_guiObjsAra[guiObjIDX] = new GUIObj_Int(guiObjIDX, argObj);
-				_guiIntValIDXMap.put(guiObjIDX, ((GUIObj_Int)_guiObjsAra[guiObjIDX]));
+				 obj = new GUIObj_Int(guiObjIDX, argObj);
+				_guiIntValIDXMap.put(guiObjIDX, (GUIObj_Int)obj);
 				break;}
 			case ListVal : {
-				_guiObjsAra[guiObjIDX] = new GUIObj_List(guiObjIDX, argObj);
-				_guiIntValIDXMap.put(guiObjIDX, ((GUIObj_List)_guiObjsAra[guiObjIDX]));
+				 obj = new GUIObj_List(guiObjIDX, argObj);
+				_guiIntValIDXMap.put(guiObjIDX, (GUIObj_List)obj);
 				break;}
 			case FloatVal : {
-				_guiObjsAra[guiObjIDX] = new GUIObj_Float(guiObjIDX, argObj);
-				_guiFloatValIDXMap.put(guiObjIDX, ((GUIObj_Float)_guiObjsAra[guiObjIDX]));
+				 obj = new GUIObj_Float(guiObjIDX, argObj);
+				_guiFloatValIDXMap.put(guiObjIDX, (GUIObj_Float)obj);
 				break;}
 			case LabelVal :{
-				_guiObjsAra[guiObjIDX] = new GUIObj_DispValue(guiObjIDX, argObj);					
-				_guiLabelValIDXMap.put(guiObjIDX,((GUIObj_DispValue)_guiObjsAra[guiObjIDX]));
+				 obj = new GUIObj_DispValue(guiObjIDX, argObj);
+				_guiLabelValIDXMap.put(guiObjIDX, (GUIObj_DispValue)obj);
 				break;}
 			case Switch : {						
-				GUIObj_Switch obj = new GUIObj_Switch(guiObjIDX, argObj);
-				_guiButtonIDXMap.put(guiObjIDX, obj);
-				_guiSwitchIDXMap.put(obj.getBoolFlagIDX(), obj);
-				_guiObjsAra[guiObjIDX] = obj;
+				 obj = new GUIObj_Switch(guiObjIDX, argObj);
+				_guiButtonIDXMap.put(guiObjIDX, (GUIObj_Switch)obj);
+				_guiSwitchIDXMap.put(((GUIObj_Switch)obj).getBoolFlagIDX(), (GUIObj_Switch)obj);
 				break;}
 			case Button  :{ 
-				_guiObjsAra[guiObjIDX] = new GUIObj_Button(guiObjIDX, argObj);
-				_guiButtonIDXMap.put(guiObjIDX, ((GUIObj_Button)_guiObjsAra[guiObjIDX]));
-				//_dispWarnMsg("_buildGUIObjsForMenu", "Instantiating a Button UI object not yet supported for ID : "+i);
+				 obj = new GUIObj_Button(guiObjIDX, argObj);
+				_guiButtonIDXMap.put(guiObjIDX, (GUIObj_Button)obj);
 				break;
 			}
 			default : {
 				_dispWarnMsg("_buildObj", "Attempting to instantiate unknown UI object for a " + argObj.objType.toStrBrf());
-				break;				
+				return;				
 			}				
 		}//switch
-		var renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], AppMgr.getUIOffset(), uiClkRect[2], argObj);
-		_guiObjsAra[guiObjIDX].setRenderer(renderer);		
+		// Set renderer
+		_guiObjsIDXMap.put(guiObjIDX, obj);
+		obj.setRenderer(_buildObjRenderer(obj, AppMgr.getUIOffset(), uiClkRect[2], argObj));		
 	}//_buildObj
 	
 	/**
@@ -766,8 +766,8 @@ public class UIObjectManager {
 	 */
 	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBtnMap, float[] uiClkRect) {
 		//build ui objects
-		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size() + tmpUIBtnMap.size()]; // list of modifiable gui objects
-		if(_guiObjsAra.length > 0) {
+		_guiObjsIDXMap = new TreeMap<Integer,Base_GUIObj>(); // list of modifiable gui objects
+		if(tmpUIObjMap.size() > 0) {
 
 			// build non-flag-backed switch objects
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
@@ -785,23 +785,23 @@ public class UIObjectManager {
 			myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
 			boolean lastObjWasMultiLine = false;
 			// build click regions for non buttons
-			for (int i = 0; i < _guiObjsAra.length; ++i) {
-				boolean isGUIBtn = (_guiObjsAra[i].getObjType() == GUIObj_Type.Button);
+			for (int i = 0; i < _guiObjsIDXMap.size(); ++i) {
+				boolean isGUIBtn = (_guiObjsIDXMap.get(i).getObjType() == GUIObj_Type.Button);
 				if(!isGUIBtn){				
-					if (lastObjWasMultiLine && (!_guiObjsAra[i].isMultiLine())) {
+					if (lastObjWasMultiLine && (!_guiObjsIDXMap.get(i).isMultiLine())) {
 						newStPt.x = uiClkRect[0];
-						newStPt.y = _guiObjsAra[i-1].getEnd().y;
+						newStPt.y = _guiObjsIDXMap.get(i-1).getEnd().y;
 					}
-					float txHtOffset = (_guiObjsAra[i].getObjType() == GUIObj_Type.LabelVal) ? 
+					float txHtOffset = (_guiObjsIDXMap.get(i).getObjType() == GUIObj_Type.LabelVal) ? 
 									AppMgr.getLabelTextHeightOffset() : 
 										AppMgr.getTextHeightOffset();
 					// Get next newStPt as we calculate the hotspot region for every UI object
-					newStPt = _guiObjsAra[i].reCalcHotSpot(newStPt, txHtOffset, uiClkRect[0], uiClkRect[2]);		
-					lastObjWasMultiLine = _guiObjsAra[i].isMultiLine();
+					newStPt = _guiObjsIDXMap.get(i).reCalcHotSpot(newStPt, txHtOffset, uiClkRect[0], uiClkRect[2]);		
+					lastObjWasMultiLine = _guiObjsIDXMap.get(i).isMultiLine();
 				}
 			}
 			//specify the end of this block of UI clickable coordinates based on if last object was multi-line or not
-			uiClkRect[3] = lastObjWasMultiLine ?  _guiObjsAra[_guiObjsAra.length-1].getEnd().y : newStPt.y;
+			uiClkRect[3] = lastObjWasMultiLine ?  _guiObjsIDXMap.get(_guiObjsIDXMap.size()-1).getEnd().y : newStPt.y;
 			uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
 			// now address buttons' clickable regions	
 			if(_guiButtonIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(uiClkRect);	}			
@@ -884,6 +884,50 @@ public class UIObjectManager {
 		return uiClkRect[3];
 	}//_buildHotSpotRects
 
+//	private float _buildEntry(
+//			Map.Entry<Integer, Base_GUIObj> entry, 
+//			float[] uiClkRect, 
+//			float maxBtnAreaLen, 
+//			float maxBtnLen) {
+//		var btnObj = entry.getValue();
+//		int btnKey = entry.getKey();
+//		// max width possible for this button
+//		float btnLen = btnObj.getMaxTextWidth();
+//		float btnHeight = btnObj.getNumTextLines()*AppMgr.getTextHeightOffset();
+//		//either button of half length or full length.  if half length, might be changed to full length in next iteration.
+//		if(btnLen > maxBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
+//			btnLen = maxBtnAreaLen;
+//			if(lastBtnHalfStLine){//make last button full size, and make this button on another line
+//				// get reference to last button's dims to modify
+//				myPointf[] lastHotSpotDims = hotSpotDimsMap.get(lastBtnKey);
+//				lastHotSpotDims[1].x = lastHotSpotDims[0].x + maxBtnAreaLen;					
+//				uiClkRect[3] += btnHeight;
+//			}
+//			hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], 0, btnLen, btnHeight);
+//			uiClkRect[3] += btnHeight;
+//			startNewLine = true;
+//			lastBtnHalfStLine = false;
+//		} else {//button len should be half width unless this button started a new line
+//			btnLen = maxBtnLen;
+//			if(startNewLine){//button is starting new line
+//				lastBtnHalfStLine = true;
+//				hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], 0, btnLen, btnHeight);
+//				startNewLine = false;
+//			} else {//should only get here if 2nd of two <1/2 width buttons in a row
+//				lastBtnHalfStLine = false;
+//				hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], oldBtnLen, btnLen, btnHeight);
+//				uiClkRect[3] += btnHeight;
+//				startNewLine = true;					
+//			}
+//		}
+//		lastBtnKey = btnKey;
+//		hotSpotDimsMap.put(btnKey, hotSpotDims);
+//		oldBtnLen = btnLen;
+//		
+//		
+//		return uiClkRect[3];
+//	}
+	
 	/**
 	 * Set labels of GUI Switch objects for both true state and false state. Will be updated on next draw
 	 * @param idx idx of button label to set
@@ -941,13 +985,13 @@ public class UIObjectManager {
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateIntValFromExecCode(int idx, int value) {		_guiObjsAra[idx].setVal(value);_uiUpdateData.setIntValue(idx, value);}
+	public final void updateIntValFromExecCode(int idx, int value) {		_guiObjsIDXMap.get(idx).setVal(value);_uiUpdateData.setIntValue(idx, value);}
 	/**
 	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateFloatValFromExecCode(int idx, float value) {	_guiObjsAra[idx].setVal(value);_uiUpdateData.setFloatValue(idx, value);}
+	public final void updateFloatValFromExecCode(int idx, float value) {	_guiObjsIDXMap.get(idx).setVal(value);_uiUpdateData.setFloatValue(idx, value);}
 	
 	/**
 	 * Set the uiUpdateData structure and update the owner if the value has changed for an int-based UIobject (integer or list)
@@ -1049,7 +1093,7 @@ public class UIObjectManager {
 	 * Set UI values by object type, sending value to owner and updater
 	 * @param UIidx index of object within gui obj ara
 	 */
-	public final void setUIWinVals(int UIidx) {			_setUIWinValsInternal(_guiObjsAra[UIidx], UIidx);	}//setUIWinVals	
+	public final void setUIWinVals(int UIidx) {			_setUIWinValsInternal(_guiObjsIDXMap.get(UIidx), UIidx);	}//setUIWinVals	
 	
 	/**
 	 * Set UI values by object type, sending value to owner and updater
@@ -1061,14 +1105,14 @@ public class UIObjectManager {
 	 * Reset guiObj given by passed index to starting value
 	 * @param uiIdx
 	 */
-	public final void resetUIObj(int uiIdx) {				_guiObjsAra[uiIdx].resetToInit();setUIWinVals(uiIdx);}
+	public final void resetUIObj(int uiIdx) {				_guiObjsIDXMap.get(uiIdx).resetToInit();setUIWinVals(uiIdx);}
 	
 	/**
 	 * Reset all values to be initial values. 
 	 * @param forceVals If true, this will bypass setUIWinVals, if false, will call set vals, to propagate changes to window vars 
 	 */
 	public final void resetUIVals(boolean forceVals){
-		for(int i=0; i<_guiObjsAra.length;++i){				_guiObjsAra[i].resetToInit();		}
+		for(int i=0; i<_guiObjsIDXMap.size();++i){				_guiObjsIDXMap.get(i).resetToInit();		}
 		if (!forceVals) {			setAllUIWinVals();		}
 	}//resetUIVals	
 	
@@ -1094,7 +1138,7 @@ public class UIObjectManager {
 	public final ArrayList<String> hndlFileSave_GUI(String winName){
 		ArrayList<String> res = new ArrayList<String>();
 		res.add(winName);
-		for(int i=0;i<_guiObjsAra.length;++i){	res.add(_guiObjsAra[i].getStrFromUIObj(i));}		
+		for(int i=0;i<_guiObjsIDXMap.size();++i){	res.add(_guiObjsIDXMap.get(i).getStrFromUIObj(i));}		
 		//bound for custom components
 		res.add(winName + "_custUIComps");
 		//add blank space
@@ -1112,14 +1156,14 @@ public class UIObjectManager {
 		//window has no data values to load
 		if(toks.length==0){return;}
 		int uiIdx = Integer.parseInt(toks[0].split("\\s")[1].trim());
-		_guiObjsAra[uiIdx].setValFromStrTokens(toks);
+		_guiObjsIDXMap.get(uiIdx).setValFromStrTokens(toks);
 		setUIWinVals(uiIdx);//update window's values with UI construct's values
 	}//setValFromFileStr
 	
 	/**
 	 * set all window values for UI objects
 	 */
-	public final void setAllUIWinVals() {for(int i=0;i<_guiObjsAra.length;++i){if(_guiObjsAra[i].shouldUpdateWin(true)){setUIWinVals(i);}}}
+	public final void setAllUIWinVals() {for(int i=0;i<_guiObjsIDXMap.size();++i){if(_guiObjsIDXMap.get(i).shouldUpdateWin(true)){setUIWinVals(i);}}}
 		
 	/**
 	 * call after single draw - will clear window-based priv buttons that are momentary
@@ -1294,7 +1338,7 @@ public class UIObjectManager {
 	 * @return whether modification was performed or not
 	 */
 	public boolean setNewUIMaxVal(int idx, double maxVal) {
-		if (_validateUIObjectIdx(idx, _guiObjsAra.length, "setNewUIMaxVal", "set its max value")) {_guiObjsAra[idx].setNewMax(maxVal);return true;}	
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIMaxVal", "set its max value")) {_guiObjsIDXMap.get(idx).setNewMax(maxVal);return true;}	
 		return false;
 	}
 	
@@ -1306,7 +1350,7 @@ public class UIObjectManager {
 	 * @return whether modification was performed or not
 	 */
 	public boolean setNewUIMinVal(int idx, double minVal) {
-		if (_validateUIObjectIdx(idx, _guiObjsAra.length, "setNewUIMinVal", "set its min value")) {_guiObjsAra[idx].setNewMin(minVal);return true;}
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIMinVal", "set its min value")) {_guiObjsIDXMap.get(idx).setNewMin(minVal);return true;}
 		return false;
 	}
 	
@@ -1317,7 +1361,7 @@ public class UIObjectManager {
 	 * @return value being set, or -Double.MAX_VALUE if idx is out of range
 	 */
 	public double setNewUIValue(int idx, double val) {
-		if (_validateUIObjectIdx(idx, _guiObjsAra.length, "setNewUIValue", "set its value")) {return _guiObjsAra[idx].setVal(val);}
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIValue", "set its value")) {return _guiObjsIDXMap.get(idx).setVal(val);}
 		return -Double.MAX_VALUE;
 	}		
 	
@@ -1329,11 +1373,11 @@ public class UIObjectManager {
 	 */
 	public void setNewUIDispText(int idx, boolean isNumeric, String str) {
 		if (isNumeric) {
-			if (_validateUIObjectIdx(idx, _guiObjsAra.length, "setNewUIDispText", "set its display text")) {_guiObjsAra[idx].setLabel(str);}
+			if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
 			return;
 		} else {
 			//TODO support boolean UI objects
-			if (_validateUIObjectIdx(idx, _guiObjsAra.length, "setNewUIDispText", "set its display text")) {_guiObjsAra[idx].setLabel(str);}
+			if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
 			return;
 		}
 	}
@@ -1344,9 +1388,9 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public int[] setDispUIListVal(int idx, String val) {		
-		if ((!_validateUIObjectIdx(idx, _guiObjsAra.length, "setDispUIListVal", "display passed value")) || 
-				(!_validateIdxIsListObj(_guiObjsAra[idx], "setDispUIListVal", "display passed value"))){return new int[0];}
-		return ((GUIObj_List) _guiObjsAra[idx]).setValInList(val);
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setDispUIListVal", "display passed value")) || 
+				(!_validateIdxIsListObj(_guiObjsIDXMap.get(idx), "setDispUIListVal", "display passed value"))){return new int[0];}
+		return ((GUIObj_List) _guiObjsIDXMap.get(idx)).setValInList(val);
 	}
 	
 	/**
@@ -1357,9 +1401,9 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public int setAllUIListValues(int uiObjIdx, String[] values, boolean setAsDefault) {		
-		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsAra.length, "setAllUIListValues", "set/replace all list values")) || 
-				(!_validateIdxIsListObj(_guiObjsAra[uiObjIdx], "setAllUIListValues", "set/replace all list values"))){return -1;}
-		return ((GUIObj_List) _guiObjsAra[uiObjIdx]).setListVals(values, setAsDefault);
+		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUIListValues", "set/replace all list values")) || 
+				(!_validateIdxIsListObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUIListValues", "set/replace all list values"))){return -1;}
+		return ((GUIObj_List)_guiObjsIDXMap.get(uiObjIdx)).setListVals(values, setAsDefault);
 	}
 	
 	/**
@@ -1369,9 +1413,9 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public int[] setDispUIButtonState(int idx, String val) {		
-		if ((!_validateUIObjectIdx(idx, _guiObjsAra.length, "setDispUIButtonState", "display passed state")) || 
-				(!_validateIdxIsButtonObj(_guiObjsAra[idx], "setDispUIButtonState", "display passed state"))){return new int[0];}
-		return ((GUIObj_Button) _guiObjsAra[idx]).setStateByLabel(val);
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setDispUIButtonState", "display passed state")) || 
+				(!_validateIdxIsButtonObj(_guiObjsIDXMap.get(idx), "setDispUIButtonState", "display passed state"))){return new int[0];}
+		return ((GUIObj_Button) _guiObjsIDXMap.get(idx)).setStateByLabel(val);
 	}
 	
 	/**
@@ -1382,21 +1426,21 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public int setAllUIButtonStates(int uiObjIdx, String[] values, boolean setAsDefault) {		
-		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsAra.length, "setAllUIButtonStates", "set/replace all button states")) || 
-				(!_validateIdxIsButtonObj(_guiObjsAra[uiObjIdx], "setAllUIButtonStates", "set/replace all button states"))){return -1;}
-		return ((GUIObj_Button) _guiObjsAra[uiObjIdx]).setStateLabels(values, setAsDefault);
+		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUIButtonStates", "set/replace all button states")) || 
+				(!_validateIdxIsButtonObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUIButtonStates", "set/replace all button states"))){return -1;}
+		return ((GUIObj_Button)_guiObjsIDXMap.get(uiObjIdx)).setStateLabels(values, setAsDefault);
 	}	
 	
 	/**
 	 * Specify the state for a 2-state toggle switch object backed by privFlags to be in based on the passed string
-	 * @param idx
+	 * @param uiObjIdx
 	 * @param val
 	 * @return
 	 */
-	public int[] setDispUISwitchState(int idx, String val) {		
-		if ((!_validateUIObjectIdx(idx, _guiObjsAra.length, "setDispUISwitchState", "display passed state")) || 
-				(!_validateIdxIsSwitchObj(_guiObjsAra[idx], "setDispUISwitchState", "display passed state"))){return new int[0];}
-		return ((GUIObj_Switch) _guiObjsAra[idx]).setStateByLabel(val);
+	public int[] setDispUISwitchState(int uiObjIdx, String val) {		
+		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setDispUISwitchState", "display passed state")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(uiObjIdx), "setDispUISwitchState", "display passed state"))){return new int[0];}
+		return ((GUIObj_Switch)_guiObjsIDXMap.get(uiObjIdx)).setStateByLabel(val);
 	}
 	
 	/**
@@ -1408,9 +1452,9 @@ public class UIObjectManager {
 	 */
 	public int setAllUISwitchStates(int uiObjIdx, String[] values, boolean setAsDefault) {		
 		if (!_validateSwitchListValues(values, "setAllUISwitchStates","set/replace both switch states") ||			
-				(!_validateUIObjectIdx(uiObjIdx, _guiObjsAra.length, "setAllUISwitchStates", "set/replace both switch states")) || 
-				(!_validateIdxIsSwitchObj(_guiObjsAra[uiObjIdx], "setAllUISwitchStates", "set/replace both switch states"))){return -1;}
-		return ((GUIObj_Switch) _guiObjsAra[uiObjIdx]).setStateLabels(values, setAsDefault);
+				(!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUISwitchStates", "set/replace both switch states")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUISwitchStates", "set/replace both switch states"))){return -1;}
+		return ((GUIObj_Switch)_guiObjsIDXMap.get(uiObjIdx)).setStateLabels(values, setAsDefault);
 	}
 		
 	/**
@@ -1419,7 +1463,7 @@ public class UIObjectManager {
 	 * @return min value allowed, or Double.MAX_VALUE if idx out of range
 	 */
 	public double getMinUIValue(int idx) {
-		if (_validateUIObjectIdx(idx, _guiObjsAra.length, "getMinUIValue","get its min value")) {return _guiObjsAra[idx].getMinVal();}
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getMinUIValue","get its min value")) {return _guiObjsIDXMap.get(idx).getMinVal();}
 		return Double.MAX_VALUE;
 	}
 	
@@ -1429,7 +1473,7 @@ public class UIObjectManager {
 	 * @return max value allowed, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getMaxUIValue(int idx) {
-		if (_validateUIObjectIdx(idx, _guiObjsAra.length, "getMaxUIValue","get its max value")){return _guiObjsAra[idx].getMaxVal();}
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getMaxUIValue","get its max value")){return _guiObjsIDXMap.get(idx).getMaxVal();}
 		return -Double.MAX_VALUE;
 	}
 	
@@ -1439,7 +1483,7 @@ public class UIObjectManager {
 	 * @return mod value of UI object, or 0 if idx out of range
 	 */
 	public double getModStep(int idx) {
-		if (_validateUIObjectIdx(idx, _guiObjsAra.length, "getModStep", "get its mod value")) {return _guiObjsAra[idx].getModStep();}
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getModStep", "get its mod value")) {return _guiObjsIDXMap.get(idx).getModStep();}
 		return 0;
 	}
 	
@@ -1449,7 +1493,7 @@ public class UIObjectManager {
 	 * @return the current value of the UI object, or -Double.MAX_VALUE if idx out of range
 	 */
 	public double getUIValue(int idx) {
-		if (_validateUIObjectIdx(idx, _guiObjsAra.length, "getUIValue", "get its value")) {return _guiObjsAra[idx].getVal();}
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getUIValue", "get its value")) {return _guiObjsIDXMap.get(idx).getVal();}
 		return -Double.MAX_VALUE;
 	}
 	
@@ -1459,10 +1503,10 @@ public class UIObjectManager {
 	 * @param listIdx index in list of elements to access
 	 * @return the string value at the requested index, or "" if not a valid request
 	 */
-	public String getListValStr(int UIidx, int listIdx) {		
-		if ((!_validateUIObjectIdx(UIidx, _guiObjsAra.length, "getListValStr", "get a list value at specified idx")) || 
-				(!_validateIdxIsListObj(_guiObjsAra[UIidx], "getListValStr", "get a list value at specified idx"))){return "";}
-		return ((GUIObj_List) _guiObjsAra[UIidx]).getListValStr(listIdx);
+	public String getListValStr(int idx, int listIdx) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getListValStr", "get a list value at specified idx")) || 
+				(!_validateIdxIsListObj(_guiObjsIDXMap.get(idx), "getListValStr", "get a list value at specified idx"))){return "";}
+		return ((GUIObj_List)_guiObjsIDXMap.get(idx)).getListValStr(listIdx);
 	}
 	
 	/**
@@ -1471,10 +1515,10 @@ public class UIObjectManager {
 	 * @param buttonStIdx index in list of elements to access
 	 * @return the string value at the requested index, or "" if not a valid request
 	 */
-	public String getButtonStateStr(int UIidx, int buttonStIdx) {		
-		if ((!_validateUIObjectIdx(UIidx, _guiObjsAra.length, "getButtonStateStr", "get a button state at specified idx")) || 
-				(!_validateIdxIsButtonObj(_guiObjsAra[UIidx], "getButtonStateStr", "get a button state at specified idx"))){return "";}
-		return ((GUIObj_Button) _guiObjsAra[UIidx]).getStateLabel(buttonStIdx);
+	public String getButtonStateStr(int idx, int buttonStIdx) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getButtonStateStr", "get a button state at specified idx")) || 
+				(!_validateIdxIsButtonObj(_guiObjsIDXMap.get(idx), "getButtonStateStr", "get a button state at specified idx"))){return "";}
+		return ((GUIObj_Button)_guiObjsIDXMap.get(idx)).getStateLabel(buttonStIdx);
 	}
 		
 	/**
@@ -1483,10 +1527,10 @@ public class UIObjectManager {
 	 * @param switchStIdx either 0 or 1
 	 * @return the string value at the requested index, or "" if not a valid request
 	 */
-	public String getSwitchStateStr(int UIidx, int switchStIdx) {		
-		if ((!_validateUIObjectIdx(UIidx, _guiObjsAra.length, "getSwitchStateStr", "get a switch state at specified idx")) || 
-				(!_validateIdxIsSwitchObj(_guiObjsAra[UIidx], "getSwitchStateStr", "get a switch state at specified idx"))){return "";}
-		return ((GUIObj_Button) _guiObjsAra[UIidx]).getStateLabel(switchStIdx);
+	public String getSwitchStateStr(int idx, int switchStIdx) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getSwitchStateStr", "get a switch state at specified idx")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(idx), "getSwitchStateStr", "get a switch state at specified idx"))){return "";}
+		return ((GUIObj_Button)_guiObjsIDXMap.get(idx)).getStateLabel(switchStIdx);
 	}
 			
 	/**
@@ -1501,7 +1545,7 @@ public class UIObjectManager {
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
 		for (var entry : _guiIntValIDXMap.entrySet()) {			intValues.put(entry.getKey(), entry.getValue().getValueAsInt());}		
 		//TODO 
-		//for (Integer idx : _guiButtonIDXs) {			intValues.put(idx, _guiObjsAra[idx].getValueAsInt());}	
+		//for (Integer idx : _guiButtonIDXs) {			intValues.put(idx, _guiObjsIDXMap.get(idx).getValueAsInt());}	
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		for (var entry :  _guiFloatValIDXMap.entrySet()) {		floatValues.put(entry.getKey(), entry.getValue().getValueAsFloat());}
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
@@ -1509,7 +1553,7 @@ public class UIObjectManager {
 //		for (var switchIdxs : _guiSwitchIDXMap.entrySet()) {
 //			int flagIdx = switchIdxs.getKey();
 //			int idx = switchIdxs.getValue();
-//			GUIObj_Switch toggleObj = ((GUIObj_Switch)_guiObjsAra[idx]);
+//			GUIObj_Switch toggleObj = ((GUIObj_Switch)_guiObjsIDXMap.get(idx));
 //			boolValues.put(flagIdx, toggleObj.getValueAsBoolean());
 //		}
 		
@@ -1527,11 +1571,11 @@ public class UIObjectManager {
 	// Start Mouse and keyboard handling	
 	/**
 	 * updates values in UI with programatic changes 
-	 * @param UIidx
+	 * @param idx
 	 * @param val
 	 * @return
 	 */
-	public final boolean setWinToUIVals(int UIidx, double val){return val == _guiObjsAra[UIidx].setVal(val);}
+	public final boolean setWinToUIVals(int idx, double val){return val == _guiObjsIDXMap.get(idx).setVal(val);}
 	/**
 	 * Check if point x,y is between r[0], r[1] and r[0]+r[2], r[1]+r[3]
 	 * @param x
@@ -1564,7 +1608,7 @@ public class UIObjectManager {
 			if(idx >= 0) {
 				//found in list of UI objects
 				_msBtnClicked = mseBtn; 
-				_msClickObj = _guiObjsAra[idx];
+				_msClickObj = _guiObjsIDXMap.get(idx);
 				_msClickObj.setIsClicked();
 				if(isClickModUIVal){//allows for click-mod without dragging
 					_setUIObjValFromClickAlone(_msClickObj);
@@ -1584,7 +1628,7 @@ public class UIObjectManager {
 	 * @return idx of object that mouse resides in, or -1 if none
 	 */
 	private final int _checkInAllObjs(int mouseX, int mouseY) {
-		for(int j=0; j<_guiObjsAra.length; ++j){if(_guiObjsAra[j].checkIn(mouseX, mouseY)){ return j;}}
+		for(int j=0; j<_guiObjsIDXMap.size(); ++j){if(_guiObjsIDXMap.get(j).checkIn(mouseX, mouseY)){ return j;}}
 		return -1;
 	}	
 	
@@ -1679,7 +1723,7 @@ public class UIObjectManager {
 	// End Mouse and keyboard handling; Start UI object rendering	
 	
 	/**
-	 * Draw the UI clickable region rectangle
+	 * Draw the UI clickable region rectangle (for debugging)
 	 */
 	private final void _drawUIRect() {
 		ri.setStrokeWt(2.0f);
@@ -1689,7 +1733,7 @@ public class UIObjectManager {
 	}
 	
 	/**
-	 * Draw all gui objects, with appropriate highlights for debug and if object is being edited or not
+	 * Draw all gui objects
 	 * @param isDebug
 	 * @param animTimeMod
 	 */
@@ -1697,10 +1741,10 @@ public class UIObjectManager {
 		ri.pushMatState();
 		//draw UI Objs
 		if(isDebug) {
-			for(int i =0; i<_guiObjsAra.length; ++i){_guiObjsAra[i].drawDebug();}
+			for(int i =0; i<_guiObjsIDXMap.size(); ++i){_guiObjsIDXMap.get(i).drawDebug();}
 			_drawUIRect();
 		} else {			
-			for(int i =0; i<_guiObjsAra.length; ++i){_guiObjsAra[i].draw();}
+			for(int i =0; i<_guiObjsIDXMap.size(); ++i){_guiObjsIDXMap.get(i).draw();}
 		}	
 		ri.popMatState();	
 	}//drawAllGuiObjs
@@ -1749,14 +1793,14 @@ public class UIObjectManager {
 	 */
 	public final String[] getDebugData(){
 		ArrayList<String> res = new ArrayList<String>();
-		for(int j = 0; j<_guiObjsAra.length; j++){res.addAll(Arrays.asList(_guiObjsAra[j].getStrData()));}
+		for(int j = 0; j<_guiObjsIDXMap.size(); j++){res.addAll(Arrays.asList(_guiObjsIDXMap.get(j).getStrData()));}
 		return res.toArray(new String[0]);	
 	}
 	
 	/**
-	 * Return the coordinates of the clickable region for this window's UI
+	 * Return the coordinates of the clickable region for the UI managed by this object manager
 	 * @return
 	 */
-	public float[] getUIClkCoords() {return _uiClkCoords;}
+	public float[] getUIClkCoords() {return Arrays.copyOf(_uiClkCoords, _uiClkCoords.length);}
 	
 }//class uiObjectManager
