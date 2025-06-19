@@ -6,7 +6,7 @@ import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 /**
  * Label that displays a value that may change but cannot be interacted with.
  */
-public class MenuGUIObj_DispValue extends Base_GUIObj {
+public class GUIObj_DispValue extends Base_GUIObj {
 	
 	/**
 	 * @param _objID
@@ -16,10 +16,7 @@ public class MenuGUIObj_DispValue extends Base_GUIObj {
 	 * @param _strkClr
 	 * @param _fillClr
 	 */
-	public MenuGUIObj_DispValue(int _objID, GUIObj_Params objParams) {
-		super(_objID, objParams);
-		//super(_objID, _name, new double[] {-Double.MAX_VALUE, Double.MAX_VALUE, 0}, _initVal, GUIObj_Type.LabelVal, new boolean[]{false, false, false});
-	}
+	public GUIObj_DispValue(int _objID, GUIObj_Params objParams) {		super(_objID, objParams);	}
 	
 	/**
 	 * Set a new modifier value to use for this object : Mod values for Value Display objects will always be 0
@@ -63,4 +60,4 @@ public class MenuGUIObj_DispValue extends Base_GUIObj {
 		return true;
 	}
 
-}//class MenuGUIObj_DispValue
+}//class GUIObj_DispValue

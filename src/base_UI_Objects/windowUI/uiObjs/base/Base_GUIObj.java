@@ -399,11 +399,17 @@ public abstract class Base_GUIObj {
 	}
 	
 	/**
-	 * Return the max width feasible for this UI object (based on possible values + label length if any)
+	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
 	 * @return
 	 */
-	public final float getMaxWidth() {	return renderer.getMaxWidth();}
-
+	public final float getMaxTextWidth() {	return renderer.getMaxTextWidth();}
+	
+	/**
+	 * Return the number of text lines this object will be displaying
+	 * @return
+	 */
+	public final int getNumTextLines() { 		return renderer.getNumTextLines();}
+	
 	/**
 	 * Set this UI object's value based on string tokens from file
 	 * @param toks

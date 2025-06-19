@@ -3,7 +3,7 @@ package base_UI_Objects.windowUI.uiObjs.menuObjs;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
-public class MenuGUIObj_Int extends Base_GUIObj {
+public class GUIObj_Int extends Base_GUIObj {
 
 	/**
 	 * Build an int-based UI object
@@ -13,7 +13,7 @@ public class MenuGUIObj_Int extends Base_GUIObj {
 	 * @param _initVal the initial value of this object
 	 * @param _flags any preset behavior flags
 	 */
-	public MenuGUIObj_Int(int _objID, GUIObj_Params objParams) {
+	public GUIObj_Int(int _objID, GUIObj_Params objParams) {
 		super(_objID, objParams);
 		//super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.IntVal, _flags);
 	}

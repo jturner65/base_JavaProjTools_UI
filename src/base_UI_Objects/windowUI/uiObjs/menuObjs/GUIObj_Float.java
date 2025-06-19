@@ -3,7 +3,7 @@ package base_UI_Objects.windowUI.uiObjs.menuObjs;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
-public class MenuGUIObj_Float extends Base_GUIObj {
+public class GUIObj_Float extends Base_GUIObj {
 	/**
 	 * Build a float-based UI object
 	 * @param _objID the index of the object in the managing container
@@ -14,7 +14,7 @@ public class MenuGUIObj_Float extends Base_GUIObj {
 	 * @param strkClr stroke color of text
 	 * @param fillClr fill color around text
 	 */
-	public MenuGUIObj_Float(int _objID, GUIObj_Params objParams) {
+	public GUIObj_Float(int _objID, GUIObj_Params objParams) {
 		super(_objID, objParams);
 		//super(_objID, _name, _minMaxMod, _initVal, GUIObj_Type.FloatVal, _flags);	
 	}

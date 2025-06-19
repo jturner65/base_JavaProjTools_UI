@@ -15,12 +15,12 @@ import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Button;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_DispValue;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Float;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Int;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_List;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Switch;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.GUIObj_Button;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.GUIObj_DispValue;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.GUIObj_Float;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.GUIObj_Int;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.GUIObj_List;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.GUIObj_Switch;
 import base_UI_Objects.windowUI.uiObjs.renderer.ButtonGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.MultiLineGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.SingleLineGUIObjRenderer;
@@ -50,6 +50,7 @@ public class UIObjectManager {
 	 * msg object for output to console or log
 	 */
 	private MessageObject msgObj;
+	
 	/**
 	 * subregion of window where UI objects may be found
 	 * Idx 0,1 : Upper left corner x,y
@@ -60,27 +61,27 @@ public class UIObjectManager {
 	/**
 	 * Map for all multi-state button objects not backed by a flags construct, keyed by objIdx
 	 */
-	private TreeMap<Integer,MenuGUIObj_Button> _guiButtonIDXMap;
+	private TreeMap<Integer,GUIObj_Button> _guiButtonIDXMap;
 	
 	/**
 	 * Map of all 2-state switch toggle objects connected to privFlags structures, keyed by ***privFlags key*** (not objIdx)
 	 */
-	private TreeMap<Integer,MenuGUIObj_Switch> _guiSwitchIDXMap;
+	private TreeMap<Integer,GUIObj_Switch> _guiSwitchIDXMap;
 	
 	/**
 	 * Map of all idxs for float-based UI objects, keyed by objIdx
 	 */
-	private TreeMap<Integer, MenuGUIObj_Float> _guiFloatValIDXMap;
+	private TreeMap<Integer, GUIObj_Float> _guiFloatValIDXMap;
 	
 	/**
 	 * Map of all idxs for integer/list-based objects, keyed by objIdx
 	 * (This does not include buttons even though button inherits from list object)
 	 */
-	private TreeMap<Integer,MenuGUIObj_Int>  _guiIntValIDXMap;
+	private TreeMap<Integer,GUIObj_Int>  _guiIntValIDXMap;
 	/**
 	 * array list of idxs for label/read-only objects, keyed by objIdx
 	 */	
-	private TreeMap<Integer, MenuGUIObj_DispValue> _guiLabelValIDXMap;
+	private TreeMap<Integer, GUIObj_DispValue> _guiLabelValIDXMap;
 	/**
 	 * Numeric Gui Objects
 	 */
@@ -111,6 +112,14 @@ public class UIObjectManager {
      *     	idx 3: object is read only
 	 */
 	private static final boolean[] dfltUIBehaviorVals = new boolean[]{true, false, false, false};	
+	/**
+	 * Boolean array of default behavior boolean values for label constructs
+	 *     	idx 0: value is sent to owning window,  
+	 *     	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *     	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *     	idx 3: object is read only
+	 */	
+	private static final boolean[] dfltUILabelBehaviorVals = new boolean[] {false,false,false,true};
 	/**
 	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
 	 * 		idx 0 : Should be multiline - defaults to false
@@ -194,11 +203,11 @@ public class UIObjectManager {
 		_privFlagsToClear = new ArrayList<Integer>();		
 		
 		//initialize arrays to hold idxs of int and float items being created.
-		_guiButtonIDXMap = new TreeMap<Integer,MenuGUIObj_Button>();
-		_guiSwitchIDXMap = new TreeMap<Integer,MenuGUIObj_Switch>();
-		_guiFloatValIDXMap = new TreeMap<Integer, MenuGUIObj_Float>();
-		_guiIntValIDXMap = new TreeMap<Integer,MenuGUIObj_Int> ();
-		_guiLabelValIDXMap = new TreeMap<Integer, MenuGUIObj_DispValue>();
+		_guiButtonIDXMap = new TreeMap<Integer,GUIObj_Button>();
+		_guiSwitchIDXMap = new TreeMap<Integer,GUIObj_Switch>();
+		_guiFloatValIDXMap = new TreeMap<Integer, GUIObj_Float>();
+		_guiIntValIDXMap = new TreeMap<Integer,GUIObj_Int> ();
+		_guiLabelValIDXMap = new TreeMap<Integer, GUIObj_DispValue>();
 		//////_guiLabelValIDXMap///////
 		// build all UI objects using specifications from instancing window
 		owner.initOwnerStateDispFlags();
@@ -277,7 +286,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Label(int objIdx, double initVal, String name, boolean[] renderCreationFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false,false}, renderCreationFmtVals);
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, dfltUILabelBehaviorVals, renderCreationFmtVals);
 		obj.initVal = initVal;
 		return obj;
 	}
@@ -698,7 +707,7 @@ public class UIObjectManager {
 			float _menuWidth,
 			GUIObj_Params _argObj
 		) {		
-		if (_argObj.isButton()) {		return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _argObj);}
+		if (_argObj.isButton()) {		return new ButtonGUIObjRenderer(ri, (GUIObj_Button)_owner, _off, _menuWidth, _argObj);}
 		//build multi-line renderer if multi-line non-button
 		if (_argObj.isMultiLine()) {	return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);} 
 		// Single line is default
@@ -714,30 +723,30 @@ public class UIObjectManager {
 		GUIObj_Params argObj = entry.getValue();
 		switch(argObj.objType) {
 			case IntVal : {
-				_guiObjsAra[guiObjIDX] = new MenuGUIObj_Int(guiObjIDX, argObj);
-				_guiIntValIDXMap.put(guiObjIDX, ((MenuGUIObj_Int)_guiObjsAra[guiObjIDX]));
+				_guiObjsAra[guiObjIDX] = new GUIObj_Int(guiObjIDX, argObj);
+				_guiIntValIDXMap.put(guiObjIDX, ((GUIObj_Int)_guiObjsAra[guiObjIDX]));
 				break;}
 			case ListVal : {
-				_guiObjsAra[guiObjIDX] = new MenuGUIObj_List(guiObjIDX, argObj);
-				_guiIntValIDXMap.put(guiObjIDX, ((MenuGUIObj_List)_guiObjsAra[guiObjIDX]));
+				_guiObjsAra[guiObjIDX] = new GUIObj_List(guiObjIDX, argObj);
+				_guiIntValIDXMap.put(guiObjIDX, ((GUIObj_List)_guiObjsAra[guiObjIDX]));
 				break;}
 			case FloatVal : {
-				_guiObjsAra[guiObjIDX] = new MenuGUIObj_Float(guiObjIDX, argObj);
-				_guiFloatValIDXMap.put(guiObjIDX, ((MenuGUIObj_Float)_guiObjsAra[guiObjIDX]));
+				_guiObjsAra[guiObjIDX] = new GUIObj_Float(guiObjIDX, argObj);
+				_guiFloatValIDXMap.put(guiObjIDX, ((GUIObj_Float)_guiObjsAra[guiObjIDX]));
 				break;}
 			case LabelVal :{
-				_guiObjsAra[guiObjIDX] = new MenuGUIObj_DispValue(guiObjIDX, argObj);					
-				_guiLabelValIDXMap.put(guiObjIDX,((MenuGUIObj_DispValue)_guiObjsAra[guiObjIDX]));
+				_guiObjsAra[guiObjIDX] = new GUIObj_DispValue(guiObjIDX, argObj);					
+				_guiLabelValIDXMap.put(guiObjIDX,((GUIObj_DispValue)_guiObjsAra[guiObjIDX]));
 				break;}
 			case Switch : {						
-				MenuGUIObj_Switch obj = new MenuGUIObj_Switch(guiObjIDX, argObj);
+				GUIObj_Switch obj = new GUIObj_Switch(guiObjIDX, argObj);
 				_guiButtonIDXMap.put(guiObjIDX, obj);
 				_guiSwitchIDXMap.put(obj.getBoolFlagIDX(), obj);
 				_guiObjsAra[guiObjIDX] = obj;
 				break;}
 			case Button  :{ 
-				_guiObjsAra[guiObjIDX] = new MenuGUIObj_Button(guiObjIDX, argObj);
-				_guiButtonIDXMap.put(guiObjIDX, ((MenuGUIObj_Button)_guiObjsAra[guiObjIDX]));
+				_guiObjsAra[guiObjIDX] = new GUIObj_Button(guiObjIDX, argObj);
+				_guiButtonIDXMap.put(guiObjIDX, ((GUIObj_Button)_guiObjsAra[guiObjIDX]));
 				//_dispWarnMsg("_buildGUIObjsForMenu", "Instantiating a Button UI object not yet supported for ID : "+i);
 				break;
 			}
@@ -770,7 +779,7 @@ public class UIObjectManager {
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIBtnMap.entrySet()) {
 				_buildObj(btnIdx++, entry, uiClkRect);		
 			}			
-			//Objects are created by here and assigned renderers
+			// Objects are created by here and assigned renderers
 			// Assign hotspots for non-button components
 			myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
 			boolean lastObjWasMultiLine = false;
@@ -802,9 +811,9 @@ public class UIObjectManager {
 		return uiClkRect[3];
 	}//_buildGUIObjsForMenu
 			
-	private myPointf[] _calcBtnDims(float xStart, float yEnd, float oldBtnLen, float btnLen) {
+	private myPointf[] _calcHotSpotDims(float xStart, float yEnd, float oldBtnLen, float btnLen, float btnHeight) {
 		myPointf _start = new myPointf(xStart+oldBtnLen, yEnd, 0);
-		myPointf _end = new myPointf(_start.x+btnLen, _start.y+ AppMgr.getTextHeightOffset(), 0);
+		myPointf _end = new myPointf(_start.x+btnLen, _start.y+ btnHeight, 0);
 		return new  myPointf[]  {_start, _end };
 	}
 	/**
@@ -817,56 +826,57 @@ public class UIObjectManager {
 		float oldBtnLen = 0;
 		// toggle flags to control how next button is built
 		boolean lastBtnHalfStLine = false, startNewLine = true;
-		MenuGUIObj_Button btnObj;
+		GUIObj_Button btnObj;
 		
-		myPointf[] btnDims;
+		myPointf[] hotSpotDims;
 		int lastBtnKey = -1;
 		// button dims keyed by button, will be used to set button hotspots
-		TreeMap<Integer, myPointf[]> btnDimsMap = new TreeMap<Integer, myPointf[]>();
+		TreeMap<Integer, myPointf[]> hotSpotDimsMap = new TreeMap<Integer, myPointf[]>();
 		// build button dims
-		for(Map.Entry<Integer, MenuGUIObj_Button> entry : _guiButtonIDXMap.entrySet()) {
+		for(Map.Entry<Integer, GUIObj_Button> entry : _guiButtonIDXMap.entrySet()) {
 			btnObj = entry.getValue();
 			int btnKey = entry.getKey();
 			// max width possible for this button
-			float btnLen = btnObj.getMaxWidth();
+			float btnLen = btnObj.getMaxTextWidth();
+			float btnHeight = btnObj.getNumTextLines()*yOffset;
 			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
 			if(btnLen > maxBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
 				btnLen = maxBtnAreaLen;
 				if(lastBtnHalfStLine){//make last button full size, and make this button on another line
 					// get reference to last button's dims to modify
-					myPointf[] lastBtnDims = btnDimsMap.get(lastBtnKey);
-					lastBtnDims[1].x = lastBtnDims[0].x + maxBtnAreaLen;					
-					uiClkRect[3] += yOffset;
+					myPointf[] lastHotSpotDims = hotSpotDimsMap.get(lastBtnKey);
+					lastHotSpotDims[1].x = lastHotSpotDims[0].x + maxBtnAreaLen;					
+					uiClkRect[3] += btnHeight;
 				}
-				btnDims = _calcBtnDims(uiClkRect[0], uiClkRect[3], 0, btnLen);
-				uiClkRect[3] += yOffset;
+				hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], 0, btnLen, btnHeight);
+				uiClkRect[3] += btnHeight;
 				startNewLine = true;
 				lastBtnHalfStLine = false;
 			} else {//button len should be half width unless this button started a new line
 				btnLen = maxBtnLen;
 				if(startNewLine){//button is starting new line
 					lastBtnHalfStLine = true;
-					btnDims = _calcBtnDims(uiClkRect[0], uiClkRect[3], 0, btnLen);
+					hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], 0, btnLen, btnHeight);
 					startNewLine = false;
 				} else {//should only get here if 2nd of two <1/2 width buttons in a row
 					lastBtnHalfStLine = false;
-					btnDims = _calcBtnDims(uiClkRect[0], uiClkRect[3], oldBtnLen, btnLen);
-					uiClkRect[3] += yOffset;
+					hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], oldBtnLen, btnLen, btnHeight);
+					uiClkRect[3] += btnHeight;
 					startNewLine = true;					
 				}
 			}
 			lastBtnKey = btnKey;
-			btnDimsMap.put(btnKey, btnDims);
+			hotSpotDimsMap.put(btnKey, hotSpotDims);
 			oldBtnLen = btnLen;
 		}
 		if(lastBtnHalfStLine){//set last button full length if starting new line
 			// get reference to last button's dims to modify
-			myPointf[] lastBtnDims = btnDimsMap.get(lastBtnKey);
-			lastBtnDims[1].x = lastBtnDims[0].x + maxBtnAreaLen;					
+			myPointf[] lastHotSpotDims = hotSpotDimsMap.get(lastBtnKey);
+			lastHotSpotDims[1].x = lastHotSpotDims[0].x + maxBtnAreaLen;					
 			uiClkRect[3] += yOffset;
 		}
-		// assign button dims to buttons
-		for(Map.Entry<Integer, myPointf[]> entry : btnDimsMap.entrySet()) {
+		// assign hotspot dims to object
+		for(Map.Entry<Integer, myPointf[]> entry : hotSpotDimsMap.entrySet()) {
 			_guiButtonIDXMap.get(entry.getKey()).setHotSpot(entry.getValue());
 		}		
 		uiClkRect[3] += AppMgr.getRowStYOffset();
@@ -973,7 +983,7 @@ public class UIObjectManager {
 	 */
 	public final void setUI_SwitchVal(Base_GUIObj UIobj, int UIidx) {
 		// Let flag state drive everything
-		MenuGUIObj_Switch switchObj = ((MenuGUIObj_Switch)UIobj);
+		GUIObj_Switch switchObj = ((GUIObj_Switch)UIobj);
 		boolean boolVal = switchObj.getValueAsBoolean();
 		// Don't use object UI idx, use priv flags idx
 		int flagIDX = switchObj.getBoolFlagIDX();
@@ -1140,7 +1150,7 @@ public class UIObjectManager {
 	private void _initPassedPrivFlagsToTrue(int[] idxs) { 	
 		_privFlags.setAllFlagsToTrue(idxs);
 		for(int idx=0;idx<idxs.length;++idx) {
-			MenuGUIObj_Switch obj = _guiSwitchIDXMap.get(idxs[idx]);
+			GUIObj_Switch obj = _guiSwitchIDXMap.get(idxs[idx]);
 			if (obj != null) {	obj.setValueFromBoolean(true);}
 		}
 	}	
@@ -1172,7 +1182,7 @@ public class UIObjectManager {
 	 */
 	public final void setPrivFlag(int idx, boolean val) {
 		_privFlags.setFlag(idx, val);
-		MenuGUIObj_Switch obj = _guiSwitchIDXMap.get(idx);
+		GUIObj_Switch obj = _guiSwitchIDXMap.get(idx);
 		if (obj != null) {	obj.setValueFromBoolean(val);}
 	}
 		
@@ -1335,7 +1345,7 @@ public class UIObjectManager {
 	public int[] setDispUIListVal(int idx, String val) {		
 		if ((!_validateUIObjectIdx(idx, _guiObjsAra.length, "setDispUIListVal", "display passed value")) || 
 				(!_validateIdxIsListObj(_guiObjsAra[idx], "setDispUIListVal", "display passed value"))){return new int[0];}
-		return ((MenuGUIObj_List) _guiObjsAra[idx]).setValInList(val);
+		return ((GUIObj_List) _guiObjsAra[idx]).setValInList(val);
 	}
 	
 	/**
@@ -1348,7 +1358,7 @@ public class UIObjectManager {
 	public int setAllUIListValues(int uiObjIdx, String[] values, boolean setAsDefault) {		
 		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsAra.length, "setAllUIListValues", "set/replace all list values")) || 
 				(!_validateIdxIsListObj(_guiObjsAra[uiObjIdx], "setAllUIListValues", "set/replace all list values"))){return -1;}
-		return ((MenuGUIObj_List) _guiObjsAra[uiObjIdx]).setListVals(values, setAsDefault);
+		return ((GUIObj_List) _guiObjsAra[uiObjIdx]).setListVals(values, setAsDefault);
 	}
 	
 	/**
@@ -1360,7 +1370,7 @@ public class UIObjectManager {
 	public int[] setDispUIButtonState(int idx, String val) {		
 		if ((!_validateUIObjectIdx(idx, _guiObjsAra.length, "setDispUIButtonState", "display passed state")) || 
 				(!_validateIdxIsButtonObj(_guiObjsAra[idx], "setDispUIButtonState", "display passed state"))){return new int[0];}
-		return ((MenuGUIObj_Button) _guiObjsAra[idx]).setStateByLabel(val);
+		return ((GUIObj_Button) _guiObjsAra[idx]).setStateByLabel(val);
 	}
 	
 	/**
@@ -1373,7 +1383,7 @@ public class UIObjectManager {
 	public int setAllUIButtonStates(int uiObjIdx, String[] values, boolean setAsDefault) {		
 		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsAra.length, "setAllUIButtonStates", "set/replace all button states")) || 
 				(!_validateIdxIsButtonObj(_guiObjsAra[uiObjIdx], "setAllUIButtonStates", "set/replace all button states"))){return -1;}
-		return ((MenuGUIObj_Button) _guiObjsAra[uiObjIdx]).setStateLabels(values, setAsDefault);
+		return ((GUIObj_Button) _guiObjsAra[uiObjIdx]).setStateLabels(values, setAsDefault);
 	}	
 	
 	/**
@@ -1385,7 +1395,7 @@ public class UIObjectManager {
 	public int[] setDispUISwitchState(int idx, String val) {		
 		if ((!_validateUIObjectIdx(idx, _guiObjsAra.length, "setDispUISwitchState", "display passed state")) || 
 				(!_validateIdxIsSwitchObj(_guiObjsAra[idx], "setDispUISwitchState", "display passed state"))){return new int[0];}
-		return ((MenuGUIObj_Switch) _guiObjsAra[idx]).setStateByLabel(val);
+		return ((GUIObj_Switch) _guiObjsAra[idx]).setStateByLabel(val);
 	}
 	
 	/**
@@ -1399,7 +1409,7 @@ public class UIObjectManager {
 		if (!_validateSwitchListValues(values, "setAllUISwitchStates","set/replace both switch states") ||			
 				(!_validateUIObjectIdx(uiObjIdx, _guiObjsAra.length, "setAllUISwitchStates", "set/replace both switch states")) || 
 				(!_validateIdxIsSwitchObj(_guiObjsAra[uiObjIdx], "setAllUISwitchStates", "set/replace both switch states"))){return -1;}
-		return ((MenuGUIObj_Switch) _guiObjsAra[uiObjIdx]).setStateLabels(values, setAsDefault);
+		return ((GUIObj_Switch) _guiObjsAra[uiObjIdx]).setStateLabels(values, setAsDefault);
 	}
 		
 	/**
@@ -1451,7 +1461,7 @@ public class UIObjectManager {
 	public String getListValStr(int UIidx, int listIdx) {		
 		if ((!_validateUIObjectIdx(UIidx, _guiObjsAra.length, "getListValStr", "get a list value at specified idx")) || 
 				(!_validateIdxIsListObj(_guiObjsAra[UIidx], "getListValStr", "get a list value at specified idx"))){return "";}
-		return ((MenuGUIObj_List) _guiObjsAra[UIidx]).getListValStr(listIdx);
+		return ((GUIObj_List) _guiObjsAra[UIidx]).getListValStr(listIdx);
 	}
 	
 	/**
@@ -1463,7 +1473,7 @@ public class UIObjectManager {
 	public String getButtonStateStr(int UIidx, int buttonStIdx) {		
 		if ((!_validateUIObjectIdx(UIidx, _guiObjsAra.length, "getButtonStateStr", "get a button state at specified idx")) || 
 				(!_validateIdxIsButtonObj(_guiObjsAra[UIidx], "getButtonStateStr", "get a button state at specified idx"))){return "";}
-		return ((MenuGUIObj_Button) _guiObjsAra[UIidx]).getStateLabel(buttonStIdx);
+		return ((GUIObj_Button) _guiObjsAra[UIidx]).getStateLabel(buttonStIdx);
 	}
 		
 	/**
@@ -1475,7 +1485,7 @@ public class UIObjectManager {
 	public String getSwitchStateStr(int UIidx, int switchStIdx) {		
 		if ((!_validateUIObjectIdx(UIidx, _guiObjsAra.length, "getSwitchStateStr", "get a switch state at specified idx")) || 
 				(!_validateIdxIsSwitchObj(_guiObjsAra[UIidx], "getSwitchStateStr", "get a switch state at specified idx"))){return "";}
-		return ((MenuGUIObj_Button) _guiObjsAra[UIidx]).getStateLabel(switchStIdx);
+		return ((GUIObj_Button) _guiObjsAra[UIidx]).getStateLabel(switchStIdx);
 	}
 			
 	/**
@@ -1498,7 +1508,7 @@ public class UIObjectManager {
 //		for (var switchIdxs : _guiSwitchIDXMap.entrySet()) {
 //			int flagIdx = switchIdxs.getKey();
 //			int idx = switchIdxs.getValue();
-//			MenuGUIObj_Switch toggleObj = ((MenuGUIObj_Switch)_guiObjsAra[idx]);
+//			GUIObj_Switch toggleObj = ((GUIObj_Switch)_guiObjsAra[idx]);
 //			boolValues.put(flagIdx, toggleObj.getValueAsBoolean());
 //		}
 		

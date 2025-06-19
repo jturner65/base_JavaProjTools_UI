@@ -5,7 +5,7 @@ import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 /**
  * This is a subtype of button object that has only 2 states and is connected to a flags structure.
  */
-public class MenuGUIObj_Switch extends MenuGUIObj_Button {
+public class GUIObj_Switch extends GUIObj_Button {
 	
 	/**
 	 * Index in boolean flag array that corresponds to this button - used for boolean toggle buttons
@@ -17,7 +17,7 @@ public class MenuGUIObj_Switch extends MenuGUIObj_Button {
 	 * @param objParams GUIObj_Params construct that will provide :
 	 * 		boolFlagIDX : index in underlying boolean flag structure coupled to this object
 	 */
-	public MenuGUIObj_Switch(int _objID, GUIObj_Params objParams) {
+	public GUIObj_Switch(int _objID, GUIObj_Params objParams) {
 		super(_objID, objParams);
 		boolFlagIDX = objParams.boolFlagIDX;
 	}
@@ -55,4 +55,4 @@ public class MenuGUIObj_Switch extends MenuGUIObj_Button {
 	 */
 	public final int getBoolFlagIDX() {return boolFlagIDX;}
 	
-}//class MenuGUIObj_Switch
+}//class GUIObj_Switch

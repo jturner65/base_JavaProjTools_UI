@@ -5,7 +5,7 @@ import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 /**
  * UI object that supports selecting between a list of available values.
  */
-public class MenuGUIObj_List extends MenuGUIObj_Int {
+public class GUIObj_List extends GUIObj_Int {
 	
 	/**
 	 * List of different values to be displayed for this list-based object
@@ -28,7 +28,7 @@ public class MenuGUIObj_List extends MenuGUIObj_Int {
 	 * @param _flags any preset behavior flags
 	 * @param _listVals Initial list of values this object holds
 	 */
-	public MenuGUIObj_List(int _objID, GUIObj_Params objParams) {
+	public GUIObj_List(int _objID, GUIObj_Params objParams) {
 		super(_objID, objParams);
 		setListVals(objParams.getListVals(), true);
 	}

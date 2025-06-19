@@ -2,7 +2,7 @@ package base_UI_Objects.windowUI.uiObjs.menuObjs;
 
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
-public class MenuGUIObj_Button extends MenuGUIObj_List {
+public class GUIObj_Button extends GUIObj_List {
 	
 	/**
 	 * First index of stateLabels array should be considered 'off'/'false' for this button
@@ -44,7 +44,7 @@ public class MenuGUIObj_Button extends MenuGUIObj_List {
 	 *       stateLabels list of labels for each state
 	 *       btnFlags flags that specify the type/behavior of this button (i.e. this button's behavior or configuration)
 	 */
-	public MenuGUIObj_Button(int _objID, GUIObj_Params objParams) {
+	public GUIObj_Button(int _objID, GUIObj_Params objParams) {
 		super(_objID, objParams);
 		//super(_objID, _name, new double[] {0, _stateLabels.length-1, 1}, _initialState, GUIObj_Type.Button, _flags, _stateLabels);		
 		//Initialize structure to manage button behavior
