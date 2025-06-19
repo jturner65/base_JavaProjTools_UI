@@ -30,13 +30,19 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	protected void _drawUIDataCentered(boolean isClicked) {	ri.showCenteredText(owner.getUIDispAsSingleLine(), _getCenterX(), 0);}
 		
 	/**
-	 * Return the maximum width of the owning UI object in the display.
+	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
 	 * @return
 	 */
 	@Override
-	public final float getMaxWidth() {
+	public final float getMaxTextWidth() {
 		return ri.getTextWidth(owner.getLabel() + owner.getValueAsString()) + this._ornament.getWidth();
 	}
+	/**
+	 * Return the # of text lines the owning object will need to render
+	 * @return
+	 */
+	@Override
+	public final int getNumTextLines() {		return 1;	}
 	
 	/**
 	 * Get the stroke and fill colors to use for a rectangle around the UI object. 

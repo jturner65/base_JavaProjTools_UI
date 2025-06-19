@@ -218,8 +218,6 @@ public abstract class Base_GUIObjRenderer {
 	private int _animCount = 0;
 	private final int _animSpeed = 10;
 	private int _animMod = _animSpeed;
-	// color to reproduce no fill
-	private int[] _noFillClr = new int[] {0,0,0,0};
 	/**
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
 	 */
@@ -229,7 +227,10 @@ public abstract class Base_GUIObjRenderer {
 			_animCount += _animMod;
 			_animMod = (_animCount <= 0 ? _animSpeed : (_animCount >= 255 ? -_animSpeed : _animMod));
 			// Draw rectangle around object with changing color
-			_drawRectangle(strkWt, new int[][] {{_animCount, 255-_animCount, 255,255}, _noFillClr}, _getRectDims());
+			ri.setStrokeWt(strkWt);
+			ri.setStroke(_animCount, 255-_animCount, 255, 255);
+			ri.setNoFill();
+			ri.drawRect(_getRectDims());
 			ri.drawLine(start.x, start.y,0, end.x, end.y, 0);
 			ri.drawLine(start.x, end.y,0, end.x, start.y, 0);			
 		ri.popMatState();
@@ -291,10 +292,15 @@ public abstract class Base_GUIObjRenderer {
 	public abstract myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth);
 	
 	/**
-	 * Return the maximum width of the owning UI object in the display.
+	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
 	 * @return
 	 */
-	public abstract float getMaxWidth();
+	public abstract float getMaxTextWidth();
+	/**
+	 * Return the # of text lines the owning object will need to render
+	 * @return
+	 */
+	public abstract int getNumTextLines();
 
 	/**
 	 * Get upper left corner coordinates of hotspot for the gui object this renderer draws

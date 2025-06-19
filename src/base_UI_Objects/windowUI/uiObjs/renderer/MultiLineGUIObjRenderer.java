@@ -30,22 +30,26 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	protected void _drawUIDataCentered(boolean isClicked) {	ri.showCenteredTextAra(_getCenterX(), 0, owner.getUIDispAsMultiLine());}
 	
 	/**
-	 * Return the maximum width of the owning UI object in the display.
-	 * For multi-line-rendered UI objects, this will be the largest of 
-	 * the label's width in pixels and the value as a string's width in pixels.
-	 * 
+	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
 	 * TODO : possibly support more than 2 lines?
 	 * @return
 	 */
 	@Override
-	public final float getMaxWidth() {
-		float labelWidth = ri.getTextWidth(owner.getLabel());
+	public final float getMaxTextWidth() {
+		float labelWidth = ri.getTextWidth(owner.getLabel()) + _ornament.getWidth();
 		float dispWidth = ri.getTextWidth(owner.getValueAsString());
-		return 1.25f * (labelWidth > dispWidth ? labelWidth : dispWidth) + _ornament.getWidth();
+		return 1.25f * (labelWidth > dispWidth ? labelWidth : dispWidth);
 	}	
+	/**
+	 * Return the # of text lines the owning object will need to render. 
+	 * TODO : possibly support more than 2 lines?
+	 * @return
+	 */
+	@Override
+	public final int getNumTextLines() {		return 2;	}
 	
 	/**
-	 * Get the stroke and fill colors to use for a rectangle around the UI object. 
+	 * Get the stroke and fill colors to use for a rectangle around the UI object.
 	 * @return
 	 */
 	@Override
@@ -74,7 +78,7 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 		// Calculate the width of the text of the largest of 2 strings, the displayed label or
 		// the displayed value as a string, and use this to calculate the new end point x value, making sure 
 		// it is smaller than the menuWidth to determine whether the UI object needs to be on a new line or not.
-		float textWidth = getMaxWidth();
+		float textWidth = getMaxTextWidth();
 		boolean newLine = ((start.x + textWidth) > (menuStartX + menuWidth));
 		if (newLine) {
 			// On a new line : move start to next UI object location in Y and start x value at beginning of menu area

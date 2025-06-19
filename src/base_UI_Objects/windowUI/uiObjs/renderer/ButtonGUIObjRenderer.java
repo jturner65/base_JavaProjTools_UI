@@ -3,7 +3,7 @@ package base_UI_Objects.windowUI.uiObjs.renderer;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Button;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.GUIObj_Button;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 
 /**
@@ -51,7 +51,7 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	 * 						while multi line will be some fraction of this wide.
 	 * @param _argObj GUIObjParams that describe colors, render format and other components of the owning gui object
 	 */
-	public ButtonGUIObjRenderer(IRenderInterface _ri, MenuGUIObj_Button _owner, double[] _offset, float _menuWidth, GUIObj_Params _argObj) {
+	public ButtonGUIObjRenderer(IRenderInterface _ri, GUIObj_Button _owner, double[] _offset, float _menuWidth, GUIObj_Params _argObj) {
 		super(_ri, _owner, _offset, _menuWidth, _argObj, "Button Renderer");
 		int[][] _labelColors = _argObj.getBtnFillColors();
 		colors = new int[_labelColors.length][4];
@@ -64,7 +64,7 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 		System.arraycopy(strkClr, 0, rectClickStrkFillColor[0], 0, strkClr.length);		
 	}
 	
-	protected int[] getStateColor() {return colors[((MenuGUIObj_Button) owner).getButtonState()];}	
+	protected int[] getStateColor() {return colors[((GUIObj_Button) owner).getButtonState()];}	
 	
 	/**
 	 * Draw button edges to look like it is 3d
@@ -107,11 +107,21 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	 * @return the next object's new start location
 	 */
 	@Override
-	public myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {	return new myPointf(newStart);}
-
+	public final myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {	return new myPointf(newStart);}
+	/**
+	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
+	 * @return
+	 */
 	@Override
-	public float getMaxWidth() {return yOffset+ longestLabelLen + _ornament.getWidth();}
+	public final float getMaxTextWidth() {return yOffset+ longestLabelLen + _ornament.getWidth();}
 
+	/**
+	 * Return the # of text lines the owning object will need to render. 
+	 * @return
+	 */
+	@Override
+	public final int getNumTextLines() {		return 1;	}
+	
 	/**
 	 * Update renderer when the state values change in the underlying button (i.e. the longest label needs to be re-determined)
 	 */
@@ -119,7 +129,7 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	public final void updateFromObject() {
 		// update the width
 		float longLbl = 0, curLblLen;
-		String[] stateLabels = ((MenuGUIObj_Button) owner).getStateLabels();
+		String[] stateLabels = ((GUIObj_Button) owner).getStateLabels();
 		for(String label : stateLabels) {
 			curLblLen = ri.getTextWidth(label);
 			longLbl = (longLbl < curLblLen ? curLblLen : longLbl);

@@ -504,7 +504,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 *  	sphereDetail(4);	 * 
 	 */
 	protected abstract void setupAppDims_Indiv();		
-
 	
 	/**
 	 * Set the application window width and height and rebuild camera and _canvas, on init or resize (TODO)
@@ -550,31 +549,23 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * size of interaction/close window box in pxls
 	 * @return
 	 */
-	public final float getClkBoxDim() {
-		return getTextSize();
-	}
+	public final float getClkBoxDim() {		return getTextSize();}
 	
 	/**
 	 * Height of a line of text. Also used as a width of an average character
 	 */
-	public final float getTextHeightOffset() {
-		return 1.25f * getTextSize();
-	}
+	public final float getTextHeightOffset() {		return 1.25f * getTextSize();}
 	
 	/**
 	 * Based on textSize but slightly smaller for purely label/read only text
 	 * @return
 	 */
-	public final float getLabelTextHeightOffset() {
-		return 1.1f * getTextSize();
-	}
+	public final float getLabelTextHeightOffset() {	return 1.1f * getTextSize();}
 	
 	/**
 	 * Base right side text menu per-line height offset
 	 */
-	public final float getRtSideTxtHeightOffset(){
-		return getLabelTextHeightOffset();// - 4.0f;
-	}
+	public final float getRtSideTxtHeightOffset(){	return getLabelTextHeightOffset();}
 	
 	/**
 	 * Right side menu y values
@@ -591,40 +582,30 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	/**
 	 * X Dimension offset for text
 	 */
-	public final float getXOffset() {
-		return getTextHeightOffset();
-	}
+	public final float getXOffset() {		return getTextHeightOffset();}
 
 	/**
 	 * Half of X Dimension offset for text
 	 */
-	public final float getXOffsetHalf() {
-		return 0.5f * getXOffset();
-	}
+	public final float getXOffsetHalf() {		return 0.5f * getXOffset();}
 	
 	
 	/**
 	 * Offset for starting a new row in Y
 	 */
-	public final float getRowStYOffset() {
-		return 0.15f * getTextHeightOffset();
-	}
+	public final float getRowStYOffset() {	return 0.15f * getTextHeightOffset();}
 	
 	/**
 	 * The Y distance between 2 successive buttons
 	 * @return
 	 */
-	public final float getBtnLabelYOffset() {
-		return 2.0f * getTextHeightOffset(); 
-	}
+	public final float getBtnLabelYOffset() {	return 2.0f * getTextHeightOffset(); }
 
 	/**
 	 * array of x,y offsets for UI objects that have a prefix graphical element
 	 * @return
 	 */
-	public final double[] getUIOffset() {
-		return new double[] { getXOffset(), getTextHeightOffset() };
-	}	
+	public final double[] getUIOffset() {		return new double[] { getXOffset(), getTextHeightOffset() };}	
 	
 	///////////////////////////////////////
 	//End UI text/display dims based on text size	
