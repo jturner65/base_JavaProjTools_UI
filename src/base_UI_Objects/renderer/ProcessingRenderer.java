@@ -1454,6 +1454,22 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
 	@Override
 	public final int getRndClrIndex(){return MyMathUtils.randomInt(0,IRenderInterface.gui_nextColorIDX);}		//return a random color flag value from IRenderInterface
 		
+	/**
+	 * Return an array holding random 4-int stroke (idx 0) and fill (idx 1) color where the fill is a lighter, scaled version of the stroke. Alpha for both is 255
+	 * @return
+	 */
+	@Override
+	public final int[][] getRndMatchedStrkFillClrs(){
+		int[] strkColor = MyMathUtils.randomIntClrAra(255);
+		int[] fillClr = new int[4];
+		for(int i=0;i<3;++i ) {
+			// make fill color ~80% brighter
+			fillClr[i] = (strkColor[i] + 1024)/5;	
+		}
+		fillClr[3] = 255;
+		return new int[][] {strkColor, fillClr};
+	}//getRndMatchedStrkFillClrs
+	
 	@Override
 	public final Integer[] getClrMorph(int[] a, int[] b, double t){
 		if(t==0){return new Integer[]{a[0],a[1],a[2],a[3]};} else if(t==1){return new Integer[]{b[0],b[1],b[2],b[3]};}

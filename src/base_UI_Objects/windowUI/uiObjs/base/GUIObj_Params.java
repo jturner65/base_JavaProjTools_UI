@@ -48,10 +48,12 @@ public class GUIObj_Params {
 	 * 		idx 3 : Should have ornament
 	 * 		idx 4 : Ornament color should match label color 
 	 */
-	private final boolean[] renderCreationFrmtVals;
+	private boolean[] renderCreationFrmtVals;
 	
 	/**
-	 * Button type flags, for UI Buttons
+	 * Boolean array of button type format values 
+	 *  		idx 0: Whether this button should stay enabled until next draw frame                                                
+	 *  		idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
 	 */
 	public final boolean[] buttonFlags;
 	
@@ -61,12 +63,12 @@ public class GUIObj_Params {
 	public final int boolFlagIDX;
 	
 	/**
-	 * renderColors is an array of stroke, fill and possibly text colors to be used to render the object. If only 2 elements, text is idx 1.
+	 * Array of stroke, fill and possibly text colors to be used to render the object. If only 2 elements, text is idx 0 (stroke).
 	 */
 	private int[][] renderColors = new int[][]{
-		{0,0,0,255}, // stroke (outline of box
-		{0,0,0,255}, // fill/default text
-		{0,0,0,255}, // text
+		{0,0,0,255}, 			// stroke (outline of box/default text)
+		{255,255,255,255}, 		// fill
+		{0,0,0,255}, 			// text
 	};
 	
 	/**
@@ -82,9 +84,10 @@ public class GUIObj_Params {
 	 * @param _configFlags configuration/behavior values
 	 * @param _renderCreationFrmtVals format values to describe and pass to renderer
 	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Should have ornament
-	 * 		idx 2 : Ornament color should match label color 
-	 * 		idx 3 : Text should be centered (default is false)
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 * @param _buttonFlags
 	 */
 	public GUIObj_Params(
@@ -99,10 +102,10 @@ public class GUIObj_Params {
 		objIdx = _objIdx;
 		objType = _objType;
 		boolFlagIDX = _boolFlagIDX;
-		renderCreationFrmtVals = new boolean[_renderCreationFrmtVals.length];
-		System.arraycopy(_renderCreationFrmtVals, 0, renderCreationFrmtVals, 0, _renderCreationFrmtVals.length);
 		configFlags = new boolean[_configFlags.length];
 		System.arraycopy(_configFlags, 0, configFlags, 0, _configFlags.length);
+		renderCreationFrmtVals = new boolean[_renderCreationFrmtVals.length];
+		System.arraycopy(_renderCreationFrmtVals, 0, renderCreationFrmtVals, 0, _renderCreationFrmtVals.length);
 		buttonFlags = new boolean[_buttonFlags.length];
 		System.arraycopy(_buttonFlags, 0, buttonFlags, 0, _buttonFlags.length);
 	}
@@ -145,6 +148,13 @@ public class GUIObj_Params {
 		setBtnFillColors(otr.btnFillColors);
 	}
 	
+	/**
+	 * Set whether the text in this object should be centered or not
+	 * @param isCentered
+	 */
+	public final void setIsTextCentered(boolean isCentered) {
+		renderCreationFrmtVals[1]=isCentered;
+	}
 	
 	/**
 	 * Get the string labels the list/button object this construct describes use for data or state
@@ -201,5 +211,16 @@ public class GUIObj_Params {
 	 * @return
 	 */
 	public final int[][] getStrkFillTextColors(){return renderColors;}
+	
+	/**
+	 * Whether or not this object is a button or switch
+	 * @return
+	 */
+	public final boolean isButton() {return (buttonFlags.length!=0);}
+	/**
+	 * Whether or not this represents an object should be rendered as multi-line
+	 * @return
+	 */
+	public final boolean isMultiLine() {return renderCreationFrmtVals[0];}
 
 }// class GUIObj_Params

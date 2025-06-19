@@ -70,7 +70,7 @@ public abstract class Base_GUIObj {
 		debugIDX 			= 0,
 		showIDX				= 1,					// show this component
 		objIsClickedIDX		= 2,					// object currently has focus - set true upon click entry, false on click release
-		valChangedIDX   	= 3,					// object value is dirty/clean
+		valChangedIDX   		= 3,					// object value is dirty/clean
 		rendererSetIDX 		= 4;					// whether or not the renderer has been built and assigned
 	private static final int numStateFlags = 5;	// # of internal state booleans
 	
@@ -80,10 +80,10 @@ public abstract class Base_GUIObj {
 	private int[] uiConfigFlags;
 	private static final int 
 		//config flags
-		usedByWinsIDX			= 0, 				// value is sent to window
-		updateWhileModIDX 		= 1,				// value is sent to window on any change, not just release
-		explicitUIDataUpdateIDX = 2,				// if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
-		objectIsReadOnlyIDX		= 3;			 	// ui object is not user-modifiable, just read only
+		usedByWinsIDX				= 0, 			// value is sent to window
+		updateWhileModIDX 			= 1,				// value is sent to window on any change, not just release
+		explicitUIDataUpdateIDX 		= 2,				// if true does not update UIDataUpdate structure on changes - must be explicitly sent to consumers
+		objectIsReadOnlyIDX			= 3;			 	// ui object is not user-modifiable, just read only
 	private static final int numConfigFlags = 4;			// # of config flags		
 	
 	/**

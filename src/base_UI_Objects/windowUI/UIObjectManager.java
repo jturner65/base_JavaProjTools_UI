@@ -33,7 +33,7 @@ import base_Utils_Objects.tools.flags.Base_BoolFlags;
  * @author John Turner
  *
  */
-public class UIObjectManager {
+public class UIObjectManager {	
 	/**
 	 * Used to render objects
 	 */
@@ -105,26 +105,27 @@ public class UIObjectManager {
 	
 	/**
 	 * Boolean array of default behavior boolean values, if formatting is not otherwise specified
-	 *  idx 0: value is sent to owning window,  
-	 *  idx 1: value is sent on any modifications (while being modified, not just on release), 
-	 *  idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *     	idx 0: value is sent to owning window,  
+	 *     	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *     	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *     	idx 3: object is read only
 	 */
-	private static final boolean[] dfltUIBehaviorVals = new boolean[]{true, false, false};	
+	private static final boolean[] dfltUIBehaviorVals = new boolean[]{true, false, false, false};	
 	/**
 	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 0 : Should be multiline - defaults to false
+	 * 		idx 1 : Text should be centered - default is false
 	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
+	 * 		idx 3 : Should have ornament - defaults to true
 	 * 		idx 4 : Ornament color should match label color
 	 */
 	private static final boolean[] dfltRndrCfgFtmVals =  new boolean[] {false, false, false, true, false};	
 	/**
 	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 0 : Should be multiline - defaults to true
+	 * 		idx 1 : Text should be centered - default is false
 	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
+	 * 		idx 3 : Should have ornament - defaults to true
 	 * 		idx 4 : Ornament color should match label color
 	 */
 	private static final boolean[] dfltMultiLineRndrCfgFtmVals =  new boolean[] {true, false, false, true, false};
@@ -139,11 +140,10 @@ public class UIObjectManager {
 	private static final boolean[] dfltRenderUIBtnFmtVals =  new boolean[] {false, false, true, false, false};
 	/**
 	 * Boolean array of default button type format values, if not otherwise specified 
-	 *  idx 0: Whether this button should stay enabled until next draw frame                                                
-	 *  idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
+	 *  		idx 0: Whether this button should stay enabled until next draw frame                                                
+	 *  		idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
 	 */
-	private static final boolean[] dfltUIButtonTypeVals =  new boolean[] {false, false};
-	
+	private static final boolean[] dfltUIButtonTypeVals =  new boolean[] {false, false};	
 	
 	////////////////////////
 	/// owner's private state/functionality flags, (displayed in grid of 2-per-column buttons)
@@ -166,17 +166,25 @@ public class UIObjectManager {
 	/**
 	 *  Class name to use for any debugging messages
 	 */
-	private final String dispMsgClassName;
+	private final String _dispMsgClassName;
+	/**
+	 * stroke and fill colors for rendering debug rectangle
+	 */
+	private final int[][] _dbgColors;
 	
 	public UIObjectManager(IRenderInterface _ri, IUIManagerOwner _owner, GUI_AppManager _AppMgr, MessageObject _msgObj) {
 		ri = _ri;
 		owner = _owner;
 		_uiClkCoords = new float[4];
-		dispMsgClassName = "UIObjectManager ("+owner.getClassName()+")";
+		_dispMsgClassName = "UIObjectManager ("+owner.getClassName()+")";
 		AppMgr = _AppMgr;
 		msgObj = _msgObj;
 		_msClickObj = null;
 		_msBtnClicked = -1;
+		// stroke and fill colors for rendering debug rectangle
+		_dbgColors = ri.getRndMatchedStrkFillClrs();
+		// make fill alpha a bit lighter
+		_dbgColors[1][3]=150;	
 	}
 		
 	/**
@@ -269,7 +277,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Label(int objIdx, double initVal, String name, boolean[] renderCreationFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, renderCreationFmtVals);
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false,false}, renderCreationFmtVals);
 		obj.initVal = initVal;
 		return obj;
 	}
@@ -291,15 +299,16 @@ public class UIObjectManager {
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
-	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, boolVals, dfltRndrCfgFtmVals);
+	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals) {
+		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, configBoolVals, dfltRndrCfgFtmVals);
 	}	
 	
 	/**
@@ -319,11 +328,16 @@ public class UIObjectManager {
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * NOTE : this method uses the defaultmulti-line enabled UI format boolean values
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, boolVals, dfltMultiLineRndrCfgFtmVals);
+	public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals) {
+		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, configBoolVals, dfltMultiLineRndrCfgFtmVals);
 	}	
 	
 	/**
@@ -332,10 +346,11 @@ public class UIObjectManager {
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
-	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
 	 * 		idx 0 : Should be multiline
 	 * 		idx 1 : Text should be centered (default is false)
@@ -344,8 +359,8 @@ public class UIObjectManager {
 	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] renderCreationFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.IntVal, boolVals, renderCreationFmtVals);
+	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals, boolean[] renderCreationFmtVals) {
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.IntVal, configBoolVals, renderCreationFmtVals);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		return obj;
@@ -368,15 +383,16 @@ public class UIObjectManager {
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
-	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, boolVals, dfltRndrCfgFtmVals);
+	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals) {
+		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, configBoolVals, dfltRndrCfgFtmVals);
 	}
 		
 	/**
@@ -396,15 +412,16 @@ public class UIObjectManager {
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
-	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * NOTE : this method uses the default multi-line enabled UI format boolean values
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, boolVals, dfltMultiLineRndrCfgFtmVals);
+	public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals) {
+		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, configBoolVals, dfltMultiLineRndrCfgFtmVals);
 	}
 	
 	/**
@@ -412,10 +429,11 @@ public class UIObjectManager {
 	 * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
 	 * @param initVal initial value for the object
 	 * @param name name of the object
-	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
 	 * 		idx 0 : Should be multiline
 	 * 		idx 1 : Text should be centered (default is false)
@@ -424,8 +442,8 @@ public class UIObjectManager {
 	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] renderCreationFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.FloatVal, boolVals, renderCreationFmtVals);
+	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals, boolean[] renderCreationFmtVals) {
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.FloatVal, configBoolVals, renderCreationFmtVals);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		return obj;
@@ -448,15 +466,16 @@ public class UIObjectManager {
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param list of elements this object manages
-	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * NOTE : this method uses the default UI format boolean values
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, dfltRndrCfgFtmVals);
+	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] configBoolVals) {
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, configBoolVals, dfltRndrCfgFtmVals);
 	}
 
 	/**
@@ -477,15 +496,16 @@ public class UIObjectManager {
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param list of elements this object manages
-	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * NOTE : this method uses the default renderer creation format boolean values for multi-line list box
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, dfltMultiLineRndrCfgFtmVals);
+	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] configBoolVals) {
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, configBoolVals, dfltMultiLineRndrCfgFtmVals);
 	}
 	
 	/**
@@ -493,10 +513,11 @@ public class UIObjectManager {
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param list of elements this object manages
-	 * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
 	 * 		idx 0 : Should be multiline
 	 * 		idx 1 : Text should be centered (default is false)
@@ -505,11 +526,10 @@ public class UIObjectManager {
 	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals, boolean[] renderCreationFmtVals) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, renderCreationFmtVals);
+	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] configBoolVals, boolean[] renderCreationFmtVals) {
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, configBoolVals, renderCreationFmtVals);
 	}
-	
-	
+		
 	/**
 	 * Build the GUIObj_Params that describes a list object
 	 * @param objIdx the index of this object in the guiObjAra
@@ -519,6 +539,7 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
 	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
 	 * 		idx 0 : Should be multiline
 	 * 		idx 1 : Text should be centered (default is false)
@@ -527,15 +548,14 @@ public class UIObjectManager {
 	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals, boolean[] renderCreationFmtVals) {
+	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] configBoolVals, boolean[] renderCreationFmtVals) {
 		double[] minMaxMod = new double[] {0, listElems.length-1, 1};
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.ListVal, boolVals, renderCreationFmtVals);
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.ListVal, configBoolVals, renderCreationFmtVals);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		obj.setListVals(listElems);	
 		return obj;	
-	}
-	
+	}	
 	
 	/**
 	 * Build the GUIObj_Params that describes a boolean switch object, backed by a flag structure
@@ -558,7 +578,15 @@ public class UIObjectManager {
 	 * @param labels the list of labels that describe the valid states for this button
 	 * @param btnIdx the index of this button
 	 * @param boolFlagIdx the index of the boolean flag that interacts with this button
-	 * @param boolVals
+	 * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
+	 * @param buttonFlags Boolean array of button type format values 
+	 *  		idx 0: Whether this button should stay enabled until next draw frame                                                
+	 *  		idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
+	 * NOTE : this method uses the default renderer creation format boolean values for multi-line list box
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Switch(int objIdx, String name, String trueLabel, String falseLabel, double initVal, int boolFlagIdx, boolean[] configBoolVals, boolean[] buttonFlags) {
@@ -610,6 +638,7 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *           	idx 3: object is read only
      * NOTE : this method uses the default button type behavior values for button object
 	 * @return
 	 */
@@ -627,16 +656,16 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 * @param buttonFmtFlags boolean array of default button type format values, if not otherwise specified 
-	 *  			idx 0: Whether this button should stay enabled until next draw frame                                                
-	 *  			idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
+	 * @param buttonFlags Boolean array of button type format values 
+	 *  		idx 0: Whether this button should stay enabled until next draw frame                                                
+	 *  		idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels, double initVal, boolean[] configBoolVals, boolean[] buttonTypeFlags) {
+	public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String name, String[] labels, double initVal, boolean[] configBoolVals, boolean[] buttonFlags) {
 		GUIObj_Params obj;
 		// Not a toggle
 		// TODO : develop multi-line renderer for buttons. Until then always use default
-		obj = new GUIObj_Params(objIdx, name, GUIObj_Type.Button, -1, configBoolVals, dfltRenderUIBtnFmtVals, buttonTypeFlags);		
+		obj = new GUIObj_Params(objIdx, name, GUIObj_Type.Button, -1, configBoolVals, dfltRenderUIBtnFmtVals, buttonFlags);		
 		obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
 		obj.initVal = (initVal >= 0 ? (initVal < labels.length ? initVal : labels.length) : 0);
 		obj.setListVals(labels);
@@ -657,36 +686,23 @@ public class UIObjectManager {
 	
 	/**
 	 * Build the renderer for a UI object 
-	 * @param _owner
-	 * @param _start
-	 * @param _end
-	 * @param _off
-	 * @param _menuWidth max width of menu
-	 * @param _colors : index 0 is stroke, index 1 is fill, index 2 is text (optional, otherwise uses fill color)
-	 * @param guiFormatBoolVals array of boolean flags describing how the object should be constructed
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
-	 * @param _btnColors the fill colors for each of the button labels/states, or null for non-button renderers
+	 * @param _owner the Base_GUIObj that will own this renderer
+	 * @param _off offset in x,y for ornament, if exists
+	 * @param _menuWidth max width of menu area
+	 * @param _argObj : GUIObj_Params object holding all the configuration values used to build this renderer and the underlying UI Object
 	 * @return
 	 */
 	private Base_GUIObjRenderer _buildObjRenderer(
 			Base_GUIObj _owner, 
 			double[] _off,
 			float _menuWidth,
-			int[][] _colors, 
-			boolean[] _guiFormatBoolVals, int[][] _btnColors) {
-		
-		if (_btnColors != null) {
-			return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _colors, _guiFormatBoolVals, _btnColors);
-		}
-		if (_guiFormatBoolVals[0]) {//build multi-line renderer if multi-line non-button
-			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _colors, _guiFormatBoolVals);
-		} 
+			GUIObj_Params _argObj
+		) {		
+		if (_argObj.isButton()) {		return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _argObj);}
+		//build multi-line renderer if multi-line non-button
+		if (_argObj.isMultiLine()) {	return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);} 
 		// Single line is default
-		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _colors, _guiFormatBoolVals);			
+		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);			
 	}//_buildObjRenderer
 	/**
 	 * Build the appropriate object based on the passed GUIObj_Params entry and assign it the given guiObjIDX
@@ -696,11 +712,6 @@ public class UIObjectManager {
 	 */
 	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
 		GUIObj_Params argObj = entry.getValue();
-		//Default stroke and fill colors for renderer
-		int[][] guiColors = new int[][] {
-			{0,0,0,255}, //stroke
-			{0,0,0,255}, // fill
-		};			
 		switch(argObj.objType) {
 			case IntVal : {
 				_guiObjsAra[guiObjIDX] = new MenuGUIObj_Int(guiObjIDX, argObj);
@@ -735,7 +746,7 @@ public class UIObjectManager {
 				break;				
 			}				
 		}//switch
-		var renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], AppMgr.getUIOffset(), uiClkRect[2], guiColors, argObj.getRenderCreationFormatVal(), argObj.getBtnFillColors());
+		var renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], AppMgr.getUIOffset(), uiClkRect[2], argObj);
 		_guiObjsAra[guiObjIDX].setRenderer(renderer);		
 	}//_buildObj
 	
@@ -747,7 +758,6 @@ public class UIObjectManager {
 	 */
 	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBtnMap, float[] uiClkRect) {
 		if(tmpUIObjMap.size() > 0) {
-			float textHeightOffset = AppMgr.getTextHeightOffset();
 
 			// build non-flag-backed switch objects
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
@@ -782,7 +792,7 @@ public class UIObjectManager {
 			}
 			//specify the end of this block of UI clickable coordinates based on if last object was multi-line or not
 			uiClkRect[3] = lastObjWasMultiLine ?  _guiObjsAra[_guiObjsAra.length-1].getEnd().y : newStPt.y;
-			uiClkRect[3] += .5f*textHeightOffset;
+			uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
 			// now address buttons' clickable regions	
 			if(_guiButtonIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(uiClkRect);	}			
 						
@@ -1194,7 +1204,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateUIObjectIdx(int idx, int len, String callFunc, String desc) {
 		if (!MyMathUtils.inRange(idx, 0, len)){
-			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
+			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
 				"Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
 			return false;
 		}		
@@ -1210,7 +1220,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateIdxIsListObj(Base_GUIObj obj, String callFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.ListVal) {
-			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
+			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
 					"Attempting to access illegal List UI object to "+desc+" (object :"+obj.getName()+" is not a list object). Aborting.");
 			return false;
 		}
@@ -1226,7 +1236,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateIdxIsButtonObj(Base_GUIObj obj, String callFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.Button) {
-			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
+			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
 					"Attempting to access illegal Button object to "+desc+" (object :"+obj.getName()+" is not a button). Aborting.");
 			return false;
 		}
@@ -1242,7 +1252,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateIdxIsSwitchObj(Base_GUIObj obj, String callFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.Switch) {
-			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
+			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
 					"Attempting to access illegal Switch object to "+desc+" (object :"+obj.getName()+" is not a 2-state switch). Aborting.");
 			return false;
 		}
@@ -1258,7 +1268,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateSwitchListValues(String[] listVals, String callFunc, String desc) {
 		if(listVals.length != 2) {
-			msgObj.dispErrorMessage(dispMsgClassName, callFunc, 
+			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
 					"Attempting to access illegal Switch object to "+desc+" (the length of the list of values (" + listVals.length+ ") must be 2). Aborting.");
 			return false;
 		}
@@ -1662,8 +1672,8 @@ public class UIObjectManager {
 	 */
 	private final void _drawUIRect() {
 		ri.setStrokeWt(2.0f);
-		ri.setNoFill();
-		ri.setColorValStroke(owner.getID() * 10, 255);
+		ri.setStroke(_dbgColors[0], _dbgColors[0][3]);
+		ri.setFill(_dbgColors[1], _dbgColors[1][3]);
 		ri.drawRect(_uiClkCoords[0], _uiClkCoords[1], _uiClkCoords[2]-_uiClkCoords[0], _uiClkCoords[3]-_uiClkCoords[1]);
 	}
 	
@@ -1698,28 +1708,28 @@ public class UIObjectManager {
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
-	public final void _dispInfoMsg(String funcName, String message) {msgObj.dispInfoMessage(dispMsgClassName, funcName, message);}
+	public final void _dispInfoMsg(String funcName, String message) {msgObj.dispInfoMessage(_dispMsgClassName, funcName, message);}
 		
 	/**
 	 * Shorthand to display a debug message
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
-	public final void _dispDbgMsg(String funcName, String message) {msgObj.dispDebugMessage(dispMsgClassName, funcName, message);}
+	public final void _dispDbgMsg(String funcName, String message) {msgObj.dispDebugMessage(_dispMsgClassName, funcName, message);}
 	
 	/**
 	 * Shorthand to display a warning message
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
-	public final void _dispWarnMsg(String funcName, String message) {msgObj.dispWarningMessage(dispMsgClassName, funcName, message);}
+	public final void _dispWarnMsg(String funcName, String message) {msgObj.dispWarningMessage(_dispMsgClassName, funcName, message);}
 	
 	/**
 	 * Shorthand to display an error message
 	 * @param funcName the calling method
 	 * @param message the message to display
 	 */
-	public final void _dispErrMsg(String funcName, String message) {msgObj.dispErrorMessage(dispMsgClassName, funcName, message);}
+	public final void _dispErrMsg(String funcName, String message) {msgObj.dispErrorMessage(_dispMsgClassName, funcName, message);}
 	
 	
 	/**

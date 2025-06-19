@@ -6,6 +6,7 @@ import java.util.TreeMap;
 //import java.util.ArrayList;
 
 import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.UIObjectManager;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
@@ -25,11 +26,15 @@ import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
  * Implementations of this class will own 1 or more UI objects to be displayed
  * together as a group/collection
  */
-public class GUIObj_Collection {
+public class GUIObj_Collection {	
 	/**
 	 * Render interface
 	 */
 	public static IRenderInterface ri;
+	/**
+	 * Gui-based application manager
+	 */
+	public static GUI_AppManager AppMgr;
 	/**
 	 * subregion of window where UI objects this collection manages may be found
 	 * Idx 0,1 : Upper left corner x,y
@@ -93,74 +98,76 @@ public class GUIObj_Collection {
 	
 	// Class name to use for any debugging messages
 	private final String _dispMsgClassName;
+	
+	/**
+	 * stroke and fill colors for rendering debug rectangle
+	 */
+	private final int[][] _dbgColors;
 
-	public GUIObj_Collection(UIObjectManager _uiObjMgr, float[] __uiClkCoords) {
+	public GUIObj_Collection(UIObjectManager _uiObjMgr, float[] __uiClkCoords, TreeMap<String, GUIObj_Params> _GUIObjMap) {
 		uiObjMgr = _uiObjMgr;
 		ri=UIObjectManager.ri;
+		AppMgr = UIObjectManager.AppMgr;
 		System.arraycopy(__uiClkCoords, 0, _uiClkCoords, 0, _uiClkCoords.length);
 		_dispMsgClassName = this.getClass().getSimpleName();
 		_msClickObj = null;
-		initObjAras();
-		
+		_uiClkCoords[3] = _buildGUIObjsForMenu(_GUIObjMap, _uiClkCoords);	
+		// stroke and fill colors for rendering debug rectangle
+		_dbgColors = ri.getRndMatchedStrkFillClrs();
+		// make fill alpha a bit lighter
+		_dbgColors[1][3]=150;	
 	}
 	
-	public final void initObjAras() {
-		_guiObjsAra = new Base_GUIObj[0];
+	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, float[] uiClkRect) {
 		//initialize arrays to hold idxs of int and float items being created.
 		_guiButtonIDXMap = new TreeMap<Integer,MenuGUIObj_Button>();
 		_guiSwitchIDXMap = new TreeMap<Integer,MenuGUIObj_Switch>();
 		_guiFloatValIDXMap = new TreeMap<Integer, MenuGUIObj_Float>();
 		_guiIntValIDXMap = new TreeMap<Integer,MenuGUIObj_Int> ();
 		_guiLabelValIDXMap = new TreeMap<Integer, MenuGUIObj_DispValue>();	
+		//build ui objects' holder
+		_guiObjsAra = new Base_GUIObj[tmpUIObjMap.size()];
+		if(tmpUIObjMap.size() > 0) {
+			//build objects
+			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
+				int i = entry.getValue().objIdx;
+				_buildObj(i, entry, uiClkRect);		
+			}
+		}// UI objects exist
+		// return final y coordinate
+		uiClkRect[3] += AppMgr.getRowStYOffset();
+		return uiClkRect[3];
 	}
-
+	
 	/**
 	 * Build the renderer for a UI object 
-	 * @param _owner
-	 * @param _start
-	 * @param _end
-	 * @param _off
-	 * @param _menuWidth max width of menu
-	 * @param _colors : index 0 is stroke, index 1 is fill, index 2 is text (optional, otherwise uses fill color)
-	 * @param guiFormatBoolVals array of boolean flags describing how the object should be constructed
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
-	 * @param _btnColors the fill colors for each of the button labels/states, or null for non-button renderers
+	 * @param _owner the Base_GUIObj that will own this renderer
+	 * @param _off offset in x,y for ornament, if exists
+	 * @param _menuWidth max width of menu area
+	 * @param _argObj : GUIObj_Params object holding all the configuration values used to build this renderer and the underlying UI Object
 	 * @return
 	 */
 	private Base_GUIObjRenderer _buildObjRenderer(
 			Base_GUIObj _owner, 
 			double[] _off,
 			float _menuWidth,
-			int[][] _colors, 
-			boolean[] _guiFormatBoolVals, int[][] _btnColors) {
-		
-		if (_btnColors != null) {
-			return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _colors, _guiFormatBoolVals, _btnColors);
-		}
-		if (_guiFormatBoolVals[0]) {//build multi-line renderer if multi-line non-button
-			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _colors, _guiFormatBoolVals);
-		} 
+			GUIObj_Params _argObj
+		) {		
+		if (_argObj.isButton()) {		return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _argObj);}
+		//build multi-line renderer if multi-line non-button
+		if (_argObj.isMultiLine()) {	return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);} 
 		// Single line is default
-		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _colors, _guiFormatBoolVals);			
+		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);			
 	}//_buildObjRenderer
-	
+
 	/**
 	 * Build the appropriate object based on the passed GUIObj_Params entry and assign it the given guiObjIDX
 	 * @param guiObjIDX
 	 * @param entry
 	 * @param uiClkRect
 	 */
-	protected final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
+	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
 		GUIObj_Params argObj = entry.getValue();
-		//Stroke and fill colors for renderer
-		int[][] guiColors = new int[][] {
-			{0,0,0,255}, //stroke
-			{0,0,0,255}, // fill
-		};			
 		switch(argObj.objType) {
 			case IntVal : {
 				_guiObjsAra[guiObjIDX] = new MenuGUIObj_Int(guiObjIDX, argObj);
@@ -187,14 +194,15 @@ public class GUIObj_Collection {
 			case Button  :{ 
 				_guiObjsAra[guiObjIDX] = new MenuGUIObj_Button(guiObjIDX, argObj);
 				_guiButtonIDXMap.put(guiObjIDX, ((MenuGUIObj_Button)_guiObjsAra[guiObjIDX]));
+				//_dispWarnMsg("_buildGUIObjsForMenu", "Instantiating a Button UI object not yet supported for ID : "+i);
 				break;
 			}
 			default : {
-				uiObjMgr._dispErrMsg("_buildObj ("+_dispMsgClassName+")", "Attempting to instantiate unknown UI object for a " + argObj.objType.toStrBrf());
+				uiObjMgr._dispWarnMsg("_buildObj", "Attempting to instantiate unknown UI object for a " + argObj.objType.toStrBrf());
 				break;				
 			}				
 		}//switch
-		Base_GUIObjRenderer renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], UIObjectManager.AppMgr.getUIOffset(), uiClkRect[2], guiColors, argObj.getRenderCreationFormatVal(), argObj.getBtnFillColors());
+		var renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], AppMgr.getUIOffset(), uiClkRect[2], argObj);
 		_guiObjsAra[guiObjIDX].setRenderer(renderer);		
 	}//_buildObj
 	
@@ -206,17 +214,16 @@ public class GUIObj_Collection {
 	
 	////////////////////////////////////////
 	/// Draw functions
-	
+	///
 	/**
-	 * Draw the UI clickable region rectangle, for debug
+	 * Draw the UI clickable region rectangle
 	 */
 	private final void _drawUIRect() {
 		ri.setStrokeWt(2.0f);
-		ri.setNoFill();
-		ri.setColorValStroke(IRenderInterface.gui_DarkCyan, 255);
+		ri.setStroke(_dbgColors[0], _dbgColors[0][3]);
+		ri.setFill(_dbgColors[1], _dbgColors[1][3]);
 		ri.drawRect(_uiClkCoords[0], _uiClkCoords[1], _uiClkCoords[2]-_uiClkCoords[0], _uiClkCoords[3]-_uiClkCoords[1]);
 	}
-	
 
 	/**
 	 * Draw all gui objects, with appropriate highlights for debug and if object is being edited or not
@@ -265,7 +272,7 @@ public class GUIObj_Collection {
 	 * Set UI value for object based on non-drag modification such as click - either at initial click or when click is released
 	 * @param j
 	 */
-	private void _setUIObjValFromClickAlone(Base_GUIObj obj) {		obj.clickModVal(_msBtnClicked * -2.0f + 1, UIObjectManager.AppMgr.clickValModMult());	}	
+	private void _setUIObjValFromClickAlone(Base_GUIObj obj) {		obj.clickModVal(_msBtnClicked * -2.0f + 1, AppMgr.clickValModMult());	}	
 	
 	/**
 	 * Handle checking for a mouse click or move in this region

@@ -2,6 +2,7 @@ package base_UI_Objects.windowUI.uiObjs.renderer;
 
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.MenuGUIObj_Button;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 
@@ -21,7 +22,7 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	/**
 	 * Width of button edge line
 	 */
-	protected final float lineWidth = 1.0f;
+	protected final float lineWidth = 2.0f;
 	
 	/**
 	 * Color of clicked button
@@ -37,69 +38,63 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	protected final float yLowOffLine;
 	
 	/**
-	 * Base stroke(idx 0) and fill(idx 1) colors, short cut object for drawing rectangles
+	 * Base stroke(idx 0) and fill(idx 1) colors, short cut object for drawing rectangles when clicked
 	 */
 	protected int[][] rectClickStrkFillColor = new int[][] {{0,0,0,255},{150,160,170,255}};
 	
 	/**
-	 * 
+	 * Build a button/switch renderer object
 	 * @param _ri render interface
 	 * @param _owner Gui object that owns this renderer
 	 * @param _off offset for ornament
 	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
 	 * 						while multi line will be some fraction of this wide.
-	 * @param _clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 1.
-	 * 			fill is ignored for this object
-	 * @param _guiFormatBoolVals array of boolean flags describing how the object should be constructed
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
-	 * @param _labelColors color for each of the labels for this multi-state button
-	 * @param _rendererType whether single or multi line renderer
+	 * @param _argObj GUIObjParams that describe colors, render format and other components of the owning gui object
 	 */
-	public ButtonGUIObjRenderer(IRenderInterface _ri, MenuGUIObj_Button _owner, double[] _offset, float _menuWidth, 
-			int[][] _clrs, boolean[] _guiFormatBoolVals, int[][] _labelColors) {
-		super(_ri, _owner, _offset, _menuWidth, _clrs,_guiFormatBoolVals, "Button Renderer");
+	public ButtonGUIObjRenderer(IRenderInterface _ri, MenuGUIObj_Button _owner, double[] _offset, float _menuWidth, GUIObj_Params _argObj) {
+		super(_ri, _owner, _offset, _menuWidth, _argObj, "Button Renderer");
+		int[][] _labelColors = _argObj.getBtnFillColors();
 		colors = new int[_labelColors.length][4];
 		for(int i=0;i<_labelColors.length; ++i) {	System.arraycopy(_labelColors, 0, colors, 0, colors.length);}
 		updateFromObject();
 		// lines need the -yOffset because the UI data has been translated an extra yOffset already from base class
 		yUpOffLine = -yOffset+lineWidth;
 		yLowOffLine = -yOffset-lineWidth;
+		//copy stroke color into convenience array
 		System.arraycopy(strkClr, 0, rectClickStrkFillColor[0], 0, strkClr.length);		
 	}
 	
 	protected int[] getStateColor() {return colors[((MenuGUIObj_Button) owner).getButtonState()];}	
 	
-	private void _drawButton(int onIdx, int offIdx) {
-		float[] dims = getHotSpotDims();
-		
-		// draw 3d button edges			
-		ri.setStrokeWt(lineWidth);
-		ri.setStroke(strkClr, strkClr[3]);
-		
-		//bottom/right
-		ri.setStroke(edgeColors[onIdx], edgeColors[onIdx][3]);
-		ri.drawLine(lineWidth, yLowOffLine+dims[1], 0, dims[0]-lineWidth, yLowOffLine+dims[1], 0);//bottom line
-		ri.drawLine(dims[0]-lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yLowOffLine+dims[1], 0);//right side line
-		//top/left
-		ri.setStroke(edgeColors[offIdx], edgeColors[offIdx][3]);
-		ri.drawLine(lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yUpOffLine, 0); // top line
-		ri.drawLine(lineWidth, yUpOffLine, 0, lineWidth, yLowOffLine+dims[1], 0);		
+	/**
+	 * Draw button edges to look like it is 3d
+	 * @param isClicked
+	 */
+	private void _drawButtonEdges(boolean isClicked) {
+		ri.pushMatState();
+			int[] topClr, btmClr;
+			if(!isClicked) {			topClr = edgeColors[0]; btmClr = edgeColors[1];}
+			else {					topClr = edgeColors[1]; btmClr = edgeColors[0];}			
+			float[] dims = getHotSpotDims();		
+			// draw 3d button edges			
+			ri.setStrokeWt(lineWidth);
+			ri.setStroke(strkClr, strkClr[3]);
+			
+			//top/left
+			ri.setStroke(topClr, topClr[3]);
+			ri.drawLine(lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yUpOffLine, 0); // top line
+			ri.drawLine(lineWidth, yUpOffLine, 0, lineWidth, yLowOffLine+dims[1], 0);		
+			//bottom/right
+			ri.setStroke(btmClr, btmClr[3]);
+			ri.drawLine(lineWidth, yLowOffLine+dims[1], 0, dims[0]-lineWidth, yLowOffLine+dims[1], 0);//bottom line
+			ri.drawLine(dims[0]-lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yLowOffLine+dims[1], 0);//right side line
+		ri.popMatState();
 	}//_drawButton
 
 	@Override
-	protected void _drawUIData(boolean isClicked) {
-		ri.pushMatState();
-			if(isClicked) {			_drawButton(0, 1); } 
-			else {					_drawButton(1, 0);}
-		ri.popMatState();
-		// show Button Text		
-		ri.showText(owner.getValueAsString(), yOffset , 0);
-		//ri.showCenteredText(owner.getValueAsString(), (end.x - start.x)*.5f , 0);
-	}
+	protected void _drawUIData(boolean isClicked) {			_drawButtonEdges(isClicked);	ri.showText(owner.getValueAsString(), yOffset , 0);}	
+	@Override
+	protected void _drawUIDataCentered(boolean isClicked) {	_drawButtonEdges(isClicked);	ri.showCenteredText(owner.getValueAsString(), _getCenterX() , 0);}
 	
 	/**
 	 * TODO come up with a mechanism to perform this - it must be aware and able to modify previous button's hotspot. 
