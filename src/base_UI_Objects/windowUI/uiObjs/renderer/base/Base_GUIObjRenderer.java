@@ -19,6 +19,15 @@ public abstract class Base_GUIObjRenderer {
 	 */
 	protected final Base_GUIPrefixObj _ornament;
 	/**
+	 * Stroke weight for main UI object
+	 */
+	protected float strkWt = 1.0f;
+	/**
+	 * Stroke color value for main UI object
+	 */
+	protected int[] strkClr = new int[] {0,0,0,255};
+	
+	/**
 	 * Text color value for main UI object label/text. 
 	 * For text rendering this is governed by fill (not stroke)
 	 */
@@ -27,10 +36,12 @@ public abstract class Base_GUIObjRenderer {
 	 * Fill color value for main UI object
 	 */
 	protected int[] fillClr = new int[] {0,0,0,255};	
+		
 	/**
-	 * Stroke color value for main UI object
+	 * Base stroke(idx 0) and fill(idx 1) colors, short cut object for drawing rectangles
 	 */
-	protected int[] strkClr = new int[] {0,0,0,255};
+	protected int[][] rectStrkFillColor;
+
 	/**
 	 * Highlight fill color when selected (for bounding box)
 	 */
@@ -70,52 +81,17 @@ public abstract class Base_GUIObjRenderer {
 	protected final float yOffset;
 	
 	/**
-	 * 
-	 * @param _ri render interface
-	 * @param _owner Gui object that owns this renderer
-	 * @param _off offset for ornament
-	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
-	 * 						while multi line will be some fraction of this wide.
-	 * @param _strkClr stroke color
-	 * @param _fillClr fill color
-	 * @param _textClr text color - specified in draw using setFill
-	 * @param buildPrefix whether to build prefix ornament
-	 * @param matchLabelColor whether prefix ornament should match label color
-	 * @param _rendererType whether single or multi line renderer
+	 * Flags structure to monitor/manage configurable behavior. No child class should access these directly
 	 */
-	public Base_GUIObjRenderer (
-			IRenderInterface _ri,
-			Base_GUIObj _owner,
-			double[] _off,
-			float _menuWidth,
-			int[] _strkClr,
-			int[] _fillClr,  
-			int[] _textClr,  
-			boolean buildPrefix, 
-			boolean matchLabelColor,
-			String _rendererType) {
-		ri=_ri;	
-		owner = _owner;
-		menuWidth = _menuWidth;
-		// stroke color, fill color, text color of text
-		strkClr = _strkClr;
-		fillClr = _fillClr;
-		textClr = _textClr;
-		//build prefix ornament to display
-		yOffset = 0.75f * (float) _off[1];
-		if (buildPrefix) {
-			int[] prefixClr = (matchLabelColor ? textClr : MyMathUtils.randomIntClrAra());
-			System.arraycopy(prefixClr, 0, hlStrkClr, 0, hlStrkClr.length);
-			for(int i=0;i<3;++i ) {
-				hlStrkClr[i] = prefixClr[i];
-				hlFillClr[i] = (prefixClr[i] + 1024)/5;	
-			}
-			_ornament = new GUI_PrefixObj(_off, prefixClr);
-		} else {
-			_ornament = new GUI_NoPrefixObj();
-		}
-		rendererType = _rendererType;
-	}
+	private int[] rndrConfigFlags;
+	private static final int
+		isMultiLineIDX = 0,			// Should be multiline
+		centerTextIDX = 1,			// Text should be centered 
+		hasOutlineIDX = 2,			// An outline around the object should be rendered
+		hasOrnamentIDX = 3,			// Should have ornament
+		ornmntClrMatchIDX = 4;		// Ornament color should match label color
+	private static final int numConfigFlags = 5;
+	
 	
 	/**
 	 * 
@@ -124,10 +100,13 @@ public abstract class Base_GUIObjRenderer {
 	 * @param _off offset for ornament
 	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
 	 * 						while multi line will be some fraction of this wide.
-	 * @param _strkClr stroke color
-	 * @param _fillClr fill color
-	 * @param buildPrefix whether to build prefix ornament
-	 * @param matchLabelColor whether prefix ornament should match label color
+	 * @param _clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 1.
+	 * @param _guiFormatBoolVals array of boolean flags describing how the object should be constructed
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 * @param _rendererType whether single or multi line renderer
 	 */
 	public Base_GUIObjRenderer (
@@ -135,13 +114,71 @@ public abstract class Base_GUIObjRenderer {
 			Base_GUIObj _owner,
 			double[] _off,
 			float _menuWidth,
-			int[] _strkClr,
-			int[] _fillClr,  
-			boolean buildPrefix, 
-			boolean matchLabelColor,
+			int[][] _clrs,
+			boolean[] _guiFormatBoolVals,
 			String _rendererType) {
-		this(_ri, _owner,_off, _menuWidth, _strkClr, _fillClr, _fillClr, buildPrefix, matchLabelColor, _rendererType);
-	}
+		ri=_ri;	
+		owner = _owner;
+		menuWidth = _menuWidth;
+		// stroke color, fill color, text color for label
+		rectStrkFillColor = new int[2][4];
+		strkClr = new int[4];
+		System.arraycopy(_clrs[0], 0, strkClr, 0, _clrs[0].length);
+		System.arraycopy(strkClr, 0, rectStrkFillColor[0], 0, strkClr.length);
+		fillClr = new int[4];
+		System.arraycopy(_clrs[1], 0, fillClr, 0, _clrs[1].length);
+		System.arraycopy(fillClr, 0, rectStrkFillColor[1], 0, fillClr.length);
+		textClr = new int[4];
+		int textClrIDX = _clrs.length == 3 ? 2 : 1;
+		System.arraycopy(_clrs[textClrIDX], 0, textClr, 0, _clrs[textClrIDX].length);
+		//build prefix ornament to display
+		yOffset = 0.75f * (float) _off[1];
+		initConfigFlags();
+		int numToInit = (_guiFormatBoolVals.length < numConfigFlags ? _guiFormatBoolVals.length : numConfigFlags);
+		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_guiFormatBoolVals[i]);	}	
+		
+		if (getHasOrnament()) {
+			int[] prefixClr = (getOrnmntClrMatch() ? textClr : MyMathUtils.randomIntClrAra());
+			for(int i=0;i<3;++i ) {
+				hlStrkClr[i] = prefixClr[i];
+				// make fill color 75% brighter
+				hlFillClr[i] = (prefixClr[i] + 1024)/5;	
+			}
+			_ornament = new GUI_PrefixObj(_off, prefixClr);
+		} else {
+			_ornament = new GUI_NoPrefixObj();
+		}
+		rendererType = _rendererType;
+	}//ctor
+	
+	private void initConfigFlags(){			rndrConfigFlags = new int[1 + numConfigFlags/32]; for(int i = 0; i<numConfigFlags; ++i){setConfigFlags(i,false);}	}
+	private boolean getConfigFlags(int idx){	int bitLoc = 1<<(idx%32);return (rndrConfigFlags[idx/32] & bitLoc) == bitLoc;}	
+	private void setConfigFlags(int idx, boolean val){
+		int flIDX = idx/32, mask = 1<<(idx%32);
+		rndrConfigFlags[flIDX] = (val ?  rndrConfigFlags[flIDX] | mask : rndrConfigFlags[flIDX] & ~mask);
+		switch (idx) {//special actions for each flag
+		case isMultiLineIDX			:{break;}
+		case centerTextIDX			:{break;}
+		case hasOutlineIDX			:{break;}
+		case hasOrnamentIDX			:{break;}
+		case ornmntClrMatchIDX 		:{break;}
+		}
+	}//setConfigFlags
+	
+	protected void setIsMultiLine(boolean isMultiLine) {setConfigFlags(isMultiLineIDX, isMultiLine);}
+	public boolean getIsMultiLine() {return getConfigFlags(isMultiLineIDX);}
+	
+	protected void setIsCentered(boolean isCentered) {setConfigFlags(centerTextIDX, isCentered);}
+	public boolean getIsCentered() {return getConfigFlags(centerTextIDX);}
+	
+	protected void setHasOutline(boolean hasOutline) {setConfigFlags(hasOutlineIDX, hasOutline);}
+	public boolean getHasOutline() {return getConfigFlags(hasOutlineIDX);}
+	
+	protected void setHasOrnament(boolean hasOrnament) {setConfigFlags(hasOrnamentIDX, hasOrnament);}
+	public boolean getHasOrnament() {return getConfigFlags(hasOrnamentIDX);}
+	
+	protected void setOrnmntClrMatch(boolean ornClr) {setConfigFlags(ornmntClrMatchIDX, ornClr);}
+	public boolean getOrnmntClrMatch() {return getConfigFlags(ornmntClrMatchIDX);}
 	
 	/**
 	 * Verify passed coordinates are within this object's modifiable zone. If true then this object will be modified by UI actions
@@ -150,19 +187,35 @@ public abstract class Base_GUIObjRenderer {
 	 * @return whether passed coords are within this object's modifiable zone
 	 */
 	public final boolean checkIn(float _clkx, float _clky){return (_clkx >= start.x)&&(_clkx <= end.x)&&(_clky >= start.y)&&(_clky <= end.y);}
+	
+	/**
+	 * Draw hotspot rectangle around object
+	 * @param strkWt
+	 * @param _strkClr
+	 * @param _fillClr
+	 * @param xywh
+	 */
+	protected final void _drawRectangle(float _strkWt, int[] _strkClr, int[] _fillClr, float[] xywh) {
+		ri.pushMatState();
+			ri.setStrokeWt(_strkWt);
+			ri.setStroke(_strkClr, _strkClr[3]);
+			ri.setFill(_fillClr, _fillClr[3]);
+			ri.drawRect(xywh);
+		ri.popMatState();
+	}
 
 	/**
 	 * Draw a highlight box around this object representing the click region this UI element will respond to
 	 */
 	public final void drawHighlight() {
-		ri.pushMatState();
-			ri.setStrokeWt(1.0f);
-			ri.setFill(hlFillClr, hlFillClr[3]);
-			ri.setStroke(hlStrkClr, hlStrkClr[3]);
-			//Draw rectangle around this object denoting active zone
-			_drawRectangle();
-		ri.popMatState();
+		_drawRectangle(strkWt, hlStrkClr, hlFillClr, _getRectDims());
 	}//drawHighlight
+	
+	/**
+	 * Get x,y, w,h format of hotspot rectangle dims
+	 * @return
+	 */
+	private float[] _getRectDims() {		return new float[] {start.x, start.y, end.x - start.x, end.y - start.y};	}
 
 	/**
 	 * Used to draw this UI object encapsulated by a border representing the
@@ -171,6 +224,8 @@ public abstract class Base_GUIObjRenderer {
 	private int _animCount = 0;
 	private final int _animSpeed = 10;
 	private int _animMod = _animSpeed;
+	// color to reproduce no fill
+	private int[] _noFillClr = new int[] {0,0,0,0};
 	/**
 	 * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
 	 */
@@ -179,10 +234,8 @@ public abstract class Base_GUIObjRenderer {
 			ri.setStrokeWt(1.0f);
 			_animCount += _animMod;
 			_animMod = (_animCount <= 0 ? _animSpeed : (_animCount >= 255 ? -_animSpeed : _animMod));
-			ri.setStroke(_animCount, 255-_animCount, 255,255);
-			ri.noFill();
-			//Draw rectangle around this object denoting active zone
-			_drawRectangle();
+			// Draw rectangle around object with changing color
+			_drawRectangle(strkWt, new int[] {_animCount, 255-_animCount, 255,255}, _noFillClr, _getRectDims());
 			ri.drawLine(start.x, start.y,0, end.x, end.y, 0);
 			ri.drawLine(start.x, end.y,0, end.x, start.y, 0);			
 		ri.popMatState();
@@ -190,25 +243,31 @@ public abstract class Base_GUIObjRenderer {
 	}//drawDebug
 	
 	/**
-	 * Draw rectangle for object - debug, button, etc - relative to absolute origin
-	 */
-	protected void _drawRectangle() {		ri.drawRect(start.x, start.y, end.x - start.x, end.y - start.y);	}
-	
-	/**
 	 * Draw this UI Object, including any ornamentation if appropriate
 	 */
 	public final void draw(boolean isClicked) {
 		if(isClicked) {drawHighlight();}
 		ri.pushMatState();
+			if(isClicked || getHasOutline()) {
+				int[][] clrs =  getRectStrkFillClr(isClicked);
+				_drawRectangle(strkWt, clrs[0], clrs[1], _getRectDims());
+			}
 			ri.translate(start.x,start.y+yOffset,0);
 			_ornament.drawPrefixObj(ri);
-			//Text is colored by fill
+			ri.setStrokeWt(1.0f);
+			// text is colored by fill specification
 			ri.setFill(textClr,textClr[3]);
 			ri.setStroke(strkClr,strkClr[3]);
 			//draw specifics for this UI object
 			_drawUIData(isClicked);
 		ri.popMatState();
 	}//draw
+	
+	/**
+	 * Get the stroke and fill colors to use for a rectangle around the UI object
+	 * @return
+	 */
+	protected abstract int[][] getRectStrkFillClr(boolean isClicked);
 	
 	/**
 	 * Draw UI Data String - usually {label}{data value}
@@ -230,11 +289,7 @@ public abstract class Base_GUIObjRenderer {
 	 * @return
 	 */
 	public abstract float getMaxWidth();
-	/**
-	 * Whether the gui object this renderer manages is multi-line or single line
-	 * @return
-	 */
-	public abstract boolean isMultiLine();
+
 	/**
 	 * Get upper left corner coordinates of hotspot for the gui object this renderer draws
 	 * @return

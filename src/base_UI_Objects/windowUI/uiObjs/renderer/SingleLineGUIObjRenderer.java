@@ -11,19 +11,23 @@ import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
 public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 
 	/**
-	 * @param _ri
-	 * @param _owner
-	 * @param _start
-	 * @param _end
-	 * @param _off
-	 * @param _strkClr
-	 * @param _fillClr
-	 * @param buildPrefix
-	 * @param matchLabelColor
+	 * 
+	 * @param _ri render interface
+	 * @param _owner Gui object that owns this renderer
+	 * @param _off offset for ornament
+	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
+	 * 						while multi line will be some fraction of this wide.
+	 * @param _clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 1.
+	 * @param _guiFormatBoolVals array of boolean flags describing how the object should be constructed
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 */
 	public SingleLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner,
-			double[] _offset, float _menuWidth, int[] _strkClr, int[] _fillClr, boolean buildPrefix, boolean matchLabelColor) {
-		super(_ri, _owner, _offset, _menuWidth, _strkClr, _fillClr, buildPrefix, matchLabelColor, "Single Line");
+			double[] _offset, float _menuWidth, int[][] _clrs, boolean[] _guiFormatBoolVals) {
+		super(_ri, _owner, _offset, _menuWidth, _clrs, _guiFormatBoolVals, "Single Line");
 	}
 
 	@Override
@@ -39,6 +43,13 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	public final float getMaxWidth() {
 		return ri.getTextWidth(owner.getLabel() + owner.getValueAsString()) + this._ornament.getWidth();
 	}
+	
+	/**
+	 * Get the stroke and fill colors to use for a rectangle around the UI object. This renderer always uses the specified stroke and fill colors
+	 * @return
+	 */
+	@Override
+	protected final int[][] getRectStrkFillClr(boolean isClicked){ return rectStrkFillColor;}
 	
 	/**
 	 * Recalculate the lower right location of the hotspot for the owning UI object.

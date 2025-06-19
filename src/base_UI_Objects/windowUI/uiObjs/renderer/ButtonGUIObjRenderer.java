@@ -18,47 +18,68 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	 * Length of the longest label in the state labels array
 	 */
 	protected float longestLabelLen;
+	/**
+	 * Width of button edge line
+	 */
+	protected final float lineWidth = 1.0f;
 	
-	protected final float yUpOffLine;
-	protected final float yLowOffLine;
+	/**
+	 * Color of clicked button
+	 */
+	protected static final int[] clickedColor = {150,160,170,255};
+	/**
+	 * Colors of highlit and shadowed edges
+	 */
+	protected static final int[][] edgeColors = new int[][] {{255,255,255,255}, {55,55,55,255}};
 
+	protected final float yUpOffLine;
+
+	protected final float yLowOffLine;
+	
+	/**
+	 * Base stroke(idx 0) and fill(idx 1) colors, short cut object for drawing rectangles
+	 */
+	protected int[][] rectClickStrkFillColor = new int[][] {{0,0,0,255},{150,160,170,255}};
+	
 	/**
 	 * 
-	 * @param _ri
-	 * @param _owner
-	 * @param _off
-	 * @param _menuWidth
-	 * @param _txtColor color for outline and text
-	 * @param _colors fill colors to render for each state of the button being rendered
+	 * @param _ri render interface
+	 * @param _owner Gui object that owns this renderer
+	 * @param _off offset for ornament
+	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
+	 * 						while multi line will be some fraction of this wide.
+	 * @param _clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 1.
+	 * 			fill is ignored for this object
+	 * @param _guiFormatBoolVals array of boolean flags describing how the object should be constructed
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
+	 * @param _labelColors color for each of the labels for this multi-state button
+	 * @param _rendererType whether single or multi line renderer
 	 */
-	public ButtonGUIObjRenderer(IRenderInterface _ri, MenuGUIObj_Button _owner, double[] _offset, float _menuWidth, int[] _txtColor, int[][] _labelColors) {
-		super(_ri, _owner, _offset, _menuWidth, _txtColor, _txtColor,false, false, "Button Renderer");
+	public ButtonGUIObjRenderer(IRenderInterface _ri, MenuGUIObj_Button _owner, double[] _offset, float _menuWidth, 
+			int[][] _clrs, boolean[] _guiFormatBoolVals, int[][] _labelColors) {
+		super(_ri, _owner, _offset, _menuWidth, _clrs,_guiFormatBoolVals, "Button Renderer");
 		colors = new int[_labelColors.length][4];
 		for(int i=0;i<_labelColors.length; ++i) {	System.arraycopy(_labelColors, 0, colors, 0, colors.length);}
-		updateWidth();
+		updateFromObject();
+		// lines need the -yOffset because the UI data has been translated an extra yOffset already from base class
 		yUpOffLine = -yOffset+lineWidth;
 		yLowOffLine = -yOffset-lineWidth;
+		System.arraycopy(strkClr, 0, rectClickStrkFillColor[0], 0, strkClr.length);		
 	}
 	
 	protected int[] getStateColor() {return colors[((MenuGUIObj_Button) owner).getButtonState()];}	
 	
-	protected static final int[] clickedColor = {150,160,170,255};
-	protected static final int[][] edgeColors = new int[][] {{255,255,255,255}, {55,55,55,255}};
-	/**
-	 * Need to use this since we already have moved to start.x/y
-	 */
-	protected final float lineWidth = 1.0f;
-	
-	private void _drawButton(int[] clr, int onIdx, int offIdx) {
-		ri.setStrokeWt(1.0f);
-		ri.setStroke(strkClr, strkClr[3]);
-		ri.setFill(clr, clr[3]);
+	private void _drawButton(int onIdx, int offIdx) {
 		float[] dims = getHotSpotDims();
-		// draw primary rectangle
-		ri.drawRect(0,-yOffset, dims[0], dims[1]);
 		
 		// draw 3d button edges			
 		ri.setStrokeWt(lineWidth);
+		ri.setStroke(strkClr, strkClr[3]);
+		
 		//bottom/right
 		ri.setStroke(edgeColors[onIdx], edgeColors[onIdx][3]);
 		ri.drawLine(lineWidth, yLowOffLine+dims[1], 0, dims[0]-lineWidth, yLowOffLine+dims[1], 0);//bottom line
@@ -72,13 +93,14 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	@Override
 	protected void _drawUIData(boolean isClicked) {
 		ri.pushMatState();
-			if(isClicked) {			_drawButton(clickedColor, 0, 1); 
-			} else {					_drawButton(getStateColor(), 1,0);}
+			if(isClicked) {			_drawButton(0, 1); } 
+			else {					_drawButton(1, 0);}
 		ri.popMatState();
 		// show Button Text		
 		ri.showText(owner.getValueAsString(), yOffset , 0);
 		//ri.showCenteredText(owner.getValueAsString(), (end.x - start.x)*.5f , 0);
 	}
+	
 	/**
 	 * TODO come up with a mechanism to perform this - it must be aware and able to modify previous button's hotspot. 
 	 * For now, this is done in UIObjectManager. Or, conversely, get rid of this being in the renderer

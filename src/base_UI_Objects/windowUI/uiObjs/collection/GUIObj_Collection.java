@@ -121,30 +121,31 @@ public class GUIObj_Collection {
 	 * @param _end
 	 * @param _off
 	 * @param _menuWidth max width of menu
-	 * @param _colors : index 0 is stroke, index 1 is fill
+	 * @param _colors : index 0 is stroke, index 1 is fill, index 2 is text (optional, otherwise uses fill color)
 	 * @param guiFormatBoolVals array of boolean flags describing how the object should be constructed
-	 * 				idx 0 : Should be multiline
-	 * 				idx 1 : Should have ornament
-	 * 				idx 2 : Ornament color should match label color 
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
+	 * @param _btnColors the fill colors for each of the button labels/states, or null for non-button renderers
 	 * @return
 	 */
-	protected Base_GUIObjRenderer _buildObjRenderer(
+	private Base_GUIObjRenderer _buildObjRenderer(
 			Base_GUIObj _owner, 
 			double[] _off,
 			float _menuWidth,
 			int[][] _colors, 
-			boolean[] guiFormatBoolVals, int[][] _btnColors) {
+			boolean[] _guiFormatBoolVals, int[][] _btnColors) {
 		
-		int[] _strkClr = _colors[0];
-		int[] _fillClr= _colors[1]; 
 		if (_btnColors != null) {
-			return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _strkClr, _btnColors);
+			return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _colors, _guiFormatBoolVals, _btnColors);
 		}
-		if (guiFormatBoolVals[0]) {
-			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
-		} else {
-			return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);			
-		}
+		if (_guiFormatBoolVals[0]) {//build multi-line renderer if multi-line non-button
+			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _colors, _guiFormatBoolVals);
+		} 
+		// Single line is default
+		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _colors, _guiFormatBoolVals);			
 	}//_buildObjRenderer
 	
 	/**
@@ -193,7 +194,7 @@ public class GUIObj_Collection {
 				break;				
 			}				
 		}//switch
-		Base_GUIObjRenderer renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], UIObjectManager.AppMgr.getUIOffset(), uiClkRect[2], guiColors, argObj.getCreationFormatVal(), argObj.getBtnColors());
+		Base_GUIObjRenderer renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], UIObjectManager.AppMgr.getUIOffset(), uiClkRect[2], guiColors, argObj.getRenderCreationFormatVal(), argObj.getBtnFillColors());
 		_guiObjsAra[guiObjIDX].setRenderer(renderer);		
 	}//_buildObj
 	
@@ -216,21 +217,7 @@ public class GUIObj_Collection {
 		ri.drawRect(_uiClkCoords[0], _uiClkCoords[1], _uiClkCoords[2]-_uiClkCoords[0], _uiClkCoords[3]-_uiClkCoords[1]);
 	}
 	
-	
-	protected void drawDbgGUIObjsInternal(float animTimeMod) {
-		ri.pushMatState();	
-			for(int i =0; i<_guiObjsAra.length; ++i){_guiObjsAra[i].drawDebug();}
-		ri.popMatState();			
-	}
 
-	protected void drawGUIObjsInternal(int msClkObj, float animTimeMod) {
-		ri.pushMatState();	
-			//mouse highlight
-			if (msClkObj != -1) {	_guiObjsAra[msClkObj].drawHighlight();	}
-			for(int i =0; i<_guiObjsAra.length; ++i){_guiObjsAra[i].draw();}
-		ri.popMatState();	
-	}
-	
 	/**
 	 * Draw all gui objects, with appropriate highlights for debug and if object is being edited or not
 	 * @param isDebug
@@ -244,7 +231,6 @@ public class GUIObj_Collection {
 			_drawUIRect();
 		} else {			
 			//mouse highlight
-			if (_msClickObj != null) {	_msClickObj.drawHighlight();	}
 			for(int i =0; i<_guiObjsAra.length; ++i){_guiObjsAra[i].draw();}
 		}	
 		ri.popMatState();
@@ -389,7 +375,7 @@ public class GUIObj_Collection {
 				_setUIObjValFromClickAlone(_msClickObj);
 			} 		
 			setAllUIWinVals();
-			_msClickObj.clearFocus();
+			_msClickObj.clearIsClicked();
 			_msClickObj = null;	
 		}
 		_msBtnClicked = -1;

@@ -112,25 +112,31 @@ public class UIObjectManager {
 	private static final boolean[] dfltUIBehaviorVals = new boolean[]{true, false, false};	
 	/**
 	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
-	 *  idx 0: whether multi-line(stacked) or not                                                  
-	 *  idx 1: if true, build prefix ornament                                                      
-	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 */
-	private static final boolean[] dfltUIFmtVals =  new boolean[] {false, true, false};	
+	private static final boolean[] dfltRndrCfgFtmVals =  new boolean[] {false, false, false, true, false};	
 	/**
 	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
-	 *  idx 0: whether multi-line(stacked) or not                                                  
-	 *  idx 1: if true, build prefix ornament                                                      
-	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 */
-	private static final boolean[] dfltMultiLineUIFmtVals =  new boolean[] {true, true, false};
+	private static final boolean[] dfltMultiLineRndrCfgFtmVals =  new boolean[] {true, false, false, true, false};
 	/**
 	 * Boolean array of default UI format values for buttons, if formatting is not otherwise specified : 
-	 *  idx 0: whether multi-line(stacked) or not                                                  
-	 *  idx 1: if true, build prefix ornament                                                      
-	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 */
-	private static final boolean[] dfltRenderUIBtnFmtVals =  new boolean[] {false, false, false};
+	private static final boolean[] dfltRenderUIBtnFmtVals =  new boolean[] {false, false, true, false, false};
 	/**
 	 * Boolean array of default button type format values, if not otherwise specified 
 	 *  idx 0: Whether this button should stay enabled until next draw frame                                                
@@ -190,8 +196,7 @@ public class UIObjectManager {
 		owner.initOwnerStateDispFlags();
 		
 		// Setup proper ui click coords
-		float[] _uiClickCoords = owner.getOwnerParentWindowUIClkCoords();
-		System.arraycopy(_uiClickCoords, 0, _uiClkCoords, 0, _uiClkCoords.length);
+		initUIClickCoords(owner.getOwnerParentWindowUIClkCoords());
 		
 		//////////////////////////////
 		//build ui objects and buttons
@@ -238,31 +243,33 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Label(int objIdx, double initVal, String name) {
-		return uiObjInitAra_Label(objIdx, initVal, name, dfltUIFmtVals);
+		return uiObjInitAra_Label(objIdx, initVal, name, dfltRndrCfgFtmVals);
 	}		
 	/**
 	 * Build the GUIObj_Params that describes a label object that is multiLine
 	 * @param initVal initial value for the object
 	 * @param name name of the object
-	 * NOTE : this method uses the default UI format boolean values for multi-line labels. Label objects' behavior is restricted
+	 * NOTE : this method uses the default renderer creation format boolean values for multi-line labels. Label objects' behavior is restricted
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_LabelMultiLine(int objIdx, double initVal, String name) {
-		return uiObjInitAra_Label(objIdx, initVal, name, dfltMultiLineUIFmtVals);
+		return uiObjInitAra_Label(objIdx, initVal, name, dfltMultiLineRndrCfgFtmVals);
 	}		
 
 	/**
 	 * Build the GUIObj_Params that describes a integer object
 	 * @param initVal initial value for the object
 	 * @param name name of the object
-	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Label(int objIdx, double initVal, String name, boolean[] boolFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, boolFmtVals);
+	public final GUIObj_Params uiObjInitAra_Label(int objIdx, double initVal, String name, boolean[] renderCreationFmtVals) {
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, new boolean[] {false,false,false}, renderCreationFmtVals);
 		obj.initVal = initVal;
 		return obj;
 	}
@@ -276,7 +283,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name) {
-		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
+		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltRndrCfgFtmVals);
 	}	
 	
 	/**
@@ -292,7 +299,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
+		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, boolVals, dfltRndrCfgFtmVals);
 	}	
 	
 	/**
@@ -304,7 +311,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String name) {
-		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineRndrCfgFtmVals);
 	}	
 	
 	/**
@@ -316,7 +323,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, boolVals, dfltMultiLineUIFmtVals);
+		return uiObjInitAra_Int(objIdx, minMaxMod, initVal, name, boolVals, dfltMultiLineRndrCfgFtmVals);
 	}	
 	
 	/**
@@ -329,14 +336,16 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.IntVal, boolVals, boolFmtVals);
+	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] renderCreationFmtVals) {
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.IntVal, boolVals, renderCreationFmtVals);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		return obj;
@@ -351,7 +360,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name) {
-		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltUIFmtVals);
+		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltRndrCfgFtmVals);
 	}
 	
 	/**
@@ -367,7 +376,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, boolVals, dfltUIFmtVals);
+		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, boolVals, dfltRndrCfgFtmVals);
 	}
 		
 	/**
@@ -379,7 +388,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String name) {
-		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, dfltUIBehaviorVals, dfltMultiLineRndrCfgFtmVals);
 	}
 
 	/**
@@ -395,7 +404,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals) {
-		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, boolVals, dfltMultiLineUIFmtVals);
+		return uiObjInitAra_Float(objIdx, minMaxMod, initVal, name, boolVals, dfltMultiLineRndrCfgFtmVals);
 	}
 	
 	/**
@@ -407,14 +416,16 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] boolFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.FloatVal, boolVals, boolFmtVals);
+	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] boolVals, boolean[] renderCreationFmtVals) {
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.FloatVal, boolVals, renderCreationFmtVals);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		return obj;
@@ -429,7 +440,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, dfltUIBehaviorVals, dfltUIFmtVals);
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, dfltUIBehaviorVals, dfltRndrCfgFtmVals);
 	}
 
 	/**
@@ -445,7 +456,7 @@ public class UIObjectManager {
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, dfltUIFmtVals);
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, dfltRndrCfgFtmVals);
 	}
 
 	/**
@@ -453,11 +464,11 @@ public class UIObjectManager {
 	 * @param initVal initial value for the object
 	 * @param name name of the object
 	 * @param list of elements this object manages
-	 * NOTE : this method uses the default behavior and UI format boolean values for multi-line list box
+	 * NOTE : this method uses the default behavior and renderer creation format boolean values for multi-line list box
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, dfltUIBehaviorVals, dfltMultiLineUIFmtVals);
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, dfltUIBehaviorVals, dfltMultiLineRndrCfgFtmVals);
 	}
 
 
@@ -470,11 +481,11 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 * NOTE : this method uses the default UI format boolean values for multi-line list box
+	 * NOTE : this method uses the default renderer creation format boolean values for multi-line list box
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, dfltMultiLineUIFmtVals);
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, dfltMultiLineRndrCfgFtmVals);
 	}
 	
 	/**
@@ -486,14 +497,16 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals, boolean[] boolFmtVals) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, boolFmtVals);
+	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals, boolean[] renderCreationFmtVals) {
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, boolVals, renderCreationFmtVals);
 	}
 	
 	
@@ -506,15 +519,17 @@ public class UIObjectManager {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 * @param boolFmtVals boolean array of format values :(unspecified values default to false)
-	 *           	idx 0: whether multi-line(stacked) or not                                                  
-	 *              idx 1: if true, build prefix ornament                                                      
-	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals, boolean[] boolFmtVals) {
+	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] boolVals, boolean[] renderCreationFmtVals) {
 		double[] minMaxMod = new double[] {0, listElems.length-1, 1};
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.ListVal, boolVals, boolFmtVals);
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.ListVal, boolVals, renderCreationFmtVals);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		obj.setListVals(listElems);	
@@ -529,7 +544,7 @@ public class UIObjectManager {
 	 * @param trueLabel - label for this switch's true state
 	 * @param falseLabel - label for this switch's false state
 	 * @param boolFlagIdx the index of the boolean flag that interacts with this switch
-	 * NOTE : this method uses the default behavior and UI format boolean values for switch object
+	 * NOTE : this method uses the default behavior and renderer creation format boolean values for switch object
 	 * @return
 	 */
 	public final GUIObj_Params uiObjInitAra_Switch(int objIdx, String name, String trueLabel, String falseLabel, int boolFlagIdx) {
@@ -555,8 +570,8 @@ public class UIObjectManager {
 		obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
 		obj.initVal = initVal;
 		obj.setListVals(labels);
-		// set object colors
-		obj.setBtnColors(btnColors);
+		// set default 2-state button colors
+		obj.setBtnFillColors(btnColors);
 		return obj;		
 	}
 	
@@ -628,7 +643,7 @@ public class UIObjectManager {
 		// set random object state colors
 		int[][] resClrs= new int[labels.length][4];
 		for(int i=0;i<labels.length;++i) {resClrs[i] = MyMathUtils.randomIntClrAra(150, 100, 150);}
-		obj.setBtnColors(resClrs);
+		obj.setBtnFillColors(resClrs);
 		return obj;		
 	}
 		
@@ -647,11 +662,14 @@ public class UIObjectManager {
 	 * @param _end
 	 * @param _off
 	 * @param _menuWidth max width of menu
-	 * @param _colors : index 0 is stroke, index 1 is fill
+	 * @param _colors : index 0 is stroke, index 1 is fill, index 2 is text (optional, otherwise uses fill color)
 	 * @param guiFormatBoolVals array of boolean flags describing how the object should be constructed
-	 * 				idx 0 : Should be multiline
-	 * 				idx 1 : Should have ornament
-	 * 				idx 2 : Ornament color should match label color 
+	 * 		idx 0 : Should be multiline
+	 * 		idx 1 : Text should be centered (default is false)
+	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 3 : Should have ornament
+	 * 		idx 4 : Ornament color should match label color
+	 * @param _btnColors the fill colors for each of the button labels/states, or null for non-button renderers
 	 * @return
 	 */
 	private Base_GUIObjRenderer _buildObjRenderer(
@@ -659,20 +677,17 @@ public class UIObjectManager {
 			double[] _off,
 			float _menuWidth,
 			int[][] _colors, 
-			boolean[] guiFormatBoolVals, int[][] _btnColors) {
+			boolean[] _guiFormatBoolVals, int[][] _btnColors) {
 		
-		int[] _strkClr = _colors[0];
-		int[] _fillClr= _colors[1]; 
 		if (_btnColors != null) {
-			return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _strkClr, _btnColors);
+			return new ButtonGUIObjRenderer(ri, (MenuGUIObj_Button)_owner, _off, _menuWidth, _colors, _guiFormatBoolVals, _btnColors);
 		}
-		if (guiFormatBoolVals[0]) {
-			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);
-		} else {
-			return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _strkClr, _fillClr, guiFormatBoolVals[1], guiFormatBoolVals[2]);			
-		}
-	}
-	
+		if (_guiFormatBoolVals[0]) {//build multi-line renderer if multi-line non-button
+			return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _colors, _guiFormatBoolVals);
+		} 
+		// Single line is default
+		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _colors, _guiFormatBoolVals);			
+	}//_buildObjRenderer
 	/**
 	 * Build the appropriate object based on the passed GUIObj_Params entry and assign it the given guiObjIDX
 	 * @param guiObjIDX
@@ -681,7 +696,7 @@ public class UIObjectManager {
 	 */
 	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
 		GUIObj_Params argObj = entry.getValue();
-		//Stroke and fill colors for renderer
+		//Default stroke and fill colors for renderer
 		int[][] guiColors = new int[][] {
 			{0,0,0,255}, //stroke
 			{0,0,0,255}, // fill
@@ -720,7 +735,7 @@ public class UIObjectManager {
 				break;				
 			}				
 		}//switch
-		var renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], AppMgr.getUIOffset(), uiClkRect[2], guiColors, argObj.getCreationFormatVal(), argObj.getBtnColors());
+		var renderer = _buildObjRenderer(_guiObjsAra[guiObjIDX], AppMgr.getUIOffset(), uiClkRect[2], guiColors, argObj.getRenderCreationFormatVal(), argObj.getBtnFillColors());
 		_guiObjsAra[guiObjIDX].setRenderer(renderer);		
 	}//_buildObj
 	
@@ -788,7 +803,7 @@ public class UIObjectManager {
 	 */
 	private float _buildHotSpotRects(float[] uiClkRect){
 		float yOffset = AppMgr.getTextHeightOffset();
-		float maxBtnLen = 0.98f * AppMgr.getMenuWidth(), halfBtnLen = .5f*maxBtnLen;
+		float maxBtnAreaLen = 0.98f * AppMgr.getMenuWidth(), maxBtnLen = .5f*maxBtnAreaLen;
 		float oldBtnLen = 0;
 		// toggle flags to control how next button is built
 		boolean lastBtnHalfStLine = false, startNewLine = true;
@@ -805,12 +820,12 @@ public class UIObjectManager {
 			// max width possible for this button
 			float btnLen = btnObj.getMaxWidth();
 			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
-			if(btnLen > halfBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
-				btnLen = maxBtnLen;
+			if(btnLen > maxBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
+				btnLen = maxBtnAreaLen;
 				if(lastBtnHalfStLine){//make last button full size, and make this button on another line
 					// get reference to last button's dims to modify
 					myPointf[] lastBtnDims = btnDimsMap.get(lastBtnKey);
-					lastBtnDims[1].x = lastBtnDims[0].x + maxBtnLen;					
+					lastBtnDims[1].x = lastBtnDims[0].x + maxBtnAreaLen;					
 					uiClkRect[3] += yOffset;
 				}
 				btnDims = _calcBtnDims(uiClkRect[0], uiClkRect[3], 0, btnLen);
@@ -818,7 +833,7 @@ public class UIObjectManager {
 				startNewLine = true;
 				lastBtnHalfStLine = false;
 			} else {//button len should be half width unless this button started a new line
-				btnLen = halfBtnLen;
+				btnLen = maxBtnLen;
 				if(startNewLine){//button is starting new line
 					lastBtnHalfStLine = true;
 					btnDims = _calcBtnDims(uiClkRect[0], uiClkRect[3], 0, btnLen);
@@ -837,7 +852,7 @@ public class UIObjectManager {
 		if(lastBtnHalfStLine){//set last button full length if starting new line
 			// get reference to last button's dims to modify
 			myPointf[] lastBtnDims = btnDimsMap.get(lastBtnKey);
-			lastBtnDims[1].x = lastBtnDims[0].x + maxBtnLen;					
+			lastBtnDims[1].x = lastBtnDims[0].x + maxBtnAreaLen;					
 			uiClkRect[3] += yOffset;
 		}
 		// assign button dims to buttons
@@ -854,9 +869,7 @@ public class UIObjectManager {
 	 * @param tLbl new true label
 	 * @param fLbl new false label
 	 */
-	public void setGUISwitchLabels(int idx, String tLbl, String fLbl) {
-		_guiSwitchIDXMap.get(idx).setBooleanLabelVals(new String[] {fLbl, tLbl}, false);
-	}
+	public void setGUISwitchLabels(int idx, String tLbl, String fLbl) {_guiSwitchIDXMap.get(idx).setBooleanLabelVals(new String[] {fLbl, tLbl}, false);}
 	
 	/**
 	 * Pass all flag states to initialized structures in instancing window handler
@@ -872,9 +885,7 @@ public class UIObjectManager {
 	 * @param val
 	 */
 	public final void checkSetBoolAndUpdate(int idx, boolean val) {
-		if((_uiUpdateData != null) && _uiUpdateData.checkAndSetBoolValue(idx, val)) {
-			owner.updateOwnerCalcObjUIVals();
-		}
+		if((_uiUpdateData != null) && _uiUpdateData.checkAndSetBoolValue(idx, val)) {owner.updateOwnerCalcObjUIVals();}
 	}
 
 	/**
@@ -909,13 +920,13 @@ public class UIObjectManager {
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateIntValFromExecCode(int idx, int value) {_guiObjsAra[idx].setVal(value);_uiUpdateData.setIntValue(idx, value);}
+	public final void updateIntValFromExecCode(int idx, int value) {		_guiObjsAra[idx].setVal(value);_uiUpdateData.setIntValue(idx, value);}
 	/**
 	 * These are called externally from execution code object to synchronize ui values that might change during execution
 	 * @param idx of particular type of object
 	 * @param value value to set
 	 */
-	public final void updateFloatValFromExecCode(int idx, float value) {_guiObjsAra[idx].setVal(value);_uiUpdateData.setFloatValue(idx, value);}
+	public final void updateFloatValFromExecCode(int idx, float value) {	_guiObjsAra[idx].setVal(value);_uiUpdateData.setFloatValue(idx, value);}
 	
 	/**
 	 * Set the uiUpdateData structure and update the owner if the value has changed for an int-based UIobject (integer or list)
