@@ -8,7 +8,7 @@ import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
  * @author John Turner
  *
  */
-public abstract class Base_GUIObj {
+public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 	/**
 	 * Internal object ID
 	 */
@@ -411,6 +411,12 @@ public abstract class Base_GUIObj {
 	public final int getNumTextLines() { 		return renderer.getNumTextLines();}
 	
 	/**
+	 * Return whether or not this object should fill the available menu space
+	 * @return
+	 */
+	public final boolean getIsOneObjPerLine() { return renderer.getIsOneObjPerLine();}
+	
+	/**
 	 * Set this UI object's value based on string tokens from file
 	 * @param toks
 	 */
@@ -580,4 +586,13 @@ public abstract class Base_GUIObj {
 		for (int i=1;i<tmpRes.length;++i) {res += tmpRes[i]+"\n";}
 		return res;
 	}
+	
+	/**
+	 * For comparisons : requires ID to always be unique
+	 * @param anotherObj
+	 * @return
+	 */
+	@Override
+	public int compareTo(Base_GUIObj obj) {	    return (ID > obj.ID ? 1 : (ID < obj.ID ? -1 : 0));	}
+	
 }//class Base_GUIObj

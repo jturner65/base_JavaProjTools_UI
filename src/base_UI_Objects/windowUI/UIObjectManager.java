@@ -249,11 +249,273 @@ public class UIObjectManager {
 	}//_initNumericGUIObjs
 	
 	/**
-	 * Set _uiClkCoords to be passed array
-	 * @param cpy
+	 * This has to be called after UI structs are built and set - this creates and populates the 
+	 * structure that serves to communicate UI data to consumer from UI Window.
 	 */
-	public final void initUIClickCoords(float[] cpy){System.arraycopy(cpy, 0, _uiClkCoords, 0, _uiClkCoords.length);}
+	private void _buildUIUpdateStruct() {
+		//set up UI->to->Consumer class communication object - only make instance of object here, 
+		//initialize it after private flags are built and initialized
+		_uiUpdateData = owner.buildOwnerUIDataUpdateObject();
+		if (_uiUpdateData == null) {return;}
+		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
+		for (var entry : _guiIntValIDXMap.entrySet()) {			intValues.put(entry.getKey(), entry.getValue().getValueAsInt());}		
+		//TODO 
+		//for (Integer idx : _guiButtonIDXs) {			intValues.put(idx, _guiObjsIDXMap.get(idx).getValueAsInt());}	
+		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
+		for (var entry :  _guiFloatValIDXMap.entrySet()) {		floatValues.put(entry.getKey(), entry.getValue().getValueAsFloat());}
+		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
+		//TODO 
+//		for (var switchIdxs : _guiSwitchIDXMap.entrySet()) {
+//			int flagIdx = switchIdxs.getKey();
+//			int idx = switchIdxs.getValue();
+//			GUIObj_Switch toggleObj = ((GUIObj_Switch)_guiObjsIDXMap.get(idx));
+//			boolValues.put(flagIdx, toggleObj.getValueAsBoolean());
+//		}
+		
+		for(Integer i=0; i < _privFlags.numFlags;++i) {		boolValues.put(i, _privFlags.getFlag(i));}	
+		_uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
+	}//_buildUIUpdateStruct	
+	
 
+	/**
+	 * Build the renderer for a UI object 
+	 * @param _owner the Base_GUIObj that will own this renderer
+	 * @param _off offset in x,y for ornament, if exists
+	 * @param _menuWidth max width of menu area
+	 * @param _argObj : GUIObj_Params object holding all the configuration values used to build this renderer and the underlying UI Object
+	 * @return
+	 */
+	private Base_GUIObjRenderer _buildObjRenderer(
+			Base_GUIObj _owner, 
+			double[] _off,
+			float _menuWidth,
+			GUIObj_Params _argObj
+		) {		
+		if (_argObj.isButton()) {		return new ButtonGUIObjRenderer(ri, (GUIObj_Button)_owner, _off, _menuWidth, _argObj);}
+		//build multi-line renderer if multi-line non-button
+		if (_argObj.isMultiLine()) {	return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);} 
+		// Single line is default
+		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);			
+	}//_buildObjRenderer
+	/**
+	 * Build the appropriate object based on the passed GUIObj_Params entry and assign it the given guiObjIDX
+	 * @param guiObjIDX
+	 * @param entry
+	 * @param uiClkRect
+	 */
+	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
+		GUIObj_Params argObj = entry.getValue();
+		Base_GUIObj obj = null;
+		switch(argObj.objType) {
+			case IntVal : {
+				obj = new GUIObj_Int(guiObjIDX, argObj);
+				_guiIntValIDXMap.put(guiObjIDX, (GUIObj_Int)obj);
+				break;}
+			case ListVal : {
+				obj = new GUIObj_List(guiObjIDX, argObj);
+				_guiIntValIDXMap.put(guiObjIDX, (GUIObj_List)obj);
+				break;}
+			case FloatVal : {
+				obj = new GUIObj_Float(guiObjIDX, argObj);
+				_guiFloatValIDXMap.put(guiObjIDX, (GUIObj_Float)obj);
+				break;}
+			case LabelVal :{
+				obj = new GUIObj_DispValue(guiObjIDX, argObj);
+				_guiLabelValIDXMap.put(guiObjIDX, (GUIObj_DispValue)obj);
+				break;}
+			case Switch : {
+				// Always 2 state toggle that has a flags structure backing it.
+				obj = new GUIObj_Switch(guiObjIDX, argObj);
+				_guiSwitchIDXMap.put(((GUIObj_Switch)obj).getBoolFlagIDX(), (GUIObj_Switch)obj);
+				break;}
+			case Button  :{
+				// 2+ state button that does not have a flags structure backing it
+				obj = new GUIObj_Button(guiObjIDX, argObj);
+				_guiButtonIDXMap.put(guiObjIDX, (GUIObj_Button)obj);
+				break;
+			}
+			default : {
+				_dispWarnMsg("_buildObj", "Attempting to instantiate unknown UI object for a " + argObj.objType.toStrBrf());
+				return;				
+			}				
+		}//switch
+		// Set renderer
+		_guiObjsIDXMap.put(guiObjIDX, obj);
+		obj.setRenderer(_buildObjRenderer(obj, AppMgr.getUIOffset(), uiClkRect[2], argObj));		
+	}//_buildObj
+	
+	/**
+	 * 
+	 * @param tmpUIObjMap
+	 * @param uiClkRect
+	 * @return
+	 */
+	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBtnMap, float[] uiClkRect) {
+		//build ui objects
+		_guiObjsIDXMap = new TreeMap<Integer,Base_GUIObj>(); // list of modifiable gui objects
+		if(tmpUIObjMap.size() > 0) {
+
+			// build non-flag-backed switch objects
+			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
+				int i = entry.getValue().objIdx;
+				_buildObj(i, entry, uiClkRect);		
+			}
+
+			// build button objects 
+			for (Map.Entry<String, GUIObj_Params> entry : tmpUIBtnMap.entrySet()) {
+				int i = entry.getValue().objIdx;
+				_buildObj(i, entry, uiClkRect);		
+			}
+			
+			// main non-toggle switch button components
+			if(_guiFloatValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiFloatValIDXMap);	}
+			if(_guiIntValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiIntValIDXMap);	}
+			if(_guiLabelValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiLabelValIDXMap);	}
+			if(_guiButtonIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiButtonIDXMap);	}
+			uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
+			// now address toggle buttons' clickable regions	
+			if(_guiSwitchIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiSwitchIDXMap);	}			
+						
+		}// UI objects exist
+		// return final y coordinate
+		uiClkRect[3] += AppMgr.getRowStYOffset();
+		return uiClkRect[3];
+	}//_buildGUIObjsForMenu
+
+	/**
+	 * Recalculate the number of hotspot partitions for the object IDs in rowPartitionWidths to 
+	 * be equally spaced in uiObjAreaWidth (uiObjAreaWidth/currLineHotSpots.size())
+	 * @param ttlNumPartitions total # of partitions allowed in line
+	 * @param partitionWidths all the currently calculated partition counts
+	 */
+	private void _reCalcPartitions(Float uiObjAreaWidth, TreeMap<Base_GUIObj, Float> rowPartitionWidths, float ttlRowWidth) {
+		float ratio = uiObjAreaWidth/ttlRowWidth;
+		//fancy-pants
+		rowPartitionWidths.replaceAll((k,v) -> v *= ratio);
+	}
+	
+	/**
+	 * Build hot-spot rectangles for each rendered object based on number we wish per row and the dimensions of the object's data
+	 * @param ttlNumPartitions max number of partitions of the menu width we want to have for objects. They may take up multiple subdivisions
+	 * @param hotSpotStartXBorder
+	 * @param hotSpotStartY
+	 * @return
+	 */
+	private float _buildHotSpotRects(int ttlNumPartitions, float yOffset, float hotSpotStartXBorder, float hotSpotStartY, TreeMap<Integer,? extends Base_GUIObj> _uiObjMap){
+		// offset per line
+		float uiObjAreaWidth = 0.98f * AppMgr.getMenuWidth(), 
+				perPartitionWidth = uiObjAreaWidth/ttlNumPartitions;			// width allowed per partition
+		
+		/////////////////////////////////////////////
+		// Precompute map of number of partitions, keyed by the widths those partitions will encapsulate (aggregation)
+		// Use this map by finding using the width of an object as a lookup in the 
+		// map to find the number of partitions that object with require.
+		TreeMap<Float, Integer> partitionWidths = new TreeMap<Float, Integer>();
+		float ttlPartWidth = perPartitionWidth;
+		for(int i=1;i<ttlNumPartitions;++i) {
+			partitionWidths.put(ttlPartWidth, i);
+			ttlPartWidth+=perPartitionWidth;	
+		}
+		// add final partition
+		partitionWidths.put(uiObjAreaWidth, ttlNumPartitions);
+		
+		/////////////////////////////////////////////
+		// Build partition size and row assignment for every object
+		// per-row width of partitions for each object ID.
+		TreeMap<Integer, TreeMap<Base_GUIObj,Float>> perRowPerObjPartSize = new TreeMap<Integer, TreeMap<Base_GUIObj,Float>>();
+		// current line number of partitions used
+		int currLineNumParts = 0;
+		float currLineWidth = 0.0f;
+		int curRowCount = 0;
+		TreeMap<Base_GUIObj,Float> rowPerObjPartSize = new TreeMap<Base_GUIObj,Float>();
+		Base_GUIObj uiObj;
+		for(var entry : _uiObjMap.entrySet()) {
+			uiObj = entry.getValue();
+			// max width and height possible for this object
+			float objWidth = uiObj.getMaxTextWidth();
+			// Width of combined partitions required for object - smallest value larger than width
+			float objPartWidth = partitionWidths.ceilingKey(objWidth);
+			// Number of partitions required for object
+			int objNumParts = partitionWidths.get(objPartWidth);
+			// if only 1 per line, or if object is too wide for current line
+			if ((uiObj.getIsOneObjPerLine()) || (objPartWidth + currLineWidth > uiObjAreaWidth)) {
+				// too big for current row, put on a new row.
+				if(currLineNumParts != ttlNumPartitions) {					
+					// if fewer current partitions than allowable number, repartition rowPerObjPartSize to fill row
+					_reCalcPartitions(uiObjAreaWidth, rowPerObjPartSize, currLineWidth);
+				}
+				// add rowPerObjPartSize to perRowPerObjPartSize, make a new row map, and clear values
+				perRowPerObjPartSize.put(curRowCount++, rowPerObjPartSize);
+				rowPerObjPartSize = new TreeMap<Base_GUIObj,Float>();	
+				currLineNumParts = 0;
+				currLineWidth = 0.0f;
+			} 
+			rowPerObjPartSize.put(uiObj, objPartWidth);			
+			currLineNumParts += objNumParts;
+			currLineWidth += objPartWidth;
+		}
+		// Need to add last row, after making sure objects fill out the available space
+		_reCalcPartitions(uiObjAreaWidth, rowPerObjPartSize, currLineWidth);
+		// add rowPerObjPartSize to perRowPerObjPartSize
+		perRowPerObjPartSize.put(curRowCount++, rowPerObjPartSize);
+		
+		/////////////////////////////////////////////////
+		// Build actual hotspots	
+		// by here we have per row partition widths for each object - each row's values should sum to be uiObjAreaWidth
+		// we can use this to determine the actual dimensions
+		// object parition count, keyed by object id, will be used to build object hotspots once calculated
+		TreeMap<Base_GUIObj, myPointf[]> hotSpotObjDimsMap = new TreeMap<Base_GUIObj, myPointf[]>();	
+		myPointf[] hotSpotDims = new myPointf[2];
+		//int numObjsProced = 0;
+		for(Map.Entry<Integer, TreeMap<Base_GUIObj,Float>> perRowMapEntry :  perRowPerObjPartSize.entrySet()) {
+			//int rowNum = perRowMapEntry.getKey();
+			TreeMap<Base_GUIObj,Float> perRowMap = perRowMapEntry.getValue();
+			float maxHeight = 0;
+			for(Map.Entry<Base_GUIObj, Float> entry : perRowMap.entrySet()) {
+				uiObj = entry.getKey();
+				float objHeight = uiObj.getNumTextLines() * yOffset;
+				maxHeight = (maxHeight < objHeight ? objHeight : maxHeight);
+			}
+			float hotSpotStartX = hotSpotStartXBorder;
+			float hotSpotEndX = 0.0f;
+			for(Map.Entry<Base_GUIObj, Float> entry : perRowMap.entrySet()) {
+				uiObj = entry.getKey();
+				hotSpotEndX += entry.getValue();
+				hotSpotDims = new myPointf[] {new myPointf(hotSpotStartX, hotSpotStartY, 0.0f), new myPointf(hotSpotEndX, hotSpotStartY+maxHeight, 0.0f)};
+				hotSpotStartX = hotSpotEndX;	
+				hotSpotObjDimsMap.put(uiObj, hotSpotDims);
+				//++numObjsProced;
+			}
+			// For next row
+			hotSpotStartY += maxHeight;
+		}//for each row
+		
+		/////////////////////////////////////////////////
+		// Now assign hotspots to objects
+		// Map-nanigans!
+		hotSpotObjDimsMap.forEach((k,v)-> k.setHotSpot(v));
+
+		hotSpotStartY += AppMgr.getRowStYOffset();
+		return hotSpotStartY;
+	}//_buildHotSpotRects
+
+	
+	/**
+	 * Set labels of GUI Switch objects for both true state and false state. Will be updated on next draw
+	 * @param idx idx of button label to set
+	 * @param tLbl new true label
+	 * @param fLbl new false label
+	 */
+	public void setGUISwitchLabels(int idx, String tLbl, String fLbl) {_guiSwitchIDXMap.get(idx).setBooleanLabelVals(new String[] {fLbl, tLbl},false);}
+	
+	/**
+	 * Pass all flag states to initialized structures in instancing window handler
+	 */
+	public final void refreshPrivFlags() {		_privFlags.refreshAllFlags();	}
+	
+	///////////////////////////////
+	// UI object initialization and interaction
+	
 	/**
 	 * Build the GUIObj_Params that describes a label object
 	 * @param initVal initial value for the object
@@ -694,258 +956,7 @@ public class UIObjectManager {
 	public GUIObj_Params buildDebugButton(int objIdx, String trueLabel, String falseLabel) {
 		return uiObjInitAra_Switch(objIdx, "Debug Button", trueLabel, falseLabel, Base_BoolFlags.debugIDX);
 	}
-	
-	/**
-	 * Build the renderer for a UI object 
-	 * @param _owner the Base_GUIObj that will own this renderer
-	 * @param _off offset in x,y for ornament, if exists
-	 * @param _menuWidth max width of menu area
-	 * @param _argObj : GUIObj_Params object holding all the configuration values used to build this renderer and the underlying UI Object
-	 * @return
-	 */
-	private Base_GUIObjRenderer _buildObjRenderer(
-			Base_GUIObj _owner, 
-			double[] _off,
-			float _menuWidth,
-			GUIObj_Params _argObj
-		) {		
-		if (_argObj.isButton()) {		return new ButtonGUIObjRenderer(ri, (GUIObj_Button)_owner, _off, _menuWidth, _argObj);}
-		//build multi-line renderer if multi-line non-button
-		if (_argObj.isMultiLine()) {	return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);} 
-		// Single line is default
-		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);			
-	}//_buildObjRenderer
-	/**
-	 * Build the appropriate object based on the passed GUIObj_Params entry and assign it the given guiObjIDX
-	 * @param guiObjIDX
-	 * @param entry
-	 * @param uiClkRect
-	 */
-	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
-		GUIObj_Params argObj = entry.getValue();
-		Base_GUIObj obj = null;
-		switch(argObj.objType) {
-			case IntVal : {
-				 obj = new GUIObj_Int(guiObjIDX, argObj);
-				_guiIntValIDXMap.put(guiObjIDX, (GUIObj_Int)obj);
-				break;}
-			case ListVal : {
-				 obj = new GUIObj_List(guiObjIDX, argObj);
-				_guiIntValIDXMap.put(guiObjIDX, (GUIObj_List)obj);
-				break;}
-			case FloatVal : {
-				 obj = new GUIObj_Float(guiObjIDX, argObj);
-				_guiFloatValIDXMap.put(guiObjIDX, (GUIObj_Float)obj);
-				break;}
-			case LabelVal :{
-				 obj = new GUIObj_DispValue(guiObjIDX, argObj);
-				_guiLabelValIDXMap.put(guiObjIDX, (GUIObj_DispValue)obj);
-				break;}
-			case Switch : {						
-				 obj = new GUIObj_Switch(guiObjIDX, argObj);
-				_guiButtonIDXMap.put(guiObjIDX, (GUIObj_Switch)obj);
-				_guiSwitchIDXMap.put(((GUIObj_Switch)obj).getBoolFlagIDX(), (GUIObj_Switch)obj);
-				break;}
-			case Button  :{ 
-				 obj = new GUIObj_Button(guiObjIDX, argObj);
-				_guiButtonIDXMap.put(guiObjIDX, (GUIObj_Button)obj);
-				break;
-			}
-			default : {
-				_dispWarnMsg("_buildObj", "Attempting to instantiate unknown UI object for a " + argObj.objType.toStrBrf());
-				return;				
-			}				
-		}//switch
-		// Set renderer
-		_guiObjsIDXMap.put(guiObjIDX, obj);
-		obj.setRenderer(_buildObjRenderer(obj, AppMgr.getUIOffset(), uiClkRect[2], argObj));		
-	}//_buildObj
-	
-	/**
-	 * 
-	 * @param tmpUIObjMap
-	 * @param uiClkRect
-	 * @return
-	 */
-	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBtnMap, float[] uiClkRect) {
-		//build ui objects
-		_guiObjsIDXMap = new TreeMap<Integer,Base_GUIObj>(); // list of modifiable gui objects
-		if(tmpUIObjMap.size() > 0) {
-
-			// build non-flag-backed switch objects
-			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
-				int i = entry.getValue().objIdx;
-				_buildObj(i, entry, uiClkRect);		
-			}
-
-			int btnIdx = tmpUIObjMap.size();
-			// build button objects : object idx is after all non-button objects have been built
-			for (Map.Entry<String, GUIObj_Params> entry : tmpUIBtnMap.entrySet()) {
-				_buildObj(btnIdx++, entry, uiClkRect);		
-			}			
-			// Objects are created by here and assigned renderers
-			// Assign hotspots for non-button components
-			myPointf newStPt = new myPointf(uiClkRect[0], uiClkRect[1], 0);
-			boolean lastObjWasMultiLine = false;
-			// build click regions for non buttons
-			for (int i = 0; i < _guiObjsIDXMap.size(); ++i) {
-				boolean isGUIBtn = (_guiObjsIDXMap.get(i).getObjType() == GUIObj_Type.Button);
-				if(!isGUIBtn){				
-					if (lastObjWasMultiLine && (!_guiObjsIDXMap.get(i).isMultiLine())) {
-						newStPt.x = uiClkRect[0];
-						newStPt.y = _guiObjsIDXMap.get(i-1).getEnd().y;
-					}
-					float txHtOffset = (_guiObjsIDXMap.get(i).getObjType() == GUIObj_Type.LabelVal) ? 
-									AppMgr.getLabelTextHeightOffset() : 
-										AppMgr.getTextHeightOffset();
-					// Get next newStPt as we calculate the hotspot region for every UI object
-					newStPt = _guiObjsIDXMap.get(i).reCalcHotSpot(newStPt, txHtOffset, uiClkRect[0], uiClkRect[2]);		
-					lastObjWasMultiLine = _guiObjsIDXMap.get(i).isMultiLine();
-				}
-			}
-			//specify the end of this block of UI clickable coordinates based on if last object was multi-line or not
-			uiClkRect[3] = lastObjWasMultiLine ?  _guiObjsIDXMap.get(_guiObjsIDXMap.size()-1).getEnd().y : newStPt.y;
-			uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
-			// now address buttons' clickable regions	
-			if(_guiButtonIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(uiClkRect);	}			
-						
-		}// UI objects exist
-		// return final y coordinate
-		uiClkRect[3] += AppMgr.getRowStYOffset();
-		return uiClkRect[3];
-	}//_buildGUIObjsForMenu
-			
-	private myPointf[] _calcHotSpotDims(float xStart, float yEnd, float oldBtnLen, float btnLen, float btnHeight) {
-		myPointf _start = new myPointf(xStart+oldBtnLen, yEnd, 0);
-		myPointf _end = new myPointf(_start.x+btnLen, _start.y+ btnHeight, 0);
-		return new  myPointf[]  {_start, _end };
-	}
-	/**
-	 * set up boolean button rectangles using initialized truePrivFlagLabels and falsePrivFlagLabels
-	 * @param numBtns number of buttons to make
-	 */
-	private float _buildHotSpotRects(float[] uiClkRect){
-		float yOffset = AppMgr.getTextHeightOffset();
-		float maxBtnAreaLen = 0.98f * AppMgr.getMenuWidth(), maxBtnLen = .5f*maxBtnAreaLen;
-		float oldBtnLen = 0;
-		// toggle flags to control how next button is built
-		boolean lastBtnHalfStLine = false, startNewLine = true;
-		GUIObj_Button btnObj;
 		
-		myPointf[] hotSpotDims;
-		int lastBtnKey = -1;
-		// button dims keyed by button, will be used to set button hotspots
-		TreeMap<Integer, myPointf[]> hotSpotDimsMap = new TreeMap<Integer, myPointf[]>();
-		// build button dims
-		for(Map.Entry<Integer, GUIObj_Button> entry : _guiButtonIDXMap.entrySet()) {
-			btnObj = entry.getValue();
-			int btnKey = entry.getKey();
-			// max width possible for this button
-			float btnLen = btnObj.getMaxTextWidth();
-			float btnHeight = btnObj.getNumTextLines()*yOffset;
-			//either button of half length or full length.  if half length, might be changed to full length in next iteration.
-			if(btnLen > maxBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
-				btnLen = maxBtnAreaLen;
-				if(lastBtnHalfStLine){//make last button full size, and make this button on another line
-					// get reference to last button's dims to modify
-					myPointf[] lastHotSpotDims = hotSpotDimsMap.get(lastBtnKey);
-					lastHotSpotDims[1].x = lastHotSpotDims[0].x + maxBtnAreaLen;					
-					uiClkRect[3] += btnHeight;
-				}
-				hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], 0, btnLen, btnHeight);
-				uiClkRect[3] += btnHeight;
-				startNewLine = true;
-				lastBtnHalfStLine = false;
-			} else {//button len should be half width unless this button started a new line
-				btnLen = maxBtnLen;
-				if(startNewLine){//button is starting new line
-					lastBtnHalfStLine = true;
-					hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], 0, btnLen, btnHeight);
-					startNewLine = false;
-				} else {//should only get here if 2nd of two <1/2 width buttons in a row
-					lastBtnHalfStLine = false;
-					hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], oldBtnLen, btnLen, btnHeight);
-					uiClkRect[3] += btnHeight;
-					startNewLine = true;					
-				}
-			}
-			lastBtnKey = btnKey;
-			hotSpotDimsMap.put(btnKey, hotSpotDims);
-			oldBtnLen = btnLen;
-		}
-		if(lastBtnHalfStLine){//set last button full length if starting new line
-			// get reference to last button's dims to modify
-			myPointf[] lastHotSpotDims = hotSpotDimsMap.get(lastBtnKey);
-			lastHotSpotDims[1].x = lastHotSpotDims[0].x + maxBtnAreaLen;					
-			uiClkRect[3] += yOffset;
-		}
-		// assign hotspot dims to object
-		for(Map.Entry<Integer, myPointf[]> entry : hotSpotDimsMap.entrySet()) {
-			_guiButtonIDXMap.get(entry.getKey()).setHotSpot(entry.getValue());
-		}		
-		uiClkRect[3] += AppMgr.getRowStYOffset();
-		return uiClkRect[3];
-	}//_buildHotSpotRects
-
-//	private float _buildEntry(
-//			Map.Entry<Integer, Base_GUIObj> entry, 
-//			float[] uiClkRect, 
-//			float maxBtnAreaLen, 
-//			float maxBtnLen) {
-//		var btnObj = entry.getValue();
-//		int btnKey = entry.getKey();
-//		// max width possible for this button
-//		float btnLen = btnObj.getMaxTextWidth();
-//		float btnHeight = btnObj.getNumTextLines()*AppMgr.getTextHeightOffset();
-//		//either button of half length or full length.  if half length, might be changed to full length in next iteration.
-//		if(btnLen > maxBtnLen){//this button is bigger than halfsize - it needs to be made full size, and if last button was half size and start of line, make it full size as well
-//			btnLen = maxBtnAreaLen;
-//			if(lastBtnHalfStLine){//make last button full size, and make this button on another line
-//				// get reference to last button's dims to modify
-//				myPointf[] lastHotSpotDims = hotSpotDimsMap.get(lastBtnKey);
-//				lastHotSpotDims[1].x = lastHotSpotDims[0].x + maxBtnAreaLen;					
-//				uiClkRect[3] += btnHeight;
-//			}
-//			hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], 0, btnLen, btnHeight);
-//			uiClkRect[3] += btnHeight;
-//			startNewLine = true;
-//			lastBtnHalfStLine = false;
-//		} else {//button len should be half width unless this button started a new line
-//			btnLen = maxBtnLen;
-//			if(startNewLine){//button is starting new line
-//				lastBtnHalfStLine = true;
-//				hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], 0, btnLen, btnHeight);
-//				startNewLine = false;
-//			} else {//should only get here if 2nd of two <1/2 width buttons in a row
-//				lastBtnHalfStLine = false;
-//				hotSpotDims = _calcHotSpotDims(uiClkRect[0], uiClkRect[3], oldBtnLen, btnLen, btnHeight);
-//				uiClkRect[3] += btnHeight;
-//				startNewLine = true;					
-//			}
-//		}
-//		lastBtnKey = btnKey;
-//		hotSpotDimsMap.put(btnKey, hotSpotDims);
-//		oldBtnLen = btnLen;
-//		
-//		
-//		return uiClkRect[3];
-//	}
-	
-	/**
-	 * Set labels of GUI Switch objects for both true state and false state. Will be updated on next draw
-	 * @param idx idx of button label to set
-	 * @param tLbl new true label
-	 * @param fLbl new false label
-	 */
-	public void setGUISwitchLabels(int idx, String tLbl, String fLbl) {_guiSwitchIDXMap.get(idx).setBooleanLabelVals(new String[] {fLbl, tLbl}, false);}
-	
-	/**
-	 * Pass all flag states to initialized structures in instancing window handler
-	 */
-	public final void refreshPrivFlags() {		_privFlags.refreshAllFlags();	}
-	
-	///////////////////////////////
-	// UI object interaction
 	
 	/**
 	 * Called by _privFlags bool struct, to update _uiUpdateData when boolean flags have changed
