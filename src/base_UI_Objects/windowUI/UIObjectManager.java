@@ -306,6 +306,7 @@ public class UIObjectManager {
 	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
 		GUIObj_Params argObj = entry.getValue();
 		Base_GUIObj obj = null;
+		boolean isSwitch = false;
 		switch(argObj.objType) {
 			case IntVal : {
 				obj = new GUIObj_Int(guiObjIDX, argObj);
@@ -327,6 +328,7 @@ public class UIObjectManager {
 				// Always 2 state toggle that has a flags structure backing it.
 				obj = new GUIObj_Switch(guiObjIDX, argObj);
 				_guiSwitchIDXMap.put(((GUIObj_Switch)obj).getBoolFlagIDX(), (GUIObj_Switch)obj);
+				isSwitch = true;
 				break;}
 			case Button  :{
 				// 2+ state button that does not have a flags structure backing it
@@ -341,9 +343,14 @@ public class UIObjectManager {
 		}//switch
 		// Set renderer
 		_guiObjsIDXMap.put(guiObjIDX, obj);
+		if(!isSwitch) {_guiObjsNonSwitchIDXMap.put(guiObjIDX, obj);}
 		obj.setRenderer(_buildObjRenderer(obj, AppMgr.getUIOffset(), uiClkRect[2], argObj));		
 	}//_buildObj
 	
+	/**
+	 * Map of all non-switch objects, keyed by objIdx - TEMPORARY UNTIL MOVED CODE TO GUIObj_Collection
+	 */
+	private TreeMap<Integer,Base_GUIObj> _guiObjsNonSwitchIDXMap; 
 	/**
 	 * 
 	 * @param tmpUIObjMap
@@ -353,6 +360,7 @@ public class UIObjectManager {
 	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, TreeMap<String, GUIObj_Params> tmpUIBtnMap, float[] uiClkRect) {
 		//build ui objects
 		_guiObjsIDXMap = new TreeMap<Integer,Base_GUIObj>(); // list of modifiable gui objects
+		_guiObjsNonSwitchIDXMap = new TreeMap<Integer,Base_GUIObj>();
 		if(tmpUIObjMap.size() > 0) {
 
 			// build non-flag-backed switch objects
@@ -369,10 +377,7 @@ public class UIObjectManager {
 			// offset for each element
 			float yOffset = AppMgr.getTextHeightOffset();			
 			// main non-toggle switch button components
-			if(_guiFloatValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiFloatValIDXMap);	}
-			if(_guiIntValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiIntValIDXMap);	}
-			if(_guiLabelValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getLabelTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiLabelValIDXMap);	}
-			if(_guiButtonIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiButtonIDXMap);	}
+			if(_guiObjsNonSwitchIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiObjsNonSwitchIDXMap);	}
 			uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
 			// now address toggle buttons' clickable regions	
 			if(_guiSwitchIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiSwitchIDXMap);	}			
@@ -386,8 +391,9 @@ public class UIObjectManager {
 	/**
 	 * Recalculate the number of hotspot partitions for the object IDs in rowPartitionWidths to 
 	 * be equally spaced in uiObjAreaWidth (uiObjAreaWidth/currLineHotSpots.size())
-	 * @param ttlNumPartitions total # of partitions allowed in line
-	 * @param partitionWidths all the currently calculated partition counts
+	 * @param uiObjAreaWidth total width of menu area
+	 * @param rowPartitionWidths the calculated partition widths for all elements on the current, soon-to-be previous, row.
+	 * @param ttlRowWidth total width of all the existing partition components for the row (i.e. sum of rowPartitionWidths elements)
 	 */
 	private void _reCalcPartitions(Float uiObjAreaWidth, TreeMap<Base_GUIObj, Float> rowPartitionWidths, float ttlRowWidth) {
 		float ratio = uiObjAreaWidth/ttlRowWidth;
@@ -398,8 +404,9 @@ public class UIObjectManager {
 	/**
 	 * Build hot-spot rectangles for each rendered object based on number we wish per row and the dimensions of the object's data
 	 * @param ttlNumPartitions max number of partitions of the menu width we want to have for objects. They may take up multiple subdivisions
-	 * @param hotSpotStartXBorder
-	 * @param hotSpotStartY
+	 * @param hotSpotStartXBorder leftmost x edge of UI placement area
+	 * @param hotSpotStartY initial y location to place UI objects
+	 * @param _uiObjMap A map holding all the constructed ui objects to build the hotspots for
 	 * @return
 	 */
 	private float _buildHotSpotRects(int ttlNumPartitions, float yOffset, float hotSpotStartXBorder, float hotSpotStartY, TreeMap<Integer,? extends Base_GUIObj> _uiObjMap){
