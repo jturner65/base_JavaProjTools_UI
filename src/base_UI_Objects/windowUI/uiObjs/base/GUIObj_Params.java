@@ -1,6 +1,7 @@
 package base_UI_Objects.windowUI.uiObjs.base;
 
 import base_UI_Objects.windowUI.base.Base_DispWindow;
+import base_UI_Objects.windowUI.uiObjs.renderer.base.GUIObjRenderer_Flags;
 
 /**
  * This class holds the parameters used to describe/construct a gui object. Some of the values not be defined for certain gui types.
@@ -41,15 +42,9 @@ public class GUIObj_Params {
 	private String[] listVals = new String[0];
 	
 	/**
-	 * Format values to use to create and configure renderer
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-	 * 		idx 2 : Text should be centered (default is false)
-	 * 		idx 3 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 4 : Should have ornament
-	 * 		idx 5 : Ornament color should match label color 
+	 * The configuration flags that govern how the renderer will be constructed
 	 */
-	private boolean[] renderCreationFrmtVals;
+	private GUIObjRenderer_Flags rendererCfgFlags;
 	
 	/**
 	 * Boolean array of button type format values 
@@ -83,12 +78,14 @@ public class GUIObj_Params {
 	 * @param _objType
 	 * @param _boolFlagIDX
 	 * @param _configFlags configuration/behavior values
-	 * @param _renderCreationFrmtVals format values to describe and pass to renderer
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
+	 * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
+	 * 				- Should be multiline
+	 * 				- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 				- Text should be centered (default is false)
+	 * 				- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				- Should have ornament
+	 * 				- Ornament color should match label color 
 	 * @param _buttonFlags
 	 */
 	public GUIObj_Params(
@@ -97,7 +94,7 @@ public class GUIObj_Params {
 			GUIObj_Type _objType, 
 			int _boolFlagIDX, 
 			boolean[] _configFlags, 
-			boolean[] _renderCreationFrmtVals, 
+			GUIObjRenderer_Flags _rendererCfgFlags, 
 			boolean[] _buttonFlags) {
 		name = _name;
 		objIdx = _objIdx;
@@ -105,8 +102,7 @@ public class GUIObj_Params {
 		boolFlagIDX = _boolFlagIDX;
 		configFlags = new boolean[_configFlags.length];
 		System.arraycopy(_configFlags, 0, configFlags, 0, _configFlags.length);
-		renderCreationFrmtVals = new boolean[_renderCreationFrmtVals.length];
-		System.arraycopy(_renderCreationFrmtVals, 0, renderCreationFrmtVals, 0, _renderCreationFrmtVals.length);
+		rendererCfgFlags = new GUIObjRenderer_Flags(_rendererCfgFlags);
 		buttonFlags = new boolean[_buttonFlags.length];
 		System.arraycopy(_buttonFlags, 0, buttonFlags, 0, _buttonFlags.length);
 	}
@@ -116,15 +112,18 @@ public class GUIObj_Params {
 	 * @param _objType
 	 * @param _boolFlagIDX
 	 * @param _configFlags configuration/behavior values
-	 * @param _renderCreationFrmtVals format values to describe and pass to renderer
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Should have ornament
-	 * 		idx 2 : Ornament color should match label color 
-	 * 		idx 3 : Text should be centered (default is false)
+	 * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
+	 * 				- Should be multiline
+	 * 				- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 				- Text should be centered (default is false)
+	 * 				- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				- Should have ornament
+	 * 				- Ornament color should match label color 
 	 * NOTE : passes empty array to button creation flags
 	 */
-	public GUIObj_Params(int _objIdx, String _name, GUIObj_Type _objType, boolean[] _configFlags, boolean[] _renderCreationFrmtVals) {
-		this(_objIdx, _name, _objType, -1, _configFlags, _renderCreationFrmtVals, new boolean[0]);
+	public GUIObj_Params(int _objIdx, String _name, GUIObj_Type _objType, boolean[] _configFlags,	GUIObjRenderer_Flags _rendererCfgFlags) {
+		this(_objIdx, _name, _objType, -1, _configFlags, _rendererCfgFlags, new boolean[0]);
 	}
 	
 	/**
@@ -137,8 +136,7 @@ public class GUIObj_Params {
 		objType=otr.objType;
 		boolFlagIDX=otr.boolFlagIDX;
 		System.arraycopy(otr.minMaxMod, 0, minMaxMod, 0, otr.minMaxMod.length);		
-		renderCreationFrmtVals = new boolean[otr.renderCreationFrmtVals.length];
-		System.arraycopy(otr.renderCreationFrmtVals, 0, renderCreationFrmtVals, 0, otr.renderCreationFrmtVals.length);
+		rendererCfgFlags = new GUIObjRenderer_Flags(otr.rendererCfgFlags);
 		configFlags = new boolean[otr.configFlags.length];
 		System.arraycopy(otr.configFlags, 0, configFlags, 0, otr.configFlags.length);
 		buttonFlags = new boolean[otr.buttonFlags.length];
@@ -153,17 +151,23 @@ public class GUIObj_Params {
 	 * Set whether the text in this object should be centered or not
 	 * @param isCentered
 	 */
-	public final void setIsTextCentered(boolean isCentered) {
-		renderCreationFrmtVals[1]=isCentered;
-	}
-	
+	public final void setIsTextCentered(boolean isCentered) {rendererCfgFlags.setIsCentered(isCentered);}
+	/**
+	 * Whether or not this represents an object should be rendered as multi-line
+	 * @return
+	 */
+	public final boolean isMultiLine() {return rendererCfgFlags.getIsMultiLine();}
 	/**
 	 * Get the string labels the list/button object this construct describes use for data or state
 	 * @return
 	 */
 	public final String[] getListVals() {return listVals;}
 	
-	public boolean[] getRenderCreationFormatVal() {return renderCreationFrmtVals;}
+	/**
+	 * Return a copy of the renderer creation flags object
+	 * @return
+	 */
+	public GUIObjRenderer_Flags getRenderCreationFormatVal() {return new GUIObjRenderer_Flags(rendererCfgFlags);}
 	
 	public void setMinMaxMod(double[] _minMaxMod) {for(int i=0;i<_minMaxMod.length;++i) {minMaxMod[i] = _minMaxMod[i];}}
 	
@@ -218,10 +222,6 @@ public class GUIObj_Params {
 	 * @return
 	 */
 	public final boolean isButton() {return (buttonFlags.length!=0);}
-	/**
-	 * Whether or not this represents an object should be rendered as multi-line
-	 * @return
-	 */
-	public final boolean isMultiLine() {return renderCreationFrmtVals[0];}
+
 
 }// class GUIObj_Params

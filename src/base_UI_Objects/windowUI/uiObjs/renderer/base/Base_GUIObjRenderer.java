@@ -77,18 +77,10 @@ public abstract class Base_GUIObjRenderer {
 	protected final float yOffset;
 	
 	/**
-	 * Flags structure to monitor/manage configurable behavior. No child class should access these directly
+	 * The configuration flags that govern how this renderer will be constructed
 	 */
-	private int[] rndrConfigFlags;
-	public static final int
-		isMultiLineIDX 			= 0,			// Should be multiline
-		isOneObjPerLineIDX		= 1,			// One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-		centerTextIDX 			= 2,			// Text should be centered 
-		hasOutlineIDX 			= 3,			// An outline around the object should be rendered
-		hasOrnamentIDX 			= 4,			// Should have ornament
-		ornmntClrMatchIDX 		= 5;			// Ornament color should match label color
-	private static final int numConfigFlags = 6;	
-	
+	private GUIObjRenderer_Flags cfgFlags;
+		
 	/**
 	 * 
 	 * @param _ri render interface
@@ -110,7 +102,7 @@ public abstract class Base_GUIObjRenderer {
 		menuWidth = _menuWidth;
 		//_clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 0 (stroke)
 		int[][] _clrs = _argObj.getStrkFillTextColors();
-		boolean[] _guiFormatBoolVals = _argObj.getRenderCreationFormatVal();
+		cfgFlags = _argObj.getRenderCreationFormatVal();
 		
 		// stroke color, fill color, text color for label
 		rectStrkFillColor = new int[2][4];
@@ -125,9 +117,7 @@ public abstract class Base_GUIObjRenderer {
 		System.arraycopy(_clrs[textClrIDX], 0, textClr, 0, _clrs[textClrIDX].length);
 		//build prefix ornament to display
 		yOffset = 0.75f * (float) _off[1];
-		initConfigFlags();
-		int numToInit = (_guiFormatBoolVals.length < numConfigFlags ? _guiFormatBoolVals.length : numConfigFlags);
-		for(int i =0; i<numToInit;++i){ 	setConfigFlags(i,_guiFormatBoolVals[i]);	}	
+		
 		hlRectStrkFillColor = ri.getRndMatchedStrkFillClrs();
 		//make fill alpha a bit lighter
 		hlRectStrkFillColor[1][3] = 150;
@@ -137,38 +127,13 @@ public abstract class Base_GUIObjRenderer {
 		rendererType = _rendererType;
 	}//ctor
 	
-	private void initConfigFlags(){			rndrConfigFlags = new int[1 + numConfigFlags/32]; for(int i = 0; i<numConfigFlags; ++i){setConfigFlags(i,false);}	}
-	private boolean getConfigFlags(int idx){	int bitLoc = 1<<(idx%32);return (rndrConfigFlags[idx/32] & bitLoc) == bitLoc;}	
-	private void setConfigFlags(int idx, boolean val){
-		int flIDX = idx/32, mask = 1<<(idx%32);
-		rndrConfigFlags[flIDX] = (val ?  rndrConfigFlags[flIDX] | mask : rndrConfigFlags[flIDX] & ~mask);
-		switch (idx) {//special actions for each flag
-		case isMultiLineIDX			:{break;}
-		case isOneObjPerLineIDX		:{break;}
-		case centerTextIDX			:{break;}
-		case hasOutlineIDX			:{break;}
-		case hasOrnamentIDX			:{break;}
-		case ornmntClrMatchIDX 		:{break;}
-		}
-	}//setConfigFlags
-	
-	protected void setIsMultiLine(boolean isMultiLine) {setConfigFlags(isMultiLineIDX, isMultiLine);}
-	public boolean getIsMultiLine() {return getConfigFlags(isMultiLineIDX);}
-	
-	protected void setIsOneObjPerLine(boolean singlePerLine) {setConfigFlags(isOneObjPerLineIDX, singlePerLine);}
-	public boolean getIsOneObjPerLine() {return getConfigFlags(isOneObjPerLineIDX);}
-	
-	protected void setIsCentered(boolean isCentered) {setConfigFlags(centerTextIDX, isCentered);}
-	public boolean getIsCentered() {return getConfigFlags(centerTextIDX);}
-	
-	protected void setHasOutline(boolean hasOutline) {setConfigFlags(hasOutlineIDX, hasOutline);}
-	public boolean getHasOutline() {return getConfigFlags(hasOutlineIDX);}
-	
-	protected void setHasOrnament(boolean hasOrnament) {setConfigFlags(hasOrnamentIDX, hasOrnament);}
-	public boolean getHasOrnament() {return getConfigFlags(hasOrnamentIDX);}
-	
-	protected void setOrnmntClrMatch(boolean ornClr) {setConfigFlags(ornmntClrMatchIDX, ornClr);}
-	public boolean getOrnmntClrMatch() {return getConfigFlags(ornmntClrMatchIDX);}
+	public boolean getIsMultiLine() {return cfgFlags.getIsMultiLine();}
+	public boolean getIsOneObjPerLine() {return cfgFlags.getIsOneObjPerLine();}
+	public boolean getForceStartNewLine() {return cfgFlags.getForceStartNewLine();}
+	public boolean getIsCentered() {return cfgFlags.getIsCentered();}
+	public boolean getHasOutline() {return cfgFlags.getHasOutline();}
+	public boolean getHasOrnament() {return cfgFlags.getHasOrnament();}
+	public boolean getOrnmntClrMatch() {return cfgFlags.getOrnmntClrMatch();}
 	
 	/**
 	 * Verify passed coordinates are within this object's modifiable zone. If true then this object will be modified by UI actions

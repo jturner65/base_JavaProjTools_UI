@@ -403,6 +403,12 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 	public final boolean getIsOneObjPerLine() { return renderer.getIsOneObjPerLine();}
 	
 	/**
+	 * Return whether or not this object should fill the available menu space
+	 * @return
+	 */
+	public final boolean getForceStartNewLine() { return renderer.getForceStartNewLine();}
+	
+	/**
 	 * Set this UI object's value based on string tokens from file
 	 * @param toks
 	 */

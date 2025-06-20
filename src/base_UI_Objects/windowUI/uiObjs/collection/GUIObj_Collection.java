@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
+import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 
 //import java.util.ArrayList;
@@ -121,8 +122,6 @@ public class GUIObj_Collection {
 		_dbgColors[1][3]=150;	
 	}
 
-	
-	
 	/**
 	 * Build the renderer for a UI object 
 	 * @param _owner the Base_GUIObj that will own this renderer
@@ -153,7 +152,6 @@ public class GUIObj_Collection {
 	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
 		GUIObj_Params argObj = entry.getValue();
 		Base_GUIObj obj = null;
-		boolean isSwitch = false;
 		switch(argObj.objType) {
 			case IntVal : {
 				obj = new GUIObj_Int(guiObjIDX, argObj);
@@ -175,7 +173,6 @@ public class GUIObj_Collection {
 				// Always 2 state toggle that has a flags structure backing it.
 				obj = new GUIObj_Switch(guiObjIDX, argObj);
 				_guiSwitchIDXMap.put(((GUIObj_Switch)obj).getBoolFlagIDX(), (GUIObj_Switch)obj);
-				isSwitch = true;
 				break;}
 			case Button  :{
 				// 2+ state button that does not have a flags structure backing it
@@ -190,13 +187,9 @@ public class GUIObj_Collection {
 		}//switch
 		// Set renderer
 		_guiObjsIDXMap.put(guiObjIDX, obj);
-		if(!isSwitch) {_guiObjsNonSwitchIDXMap.put(guiObjIDX, obj);}
 		obj.setRenderer(_buildObjRenderer(obj, AppMgr.getUIOffset(), uiClkRect[2], argObj));			
 	}//_buildObj	
-	/**
-	 * Map of all non-switch objects, keyed by objIdx - TEMPORARY UNTIL MOVED CODE TO GUIObj_Collection
-	 */
-	private TreeMap<Integer,Base_GUIObj> _guiObjsNonSwitchIDXMap; 	
+ 	
 	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, float[] uiClkRect) {
 		//initialize arrays to hold idxs of int and float items being created.
 		_guiButtonIDXMap = new TreeMap<Integer,GUIObj_Button>();
@@ -206,7 +199,6 @@ public class GUIObj_Collection {
 		_guiLabelValIDXMap = new TreeMap<Integer, GUIObj_DispValue>();	
 		//build ui objects
 		_guiObjsIDXMap = new TreeMap<Integer,Base_GUIObj>(); // list of modifiable gui objects
-		_guiObjsNonSwitchIDXMap = new TreeMap<Integer,Base_GUIObj>();
 		if(tmpUIObjMap.size() > 0) {
 			//build objects
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
@@ -217,14 +209,11 @@ public class GUIObj_Collection {
 			// Assign hotspots 			
 			// offset for each element
 			float yOffset = AppMgr.getTextHeightOffset();
-			// main non-toggle switch button components
-			if(_guiObjsNonSwitchIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiObjsNonSwitchIDXMap);	}
-			uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
-			// now address toggle buttons' clickable regions	
-			if(_guiSwitchIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiSwitchIDXMap);	}			
+			// main object creation
+			if(_guiObjsIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiObjsIDXMap);	}
 		}// UI objects exist	
 		// return final y coordinate
-		uiClkRect[3] += AppMgr.getRowStYOffset();
+		uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
 		return uiClkRect[3];
 	}//_buildGUIObjsForMenu
 	
@@ -529,7 +518,18 @@ public class GUIObj_Collection {
 	
 	////////////////////////////////////////
 	/// End Mouse interaction
-	
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
+	public final void updateIntValFromExecCode(int idx, int value) {		_guiObjsIDXMap.get(idx).setVal(value);}
+	/**
+	 * These are called externally from execution code object to synchronize ui values that might change during execution
+	 * @param idx of particular type of object
+	 * @param value value to set
+	 */
+	public final void updateFloatValFromExecCode(int idx, float value) {	_guiObjsIDXMap.get(idx).setVal(value);}
 	
 	/***
 	 * Set UI values by object type, sending value to owner and updater
@@ -579,8 +579,21 @@ public class GUIObj_Collection {
 	public final void resetUIVals(boolean forceVals){
 		for(int i=0; i<_guiObjsIDXMap.size();++i){		_guiObjsIDXMap.get(i).resetToInit();		}
 		if (!forceVals) {			setAllUIWinVals();		}
-	}//resetUIVals	
-		
+	}//resetUIVals
+	
+	/**
+	 * this sets the value of a gui object from the data held in a string
+	 * @param str
+	 */
+	public final void setValFromFileStr(String str){
+		String[] toks = str.trim().split("\\|");
+		//window has no data values to load
+		if(toks.length==0){return;}
+		int UIidx = Integer.parseInt(toks[0].split("\\s")[1].trim());
+		_guiObjsIDXMap.get(UIidx).setValFromStrTokens(toks);
+		setUIWinVals(UIidx);//update window's values with UI construct's values
+	}//setValFromFileStr
+	
 	/**
 	 * set all window values for UI objects
 	 */
@@ -616,7 +629,312 @@ public class GUIObj_Collection {
 	 * @param fLbl new false label
 	 */
 	public void setGUISwitchLabels(int idx, String tLbl, String fLbl) {_guiSwitchIDXMap.get(idx).setBooleanLabelVals(new String[] {fLbl, tLbl}, false);}
-
+	
+	/**
+	 * sets flag values without calling instancing window flag handler - only for init!
+	 * @param idxs
+	 * @param val
+	 */
+	public final void initPassedSwitchesToTrue(int[] idxs) {
+		for(int idx=0;idx<idxs.length;++idx) {
+			GUIObj_Switch obj = _guiSwitchIDXMap.get(idxs[idx]);
+			if (obj != null) {	obj.setValueFromBoolean(true);}
+		}
+	}
+	
+	/**
+	 * Set switch values tjat are backed by a flags structure. Make sure UI object follows flag state if exists for this falg
+	 * @param idx
+	 * @param val
+	 */
+	public final void setPrivFlag(int idx, boolean val) {
+		GUIObj_Switch obj = _guiSwitchIDXMap.get(idx);
+		if (obj != null) {	obj.setValueFromBoolean(val);}
+	}
+	
+	
+	/**
+	 * Validate that the passed idx exists in the list of objects 
+	 * @param idx index of potential objects
+	 * @param len number of objects stored in object array
+	 * @param callFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether or not the passed index corresponds to a valid location in the array of UI objects
+	 */
+	private boolean _validateUIObjectIdx(int idx, int len, String callFunc, String desc) {
+		if (!MyMathUtils.inRange(idx, 0, len)){
+			uiObjMgr._dispErrMsg(callFunc, 
+				"Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
+			return false;
+		}		
+		return true;
+	}
+	
+	/**
+	 * Validate whether the passed UI object is a listVal object
+	 * @param obj the object to check
+	 * @param callFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether the passed UI object is a listVal object
+	 */
+	private boolean _validateIdxIsListObj(Base_GUIObj obj, String callFunc, String desc) {
+		if (obj.getObjType() != GUIObj_Type.ListVal) {
+			uiObjMgr._dispErrMsg(callFunc, 
+					"Attempting to access illegal List UI object to "+desc+" (object :"+obj.getName()+" is not a list object). Aborting.");
+			return false;
+		}
+		return true;
+	}	
+	
+	/**
+	 * Validate whether the passed UI object is a button object
+	 * @param obj the object to check
+	 * @param callFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether the passed UI object is a listVal object
+	 */
+	private boolean _validateIdxIsButtonObj(Base_GUIObj obj, String callFunc, String desc) {
+		if (obj.getObjType() != GUIObj_Type.Button) {
+			uiObjMgr._dispErrMsg(callFunc, 
+					"Attempting to access illegal Button object to "+desc+" (object :"+obj.getName()+" is not a button). Aborting.");
+			return false;
+		}
+		return true;
+	}	
+	
+	/**
+	 * Validate whether the passed UI object is a 2-state toggleable switch object backed by privFlags
+	 * @param obj the object to check
+	 * @param callFunc the name of the calling function (for error message) 
+	 * @param desc the process being attempted on the UI object (for error message)
+	 * @return whether the passed UI object is a listVal object
+	 */
+	private boolean _validateIdxIsSwitchObj(Base_GUIObj obj, String callFunc, String desc) {
+		if (obj.getObjType() != GUIObj_Type.Switch) {
+			uiObjMgr._dispErrMsg(callFunc, 
+					"Attempting to access illegal Switch object to "+desc+" (object :"+obj.getName()+" is not a 2-state switch). Aborting.");
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Validate that the passed list of values to be used for a toggle switch is the appropriate length (must be 2)
+	 * @param listVals
+	 * @param callFunc
+	 * @param desc
+	 * @return
+	 */
+	private boolean _validateSwitchListValues(String[] listVals, String callFunc, String desc) {
+		if(listVals.length != 2) {
+			uiObjMgr._dispErrMsg(callFunc, 
+					"Attempting to access illegal Switch object to "+desc+" (the length of the list of values (" + listVals.length+ ") must be 2). Aborting.");
+			return false;
+		}
+		return true;
+	}
 		
+	
+	/**
+	 * Sets the passed UI object's new max value
+	 * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes
+	 * @param maxVal
+	 * @return whether modification was performed or not
+	 */
+	public boolean setNewUIMaxVal(int idx, double maxVal) {
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIMaxVal", "set its max value")) {_guiObjsIDXMap.get(idx).setNewMax(maxVal);return true;}	
+		return false;
+	}
+	
+	
+	/**
+	 * Sets the passed UI object's new min value
+	 * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes.
+	 * @param minVal
+	 * @return whether modification was performed or not
+	 */
+	public boolean setNewUIMinVal(int idx, double minVal) {
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIMinVal", "set its min value")) {_guiObjsIDXMap.get(idx).setNewMin(minVal);return true;}
+		return false;
+	}
+	
+	/**
+	 * Force a value to be set in the numeric UI object at the passed idx
+	 * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes and returns -Double.MAX_VALUE
+	 * @param val
+	 * @return value being set, or -Double.MAX_VALUE if idx is out of range
+	 */
+	public double setNewUIValue(int idx, double val) {
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIValue", "set its value")) {return _guiObjsIDXMap.get(idx).setVal(val);}
+		return -Double.MAX_VALUE;
+	}		
+	
+	/**
+	 * Set the display text of the passed UI Object, either numeric or boolean
+	 * @param idx
+	 * @param isNumeric
+	 * @param str
+	 */
+	public void setNewUIDispText(int idx, boolean isNumeric, String str) {
+		if (isNumeric) {
+			if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
+			return;
+		} else {
+			//TODO support boolean UI objects
+			if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
+			return;
+		}
+	}
+	/**
+	 * Specify a string to display in the idx'th List UI Object, if it exists, and is a list object
+	 * @param idx
+	 * @param val
+	 * @return
+	 */
+	public int[] setDispUIListVal(int idx, String val) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setDispUIListVal", "display passed value")) || 
+				(!_validateIdxIsListObj(_guiObjsIDXMap.get(idx), "setDispUIListVal", "display passed value"))){return new int[0];}
+		return ((GUIObj_List) _guiObjsIDXMap.get(idx)).setValInList(val);
+	}
+	
+	/**
+	 * Set all the values in the uiObjIdx List UI Object, if it exists, and is a list object
+	 * @param uiObjIdx the list obj's index
+	 * @param values the list of values to set
+	 * @param setAsDefault whether or not these new values should be set as the default values
+	 * @return
+	 */
+	public int setAllUIListValues(int uiObjIdx, String[] values, boolean setAsDefault) {		
+		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUIListValues", "set/replace all list values")) || 
+				(!_validateIdxIsListObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUIListValues", "set/replace all list values"))){return -1;}
+		return ((GUIObj_List)_guiObjsIDXMap.get(uiObjIdx)).setListVals(values, setAsDefault);
+	}
+	
+	/**
+	 * Specify a state for a button to be in based on the passed string
+	 * @param idx
+	 * @param val
+	 * @return
+	 */
+	public int[] setDispUIButtonState(int idx, String val) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setDispUIButtonState", "display passed state")) || 
+				(!_validateIdxIsButtonObj(_guiObjsIDXMap.get(idx), "setDispUIButtonState", "display passed state"))){return new int[0];}
+		return ((GUIObj_Button) _guiObjsIDXMap.get(idx)).setStateByLabel(val);
+	}
+	
+	/**
+	 * Set all the state names in the uiObjIdx Button Object, if it exists, and is a button
+	 * @param uiObjIdx the button obj's index
+	 * @param values the new state names to set for the button
+	 * @param setAsDefault whether or not these new values should be set as the default states for this button
+	 * @return
+	 */
+	public int setAllUIButtonStates(int uiObjIdx, String[] values, boolean setAsDefault) {		
+		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUIButtonStates", "set/replace all button states")) || 
+				(!_validateIdxIsButtonObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUIButtonStates", "set/replace all button states"))){return -1;}
+		return ((GUIObj_Button)_guiObjsIDXMap.get(uiObjIdx)).setStateLabels(values, setAsDefault);
+	}	
+	
+	/**
+	 * Specify the state for a 2-state toggle switch object backed by privFlags to be in based on the passed string
+	 * @param uiObjIdx
+	 * @param val
+	 * @return
+	 */
+	public int[] setDispUISwitchState(int uiObjIdx, String val) {		
+		if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setDispUISwitchState", "display passed state")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(uiObjIdx), "setDispUISwitchState", "display passed state"))){return new int[0];}
+		return ((GUIObj_Switch)_guiObjsIDXMap.get(uiObjIdx)).setStateByLabel(val);
+	}
+	
+	/**
+	 * Set all the state names in the uiObjIdx 2-state toggle switch object backed by privFlags, if it exists, and is a button
+	 * @param uiObjIdx the button obj's index
+	 * @param values the new state names to set for the button
+	 * @param setAsDefault whether or not these new values should be set as the default states for this button
+	 * @return
+	 */
+	public int setAllUISwitchStates(int uiObjIdx, String[] values, boolean setAsDefault) {		
+		if (!_validateSwitchListValues(values, "setAllUISwitchStates","set/replace both switch states") ||			
+				(!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUISwitchStates", "set/replace both switch states")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUISwitchStates", "set/replace both switch states"))){return -1;}
+		return ((GUIObj_Switch)_guiObjsIDXMap.get(uiObjIdx)).setStateLabels(values, setAsDefault);
+	}
+		
+	/**
+	 * Retrieve the min value of a numeric UI object
+	 * @param idx index in numeric UI object array for the object to access.
+	 * @return min value allowed, or Double.MAX_VALUE if idx out of range
+	 */
+	public double getMinUIValue(int idx) {
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getMinUIValue","get its min value")) {return _guiObjsIDXMap.get(idx).getMinVal();}
+		return Double.MAX_VALUE;
+	}
+	
+	/**
+	 * Retrieve the max value of a numeric UI object
+	 * @param idx index in numeric UI object array for the object to access.
+	 * @return max value allowed, or -Double.MAX_VALUE if idx out of range
+	 */
+	public double getMaxUIValue(int idx) {
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getMaxUIValue","get its max value")){return _guiObjsIDXMap.get(idx).getMaxVal();}
+		return -Double.MAX_VALUE;
+	}
+	
+	/**
+	 * Retrieve the mod step value of a numeric UI object
+	 * @param idx index in numeric UI object array for the object to access.
+	 * @return mod value of UI object, or 0 if idx out of range
+	 */
+	public double getModStep(int idx) {
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getModStep", "get its mod value")) {return _guiObjsIDXMap.get(idx).getModStep();}
+		return 0;
+	}
+	
+	/**
+	 * Retrieve the value of a numeric UI object
+	 * @param idx index in numeric UI object array for the object to access.
+	 * @return the current value of the UI object, or -Double.MAX_VALUE if idx out of range
+	 */
+	public double getUIValue(int idx) {
+		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getUIValue", "get its value")) {return _guiObjsIDXMap.get(idx).getVal();}
+		return -Double.MAX_VALUE;
+	}
+	
+	/**
+	 * Get the string representation of the passed integer listIdx from the UI Object at UIidx
+	 * @param UIidx index in numeric UI object array for the object to access.
+	 * @param listIdx index in list of elements to access
+	 * @return the string value at the requested index, or "" if not a valid request
+	 */
+	public String getListValStr(int idx, int listIdx) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getListValStr", "get a list value at specified idx")) || 
+				(!_validateIdxIsListObj(_guiObjsIDXMap.get(idx), "getListValStr", "get a list value at specified idx"))){return "";}
+		return ((GUIObj_List)_guiObjsIDXMap.get(idx)).getListValStr(listIdx);
+	}
+	
+	/**
+	 * Get the string representation of the passed integer buttonIdx from the UI Object at UIidx
+	 * @param UIidx index in numeric UI object array for the object to access.
+	 * @param buttonStIdx index in list of elements to access
+	 * @return the string value at the requested index, or "" if not a valid request
+	 */
+	public String getButtonStateStr(int idx, int buttonStIdx) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getButtonStateStr", "get a button state at specified idx")) || 
+				(!_validateIdxIsButtonObj(_guiObjsIDXMap.get(idx), "getButtonStateStr", "get a button state at specified idx"))){return "";}
+		return ((GUIObj_Button)_guiObjsIDXMap.get(idx)).getStateLabel(buttonStIdx);
+	}
+		
+	/**
+	 * Get the string representation of the passed integer switchIdx from the UI Object at UIidx
+	 * @param UIidx index in numeric UI object array for the object to access.
+	 * @param switchStIdx either 0 or 1
+	 * @return the string value at the requested index, or "" if not a valid request
+	 */
+	public String getSwitchStateStr(int idx, int switchStIdx) {		
+		if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getSwitchStateStr", "get a switch state at specified idx")) || 
+				(!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(idx), "getSwitchStateStr", "get a switch state at specified idx"))){return "";}
+		return ((GUIObj_Button)_guiObjsIDXMap.get(idx)).getStateLabel(switchStIdx);
+	}
 	
 }//class GUIObj_Collection

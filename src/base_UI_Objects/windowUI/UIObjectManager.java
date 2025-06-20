@@ -25,6 +25,7 @@ import base_UI_Objects.windowUI.uiObjs.renderer.ButtonGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.MultiLineGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.SingleLineGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
+import base_UI_Objects.windowUI.uiObjs.renderer.base.GUIObjRenderer_Flags;
 import base_Utils_Objects.io.messaging.MessageObject;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 
@@ -121,35 +122,73 @@ public class UIObjectManager {
 	 */	
 	private static final boolean[] dfltUILabelBehaviorVals = new boolean[] {false,false,false,true};
 	/**
-	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-	 * 		idx 2 : Text should be centered (default is false)
-	 * 		idx 3 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 4 : Should have ornament
-	 * 		idx 5 : Ornament color should match label color 
+	 * Configuration structure of default renderer format values, if renderer configuration is not otherwise specified, for a single-line, non-switch/button object : 
+	 * 			- Should be multiline
+	 * 			- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 			- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 			- Text should be centered (default is false)
+	 * 			- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 			- Should have ornament
+	 * 			- Ornament color should match label color 
 	 */
-	private static final boolean[] dfltRndrCfgFmtVals =  new boolean[] {false,true,false,false,true,false};	
+	private static final GUIObjRenderer_Flags dfltRndrCfgFmtVals = new GUIObjRenderer_Flags();
+	static {
+		dfltRndrCfgFmtVals.setIsMultiLine(false);
+		dfltRndrCfgFmtVals.setIsOneObjPerLine(true);
+		dfltRndrCfgFmtVals.setForceStartNewLine(false);
+		dfltRndrCfgFmtVals.setIsCentered(false);
+		dfltRndrCfgFmtVals.setHasOutline(false);
+		dfltRndrCfgFmtVals.setHasOrnament(true);
+		dfltRndrCfgFmtVals.setOrnmntClrMatch(false);
+	}
+	
+	
 	/**
-	 * Boolean array of default UI format values, if formatting is not otherwise specified : 
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-	 * 		idx 2 : Text should be centered (default is false)
-	 * 		idx 3 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 4 : Should have ornament
-	 * 		idx 5 : Ornament color should match label color 
+	 * Configuration structure of default renderer format values, if renderer configuration is not otherwise specified, for a multi-line non-switch/button object : 
+	 * 			- Should be multiline
+	 * 			- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 			- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 			- Text should be centered (default is false)
+	 * 			- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 			- Should have ornament
+	 * 			- Ornament color should match label color 
 	 */
-	private static final boolean[] dfltMultiLineRndrCfgFmtVals =  new boolean[] {true,false,false,false,true,false};
+	//private static final boolean[] dfltMultiLineRndrCfgFmtVals =  new boolean[] {true,false,false,false,false,true,false};
+	private static final GUIObjRenderer_Flags dfltMultiLineRndrCfgFmtVals = new GUIObjRenderer_Flags();
+	static {
+		dfltMultiLineRndrCfgFmtVals.setIsMultiLine(true);
+		dfltMultiLineRndrCfgFmtVals.setIsOneObjPerLine(false);
+		dfltMultiLineRndrCfgFmtVals.setForceStartNewLine(false);
+		dfltMultiLineRndrCfgFmtVals.setIsCentered(false);
+		dfltMultiLineRndrCfgFmtVals.setHasOutline(false);
+		dfltMultiLineRndrCfgFmtVals.setHasOrnament(true);
+		dfltMultiLineRndrCfgFmtVals.setOrnmntClrMatch(false);
+	}
+	
+	
+	
 	/**
-	 * Boolean array of default UI format values for buttons, if formatting is not otherwise specified : 
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-	 * 		idx 2 : Text should be centered (default is false)
-	 * 		idx 3 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 4 : Should have ornament
-	 * 		idx 5 : Ornament color should match label color 
+	 * Configuration structure of default renderer format values, if renderer configuration is not otherwise specified, for a toggle switch/button backed by a flags structure
+	 * 			- Should be multiline
+	 * 			- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 			- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 			- Text should be centered (default is false)
+	 * 			- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 			- Should have ornament
+	 * 			- Ornament color should match label color 
 	 */
-	private static final boolean[] dfltBtnRndrCfgFmtVals =  new boolean[] {false,false,false,true,false,false};
+	//private static final boolean[] dfltBtnRndrCfgFmtVals =  new boolean[] {false,false,false,false,true,false,false};
+	private static final GUIObjRenderer_Flags dfltBtnRndrCfgFmtVals = new GUIObjRenderer_Flags();
+	static {
+		dfltBtnRndrCfgFmtVals.setIsMultiLine(false);
+		dfltBtnRndrCfgFmtVals.setIsOneObjPerLine(false);
+		dfltBtnRndrCfgFmtVals.setForceStartNewLine(false);
+		dfltBtnRndrCfgFmtVals.setIsCentered(false);
+		dfltBtnRndrCfgFmtVals.setHasOutline(true);
+		dfltBtnRndrCfgFmtVals.setHasOrnament(false);
+		dfltBtnRndrCfgFmtVals.setOrnmntClrMatch(false);
+	}	
+	
 	/**
 	 * Boolean array of default button type format values, if not otherwise specified 
 	 *  		idx 0: Whether this button should stay enabled until next draw frame                                                
@@ -261,7 +300,7 @@ public class UIObjectManager {
 		if (_uiUpdateData == null) {return;}
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();    
 		for (var entry : _guiIntValIDXMap.entrySet()) {			intValues.put(entry.getKey(), entry.getValue().getValueAsInt());}		
-		//TODO 
+		//TODO put non-switch button values into int map
 		//for (Integer idx : _guiButtonIDXs) {			intValues.put(idx, _guiObjsIDXMap.get(idx).getValueAsInt());}	
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		for (var entry :  _guiFloatValIDXMap.entrySet()) {		floatValues.put(entry.getKey(), entry.getValue().getValueAsFloat());}
@@ -448,8 +487,8 @@ public class UIObjectManager {
 			if(objPartWidth == null) {				objPartWidth = uiObjAreaWidth;			}
 			// Number of partitions required for object
 			int objNumParts = partitionWidths.get(objPartWidth);
-			// if only 1 per line, or if object is too wide for current line
-			if ((uiObj.getIsOneObjPerLine()) || (objPartWidth + currLineWidth > uiObjAreaWidth)) {
+			// if only 1 per line, if this object should force to start a new line,  or if object is too wide for current line
+			if ((uiObj.getIsOneObjPerLine()) || (uiObj.getForceStartNewLine()) || (objPartWidth + currLineWidth > uiObjAreaWidth)) {
 				// too big for current row, put on a new row.
 				if(currLineNumParts != ttlNumPartitions) {					
 					// if fewer current partitions than allowable number, repartition rowPerObjPartSize to fill row
@@ -552,16 +591,18 @@ public class UIObjectManager {
 	 * Build the GUIObj_Params that describes a integer object
 	 * @param initVal initial value for the object
 	 * @param name name of the object
-	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
+	 * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
+	 * 				- Should be multiline
+	 * 				- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 				- Text should be centered (default is false)
+	 * 				- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				- Should have ornament
+	 * 				- Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Label(int objIdx, double initVal, String name, boolean[] renderCreationFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, dfltUILabelBehaviorVals, renderCreationFmtVals);
+	public final GUIObj_Params uiObjInitAra_Label(int objIdx, double initVal, String name, GUIObjRenderer_Flags _rendererCfgFlags) {
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.LabelVal, dfltUILabelBehaviorVals, _rendererCfgFlags);
 		obj.initVal = initVal;
 		return obj;
 	}
@@ -635,16 +676,18 @@ public class UIObjectManager {
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
      *           	idx 3: object is read only
-	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
+	 * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
+	 * 				- Should be multiline
+	 * 				- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 				- Text should be centered (default is false)
+	 * 				- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				- Should have ornament
+	 * 				- Ornament color should match label color 
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals, boolean[] renderCreationFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.IntVal, configBoolVals, renderCreationFmtVals);
+	public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals, GUIObjRenderer_Flags _rendererCfgFlags) {
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.IntVal, configBoolVals, _rendererCfgFlags);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		return obj;
@@ -718,16 +761,18 @@ public class UIObjectManager {
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
      *           	idx 3: object is read only
-	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
+	 * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
+	 * 				- Should be multiline
+	 * 				- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 				- Text should be centered (default is false)
+	 * 				- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				- Should have ornament
+	 * 				- Ornament color should match label color 
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals, boolean[] renderCreationFmtVals) {
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.FloatVal, configBoolVals, renderCreationFmtVals);
+	public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String name, boolean[] configBoolVals, GUIObjRenderer_Flags _rendererCfgFlags) {
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.FloatVal, configBoolVals, _rendererCfgFlags);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		return obj;
@@ -802,16 +847,18 @@ public class UIObjectManager {
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
      *           	idx 3: object is read only
-	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
+	 * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
+	 * 				- Should be multiline
+	 * 				- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 				- Text should be centered (default is false)
+	 * 				- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				- Should have ornament
+	 * 				- Ornament color should match label color 
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] configBoolVals, boolean[] renderCreationFmtVals) {
-		return uiObjInitAra_List(objIdx, initVal, name, listElems, configBoolVals, renderCreationFmtVals);
+	public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String name, String[] listElems, boolean[] configBoolVals, GUIObjRenderer_Flags _rendererCfgFlags) {
+		return uiObjInitAra_List(objIdx, initVal, name, listElems, configBoolVals, _rendererCfgFlags);
 	}
 		
 	/**
@@ -824,17 +871,19 @@ public class UIObjectManager {
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
      *           	idx 3: object is read only
-	 * @param renderCreationFmtVals boolean array of renderer format values :(unspecified values default to false)
-	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color
+	 * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
+	 * 				- Should be multiline
+	 * 				- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				- Force this object to be on a new row/line (For side-by-side layouts)
+	 * 				- Text should be centered (default is false)
+	 * 				- Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				- Should have ornament
+	 * 				- Ornament color should match label color
 	 * @return
 	 */
-	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] configBoolVals, boolean[] renderCreationFmtVals) {
+	public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String name, String[] listElems, boolean[] configBoolVals, GUIObjRenderer_Flags _rendererCfgFlags) {
 		double[] minMaxMod = new double[] {0, listElems.length-1, 1};
-		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.ListVal, configBoolVals, renderCreationFmtVals);
+		GUIObj_Params obj = new GUIObj_Params(objIdx, name, GUIObj_Type.ListVal, configBoolVals, _rendererCfgFlags);
 		obj.setMinMaxMod(minMaxMod);
 		obj.initVal = initVal;
 		obj.setListVals(listElems);	
@@ -967,7 +1016,6 @@ public class UIObjectManager {
 	public GUIObj_Params buildDebugButton(int objIdx, String trueLabel, String falseLabel) {
 		return uiObjInitAra_Switch(objIdx, "Debug Button", trueLabel, falseLabel, Base_BoolFlags.debugIDX);
 	}
-		
 	
 	/**
 	 * Called by _privFlags bool struct, to update _uiUpdateData when boolean flags have changed
@@ -1249,7 +1297,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateUIObjectIdx(int idx, int len, String callFunc, String desc) {
 		if (!MyMathUtils.inRange(idx, 0, len)){
-			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
+			_dispErrMsg(callFunc, 
 				"Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
 			return false;
 		}		
@@ -1265,7 +1313,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateIdxIsListObj(Base_GUIObj obj, String callFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.ListVal) {
-			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
+			_dispErrMsg(callFunc, 
 					"Attempting to access illegal List UI object to "+desc+" (object :"+obj.getName()+" is not a list object). Aborting.");
 			return false;
 		}
@@ -1281,7 +1329,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateIdxIsButtonObj(Base_GUIObj obj, String callFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.Button) {
-			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
+			_dispErrMsg(callFunc, 
 					"Attempting to access illegal Button object to "+desc+" (object :"+obj.getName()+" is not a button). Aborting.");
 			return false;
 		}
@@ -1297,7 +1345,7 @@ public class UIObjectManager {
 	 */
 	private boolean _validateIdxIsSwitchObj(Base_GUIObj obj, String callFunc, String desc) {
 		if (obj.getObjType() != GUIObj_Type.Switch) {
-			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
+			_dispErrMsg(callFunc, 
 					"Attempting to access illegal Switch object to "+desc+" (object :"+obj.getName()+" is not a 2-state switch). Aborting.");
 			return false;
 		}
@@ -1313,14 +1361,13 @@ public class UIObjectManager {
 	 */
 	private boolean _validateSwitchListValues(String[] listVals, String callFunc, String desc) {
 		if(listVals.length != 2) {
-			msgObj.dispErrorMessage(_dispMsgClassName, callFunc, 
+			_dispErrMsg(callFunc, 
 					"Attempting to access illegal Switch object to "+desc+" (the length of the list of values (" + listVals.length+ ") must be 2). Aborting.");
 			return false;
 		}
 		return true;
 	}
 		
-	
 	/**
 	 * Sets the passed UI object's new max value
 	 * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes
@@ -1330,8 +1377,7 @@ public class UIObjectManager {
 	public boolean setNewUIMaxVal(int idx, double maxVal) {
 		if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIMaxVal", "set its max value")) {_guiObjsIDXMap.get(idx).setNewMax(maxVal);return true;}	
 		return false;
-	}
-	
+	}	
 	
 	/**
 	 * Sets the passed UI object's new min value
@@ -1522,8 +1568,6 @@ public class UIObjectManager {
 				(!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(idx), "getSwitchStateStr", "get a switch state at specified idx"))){return "";}
 		return ((GUIObj_Button)_guiObjsIDXMap.get(idx)).getStateLabel(switchStIdx);
 	}
-
-			
 		
 	/**
 	 * Get the _uiUpdateData used by the owner

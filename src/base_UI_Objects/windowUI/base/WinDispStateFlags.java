@@ -9,17 +9,17 @@ public class WinDispStateFlags extends Base_BoolFlags {
 	private final Base_DispWindow owner;
 	
 	public static final int 
-		showIDX 			= _numBaseFlags,				//whether or not to show this window
-		is3DWin 			= _numBaseFlags + 1,
+		showIDX 			    = _numBaseFlags,				//whether or not to show this window
+		is3DWin 			    = _numBaseFlags + 1,
 		canChgView			= _numBaseFlags + 2,			//view can change
 		isRunnable 			= _numBaseFlags + 3,			//runs a simulation
 		isCloseable			= _numBaseFlags + 4,			//window is able to be closed
 		hasScrollBars 		= _numBaseFlags + 5,			//this window has scroll bars (both vert and horizontal)
-		uiObjMod			= _numBaseFlags + 6,			//a ui object in this window has been modified
+		uiObjMod			    = _numBaseFlags + 6,			//a ui object in this window has been modified
 		useRndBtnClrs		= _numBaseFlags + 7,	
 		useCustCam			= _numBaseFlags + 8,			//whether or not to use a custom camera for this window
 		drawMseEdge			= _numBaseFlags + 9,			//whether or not to draw the mouse location/edge from eye/projection onto box
-		hasRightSideMenu	= _numBaseFlags + 10,			//whether this window has a right-side info menu overlay
+		hasRightSideMenu	    = _numBaseFlags + 10,			//whether this window has a right-side info menu overlay
 		showRightSideMenu	= _numBaseFlags + 11,			//whether this window is currently showing right side info menu, or if it is minimized
 		clearPrivBtns		= _numBaseFlags + 12;			//momentary priv buttons have been set, need to be cleared next frame
 				
@@ -206,15 +206,15 @@ public class WinDispStateFlags extends Base_BoolFlags {
 			owner.handleShowWinFromFlags(val);
 			break;}	
 		case is3DWin 			: {	break;}	
-		case isCloseable		: {	break;}	
+		case isCloseable		    : {	break;}	
 		case hasScrollBars 		: {	break;}	
 		case uiObjMod			: {	break;}			
 		case useRndBtnClrs		: { break;}
 		case useCustCam			: { break;}
-		case drawMseEdge		: { break;}
+		case drawMseEdge		    : { break;}
 		case clearPrivBtns		: { break;}
-		case hasRightSideMenu  : { break;}	//can drawn right side menu
-		case showRightSideMenu  : { 		
+		case hasRightSideMenu    : { break;}	//can drawn right side menu
+		case showRightSideMenu   : { 		
 			//modify the dimensions of the visible window based on whether the side bar menu is shown
 			if(getFlag(hasRightSideMenu)) {
 				owner.handleShowRtSideMenu(val);
