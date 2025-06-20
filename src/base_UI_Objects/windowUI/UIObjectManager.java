@@ -442,7 +442,8 @@ public class UIObjectManager {
 			// max width and height possible for this object
 			float objWidth = uiObj.getMaxTextWidth();
 			// Width of combined partitions required for object - smallest value larger than width
-			float objPartWidth = partitionWidths.ceilingKey(objWidth);
+			Float objPartWidth = partitionWidths.ceilingKey(objWidth);
+			if(objPartWidth == null) {				objPartWidth = uiObjAreaWidth;			}
 			// Number of partitions required for object
 			int objNumParts = partitionWidths.get(objPartWidth);
 			// if only 1 per line, or if object is too wide for current line
