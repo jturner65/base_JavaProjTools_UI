@@ -360,21 +360,22 @@ public class UIObjectManager {
 				int i = entry.getValue().objIdx;
 				_buildObj(i, entry, uiClkRect);		
 			}
-
 			// build button objects 
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIBtnMap.entrySet()) {
 				int i = entry.getValue().objIdx;
 				_buildObj(i, entry, uiClkRect);		
 			}
 			
+			// offset for each element
+			float yOffset = AppMgr.getTextHeightOffset();			
 			// main non-toggle switch button components
-			if(_guiFloatValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiFloatValIDXMap);	}
-			if(_guiIntValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiIntValIDXMap);	}
-			if(_guiLabelValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiLabelValIDXMap);	}
-			if(_guiButtonIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiButtonIDXMap);	}
+			if(_guiFloatValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiFloatValIDXMap);	}
+			if(_guiIntValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiIntValIDXMap);	}
+			if(_guiLabelValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getLabelTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiLabelValIDXMap);	}
+			if(_guiButtonIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiButtonIDXMap);	}
 			uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
 			// now address toggle buttons' clickable regions	
-			if(_guiSwitchIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiSwitchIDXMap);	}			
+			if(_guiSwitchIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiSwitchIDXMap);	}			
 						
 		}// UI objects exist
 		// return final y coordinate
@@ -495,7 +496,7 @@ public class UIObjectManager {
 		// Map-nanigans!
 		hotSpotObjDimsMap.forEach((k,v)-> k.setHotSpot(v));
 
-		hotSpotStartY += AppMgr.getRowStYOffset();
+		//hotSpotStartY += AppMgr.getRowStYOffset();
 		return hotSpotStartY;
 	}//_buildHotSpotRects
 

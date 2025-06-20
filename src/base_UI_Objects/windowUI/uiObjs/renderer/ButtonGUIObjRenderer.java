@@ -1,6 +1,5 @@
 package base_UI_Objects.windowUI.uiObjs.renderer;
 
-import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.GUIObj_Button;
@@ -96,18 +95,6 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	@Override
 	protected void _drawUIDataCentered(boolean isClicked) {	_drawButtonEdges(isClicked);	ri.showCenteredText(owner.getValueAsString(), _getCenterX() , 0);}
 	
-	/**
-	 * TODO come up with a mechanism to perform this - it must be aware and able to modify previous button's hotspot. 
-	 * For now, this is done in UIObjectManager. Or, conversely, get rid of this being in the renderer
-	 * 
-	 * @param newStartPoint new upper left point proposal.
-	 * @param lineHeight the height of a single line of text
-	 * @param menuStartX the x coord of the start of the menu region
-	 * @param menuWidth 
-	 * @return the next object's new start location
-	 */
-	@Override
-	public final myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {	return new myPointf(newStart);}
 	/**
 	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
 	 * @return

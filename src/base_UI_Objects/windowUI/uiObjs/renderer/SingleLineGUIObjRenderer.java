@@ -1,6 +1,5 @@
 package base_UI_Objects.windowUI.uiObjs.renderer;
 
-import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
@@ -53,24 +52,7 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 		if(isClicked) {			return hlRectStrkFillColor;		}
 		return rectStrkFillColor;
 	}
-	
-	/**
-	 * Recalculate the lower right location of the hotspot for the owning UI object.
-	 * Single line always has same width.
-	 * @param newStartPoint new upper left point
-	 * @param lineHeight the height of a single line of text
-	 * @param menuStartX the x coord of the start of the menu region
-	 * @param menuWidth the possible display with for the object
-	 * @return the next object's new start location
-	 */
-	@Override
-	public myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {
-		start = new myPointf(newStart);
-		end = new myPointf(menuWidth, start.y + lineHeight, start.z);
-		// return the next object's start location
-		return new myPointf(start.x, end.y, start.z);	
-	}
-	
+
 	/**
 	 * Update renderer when the state/label values change in the underlying UI object
 	 */

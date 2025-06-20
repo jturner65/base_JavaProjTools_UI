@@ -278,16 +278,6 @@ public abstract class Base_GUIObjRenderer {
 	protected final float _getCenterX() {return (end.x - start.x)/2.0f;}
 	
 	/**
-	 * Recalculate the lower right location of the hotspot for the owning UI object
-	 * @param newStartPoint new upper left point
-	 * @param lineHeight the height of a single line of text
-	 * @param menuStart the x coord of the start of the menu region
-	 * @param menuWidth the possible display with for the object
-	 * @return the next object's new start location
-	 */
-	public abstract myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth);
-	
-	/**
 	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
 	 * @return
 	 */

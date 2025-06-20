@@ -136,23 +136,23 @@ public class GUIObj_Collection {
 				int i = entry.getValue().objIdx;
 				_buildObj(i, entry, uiClkRect);		
 			}
-		}// UI objects exist
-		// Objects are created by here and assigned renderers
-		// Assign hotspots 		
-		
-		// main non-toggle switch button components
-		if(_guiFloatValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiFloatValIDXMap);	}
-		if(_guiIntValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiIntValIDXMap);	}
-		if(_guiLabelValIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiLabelValIDXMap);	}
-		if(_guiButtonIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiButtonIDXMap);	}
-		uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
-		// now address toggle buttons' clickable regions	
-		if(_guiSwitchIDXMap.size() > 0) {			uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiSwitchIDXMap);	}			
-		
+			// Objects are created by here and assigned renderers
+			// Assign hotspots 			
+			// offset for each element
+			float yOffset = AppMgr.getTextHeightOffset();
+			// main non-toggle switch button components
+			if(_guiFloatValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiFloatValIDXMap);	}
+			if(_guiIntValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiIntValIDXMap);	}
+			if(_guiLabelValIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, AppMgr.getLabelTextHeightOffset(), uiClkRect[0], uiClkRect[3], _guiLabelValIDXMap);	}
+			if(_guiButtonIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiButtonIDXMap);	}
+			uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
+			// now address toggle buttons' clickable regions	
+			if(_guiSwitchIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiSwitchIDXMap);	}			
+		}// UI objects exist	
 		// return final y coordinate
 		uiClkRect[3] += AppMgr.getRowStYOffset();
 		return uiClkRect[3];
-	}
+	}//_buildGUIObjsForMenu
 	/**
 	 * Recalculate the number of hotspot partitions for the object IDs in rowPartitionWidths to 
 	 * be equally spaced in uiObjAreaWidth (uiObjAreaWidth/currLineHotSpots.size())

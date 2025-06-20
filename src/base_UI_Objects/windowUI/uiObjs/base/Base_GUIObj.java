@@ -385,20 +385,6 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 	public final boolean isMultiLine() {return renderer.getIsMultiLine();}
 	
 	/**
-	 * Recalculate the renderer-managed interactive hotspot for this object
-	 * @param newStart the currently appropriate start location (upper left corner) for this hotspot
-	 * @param lineHeight the height of a line of text
-	 * @param menuStartX the x location on the screen for the beginning of the "menu" (i.e. UI region). 
-	 * For multi-line UI objects that may need to pop down to the next line
-	 * @param menuWidth the width of the "menu" (i.e. UI region). Used to test if a multi-line UI object will
-	 * fit in the desired menu area.
-	 * @return the next object's new start location
-	 */
-	public final myPointf reCalcHotSpot(myPointf newStart, float lineHeight, float menuStartX, float menuWidth) {
-		return renderer.reCalcHotSpot(newStart, lineHeight, menuStartX, menuWidth);
-	}
-	
-	/**
 	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
 	 * @return
 	 */
