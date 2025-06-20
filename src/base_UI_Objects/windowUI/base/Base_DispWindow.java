@@ -368,7 +368,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * 				the final element is integer flag idx 
 	 */
 	@Override
-	public final void setupOwnerGUIBtnsAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
+	public final void setupOwnerGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
 		// build the button region, using the existing size of the non-button map as a start index
 		setupGUIBoolSwitchAras(firstIdx, tmpUIBoolSwitchObjMap);
 	}

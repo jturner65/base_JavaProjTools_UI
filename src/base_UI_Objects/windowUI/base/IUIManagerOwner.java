@@ -69,7 +69,7 @@ public interface IUIManagerOwner {
 	 * @return
 	 */
 	public UIDataUpdater getUIDataUpdater();
-	
+
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
 	 * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
@@ -88,7 +88,7 @@ public interface IUIManagerOwner {
 	 * 				idx 2 : Text should be centered (default is false)
 	 * 				idx 3 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
 	 * 				idx 4 : Should have ornament
-	 * 				idx 5 : Ornament color should match label color 
+	 * 				idx 5 : Ornament color should match label color
 	 */
 	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap);
 	
@@ -101,7 +101,7 @@ public interface IUIManagerOwner {
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	public void setupOwnerGUIBtnsAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
+	public void setupOwnerGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
 	
 	/**
 	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)

@@ -223,11 +223,13 @@ public class UIObjectManager {
 		// ui object values - keyed by object idx, value is object array of describing values
 		TreeMap<String, GUIObj_Params> tmpUIObjMap = new TreeMap<String, GUIObj_Params>();
 		//  Get configurations for all UI objects from owner implementation.
+		//need to use the maximum object index in the map, not the size, since there may be some object IDs not in the map
 		owner.setupOwnerGUIObjsAras(tmpUIObjMap);
 		// ui button values : map keyed by objId of object arrays : {true label,false label, index in application}
 		TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap = new TreeMap<String, GUIObj_Params>();
 		//  Get configurations for all UI buttons from owner implementation.
-		owner.setupOwnerGUIBtnsAras(tmpUIObjMap.size(), tmpUIBoolSwitchObjMap);
+		owner.setupOwnerGUIBoolSwitchAras(tmpUIObjMap.size(), tmpUIBoolSwitchObjMap);
+	
 		//TODO merge this to build gui objs and priv buttons together (i.e. privButtons are gui objects)
 		// Build UI Objects
 		_uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjMap, tmpUIBoolSwitchObjMap, _uiClkCoords);
@@ -368,7 +370,7 @@ public class UIObjectManager {
 				int i = entry.getValue().objIdx;
 				_buildObj(i, entry, uiClkRect);		
 			}
-			// build button objects 
+			// build switch/button objects 
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIBtnMap.entrySet()) {
 				int i = entry.getValue().objIdx;
 				_buildObj(i, entry, uiClkRect);		
@@ -1612,7 +1614,7 @@ public class UIObjectManager {
 	 * @return idx of object that mouse resides in, or -1 if none
 	 */
 	private final int _checkInAllObjs(int mouseX, int mouseY) {
-		for(int j=0; j<_guiObjsIDXMap.size(); ++j){if(_guiObjsIDXMap.get(j).checkIn(mouseX, mouseY)){ return j;}}
+		for(Map.Entry<Integer, Base_GUIObj> entry : _guiObjsIDXMap.entrySet()) {	if(entry.getValue().checkIn(mouseX, mouseY)){ return entry.getKey();}}
 		return -1;
 	}	
 	
@@ -1725,10 +1727,10 @@ public class UIObjectManager {
 		ri.pushMatState();
 		//draw UI Objs
 		if(isDebug) {
-			for(int i =0; i<_guiObjsIDXMap.size(); ++i){_guiObjsIDXMap.get(i).drawDebug();}
+			for(Map.Entry<Integer, Base_GUIObj> entry : _guiObjsIDXMap.entrySet()) {	entry.getValue().drawDebug();}
 			_drawUIRect();
 		} else {			
-			for(int i =0; i<_guiObjsIDXMap.size(); ++i){_guiObjsIDXMap.get(i).draw();}
+			for(Map.Entry<Integer, Base_GUIObj> entry : _guiObjsIDXMap.entrySet()) {	entry.getValue().draw();}
 		}	
 		ri.popMatState();	
 	}//drawAllGuiObjs
