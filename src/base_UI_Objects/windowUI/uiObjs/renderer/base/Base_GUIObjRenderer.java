@@ -43,15 +43,6 @@ public abstract class Base_GUIObjRenderer {
 	protected int[][] rectStrkFillColor;
 
 	/**
-	 * Highlight fill color when selected (for bounding box)
-	 */
-	//protected int[] hlFillClr = new int[] {220, 255, 255, 255};
-	/**
-	 * Highlight stroke color when selected (for bounding box edge)
-	 */
-	//protected int[] hlStrkClr = new int[] {150, 150, 150,255};
-
-	/**
 	 * Highlight stroke(idx 0) and fill(idx 1) colors (for when selected), short cut object for drawing bounding box
 	 */
 	protected int[][] hlRectStrkFillColor;
@@ -91,11 +82,12 @@ public abstract class Base_GUIObjRenderer {
 	private int[] rndrConfigFlags;
 	public static final int
 		isMultiLineIDX 			= 0,			// Should be multiline
-		centerTextIDX 			= 1,			// Text should be centered 
-		hasOutlineIDX 			= 2,			// An outline around the object should be rendered
-		hasOrnamentIDX 			= 3,			// Should have ornament
-		ornmntClrMatchIDX 		= 4;			// Ornament color should match label color
-	private static final int numConfigFlags = 5;	
+		isOneObjPerLineIDX		= 1,			// One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+		centerTextIDX 			= 2,			// Text should be centered 
+		hasOutlineIDX 			= 3,			// An outline around the object should be rendered
+		hasOrnamentIDX 			= 4,			// Should have ornament
+		ornmntClrMatchIDX 		= 5;			// Ornament color should match label color
+	private static final int numConfigFlags = 6;	
 	
 	/**
 	 * 
@@ -152,6 +144,7 @@ public abstract class Base_GUIObjRenderer {
 		rndrConfigFlags[flIDX] = (val ?  rndrConfigFlags[flIDX] | mask : rndrConfigFlags[flIDX] & ~mask);
 		switch (idx) {//special actions for each flag
 		case isMultiLineIDX			:{break;}
+		case isOneObjPerLineIDX		:{break;}
 		case centerTextIDX			:{break;}
 		case hasOutlineIDX			:{break;}
 		case hasOrnamentIDX			:{break;}
@@ -161,6 +154,9 @@ public abstract class Base_GUIObjRenderer {
 	
 	protected void setIsMultiLine(boolean isMultiLine) {setConfigFlags(isMultiLineIDX, isMultiLine);}
 	public boolean getIsMultiLine() {return getConfigFlags(isMultiLineIDX);}
+	
+	protected void setIsOneObjPerLine(boolean singlePerLine) {setConfigFlags(isOneObjPerLineIDX, singlePerLine);}
+	public boolean getIsOneObjPerLine() {return getConfigFlags(isOneObjPerLineIDX);}
 	
 	protected void setIsCentered(boolean isCentered) {setConfigFlags(centerTextIDX, isCentered);}
 	public boolean getIsCentered() {return getConfigFlags(centerTextIDX);}

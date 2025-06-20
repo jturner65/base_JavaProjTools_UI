@@ -75,8 +75,5 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * Update renderer when the state/label values change in the underlying UI object
 	 */
 	@Override	
-	public final void updateFromObject() {
-		
-	}
-
+	public final void updateFromObject() {}
 }//class SingleLineGUIObjRenderer

@@ -43,10 +43,11 @@ public class GUIObj_Params {
 	/**
 	 * Format values to use to create and configure renderer
 	 * 		idx 0 : Should be multiline
-	 * 		idx 1 : Text should be centered (default is false)
-	 * 		idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 		idx 3 : Should have ornament
-	 * 		idx 4 : Ornament color should match label color 
+	 * 		idx 1 : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 		idx 2 : Text should be centered (default is false)
+	 * 		idx 3 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 		idx 4 : Should have ornament
+	 * 		idx 5 : Ornament color should match label color 
 	 */
 	private boolean[] renderCreationFrmtVals;
 	

@@ -178,12 +178,13 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *          - A boolean array of renderer format values :(unspecified values default to false)
+	 *          - A boolean array of renderer format values :(unspecified values default to false) - Behavior Boolean array must also be provided!
 	 * 				idx 0 : Should be multiline
-	 * 				idx 1 : Text should be centered (default is false)
-	 * 				idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 				idx 3 : Should have ornament
-	 * 				idx 4 : Ornament color should match label color
+	 * 				idx 1 : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				idx 2 : Text should be centered (default is false)
+	 * 				idx 3 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				idx 4 : Should have ornament
+	 * 				idx 5 : Ornament color should match label color 
 	 */
 	@Override
 	protected final void setupGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap) {		
@@ -209,12 +210,13 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *          - A boolean array of renderer format values :(unspecified values default to false)
+	 *          - A boolean array of renderer format values :(unspecified values default to false) - Behavior Boolean array must also be provided!
 	 * 				idx 0 : Should be multiline
-	 * 				idx 1 : Text should be centered (default is false)
-	 * 				idx 2 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 				idx 3 : Should have ornament
-	 * 				idx 4 : Ornament color should match label color
+	 * 				idx 1 : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+	 * 				idx 2 : Text should be centered (default is false)
+	 * 				idx 3 : Object should be rendered with outline (default for btns is true, for non-buttons is false)
+	 * 				idx 4 : Should have ornament
+	 * 				idx 5 : Ornament color should match label color 
 	 */
 	protected abstract void setupGUIObjsAras_Sim(TreeMap<String, GUIObj_Params> tmpUIObjMap);
 
