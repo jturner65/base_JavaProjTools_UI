@@ -241,18 +241,19 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Run_Experiment", "Experimenting", "Run Experiment", conductExpIDX));  
 		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "Sweep_Expermient", "Sweep "+ getSweepFieldName()+" Experiment", "Run "+getSweepFieldName()+" Experiment", conductSweepExpIDX));  
 
-		setupGUIBtnAras_Sim(tmpUIBoolSwitchObjMap);
+		setupGUIBoolSwitchAras_Sim(idx, tmpUIBoolSwitchObjMap);
 	}//setupGUIObjsAras
 
 	/**
-	 * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing sim windows to add to button region
-	 * USE tmpUIBoolSwitchObjMap.size() for start idx
+	 * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing windows to add to button region
+	 * @param firstIdx : the first index to use in the map/as the objIdx
 	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
-	 * 				the first element is true label
-	 * 				the second element is false label
-	 * 				the third element is integer flag idx 
+	 * 				the first element is the object index
+	 * 				the second element is true label
+	 * 				the third element is false label
+	 * 				the final element is integer flag idx 
 	 */
-	protected abstract void setupGUIBtnAras_Sim(TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
+	protected abstract void setupGUIBoolSwitchAras_Sim(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
 	
 	/**
 	 * Return the list to use for sim layout
