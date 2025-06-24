@@ -2,7 +2,7 @@ package testProject.ui;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
@@ -104,7 +104,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	 * 				idx 5 : Ornament color should match label color 
 	 */
 	@Override
-	protected final void setupGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap){
+	protected final void setupGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap){
 		//keyed by object idx (uiXXXIDX), entries are lists of values to use for list select ui objects
 		tmpUIObjMap.put("gIDX_FloatVal1", uiMgr.uiObjInitAra_Float(gIDX_FloatVal1, new double[]{0,1.0f,.0001f}, floatVal1, "Float Value 1"));   	                                                            
 		tmpUIObjMap.put("gIDX_IntVal1", uiMgr.uiObjInitAra_Int(gIDX_IntVal1, new double[]{1,10,1.0f}, 1.0, "Int Value 1"));   						                                                        
@@ -125,7 +125,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
 	 * 				the third element is integer flag idx 
 	 */
 	@Override
-	protected final void setupGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
+	protected final void setupGUIBoolSwitchAras(int firstIdx, LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
 		int idx=firstIdx;
 		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Debugging", "Enable Debug"));
 		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button1_IDX","Button 1 On", "Button 1 Off", button1_IDX));
@@ -274,4 +274,10 @@ public class UI_TestWindow2D extends Base_DispWindow {
 
 	@Override
 	protected void handleDispFlagsDebugMode_Indiv(boolean val) {}
+
+    @Override
+    protected boolean handleMouseWheel_Indiv(int ticks, float mult) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }//class UI_TestWindow2D

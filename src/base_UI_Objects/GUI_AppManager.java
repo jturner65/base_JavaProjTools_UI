@@ -552,9 +552,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	public final float getClkBoxDim() {		return getTextSize();}
 	
 	/**
-	 * Height of a line of text. Also used as a width of an average character
-	 */
-	public final float getTextHeightOffset() {		return 1.25f * getTextSize();}
+     * Height of a line of text 1.5 spaced
+     */
+    public final float getTextHeightOffset() {      return 1.25f * getTextSize();}
+    /**
+     * Height of a line of text single spaced
+     */
+    public final float getCloseTextHeightOffset() {      return 1.1f * getTextSize();}
+    /**
+     * Height of a toggle switch button
+     */
+    public final float getSwitchTextHeightOffset(){      return 1.65f * getTextSize();}	
 	
 	/**
 	 * Based on textSize but slightly smaller for purely label/read only text
@@ -580,20 +588,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	}
 
 	/**
-	 * X Dimension offset for text
-	 */
-	public final float getXOffset() {		return getTextHeightOffset();}
-
-	/**
 	 * Half of X Dimension offset for text
 	 */
-	public final float getXOffsetHalf() {		return 0.5f * getXOffset();}
+	public final float getXOffsetHalf() {		return 0.5f * getTextHeightOffset();}
 	
 	
 	/**
 	 * Offset for starting a new row in Y
 	 */
-	public final float getRowStYOffset() {	return 0.15f * getTextHeightOffset();}
+	public final float getRowStYOffset() {	return 0.25f * getTextHeightOffset();}
 	
 	/**
 	 * The Y distance between 2 successive buttons
@@ -605,7 +608,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
 	 * array of x,y offsets for UI objects that have a prefix graphical element
 	 * @return
 	 */
-	public final double[] getUIOffset() {		return new double[] { getXOffset(), getTextHeightOffset() };}	
+	public final double[] getUIOffset() {		return new double[] { getTextHeightOffset(), getTextHeightOffset() };}	
 	
 	///////////////////////////////////////
 	//End UI text/display dims based on text size	
@@ -1169,7 +1172,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
 					msgObj.dispConsoleErrorMessage("GUI_AppManager", "handleFileCmd", "Selecting Output not implemented currently.");
 					break;}
 			}
-			getSideBarMenuWindow().hndlMouseRel_Indiv();
+			//TODO: why this?
+			//getSideBarMenuWindow().hndlMouseRel_Indiv();
 		}
 	}//handleFileCmd
 	

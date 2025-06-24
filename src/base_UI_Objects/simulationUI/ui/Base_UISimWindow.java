@@ -1,6 +1,6 @@
 package base_UI_Objects.simulationUI.ui;
 
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
@@ -188,7 +188,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 * 				- Ornament color should match label color 
 	 */
 	@Override
-	protected final void setupGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap) {		
+	protected final void setupGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap) {		
 		String[] simLayoutToUseList = getSimLayoutToUseList();
 		
 		tmpUIObjMap.put("gIDX_LayoutToUse", uiMgr.uiObjInitAra_List(gIDX_LayoutToUse, 0.0, "Sim Layout To Use", simLayoutToUseList));          				
@@ -220,7 +220,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 * 				- Should have ornament
 	 * 				- Ornament color should match label color 
 	 */
-	protected abstract void setupGUIObjsAras_Sim(TreeMap<String, GUIObj_Params> tmpUIObjMap);
+	protected abstract void setupGUIObjsAras_Sim(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap);
 
 	/**
 	 * Build UI button objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
@@ -232,7 +232,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 * 				the final element is integer flag idx 
 	 */
 	@Override
-	protected final void setupGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {		
+	protected final void setupGUIBoolSwitchAras(int firstIdx, LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {		
 
 		//By here all non-button objects should be created already
 		//TODO use the same obj map as tmpUIObjMap
@@ -255,7 +255,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	protected abstract void setupGUIBoolSwitchAras_Sim(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
+	protected abstract void setupGUIBoolSwitchAras_Sim(int firstIdx, LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
 	
 	/**
 	 * Return the list to use for sim layout

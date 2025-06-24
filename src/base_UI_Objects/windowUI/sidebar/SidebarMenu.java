@@ -2,7 +2,7 @@ package base_UI_Objects.windowUI.sidebar;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
@@ -57,7 +57,7 @@ public class SidebarMenu extends Base_DispWindow{
 	/**
 	 * Size of button label on creation TODO get rid of this value in favor of live updates
 	 */
-	private float initBtnLblYOff;
+	private final float initBtnLblYOff;
 	
 	/**
 	 * 
@@ -141,7 +141,7 @@ public class SidebarMenu extends Base_DispWindow{
 	 * 				- Ornament color should match label color 
 	 */
 	@Override
-	protected final void setupGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap) {}
+	protected final void setupGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap) {}
 	
 	/**
 	 * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing DES sim windows to add to button region
@@ -151,7 +151,7 @@ public class SidebarMenu extends Base_DispWindow{
 	 * 				the third element is integer flag idx 
 	 */
 	@Override
-	protected final void setupGUIBoolSwitchAras(int firstIdx,TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {}
+	protected final void setupGUIBoolSwitchAras(int firstIdx,LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {}
 	
 	public void setAllFuncBtnLabels(int _funRowIDX, String[] BtnLabels) {btnConfig.setAllFuncBtnLabels(_funRowIDX, BtnLabels);}
 	
@@ -275,12 +275,14 @@ public class SidebarMenu extends Base_DispWindow{
 	 * @return
 	 */
 	@Override
-	public boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {		
+	protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {		
 		boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);	
 		return res;	}
 	@Override
-	public void hndlMouseRel_Indiv() {	clearAllBtnStates();}
+	protected void hndlMouseRel_Indiv() {	clearAllBtnStates();}
 
+    @Override
+    protected boolean handleMouseWheel_Indiv(int ticks, float mult) {        return false;   }
 	private void drawSideBarBooleans(float btnLblYOff, float xOffHalf, float txtHeightOffHalf){
 		//draw main booleans and their state
 		ri.translate(xOffHalf,btnLblYOff);
@@ -393,4 +395,5 @@ public class SidebarMenu extends Base_DispWindow{
 		String res = super.toString();
 		return res;
 	}
+
 }//mySideBarMenu

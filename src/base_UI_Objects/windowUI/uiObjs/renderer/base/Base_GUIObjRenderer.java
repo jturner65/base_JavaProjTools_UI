@@ -55,12 +55,6 @@ public abstract class Base_GUIObjRenderer {
 	 * x,y coords of bottom right corner for clickable region
 	 */
 	protected myPointf end = new myPointf();
-	
-	/**
-	 * The allowable width of the printable area. Single line UI objects will be this wide, 
-	 * while multi line will be some fraction of this wide.
-	 */
-	protected final float menuWidth;
 
 	/**
 	 * Owning object consuming this renderer
@@ -94,12 +88,10 @@ public abstract class Base_GUIObjRenderer {
 	public Base_GUIObjRenderer (
 			IRenderInterface _ri,
 			Base_GUIObj _owner,
-			double[] _off,
-			float _menuWidth, GUIObj_Params _argObj,
+			double[] _off, GUIObj_Params _argObj,
 			String _rendererType) {
 		ri=_ri;	
 		owner = _owner;
-		menuWidth = _menuWidth;
 		//_clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 0 (stroke)
 		int[][] _clrs = _argObj.getStrkFillTextColors();
 		cfgFlags = _argObj.getRenderCreationFormatVal();
@@ -237,10 +229,16 @@ public abstract class Base_GUIObjRenderer {
 	protected abstract void _drawUIDataCentered(boolean isClicked);	
 	
 	/**
-	 * Get center point
+	 * Get center point in x
 	 * @return
 	 */
 	protected final float _getCenterX() {return (end.x - start.x)/2.0f;}
+	
+    /**
+     * Get center point in y
+     * @return
+     */
+    protected final float _getCenterY() {return (end.y - start.y)/2.0f;}
 	
 	/**
 	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)

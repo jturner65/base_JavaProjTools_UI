@@ -2,7 +2,7 @@ package base_UI_Objects.windowUI.base;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
@@ -114,11 +114,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 *  idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
 	 */
 	protected final boolean[] dfltUIFmtVals =  new boolean[] {false, true, false};
-	
-	/**
-	 * offset to bottom of custom window menu 
-	 */
-	protected float custMenuOffset;
 	
 	/**
 	 * box holding x,y,w,h values of black rectangle to form around menu for display variables on right side of screen, if present
@@ -265,8 +260,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		dispFlags = new WinDispStateFlags(this);	
 		// build all ui objects
 		uiMgr.initAllGUIObjects();
-		//set menu offset for custom UI objects
-		custMenuOffset = uiMgr.getUIClkCoords()[3] + (2.0f * AppMgr.getClkBoxDim());		
 		//run instancing window-specific initialization after all ui objects are built
 		initMe();
 		//set any custom button names if necessary
@@ -355,7 +348,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * 				- Ornament color should match label color 
 	 */
 	@Override
-	public final void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap) {
+	public final void setupOwnerGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap) {
 		// build the Non button UI objects
 		setupGUIObjsAras(tmpUIObjMap);
 	}
@@ -369,7 +362,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * 				the final element is integer flag idx 
 	 */
 	@Override
-	public final void setupOwnerGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
+	public final void setupOwnerGUIBoolSwitchAras(int firstIdx, LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
 		// build the button region, using the existing size of the non-button map as a start index
 		setupGUIBoolSwitchAras(firstIdx, tmpUIBoolSwitchObjMap);
 	}
@@ -395,7 +388,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * 				- Should have ornament
 	 * 				- Ornament color should match label color 
 	 */
-	protected abstract void setupGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap);
+	protected abstract void setupGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap);
 	
 	/**
 	 * Build UI button objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
@@ -406,7 +399,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	protected abstract void setupGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);		
+	protected abstract void setupGUIBoolSwitchAras(int firstIdx, LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);		
 	
 	/**
 	 * Called by privFlags bool struct, to update uiUpdateData when boolean flags have changed
@@ -497,9 +490,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return
 	 */
 	@Override
-	public final float[] getOwnerParentWindowUIClkCoords() {
-		return getParentWindowUIClkCoords();
-	}
+	public final float[] getOwnerParentWindowUIClkCoords() {		return getParentWindowUIClkCoords();	}
 	/**
 	 * Get the click coordinates formed by the parent
 	 * @return
@@ -782,8 +773,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 		uiMgr.drawGUIObjs(isDebug, animTimeMod);
 		//draw any custom menu objects for sidebar menu after buttons
 		ri.pushMatState();
-			//all sub menu drawing within push mat call
-			ri.translate(0,custMenuOffset);		
 			//draw any custom menu stuff here
 			drawCustMenuObjs(animTimeMod);
 		ri.popMatState();
@@ -1206,6 +1195,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * Return the coordinates of the clickable region for this window's UI
 	 * @return
 	 */
+	@Override
 	public float[] getUIClkCoords() {return uiMgr.getUIClkCoords();}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -1305,11 +1295,20 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 			//modify object that was clicked in by mouse motion
 			boolean retVals[] = uiMgr.handleMouseWheel(ticks, mult);
 			if (retVals[1]){dispFlags.setUIObjMod(true);}
-			if (retVals[0]){return true;}			
+			if (retVals[0]){return true;}
+			
 			
 		} else if (dispFlags.getCanChgView()) {handleViewChange(true,(mult * ticks),0);}
 		return true;
-	}//handleMouseWheel	
+	}//handleMouseWheel
+	
+	/**
+     * Handle mouse interaction via the mouse wheel for implementing class
+     * @param ticks
+     * @param mult amount to modify view based on sensitivity and whether shift is pressed or not
+     * @return whether a UI object has been modified via the mouse wheel
+     */
+	protected abstract boolean handleMouseWheel_Indiv(int ticks, float mult);
 
 	/**
 	 * Handle mouse interaction via the clicked mouse drag
@@ -1714,7 +1713,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
 	 * @return
 	 */
 	public final MessageObject getMsgObj() {return msgObj;}
-	
+	@Override
 	public final String getName() {return winInitVals.winName;}
 	
 	@Override

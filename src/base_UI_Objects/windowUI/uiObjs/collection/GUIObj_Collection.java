@@ -1,6 +1,7 @@
 package base_UI_Objects.windowUI.uiObjs.collection;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -108,7 +109,7 @@ public class GUIObj_Collection {
 	 */
 	private final int[][] _dbgColors;
 
-	public GUIObj_Collection(UIObjectManager _uiObjMgr, float[] __uiClkCoords, TreeMap<String, GUIObj_Params> _GUIObjMap) {
+	public GUIObj_Collection(UIObjectManager _uiObjMgr, float[] __uiClkCoords, LinkedHashMap<String, GUIObj_Params> _GUIObjMap) {
 		uiObjMgr = _uiObjMgr;
 		ri=UIObjectManager.ri;
 		AppMgr = UIObjectManager.AppMgr;
@@ -126,31 +127,29 @@ public class GUIObj_Collection {
 	 * Build the renderer for a UI object 
 	 * @param _owner the Base_GUIObj that will own this renderer
 	 * @param _off offset in x,y for ornament, if exists
-	 * @param _menuWidth max width of menu area
 	 * @param _argObj : GUIObj_Params object holding all the configuration values used to build this renderer and the underlying UI Object
 	 * @return
 	 */
 	private Base_GUIObjRenderer _buildObjRenderer(
 			Base_GUIObj _owner, 
 			double[] _off,
-			float _menuWidth,
 			GUIObj_Params _argObj
 		) {		
-		if (_argObj.isButton()) {		return new ButtonGUIObjRenderer(ri, (GUIObj_Button)_owner, _off, _menuWidth, _argObj);}
-		//build multi-line renderer if multi-line non-button
-		if (_argObj.isMultiLine()) {	return new MultiLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);} 
+		if (_argObj.isButton()) {		return new ButtonGUIObjRenderer(ri, (GUIObj_Button)_owner, _off, _argObj);}
+		// Build multi-line renderer if multi-line non-button
+		if (_argObj.isMultiLine()) {	return new MultiLineGUIObjRenderer(ri, _owner, _off, _argObj);} 
 		// Single line is default
-		return new SingleLineGUIObjRenderer(ri, _owner, _off, _menuWidth, _argObj);			
+		return new SingleLineGUIObjRenderer(ri, _owner, _off, _argObj);			
 	}//_buildObjRenderer
-
 	/**
 	 * Build the appropriate object based on the passed GUIObj_Params entry and assign it the given guiObjIDX
 	 * @param guiObjIDX
 	 * @param entry
-	 * @param uiClkRect
 	 */
-	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry, float[] uiClkRect) {
+	private final void _buildObj(int guiObjIDX, Map.Entry<String, GUIObj_Params> entry) {
 		GUIObj_Params argObj = entry.getValue();
+		// Set name to be string key in map
+		argObj.setName(entry.getKey());
 		Base_GUIObj obj = null;
 		switch(argObj.objType) {
 			case IntVal : {
@@ -187,10 +186,11 @@ public class GUIObj_Collection {
 		}//switch
 		// Set renderer
 		_guiObjsIDXMap.put(guiObjIDX, obj);
-		obj.setRenderer(_buildObjRenderer(obj, AppMgr.getUIOffset(), uiClkRect[2], argObj));			
-	}//_buildObj	
+		//if(!isSwitch) {_guiObjsNonSwitchIDXMap.put(guiObjIDX, obj);}
+		obj.setRenderer(_buildObjRenderer(obj, AppMgr.getUIOffset(), argObj));		
+	}//_buildObj
  	
-	private final float _buildGUIObjsForMenu(TreeMap<String, GUIObj_Params> tmpUIObjMap, float[] uiClkRect) {
+	private final float _buildGUIObjsForMenu(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap, float[] uiClkRect) {
 		//initialize arrays to hold idxs of int and float items being created.
 		_guiButtonIDXMap = new TreeMap<Integer,GUIObj_Button>();
 		_guiSwitchIDXMap = new TreeMap<Integer,GUIObj_Switch>();
@@ -203,14 +203,16 @@ public class GUIObj_Collection {
 			//build objects
 			for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
 				int i = entry.getValue().objIdx;
-				_buildObj(i, entry, uiClkRect);		
+				_buildObj(i, entry);		
 			}
 			// Objects are created by here and assigned renderers
 			// Assign hotspots 			
 			// offset for each element
 			float yOffset = AppMgr.getTextHeightOffset();
+			float yStart = 0;
 			// main object creation
-			if(_guiObjsIDXMap.size() > 0) {		uiClkRect[3] =_buildHotSpotRects(2, yOffset, uiClkRect[0], uiClkRect[3], _guiObjsIDXMap);	}
+			if(_guiObjsIDXMap.size() > 0) {		yStart =_buildHotSpotRects(2, yOffset, uiClkRect[0], yStart, _guiObjsIDXMap);	}
+			uiClkRect[3] += yStart;
 		}// UI objects exist	
 		// return final y coordinate
 		uiClkRect[3] += .5f*AppMgr.getTextHeightOffset();
@@ -351,7 +353,7 @@ public class GUIObj_Collection {
 		ri.setStrokeWt(2.0f);
 		ri.setStroke(_dbgColors[0], _dbgColors[0][3]);
 		ri.setFill(_dbgColors[1], _dbgColors[1][3]);
-		ri.drawRect(_uiClkCoords[0], _uiClkCoords[1], _uiClkCoords[2]-_uiClkCoords[0], _uiClkCoords[3]-_uiClkCoords[1]);
+		ri.drawRect(0, 0, _uiClkCoords[2]-_uiClkCoords[0], _uiClkCoords[3]-_uiClkCoords[1]);
 	}
 
 	/**
@@ -361,12 +363,14 @@ public class GUIObj_Collection {
 	 */
 	public final void drawGUIObjs(boolean isDebug, float animTimeMod) {
 		ri.pushMatState();
+		// move to beginning of UI region
+		ri.translate(_uiClkCoords[0], _uiClkCoords[1], 0);
 		//draw UI Objs
 		if(isDebug) {
-			for(int i =0; i<_guiObjsIDXMap.size(); ++i){_guiObjsIDXMap.get(i).drawDebug();}
+			for (var entry : _guiObjsIDXMap.entrySet()) {entry.getValue().drawDebug();}
 			_drawUIRect();
 		} else {			
-			for(int i =0; i<_guiObjsIDXMap.size(); ++i){_guiObjsIDXMap.get(i).draw();}
+			for (var entry : _guiObjsIDXMap.entrySet()) {entry.getValue().draw();}
 		}	
 		ri.popMatState();	
 	}//drawAllGuiObjs
@@ -387,14 +391,14 @@ public class GUIObj_Collection {
 	
 	/**
 	 * Check inside all objects to see if passed mouse x,y is within hotspot
-	 * @param mouseX
-	 * @param mouseY
+	 * @param mouseX mouse x relative to upper left corner x of the ui click region
+	 * @param mouseY mouse y relative to upper left corner y of the ui click region
 	 * @return idx of object that mouse resides in, or -1 if none
 	 */
 	private final int _checkInAllObjs(int mouseX, int mouseY) {
-		for(int j=0; j<_guiObjsIDXMap.size(); ++j){if(_guiObjsIDXMap.get(j).checkIn(mouseX, mouseY)){ return j;}}
+		for(var entry : _guiObjsIDXMap.entrySet()) {	if(entry.getValue().checkIn(mouseX, mouseY)){ return entry.getKey();}}
 		return -1;
-	}	
+	}
 	
 	/**
 	 * Set UI value for object based on non-drag modification such as click - either at initial click or when click is released
@@ -415,7 +419,8 @@ public class GUIObj_Collection {
 	public final boolean checkClickInUIRegion(int mouseX, int mouseY, int mseBtn, boolean isClicModUIVal, boolean[] retVals) {
 		_msClickObj = null;
 		if (_checkInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
-			int idx = _checkInAllObjs(mouseX, mouseY);
+			//modify mouseX and mouseY to be relative to beginning of UI click region
+			int idx = _checkInAllObjs(mouseX-(int) _uiClkCoords[0], mouseY-(int) _uiClkCoords[1]);
 			if(idx >= 0) {
 				//found in list of UI objects
 				_msBtnClicked = mseBtn; 
@@ -577,9 +582,9 @@ public class GUIObj_Collection {
 	 * @param forceVals If true, this will bypass setUIWinVals, if false, will call set vals, to propagate changes to window vars 
 	 */
 	public final void resetUIVals(boolean forceVals){
-		for(int i=0; i<_guiObjsIDXMap.size();++i){		_guiObjsIDXMap.get(i).resetToInit();		}
+		for (var entry : _guiObjsIDXMap.entrySet()) {		entry.getValue().resetToInit();		}
 		if (!forceVals) {			setAllUIWinVals();		}
-	}//resetUIVals
+	}//resetUIVals	
 	
 	/**
 	 * this sets the value of a gui object from the data held in a string
@@ -597,8 +602,11 @@ public class GUIObj_Collection {
 	/**
 	 * set all window values for UI objects
 	 */
-	public final void setAllUIWinVals() {for(int i=0;i<_guiObjsIDXMap.size();++i){if(_guiObjsIDXMap.get(i).shouldUpdateWin(true)){setUIWinVals(i);}}}
-		
+	public final void setAllUIWinVals() {for(var entry : _guiObjsIDXMap.entrySet()) {
+		var obj = entry.getValue();
+		if(obj.shouldUpdateWin(true)){setUIWinVals(obj.getObjID());}}
+	}
+	
 	/**
 	 * Return the coordinates of the clickable region for the UI managed by this object manager
 	 * @return

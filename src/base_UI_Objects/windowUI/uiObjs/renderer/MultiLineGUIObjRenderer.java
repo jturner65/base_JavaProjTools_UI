@@ -15,12 +15,10 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * @param _ri render interface
 	 * @param _owner Gui object that owns this renderer
 	 * @param _off offset for ornament
-	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
-	 * 						while multi line will be some fraction of this wide.
 	 * @param _argObj GUIObjParams that describe colors, render format and other components of the owning gui object
 	 */
-	public MultiLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, double[] _offset, float _menuWidth, GUIObj_Params _argObj) {
-		super(_ri, _owner, _offset, _menuWidth, _argObj, "Multi-Line");
+	public MultiLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, double[] _offset, GUIObj_Params _argObj) {
+		super(_ri, _owner, _offset,  _argObj, "Multi-Line");
 	}
 
 	@Override
@@ -37,7 +35,7 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
 	public final float getMaxTextWidth() {
 		float labelWidth = ri.getTextWidth(owner.getLabel()) + _ornament.getWidth();
 		float dispWidth = ri.getTextWidth(owner.getValueAsString());
-		return 1.25f * (labelWidth > dispWidth ? labelWidth : dispWidth);
+		return 1.01f * (labelWidth > dispWidth ? labelWidth : dispWidth);
 	}	
 	/**
 	 * Return the # of text lines the owning object will need to render. 

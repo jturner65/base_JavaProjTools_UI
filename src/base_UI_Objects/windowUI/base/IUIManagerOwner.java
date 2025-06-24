@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.base;
 
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
@@ -21,6 +21,11 @@ public interface IUIManagerOwner {
 	 * @return
 	 */
 	public String getClassName();
+	/**
+	 * Return the Owner's assigned name, for messages
+	 * @return
+	 */
+	public String getName();
 	
 	/**
 	 * This function is called on ui value update, to pass new ui values on to window-owned consumers
@@ -91,7 +96,7 @@ public interface IUIManagerOwner {
 	 * 				- Should have ornament
 	 * 				- Ornament color should match label color 
 	 */
-	public void setupOwnerGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap);
+	public void setupOwnerGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap);
 	
 	/**
 	 * Build UI button objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
@@ -102,7 +107,7 @@ public interface IUIManagerOwner {
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	public void setupOwnerGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
+	public void setupOwnerGUIBoolSwitchAras(int firstIdx, LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);
 	
 	/**
 	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
@@ -153,6 +158,12 @@ public interface IUIManagerOwner {
 	 * @param val
 	 */
 	public void handleOwnerPrivFlagsDebugMode(boolean val);
+	
+	/**
+     * Return the coordinates of the clickable region for this window's UI
+     * @return
+     */
+    public float[] getUIClkCoords(); 
 	
 	////////////////////////
 	/// Start Mouse interaction - these should provide adapter-like access to the uiManager's mouse handling routines

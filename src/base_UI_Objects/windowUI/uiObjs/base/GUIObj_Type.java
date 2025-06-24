@@ -7,16 +7,17 @@ import java.util.Map;
  * @author john turner 
  */
 public enum GUIObj_Type {
-	IntVal, FloatVal, ListVal, LabelVal, Button, Switch;
+	IntVal, FloatVal, ListVal, LabelVal, DispVal, Button, Switch;
 	private static final String[] _typeExplanation = new String[]{
 			"UI Object holding an integer value",
 			"UI Object holding a float value",
 			"UI Object holding a list value",
+			"UI Object holding a display label",
 			"UI Object holding a read-only value",
 			"UI Object representing a button with 2 or more states",
 			"UI Object representing toggle button with 2 states, connected to a privFlags structure"};
 	private static final String[] _typeName = new String[]{
-			"Integer Value","Float Value","List Value","Read-Only Value", "Button Object", "Toggle Switch"
+			"Integer Value","Float Value","List Value","Label","Read-Only Value", "Button Object", "Toggle Switch"
 		};
 	public static String[] getListOfTypes() {return _typeName;}
 	private static Map<Integer, GUIObj_Type> map = new HashMap<Integer, GUIObj_Type>(); 

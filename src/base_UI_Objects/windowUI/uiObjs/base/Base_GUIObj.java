@@ -18,7 +18,7 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 	 */
 	private static int GUIObjID = 0;
 	/**
-	 * Name/display label of object
+	 * Unique permanent name of object
 	 */
 	protected final String name;	
 	/**
@@ -102,8 +102,8 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 	public Base_GUIObj(int _objID, GUIObj_Params objParams){
 		objID = _objID;
 		ID = GUIObjID++;
-		name = objParams.name;
-		setLabelFromName();
+		name = objParams.getName();
+		setLabel(objParams.label);
 		origLabel = label;
 		//type of object
 		objType = objParams.objType;
@@ -429,15 +429,16 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 	
 	/**
 	 * Builds a string to save the value from this UI Object
-	 * @param idx
 	 * @return
 	 */
-	public final String getStrFromUIObj(int idx){
+	public final String getStrFromUIObj(){
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("ui_idx: ");
-		sb.append(idx);
+		sb.append(objID);
 		sb.append(" |name: ");
 		sb.append(name);
+		sb.append(" |label: ");
+		sb.append(label);
 		sb.append(" |type: ");
 		sb.append(objType.getVal());
 		sb.append(" |value: ");
@@ -472,7 +473,7 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 	 * set new display text for this UI object - doesn't change name
 	 * @param _str
 	 */
-	public final void setLabel(String _str) {	label = (_str.length() > 0 ? _str + " : " : "");	}
+	public void setLabel(String _str) {	label = (_str.length() > 0 ? _str + " : " : "");	}
 
 	/**
 	 * Set this UI object's value from a string
@@ -499,22 +500,16 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 		return new String[]{getLabel(), getValueAsString()};		
 	}	
 	
-	/**
-	 * Standard label = name + ':' + value (added by instancing class)
-	 * TODO Change this format for multi-line UI objs?
-	 * @return
-	 */
-	public void setLabelFromName() {
-		setLabel(name);
-		//name.trim().length() > 0 ?(name + " : ") : ("");
-	}
 
 	/**
 	 * Return the constant name assigned to this object on creation
 	 */
 	public final String getName(){return name;}
 	
-	
+	/**
+	 * The object ID passed to this object on creation. Corresponds to integer key in the containing map
+	 * @return
+	 */
 	public final int getObjID() {return objID;}
 
 	/**
@@ -563,7 +558,7 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
 		String[] valResAra = getStrDataForVal();
 		String[] tmpRes = new String[valResAra.length+4];
 		int idx = 0;
-		tmpRes[idx++] = "ID : "+ ID+" Obj ID : " + objID  + " Name : "+ name + " label : `" + getLabel()+"`";
+		tmpRes[idx++] = "ID : "+ ID+"| Obj ID : " + objID  + "| Name : "+ name + "|Label : `" + getLabel()+"`";
 		tmpRes[idx++] = renderer.getHotBoxLocString();
 		tmpRes[idx++] = "Treat as Int  : " + (objType == GUIObj_Type.IntVal);
 		for (String valStr : valResAra) {tmpRes[idx++] = valStr;}

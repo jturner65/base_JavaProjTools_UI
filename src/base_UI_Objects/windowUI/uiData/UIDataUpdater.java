@@ -2,7 +2,7 @@ package base_UI_Objects.windowUI.uiData;
 
 import java.util.Map;
 
-import base_UI_Objects.windowUI.base.Base_DispWindow;
+import base_UI_Objects.windowUI.base.IUIManagerOwner;
 import base_Utils_Objects.dataAdapter.Base_DataAdapter;
 
 /**
@@ -12,19 +12,19 @@ import base_Utils_Objects.dataAdapter.Base_DataAdapter;
 
 public class UIDataUpdater extends Base_DataAdapter {
 	/**
-	 * Owning UI Window
+	 * Owning UI Window/UI construct
 	 */
-	protected Base_DispWindow win;
+	protected IUIManagerOwner owner;
 	
-	public UIDataUpdater(Base_DispWindow _win) {super(); win=_win;}
-	public UIDataUpdater(Base_DispWindow _win, Map<Integer, Integer> _iVals, Map<Integer, Float> _fVals, Map<Integer, Boolean> _bVals) {
+	public UIDataUpdater(IUIManagerOwner _owner) {super(); owner=_owner;}
+	public UIDataUpdater(IUIManagerOwner _owner, Map<Integer, Integer> _iVals, Map<Integer, Float> _fVals, Map<Integer, Boolean> _bVals) {
 		super(_iVals, _fVals, _bVals);
-		win=_win;
+		owner=_owner;
 	}
 	
 	public UIDataUpdater(UIDataUpdater _otr) {
 		super(_otr);
-		win=_otr.win;
+		owner=_otr.owner;
 	}
 	
 	/**
@@ -32,7 +32,7 @@ public class UIDataUpdater extends Base_DataAdapter {
 	 */	
 	@Override
 	protected final void updateBoolValue_Indiv(int idx, boolean value) {
-		win.updateBoolValFromExecCode(idx, value);		
+	    owner.updateBoolValFromExecCode(idx, value);		
 	}
 	
 	/**
@@ -40,7 +40,7 @@ public class UIDataUpdater extends Base_DataAdapter {
 	 */	
 	@Override
 	protected final void updateIntValue_Indiv(int idx, Integer value) {
-		win.updateIntValFromExecCode(idx, value);		
+	    owner.updateIntValFromExecCode(idx, value);		
 	}
 	
 	/**
@@ -48,9 +48,9 @@ public class UIDataUpdater extends Base_DataAdapter {
 	 */	
 	@Override
 	protected final void updateFloatValue_Indiv(int idx, Float value) {
-		win.updateFloatValFromExecCode(idx, value);		
+	    owner.updateFloatValFromExecCode(idx, value);		
 	}
 	
 	@Override
-	public String getName() {		return win.getName();	}
+	public String getName() {		return owner.getName();	}
 }//class base_UpdateFromUIData

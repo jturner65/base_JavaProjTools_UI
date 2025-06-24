@@ -1,5 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.base;
 
+
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.GUIObjRenderer_Flags;
 
@@ -11,7 +12,11 @@ public class GUIObj_Params {
 	/**
 	 * The name for the object
 	 */
-	public final String name;
+	private String name;
+	/**
+	 * The label for the UI object to display, if any
+	 */
+	public final String label;
 	/**
 	 * The unique object index
 	 */
@@ -73,8 +78,14 @@ public class GUIObj_Params {
 	private int[][] btnFillColors = null;
 	
 	/**
+	 * Whether or not this GUIObj_Params describes a collection of gui objects and not just a single one. If it is a collection, it's various parameters are ignored.
+	 */
+	protected boolean _isAGroupOfObjs = false;
+	
+	
+	/**
 	 * Build an info struct that describes a UI object
-	 * @param _name
+	 * @param _label
 	 * @param _objType
 	 * @param _boolFlagIDX
 	 * @param _configFlags configuration/behavior values
@@ -90,13 +101,14 @@ public class GUIObj_Params {
 	 */
 	public GUIObj_Params(
 			int _objIdx, 
-			String _name, 
+			String _label, 
 			GUIObj_Type _objType, 
 			int _boolFlagIDX, 
 			boolean[] _configFlags, 
 			GUIObjRenderer_Flags _rendererCfgFlags, 
 			boolean[] _buttonFlags) {
-		name = _name;
+		name = "unnamed";
+		label = _label;
 		objIdx = _objIdx;
 		objType = _objType;
 		boolFlagIDX = _boolFlagIDX;
@@ -108,7 +120,7 @@ public class GUIObj_Params {
 	}
 	/**
 	 * Build an info struct that describes a UI object
-	 * @param _name
+	 * @param _label
 	 * @param _objType
 	 * @param _boolFlagIDX
 	 * @param _configFlags configuration/behavior values
@@ -122,8 +134,8 @@ public class GUIObj_Params {
 	 * 				- Ornament color should match label color 
 	 * NOTE : passes empty array to button creation flags
 	 */
-	public GUIObj_Params(int _objIdx, String _name, GUIObj_Type _objType, boolean[] _configFlags,	GUIObjRenderer_Flags _rendererCfgFlags) {
-		this(_objIdx, _name, _objType, -1, _configFlags, _rendererCfgFlags, new boolean[0]);
+	public GUIObj_Params(int _objIdx, String _label, GUIObj_Type _objType, boolean[] _configFlags,	GUIObjRenderer_Flags _rendererCfgFlags) {
+		this(_objIdx, _label, _objType, -1, _configFlags, _rendererCfgFlags, new boolean[0]);
 	}
 	
 	/**
@@ -132,6 +144,7 @@ public class GUIObj_Params {
 	 */
 	public GUIObj_Params(GUIObj_Params otr) {
 		name=otr.name;
+		label=otr.label;
 		objIdx = otr.objIdx;
 		objType=otr.objType;
 		boolFlagIDX=otr.boolFlagIDX;
@@ -145,13 +158,20 @@ public class GUIObj_Params {
 		System.arraycopy(otr.listVals, 0, listVals, 0, otr.listVals.length);
 		setStrkFillTextColors(otr.renderColors);
 		setBtnFillColors(otr.btnFillColors);
-	}
+		_isAGroupOfObjs = otr._isAGroupOfObjs;
+	}//copy ctor
 	
 	/**
 	 * Set whether the text in this object should be centered or not
 	 * @param isCentered
 	 */
 	public final void setIsTextCentered(boolean isCentered) {rendererCfgFlags.setIsCentered(isCentered);}
+	
+	/**
+	 * Set that this GUIObj_Params describes an object that should be forced to be the first entry on a new row
+	 */
+	public final void setIsFirstObjOnRow() {rendererCfgFlags.setForceStartNewLine(true);}
+	
 	/**
 	 * Whether or not this represents an object should be rendered as multi-line
 	 * @return
@@ -172,6 +192,17 @@ public class GUIObj_Params {
 	public void setMinMaxMod(double[] _minMaxMod) {for(int i=0;i<_minMaxMod.length;++i) {minMaxMod[i] = _minMaxMod[i];}}
 	
 	/**
+	 * Get the name of the GUI object this params will build
+	 * @param _label
+	 */	
+	public final String getName() {return name;}
+	
+	/**
+	 * Set the name of the GUI object this params will build
+	 * @param _label
+	 */
+	public final void setName(String _name) {name = _name;}
+	/**
 	 * Set the string labels the list/button object this construct describes use for data or state.
 	 * This also sets the min/max/mod to be appropriate for a list-backed construct
 	 * @param _listVals
@@ -189,7 +220,7 @@ public class GUIObj_Params {
 	public final void setBtnFillColors(int[][] _colors) {
 		if(_colors.length != listVals.length) {
 			Base_DispWindow.AppMgr.msgObj.dispErrorMessage(
-					"GUIObj_Params ("+name+")", "setbtnFillColors", 
+					"GUIObj_Params ("+name+":`"+label+"`)", "setbtnFillColors", 
 					"Setting button colors failed for object "+name+" due to not having the same number of colors (" +_colors.length +") as button states (" +listVals.length +").");
 			return;
 		}
@@ -222,6 +253,13 @@ public class GUIObj_Params {
 	 * @return
 	 */
 	public final boolean isButton() {return (buttonFlags.length!=0);}
+	
+	/**
+	 * Whether or not this GUIObj_Params describes a collection of GUIObj_Params. If so, all this constructs values are ignored.
+	 * @return
+	 */
+	public final boolean isAGroupOfObjs() {return _isAGroupOfObjs;}
 
 
 }// class GUIObj_Params
+

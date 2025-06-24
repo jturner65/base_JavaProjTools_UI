@@ -50,8 +50,8 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
 	 * 						while multi line will be some fraction of this wide.
 	 * @param _argObj GUIObjParams that describe colors, render format and other components of the owning gui object
 	 */
-	public ButtonGUIObjRenderer(IRenderInterface _ri, GUIObj_Button _owner, double[] _offset, float _menuWidth, GUIObj_Params _argObj) {
-		super(_ri, _owner, _offset, _menuWidth, _argObj, "Button Renderer");
+	public ButtonGUIObjRenderer(IRenderInterface _ri, GUIObj_Button _owner, double[] _offset, GUIObj_Params _argObj) {
+		super(_ri, _owner, _offset, _argObj, "Button Renderer");
 		int[][] _labelColors = _argObj.getBtnFillColors();
 		colors = new int[_labelColors.length][4];
 		for(int i=0;i<_labelColors.length; ++i) {	System.arraycopy(_labelColors, 0, colors, 0, colors.length);}

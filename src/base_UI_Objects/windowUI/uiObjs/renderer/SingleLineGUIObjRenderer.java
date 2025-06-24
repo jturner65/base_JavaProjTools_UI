@@ -15,18 +15,16 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 * @param _ri render interface
 	 * @param _owner Gui object that owns this renderer
 	 * @param _off offset for ornament
-	 * @param _menuWidth the allowable width of the printable area. Single line UI objects will be this wide, 
-	 * 						while multi line will be some fraction of this wide.
 	 * @param _argObj GUIObjParams that describe colors, render format and other components of the owning gui object
 	 */
-	public SingleLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, double[] _offset, float _menuWidth, GUIObj_Params _argObj) {
-		super(_ri, _owner, _offset, _menuWidth, _argObj, "Single Line");
+	public SingleLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, double[] _offset, GUIObj_Params _argObj) {
+		super(_ri, _owner, _offset, _argObj, "Single Line");
 	}
 
 	@Override
 	protected void _drawUIData(boolean isClicked) {			ri.showText(owner.getUIDispAsSingleLine(), 0,0);}
 	@Override
-	protected void _drawUIDataCentered(boolean isClicked) {	ri.showCenteredText(owner.getUIDispAsSingleLine(), _getCenterX(), 0);}
+	protected void _drawUIDataCentered(boolean isClicked) {	ri.showCenteredText(owner.getUIDispAsSingleLine(), _getCenterX(), _getCenterY());}
 		
 	/**
 	 * Return the max width feasible for this UI object's text (based on possible values + label length if any)
@@ -34,7 +32,7 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
 	 */
 	@Override
 	public final float getMaxTextWidth() {
-		return ri.getTextWidth(owner.getLabel() + owner.getValueAsString()) + this._ornament.getWidth();
+		return ri.getTextWidth(owner.getUIDispAsSingleLine()) + this._ornament.getWidth();
 	}
 	/**
 	 * Return the # of text lines the owning object will need to render
