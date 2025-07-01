@@ -19,381 +19,381 @@ import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
  *
  */
 public class SidebarMenu extends Base_DispWindow{
-	/**
-	 * Number of main, app-wide booleans to show
-	 */
-	private final int numMainFlagsToShow;
-	
-	private final int clkFlgsStY;
+    /**
+     * Number of main, app-wide booleans to show
+     */
+    private final int numMainFlagsToShow;
+    
+    private final int clkFlgsStY;
 
-	/**
-	 * private child-class flags - window specific
-	 */
-	public static final int
-			//idx 0 is debug in Base_BoolFlags
-			mseClickedInBtnsIDX 		= 1,					//the mouse was clicked in the button region of the menu and a click event was processed
-			usesWinBtnDispIDX			= 2,					//this menu displays the window title bar
-			usesMseOvrBtnDispIDX		= 3,					//this menu uses mouse-over display text
-			usesDbgBtnDispIDX			= 4;					//this menu displays debug side bar buttons
-	//private flag based buttons - ui menu won't display these
-	private static final int numPrivFlags = 5;
-	
-	//where buttons should start on side menu
-	/**
-	 * index in arrays of button states/names for the show window buttons, if present
-	 */
-	public static final int btnShowWinIdx = 0;	
-	/**
-	 * configuration, build and rendering of side bar buttons
-	 */
-	private SidebarMenuBtnConfig btnConfig;
-	
-	/**
-	 * Size of text height offset on creation TODO get rid of this value in favor of live updates
-	 */
-	private float initTextHeightOff;
-	private float txtHeightOffHalf;
-	private float xOffHalf;
-	/**
-	 * Size of button label on creation TODO get rid of this value in favor of live updates
-	 */
-	private final float initBtnLblYOff;
-	
-	/**
-	 * 
-	 * @param _ri
-	 * @param _AppMgr
-	 * @param _winIdx
-	 * @param _c
-	 */
-	public SidebarMenu(IRenderInterface _ri, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
-		super(_ri, _AppMgr, _winIdx);
-		btnConfig=_c;
-		
-		clkFlgsStY = (int) AppMgr.getClkBoxDim();
-		initTextHeightOff = AppMgr.getTextHeightOffset();
-		xOffHalf = AppMgr.getXOffsetHalf();
-		txtHeightOffHalf = 0.5f * initTextHeightOff;
-		initBtnLblYOff = AppMgr.getBtnLabelYOffset();
-		
-		//these have to be set before setupGUIObjsAras is called from initThisWin
-		numMainFlagsToShow = AppMgr.getNumFlagsToShow();
-		//msgObj.dispConsoleDebugMessage("SidebarMenu", "ctor", "clkFlgsStY : " + clkFlgsStY+ "|initTextHeightOff : " + initTextHeightOff + "|initBtnLblYOff : "+initBtnLblYOff+"| initRowStYOff : "+initRowStYOff+"| minBtnClkY : "+minBtnClkY);
-		// build uiClkCoords
-		//all ui objects for all windows will follow this format and share the uiClkCoords[0] value	
-		// UI region for Application-wide buttons, under application flags
-		btnConfig.setAppButtonRegion(winInitVals.rectDim, (numMainFlagsToShow+3) * initTextHeightOff + clkFlgsStY);
-		// Change UI FlagReg - standard init
-		super.initThisWin(true);
-	}//ctor
-			
-	/**
-	 * Override for SidebarMenu of setting initial state flags
-	 */
-	@Override
-	protected final void initDispFlags() {
-		//menu is never runnable
-		dispFlags.setIsRunnable(false);
-		//menu never has a rt side menu window
-		dispFlags.setHasRtSideMenu(false);
-		//menu is not ever closeable 
-		dispFlags.setIsCloseable(false);			
-	}
-	
-	/**
-	 * init/reinit this window
-	 */
-	@Override
-	protected final void initMe() {	}	
-	
-	/**
-	 * Get the click coordinates formed by the parent, or in this case, the initial coords under the global state display indicators
-	 * @return
-	 */
-	@Override
-	protected final float[] getParentWindowUIClkCoords() {
-		// Application flags start at beginning y of window rect dimensions
-		float uiClkCoordsYStart = winInitVals.rectDim[1] + .01f * winInitVals.rectDim[3];
-		// UI click coords will be flag region + Application buttons (so include flag y start)
-		float[] UIAppButtonRegion = btnConfig.getUIAppBtnRegion();
-		return new float[] {UIAppButtonRegion[0], uiClkCoordsYStart, UIAppButtonRegion[2], UIAppButtonRegion[3]};
-	}//getParentWindowUIClkCoords
-	
-	/**
-	 * Build all UI objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
-	 * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
-	 * 			- The object IDX                   
-	 *          - A double array of min/max/mod values                                                   
-	 *          - The starting value                                                                      
-	 *          - The label for object                                                                       
-	 *          - The object type (GUIObj_Type enum)
-	 *          - A boolean array of behavior configuration values : (unspecified values default to false)
-	 *           	idx 0: value is sent to owning window,  
-	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
-	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *          - A boolean array of renderer format values :(unspecified values default to false) - Behavior Boolean array must also be provided!
-	 * 				- Should be multiline
-	 * 				- One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-	 * 				- Force this object to be on a new row/line (For side-by-side layouts)
-	 * 				- Text should be centered (default is false)
-	 * 				- Object should be rendered with outline (default for btns is true, for non-buttons is false)
-	 * 				- Should have ornament
-	 * 				- Ornament color should match label color 
-	 */
-	@Override
-	protected final void setupGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap) {}
-	
-	/**
-	 * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing DES sim windows to add to button region
-	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
-	 * 				the first element is true label
-	 * 				the second element is false label
-	 * 				the third element is integer flag idx 
-	 */
-	@Override
-	protected final void setupGUIBoolSwitchAras(int firstIdx,LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {}
-	
-	public void setAllFuncBtnLabels(int _funRowIDX, String[] BtnLabels) {btnConfig.setAllFuncBtnLabels(_funRowIDX, BtnLabels);}
-	
-	/**
-	 * Return the label on the sidebar button specified by the passed row and column
-	 * @param row
-	 * @param col
-	 * @return
-	 */
-	public final String getSidebarMenuButtonLabel(int row, int col) {		return btnConfig.getSidebarMenuButtonLabel(row, col);}
-	
-	public Boolean[][] getGuiBtnWaitForProc() {return  btnConfig.getGuiBtnWaitForProc();}
-	public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {		btnConfig.setGuiBtnWaitForProc(_guiBtnWaitForProc);}
-	public int[][] getGuiBtnSt() {		return btnConfig.getGuiBtnState();	}
-	public void setGuiBtnSt(int[][] _guiBtnSt) {btnConfig.setGuiBtnState(_guiBtnSt);	}
-	
-	/**
-	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
-	 */
-	@Override
-	public int getTotalNumOfPrivBools() {return numPrivFlags;}
-	
-	//window UI object not used for sidebar menu
-	@Override
-	protected UIDataUpdater buildUIDataUpdateObject() {return null;}
-	@Override
-	protected final void updateCalcObjUIVals() {}
-	@Override
-	protected int[] getFlagIDXsToInitToTrue() {
-		ArrayList<Integer> resAra = new ArrayList<Integer>();
-		if(btnConfig._initBtnShowWin) {		resAra.add(usesWinBtnDispIDX);}
-		if(btnConfig._initBtnMseFunc) {		resAra.add(usesMseOvrBtnDispIDX);}
-		if(btnConfig._initBtnDBGSelCmp) {	resAra.add(usesDbgBtnDispIDX);}
-		int[] res = new int[resAra.size()];
-		for(int i=0;i<res.length;++i) {			res[i]=resAra.get(i);		}
-		return res;
-	}
-	
-	/**
-	 * Handle application-specific flag setting
-	 */
-	@Override
-	public final void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal){
-		switch (idx) {//special actions for each flag
-			case mseClickedInBtnsIDX 	: {break;}			
-			case usesWinBtnDispIDX	 	: {break;}
-			case usesMseOvrBtnDispIDX 	: {break;}
-			case usesDbgBtnDispIDX	 	: {break;}
-		}
-	}
+    /**
+     * private child-class flags - window specific
+     */
+    public static final int
+            //idx 0 is debug in Base_BoolFlags
+            mseClickedInBtnsIDX         = 1,                    //the mouse was clicked in the button region of the menu and a click event was processed
+            usesWinBtnDispIDX            = 2,                    //this menu displays the window title bar
+            usesMseOvrBtnDispIDX        = 3,                    //this menu uses mouse-over display text
+            usesDbgBtnDispIDX            = 4;                    //this menu displays debug side bar buttons
+    //private flag based buttons - ui menu won't display these
+    private static final int numPrivFlags = 5;
+    
+    //where buttons should start on side menu
+    /**
+     * index in arrays of button states/names for the show window buttons, if present
+     */
+    public static final int btnShowWinIdx = 0;    
+    /**
+     * configuration, build and rendering of side bar buttons
+     */
+    private SidebarMenuBtnConfig btnConfig;
+    
+    /**
+     * Size of text height offset on creation TODO get rid of this value in favor of live updates
+     */
+    private float initTextHeightOff;
+    private float txtHeightOffHalf;
+    private float xOffHalf;
+    /**
+     * Size of button label on creation TODO get rid of this value in favor of live updates
+     */
+    private final float initBtnLblYOff;
+    
+    /**
+     * 
+     * @param _ri
+     * @param _AppMgr
+     * @param _winIdx
+     * @param _c
+     */
+    public SidebarMenu(IRenderInterface _ri, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
+        super(_ri, _AppMgr, _winIdx);
+        btnConfig=_c;
+        
+        clkFlgsStY = (int) AppMgr.getClkBoxDim();
+        initTextHeightOff = AppMgr.getTextHeightOffset();
+        xOffHalf = AppMgr.getXOffsetHalf();
+        txtHeightOffHalf = 0.5f * initTextHeightOff;
+        initBtnLblYOff = AppMgr.getBtnLabelYOffset();
+        
+        //these have to be set before setupGUIObjsAras is called from initThisWin
+        numMainFlagsToShow = AppMgr.getNumFlagsToShow();
+        //msgObj.dispConsoleDebugMessage("SidebarMenu", "ctor", "clkFlgsStY : " + clkFlgsStY+ "|initTextHeightOff : " + initTextHeightOff + "|initBtnLblYOff : "+initBtnLblYOff+"| initRowStYOff : "+initRowStYOff+"| minBtnClkY : "+minBtnClkY);
+        // build uiClkCoords
+        //all ui objects for all windows will follow this format and share the uiClkCoords[0] value    
+        // UI region for Application-wide buttons, under application flags
+        btnConfig.setAppButtonRegion(winInitVals.rectDim, (numMainFlagsToShow+3) * initTextHeightOff + clkFlgsStY);
+        // Change UI FlagReg - standard init
+        super.initThisWin(true);
+    }//ctor
+            
+    /**
+     * Override for SidebarMenu of setting initial state flags
+     */
+    @Override
+    protected final void initDispFlags() {
+        //menu is never runnable
+        dispFlags.setIsRunnable(false);
+        //menu never has a rt side menu window
+        dispFlags.setHasRtSideMenu(false);
+        //menu is not ever closeable 
+        dispFlags.setIsCloseable(false);            
+    }
+    
+    /**
+     * init/reinit this window
+     */
+    @Override
+    protected final void initMe() {    }    
+    
+    /**
+     * Get the click coordinates formed by the parent, or in this case, the initial coords under the global state display indicators
+     * @return
+     */
+    @Override
+    protected final float[] getParentWindowUIClkCoords() {
+        // Application flags start at beginning y of window rect dimensions
+        float uiClkCoordsYStart = winInitVals.rectDim[1] + .01f * winInitVals.rectDim[3];
+        // UI click coords will be flag region + Application buttons (so include flag y start)
+        float[] UIAppButtonRegion = btnConfig.getUIAppBtnRegion();
+        return new float[] {UIAppButtonRegion[0], uiClkCoordsYStart, UIAppButtonRegion[2], UIAppButtonRegion[3]};
+    }//getParentWindowUIClkCoords
+    
+    /**
+     * Build all UI objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
+     * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
+     *             - The object IDX                   
+     *          - A double array of min/max/mod values                                                   
+     *          - The starting value                                                                      
+     *          - The label for object                                                                       
+     *          - The object type (GUIObj_Type enum)
+     *          - A boolean array of behavior configuration values : (unspecified values default to false)
+     *               idx 0: value is sent to owning window,  
+     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
+     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *          - A boolean array of renderer format values :(unspecified values default to false) - Behavior Boolean array must also be provided!
+     *                 - Should be multiline
+     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *                 - Force this object to be on a new row/line (For side-by-side layouts)
+     *                 - Text should be centered (default is false)
+     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
+     *                 - Should have ornament
+     *                 - Ornament color should match label color 
+     */
+    @Override
+    protected final void setupGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap) {}
+    
+    /**
+     * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing DES sim windows to add to button region
+     * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
+     *                 the first element is true label
+     *                 the second element is false label
+     *                 the third element is integer flag idx 
+     */
+    @Override
+    protected final void setupGUIBoolSwitchAras(int firstIdx,LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {}
+    
+    public void setAllFuncBtnLabels(int _funRowIDX, String[] BtnLabels) {btnConfig.setAllFuncBtnLabels(_funRowIDX, BtnLabels);}
+    
+    /**
+     * Return the label on the sidebar button specified by the passed row and column
+     * @param row
+     * @param col
+     * @return
+     */
+    public final String getSidebarMenuButtonLabel(int row, int col) {        return btnConfig.getSidebarMenuButtonLabel(row, col);}
+    
+    public Boolean[][] getGuiBtnWaitForProc() {return  btnConfig.getGuiBtnWaitForProc();}
+    public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {        btnConfig.setGuiBtnWaitForProc(_guiBtnWaitForProc);}
+    public int[][] getGuiBtnSt() {        return btnConfig.getGuiBtnState();    }
+    public void setGuiBtnSt(int[][] _guiBtnSt) {btnConfig.setGuiBtnState(_guiBtnSt);    }
+    
+    /**
+     * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
+     */
+    @Override
+    public int getTotalNumOfPrivBools() {return numPrivFlags;}
+    
+    //window UI object not used for sidebar menu
+    @Override
+    protected UIDataUpdater buildUIDataUpdateObject() {return null;}
+    @Override
+    protected final void updateCalcObjUIVals() {}
+    @Override
+    protected int[] getFlagIDXsToInitToTrue() {
+        ArrayList<Integer> resAra = new ArrayList<Integer>();
+        if(btnConfig._initBtnShowWin) {        resAra.add(usesWinBtnDispIDX);}
+        if(btnConfig._initBtnMseFunc) {        resAra.add(usesMseOvrBtnDispIDX);}
+        if(btnConfig._initBtnDBGSelCmp) {    resAra.add(usesDbgBtnDispIDX);}
+        int[] res = new int[resAra.size()];
+        for(int i=0;i<res.length;++i) {            res[i]=resAra.get(i);        }
+        return res;
+    }
+    
+    /**
+     * Handle application-specific flag setting
+     */
+    @Override
+    public final void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal){
+        switch (idx) {//special actions for each flag
+            case mseClickedInBtnsIDX     : {break;}            
+            case usesWinBtnDispIDX         : {break;}
+            case usesMseOvrBtnDispIDX     : {break;}
+            case usesDbgBtnDispIDX         : {break;}
+        }
+    }
 
-	/**
-	 * UI code-level Debug mode functionality. Called only from flags structure
-	 * @param val
-	 */
-	@Override
-	protected final void handleDispFlagsDebugMode_Indiv(boolean val) {}
-	
-	/**
-	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
-	 * @param val
-	 */
-	@Override
-	protected final void handlePrivFlagsDebugMode_Indiv(boolean val) {	}
-	
-	/**
-	 * turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
-	 */
-	private final void clearAllBtnStates(){
-		if(uiMgr.getPrivFlag(mseClickedInBtnsIDX)) {
-			btnConfig.clearAllBtnStates();
-			uiMgr.setPrivFlag(mseClickedInBtnsIDX, false);
-		}
-	}//clearAllBtnStates
-		
-	/**
-	 * Set non-momentary buttons to be waiting for processing complete command
-	 * @param row
-	 * @param col
-	 */
-	public final void setWaitForProc(int row, int col) {btnConfig.setWaitForProc(row, col);}
-	@Override
-	protected void setUI_IntValsCustom(int UIidx, int ival, int oldval) {}
-	@Override
-	protected void setUI_FloatValsCustom(int UIidx, float val, float oldval) {}
-	@Override
-	protected final void launchMenuBtnHndlr(int funcRow, int btn, String label) {	}
-	@Override
-	public final void handleSideMenuMseOvrDispSel(int btn, boolean val) {	}
-	@Override
-	protected final void handleSideMenuDebugSelEnable(int btn) {	}
-	@Override
-	protected final void handleSideMenuDebugSelDisable(int btn) {	}
-	@Override
-	protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld){		return false;	}
-	@Override
-	protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {	
-		if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
-		//TODO Awful - needs to be recalced, dependent on menu being on left
-		int i = (int)((mouseY-(initBtnLblYOff + clkFlgsStY))/(initTextHeightOff));					
-		//msgObj.dispInfoMessage(className, "hndlMouseClick_Indiv", "Clicked on disp windows : i : " + i+"|uiClkCoords[1] = "+uiClkCoords[1]+" | UIAppButtonRegion[1] :"+UIAppButtonRegion[1]);
-		
-		if((i>=0) && (i<numMainFlagsToShow)){
-			AppMgr.flipMainFlag(i);return true;	
-		} else if(btnConfig.checkInButtonRegion(mouseX, mouseY)) {//MyMathUtils.ptInRange((float)mouseX, (float)mouseY, UIAppButtonRegion[0], UIAppButtonRegion[1], UIAppButtonRegion[2], UIAppButtonRegion[3])){
-			boolean clkInBtnRegion = btnConfig.checkButtons(mouseX, mouseY, winInitVals.rectDim[2]);
-			if(clkInBtnRegion) { uiMgr.setPrivFlag(mseClickedInBtnsIDX, true);}
-			return clkInBtnRegion;
-		}//in region where clickable buttons are - uiClkCoords[1] is bottom of buttons
-		return false;
-	}
-	/**
-	 * regular UI obj handling handled elsewhere - custom UI handling necessary to call main window	
-	 * @param mouseX
-	 * @param mouseY
-	 * @param pmouseX
-	 * @param pmouseY
-	 * @param mouseClickIn3D
-	 * @param mseDragInWorld
-	 * @param mseBtn
-	 * @return
-	 */
-	@Override
-	protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {		
-		boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);	
-		return res;	}
-	@Override
-	protected void hndlMouseRel_Indiv() {	clearAllBtnStates();}
+    /**
+     * UI code-level Debug mode functionality. Called only from flags structure
+     * @param val
+     */
+    @Override
+    protected final void handleDispFlagsDebugMode_Indiv(boolean val) {}
+    
+    /**
+     * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
+     * @param val
+     */
+    @Override
+    protected final void handlePrivFlagsDebugMode_Indiv(boolean val) {    }
+    
+    /**
+     * turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
+     */
+    private final void clearAllBtnStates(){
+        if(uiMgr.getPrivFlag(mseClickedInBtnsIDX)) {
+            btnConfig.clearAllBtnStates();
+            uiMgr.setPrivFlag(mseClickedInBtnsIDX, false);
+        }
+    }//clearAllBtnStates
+        
+    /**
+     * Set non-momentary buttons to be waiting for processing complete command
+     * @param row
+     * @param col
+     */
+    public final void setWaitForProc(int row, int col) {btnConfig.setWaitForProc(row, col);}
+    @Override
+    protected void setUI_IntValsCustom(int UIidx, int ival, int oldval) {}
+    @Override
+    protected void setUI_FloatValsCustom(int UIidx, float val, float oldval) {}
+    @Override
+    protected final void launchMenuBtnHndlr(int funcRow, int btn, String label) {    }
+    @Override
+    public final void handleSideMenuMseOvrDispSel(int btn, boolean val) {    }
+    @Override
+    protected final void handleSideMenuDebugSelEnable(int btn) {    }
+    @Override
+    protected final void handleSideMenuDebugSelDisable(int btn) {    }
+    @Override
+    protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld){        return false;    }
+    @Override
+    protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {    
+        if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
+        //TODO Awful - needs to be recalced, dependent on menu being on left
+        int i = (int)((mouseY-(initBtnLblYOff + clkFlgsStY))/(initTextHeightOff));                    
+        //msgObj.dispInfoMessage(className, "hndlMouseClick_Indiv", "Clicked on disp windows : i : " + i+"|uiClkCoords[1] = "+uiClkCoords[1]+" | UIAppButtonRegion[1] :"+UIAppButtonRegion[1]);
+        
+        if((i>=0) && (i<numMainFlagsToShow)){
+            AppMgr.flipMainFlag(i);return true;    
+        } else if(btnConfig.checkInButtonRegion(mouseX, mouseY)) {//MyMathUtils.ptInRange((float)mouseX, (float)mouseY, UIAppButtonRegion[0], UIAppButtonRegion[1], UIAppButtonRegion[2], UIAppButtonRegion[3])){
+            boolean clkInBtnRegion = btnConfig.checkButtons(mouseX, mouseY, winInitVals.rectDim[2]);
+            if(clkInBtnRegion) { uiMgr.setPrivFlag(mseClickedInBtnsIDX, true);}
+            return clkInBtnRegion;
+        }//in region where clickable buttons are - uiClkCoords[1] is bottom of buttons
+        return false;
+    }
+    /**
+     * regular UI obj handling handled elsewhere - custom UI handling necessary to call main window    
+     * @param mouseX
+     * @param mouseY
+     * @param pmouseX
+     * @param pmouseY
+     * @param mouseClickIn3D
+     * @param mseDragInWorld
+     * @param mseBtn
+     * @return
+     */
+    @Override
+    protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {        
+        boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);    
+        return res;    }
+    @Override
+    protected void hndlMouseRel_Indiv() {    clearAllBtnStates();}
 
     @Override
     protected boolean handleMouseWheel_Indiv(int ticks, float mult) {        return false;   }
-	private void drawSideBarBooleans(float btnLblYOff, float xOffHalf, float txtHeightOffHalf){
-		//draw main booleans and their state
-		ri.translate(xOffHalf,btnLblYOff);
-		ri.setColorValFill(IRenderInterface.gui_Black,255);
-		ri.showText("Boolean Flags",0,txtHeightOffHalf);
-		ri.translate(0,clkFlgsStY);
-		AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
-	}//drawSideBarBooleans	
-	/**
-	 * For windows to draw on screen
-	 */
-	@Override
-	protected final void drawOnScreenStuffPriv(float modAmtMillis) {}
-	@Override
-	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {}
-	/**
-	 * Draw window/application-specific functionality
-	 * @param animTimeMod # of milliseconds since last frame dividied by 1000
-	 */
-	@Override
-	protected final void drawMe(float animTimeMod) {
-		ri.pushMatState();
-			ri.pushMatState();
-				AppMgr.drawSideBarStateLights(initTextHeightOff);				//lights that reflect various states
-			ri.popMatState();		
-			ri.pushMatState();
-				drawSideBarBooleans(
-						AppMgr.getBtnLabelYOffset(), 
-						xOffHalf, 
-						txtHeightOffHalf);				//toggleable booleans 
-			ri.popMatState();	
-			ri.pushMatState();			
-				btnConfig.drawSideBarButtons(
-						AppMgr.getBtnLabelYOffset(),
-						xOffHalf,
-						AppMgr.getRowStYOffset(),
-						winInitVals.rectDim[2]);						//draw buttons
-			ri.popMatState();	
-			ri.pushMatState();
-				uiMgr.drawGUIObjs(AppMgr.isDebugMode(), animTimeMod);//draw what global user-modifiable fields are currently available 
-			ri.popMatState();			
-			ri.pushMatState();
-				AppMgr.drawWindowGuiObjs(animTimeMod);			//draw objects for window with primary focus
-			ri.popMatState();	
-		ri.popMatState();
-	}
-	
-	@Override
-	public final void drawCustMenuObjs(float animTimeMod){}	
-	//no custom camera handling for menu , float rx, float ry, float dz are all now member variables of every window
-	@Override
-	protected final void setCamera_Indiv(float[] camVals){}
-	@Override
-	public void hndlFileLoad(File file, String[] vals, int[] stIdx) {
-		hndlFileLoad_GUI(vals, stIdx);
-	}
-	@Override
-	public ArrayList<String> hndlFileSave(File file) {
-		ArrayList<String> res = hndlFileSave_GUI();
+    private void drawSideBarBooleans(float btnLblYOff, float xOffHalf, float txtHeightOffHalf){
+        //draw main booleans and their state
+        ri.translate(xOffHalf,btnLblYOff);
+        ri.setColorValFill(IRenderInterface.gui_Black,255);
+        ri.showText("Boolean Flags",0,txtHeightOffHalf);
+        ri.translate(0,clkFlgsStY);
+        AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
+    }//drawSideBarBooleans    
+    /**
+     * For windows to draw on screen
+     */
+    @Override
+    protected final void drawOnScreenStuffPriv(float modAmtMillis) {}
+    @Override
+    protected final void drawRightSideInfoBarPriv(float modAmtMillis) {}
+    /**
+     * Draw window/application-specific functionality
+     * @param animTimeMod # of milliseconds since last frame dividied by 1000
+     */
+    @Override
+    protected final void drawMe(float animTimeMod) {
+        ri.pushMatState();
+            ri.pushMatState();
+                AppMgr.drawSideBarStateLights(initTextHeightOff);                //lights that reflect various states
+            ri.popMatState();        
+            ri.pushMatState();
+                drawSideBarBooleans(
+                        AppMgr.getBtnLabelYOffset(), 
+                        xOffHalf, 
+                        txtHeightOffHalf);                //toggleable booleans 
+            ri.popMatState();    
+            ri.pushMatState();            
+                btnConfig.drawSideBarButtons(
+                        AppMgr.getBtnLabelYOffset(),
+                        xOffHalf,
+                        AppMgr.getRowStYOffset(),
+                        winInitVals.rectDim[2]);                        //draw buttons
+            ri.popMatState();    
+            ri.pushMatState();
+                uiMgr.drawGUIObjs(AppMgr.isDebugMode(), animTimeMod);//draw what global user-modifiable fields are currently available 
+            ri.popMatState();            
+            ri.pushMatState();
+                AppMgr.drawWindowGuiObjs(animTimeMod);            //draw objects for window with primary focus
+            ri.popMatState();    
+        ri.popMatState();
+    }
+    
+    @Override
+    public final void drawCustMenuObjs(float animTimeMod){}    
+    //no custom camera handling for menu , float rx, float ry, float dz are all now member variables of every window
+    @Override
+    protected final void setCamera_Indiv(float[] camVals){}
+    @Override
+    public void hndlFileLoad(File file, String[] vals, int[] stIdx) {
+        hndlFileLoad_GUI(vals, stIdx);
+    }
+    @Override
+    public ArrayList<String> hndlFileSave(File file) {
+        ArrayList<String> res = hndlFileSave_GUI();
 
-		return res;
-	}
-	/**
-	 * If the window is resized
-	 */
-	@Override
-	protected final void resizeMe(float scale) {
-		
-	}
-	
-	@Override
-	protected String[] getSaveFileDirNamesPriv() {return new String[]{"menuDir","menuFile"};	}
-	@Override
-	protected final void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc){}//not a snap-to window
-	@Override
-	protected final void setVisScreenDimsPriv() {}
-	@Override
-	protected myPoint getMsePtAs3DPt(myPoint mseLoc){return new myPoint(mseLoc.x,mseLoc.y,0);}
-	@Override
-	protected final void endShiftKey_Indiv() {}
-	@Override
-	protected final void endAltKey_Indiv() {}
-	@Override
-	protected final void endCntlKey_Indiv() {}
-	@Override
-	protected final void closeMe() {}
-	@Override
-	protected final void showMe() {}	
-	@Override
-	protected final void setCustMenuBtnLabels() {}
-	@Override
-	protected boolean simMe(float modAmtSec) {return false;}
-	@Override
-	protected final void stopMe() {}
-	@Override
-	protected final void addSScrToWin_Indiv(int newWinKey){}
-	@Override
-	protected final void addTrajToScr_Indiv(int subScrKey, String newTrajKey){}
-	@Override
-	protected final void delSScrToWin_Indiv(int idx) {}	
-	@Override
-	protected final void delTrajToScr_Indiv(int subScrKey, String newTrajKey) {}		
-	//no trajectory here
-	@Override
-	public final void processTraj_Indiv(DrawnSimpleTraj drawnTraj){}	
-	@Override
-	protected final void initDrwnTraj_Indiv(){}
-	@Override
-	public String toString(){
-		String res = super.toString();
-		return res;
-	}
+        return res;
+    }
+    /**
+     * If the window is resized
+     */
+    @Override
+    protected final void resizeMe(float scale) {
+        
+    }
+    
+    @Override
+    protected String[] getSaveFileDirNamesPriv() {return new String[]{"menuDir","menuFile"};    }
+    @Override
+    protected final void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc){}//not a snap-to window
+    @Override
+    protected final void setVisScreenDimsPriv() {}
+    @Override
+    protected myPoint getMsePtAs3DPt(myPoint mseLoc){return new myPoint(mseLoc.x,mseLoc.y,0);}
+    @Override
+    protected final void endShiftKey_Indiv() {}
+    @Override
+    protected final void endAltKey_Indiv() {}
+    @Override
+    protected final void endCntlKey_Indiv() {}
+    @Override
+    protected final void closeMe() {}
+    @Override
+    protected final void showMe() {}    
+    @Override
+    protected final void setCustMenuBtnLabels() {}
+    @Override
+    protected boolean simMe(float modAmtSec) {return false;}
+    @Override
+    protected final void stopMe() {}
+    @Override
+    protected final void addSScrToWin_Indiv(int newWinKey){}
+    @Override
+    protected final void addTrajToScr_Indiv(int subScrKey, String newTrajKey){}
+    @Override
+    protected final void delSScrToWin_Indiv(int idx) {}    
+    @Override
+    protected final void delTrajToScr_Indiv(int subScrKey, String newTrajKey) {}        
+    //no trajectory here
+    @Override
+    public final void processTraj_Indiv(DrawnSimpleTraj drawnTraj){}    
+    @Override
+    protected final void initDrwnTraj_Indiv(){}
+    @Override
+    public String toString(){
+        String res = super.toString();
+        return res;
+    }
 
 }//mySideBarMenu

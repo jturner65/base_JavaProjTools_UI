@@ -7,8 +7,8 @@ package testProject.utils;
  */
 public class ObjBuilder {
 
-	public ObjBuilder() {
-		
-	}
+    public ObjBuilder() {
+        
+    }
 
 }//class ObjBuilder
