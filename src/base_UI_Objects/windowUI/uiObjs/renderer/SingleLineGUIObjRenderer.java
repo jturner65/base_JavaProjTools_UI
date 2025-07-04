@@ -22,9 +22,9 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
     }
 
     @Override
-    protected void _drawUIData(boolean isClicked) {            ri.showText(owner.getUIDispAsSingleLine(), 0,0);}
+    protected void _drawUIData() {            ri.showText(owner.getUIDispAsSingleLine(), 0,0);}
     @Override
-    protected void _drawUIDataCentered(boolean isClicked) {    ri.showCenteredText(owner.getUIDispAsSingleLine(), _getCenterX(), 0);}
+    protected void _drawUIDataCentered() {    ri.showCenteredText(owner.getUIDispAsSingleLine(), _getCenterX(), 0);}
         
     /**
      * Return the max width feasible for this UI object's text (based on possible values + label length if any)

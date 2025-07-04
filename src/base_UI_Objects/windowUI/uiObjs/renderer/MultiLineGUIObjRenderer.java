@@ -22,9 +22,9 @@ public class MultiLineGUIObjRenderer extends Base_GUIObjRenderer {
     }
 
     @Override
-    protected void _drawUIData(boolean isClicked) {            ri.showTextAra(0, 0, owner.getUIDispAsMultiLine());}
+    protected void _drawUIData() {            ri.showTextAra(0, 0, owner.getUIDispAsMultiLine());}
     @Override
-    protected void _drawUIDataCentered(boolean isClicked) {    ri.showCenteredTextAra(_getCenterX(), 0, owner.getUIDispAsMultiLine());}
+    protected void _drawUIDataCentered() {    ri.showCenteredTextAra(_getCenterX(), 0, owner.getUIDispAsMultiLine());}
     
     /**
      * Return the max width feasible for this UI object's text (based on possible values + label length if any)

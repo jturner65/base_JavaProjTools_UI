@@ -15,11 +15,6 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
     protected int[][] colors;
     
     /**
-     * Length of the longest label in the state labels array
-     */
-    protected float longestLabelLen;
-    
-    /**
      * Base stroke(idx 0) and fill(idx 1) colors, short cut object for drawing rectangles when clicked
      */
     protected int[][] rectClickStrkFillColor = new int[][] {{0,0,0,255},{150,160,170,255}};
@@ -35,9 +30,7 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
      */
     public ButtonGUIObjRenderer(IRenderInterface _ri, GUIObj_Button _owner, double[] _offset, GUIObj_Params _argObj) {
         super(_ri, _owner, _offset, _argObj, "Button Renderer");
-        int[][] _labelColors = _argObj.getBtnFillColors();
-        colors = new int[_labelColors.length][4];
-        for(int i=0;i<_labelColors.length; ++i) {    System.arraycopy(_labelColors, 0, colors, 0, colors.length);}
+        _updateLabelColors( _argObj.getBtnFillColors());
         updateFromObject();
         //copy stroke color into convenience array
         System.arraycopy(strkClr, 0, rectClickStrkFillColor[0], 0, strkClr.length);        
@@ -46,16 +39,21 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
     protected int[] getStateColor() {return colors[((GUIObj_Button) owner).getButtonState()];}    
 
     @Override
-    protected void _drawUIData(boolean isClicked) {            ri.showText(owner.getValueAsString(), txtHeight , 0);}    
+    protected void _drawUIData() {            ri.showText(owner.getValueAsString(), txtHeight , 0);}    
     @Override
-    protected void _drawUIDataCentered(boolean isClicked) {    ri.showCenteredText(owner.getValueAsString(), _getCenterX(), 0);}
+    protected void _drawUIDataCentered() {    ri.showCenteredText(owner.getValueAsString(), _getCenterX(), 0);}
+    
+    protected void _updateLabelColors(int[][] _labelColors) {
+        colors = new int[_labelColors.length][4];
+        for(int i=0;i<_labelColors.length; ++i) {    System.arraycopy(_labelColors, 0, colors, 0, colors.length);}   
+    }
     
     /**
      * Return the max width feasible for this UI object's text (based on possible values + label length if any)
      * @return
      */
     @Override
-    public final float getMaxTextWidth() {return txtHeight + longestLabelLen + _ornament.getWidth();}
+    public final float getMaxTextWidth() {return txtHeight + longestTextLine + _ornament.getWidth();}
 
     /**
      * Return the # of text lines the owning object will need to render. 
@@ -76,7 +74,7 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
             curLblLen = ri.getTextWidth(label);
             longLbl = (longLbl < curLblLen ? curLblLen : longLbl);
         }
-        longestLabelLen = longLbl;        
+        longestTextLine = longLbl;        
     }//updateFromObject
 
     @Override

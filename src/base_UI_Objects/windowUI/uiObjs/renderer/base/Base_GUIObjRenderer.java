@@ -89,10 +89,21 @@ public abstract class Base_GUIObjRenderer {
      * Width of button edge line
      */
     protected final float lineWidth = 2.0f;
-
-    protected final float yUpOffLine;
-
-    protected final float yLowOffLine;
+    
+    /**
+     * Y location of top edge of 3d button/border
+     */
+    protected final float yTop3DEdgeOffset;
+    /**
+     * Y location of top edge of 3d button/border
+     */
+    protected final float yBottom3DEdgeOffset;
+    
+    /**
+     * Length of the longest line of text this object might produce
+     */
+    protected float longestTextLine;
+    
     /**
      * 
      * @param _ri render interface
@@ -110,10 +121,10 @@ public abstract class Base_GUIObjRenderer {
             String _rendererType) {
         ri=_ri;    
         owner = _owner;
-        //_clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 0 (stroke)
-        int[][] _clrs = _argObj.getStrkFillTextColors();
-        cfgFlags = _argObj.getRenderCreationFormatFlags();
-        
+         cfgFlags = _argObj.getRenderCreationFormatFlags();
+
+         //_clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 0 (stroke)
+         int[][] _clrs = _argObj.getStrkFillTextColors();
         // stroke color, fill color, text color for label
         rectStrkFillColor = new int[2][4];
         strkClr = new int[4];
@@ -129,7 +140,7 @@ public abstract class Base_GUIObjRenderer {
         txtHeight = (float) _off[1];
         halfTxtHeight = .65f*txtHeight;
         
-        
+        // highlight colors
         hlRectStrkFillColor = ri.getRndMatchedStrkFillClrs();
         //make fill alpha a bit lighter
         hlRectStrkFillColor[1][3] = 150;
@@ -139,8 +150,8 @@ public abstract class Base_GUIObjRenderer {
         
         rendererType = _rendererType;
          // lines need the -txtHeight because the UI data has been translated an extra txtHeight already from base class
-        yUpOffLine = lineWidth;
-        yLowOffLine = -lineWidth+1.0f;
+        yTop3DEdgeOffset = lineWidth;
+        yBottom3DEdgeOffset = -lineWidth+1.0f;
     }//ctor
     
     public boolean getIsMultiLine() {return cfgFlags.getIsMultiLine();}
@@ -236,8 +247,8 @@ public abstract class Base_GUIObjRenderer {
             //draw specifics for this UI object
             if(getHasOutline()) {        _drawButtonEdges(isClicked);}
             ri.translate(0.0f, getStartTextYCentered(), 0.0f);
-            if (getIsCentered()) {       _drawUIDataCentered(isClicked);} 
-            else {                       _drawUIData(isClicked);}            
+            if (getIsCentered()) {       _drawUIDataCentered();} 
+            else {                       _drawUIData();}            
         ri.popMatState();
     }//draw
     
@@ -256,12 +267,12 @@ public abstract class Base_GUIObjRenderer {
             ri.setStrokeWt(lineWidth);            
             //top/left
             ri.setStroke(topClr, topClr[3]);
-            ri.drawLine(lineWidth, yUpOffLine, 0, dims[0]-lineWidth, yUpOffLine, 0); // top line
-            ri.drawLine(lineWidth, yUpOffLine, 0, lineWidth, yLowOffLine+dims[1], 0);       
+            ri.drawLine(lineWidth, yTop3DEdgeOffset, 0, dims[0]-lineWidth, yTop3DEdgeOffset, 0); // top line
+            ri.drawLine(lineWidth, yTop3DEdgeOffset, 0, lineWidth, yBottom3DEdgeOffset+dims[1], 0);       
             //bottom/right
             ri.setStroke(btmClr, btmClr[3]);
-            ri.drawLine(lineWidth, yLowOffLine+dims[1], 0, dims[0]-lineWidth, yLowOffLine+dims[1], 0);//bottom line
-            ri.drawLine(dims[0]-lineWidth+1.0f, yUpOffLine, 0, dims[0]-lineWidth+1.0f, yLowOffLine+dims[1], 0);//right side line
+            ri.drawLine(lineWidth, yBottom3DEdgeOffset+dims[1], 0, dims[0]-lineWidth, yBottom3DEdgeOffset+dims[1], 0);//bottom line
+            ri.drawLine(dims[0]-lineWidth+1.0f, yTop3DEdgeOffset, 0, dims[0]-lineWidth+1.0f, yBottom3DEdgeOffset+dims[1], 0);//right side line
         ri.popMatState();
     }//_drawButton
     
@@ -274,12 +285,12 @@ public abstract class Base_GUIObjRenderer {
     /**
      * Draw UI Data String - usually {label}{data value}
      */
-    protected abstract void _drawUIData(boolean isClicked);
+    protected abstract void _drawUIData();
     
     /**
      * Draw UI Data String centered within hotspot - usually {label}{data value}
      */
-    protected abstract void _drawUIDataCentered(boolean isClicked);    
+    protected abstract void _drawUIDataCentered();    
     
     /**
      * Get center point in x
