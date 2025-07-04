@@ -1706,7 +1706,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
                 ri.translate(transPt);
             }            
         ri.popMatState();    
-    }//    drawCenteredRGBAxes   
+    }//    drawCenteredRGBAxes    
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // _canvas functions
