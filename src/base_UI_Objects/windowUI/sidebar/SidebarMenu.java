@@ -51,9 +51,8 @@ public class SidebarMenu extends Base_DispWindow{
     /**
      * Size of text height offset on creation TODO get rid of this value in favor of live updates
      */
-    private float initTextHeightOff;
-    private float txtHeightOffHalf;
-    private float xOffHalf;
+    private final float txtHeightOffHalf;
+    private final float xOffHalf;
     /**
      * Size of button label on creation TODO get rid of this value in favor of live updates
      */
@@ -70,10 +69,10 @@ public class SidebarMenu extends Base_DispWindow{
         super(_ri, _AppMgr, _winIdx);
         btnConfig=_c;
         
-        clkFlgsStY = (int) AppMgr.getClkBoxDim();
-        initTextHeightOff = AppMgr.getTextHeightOffset();
+        clkFlgsStY = (int) AppMgr.getTextHeightOffset();
+        
         xOffHalf = AppMgr.getXOffsetHalf();
-        txtHeightOffHalf = 0.5f * initTextHeightOff;
+        txtHeightOffHalf = 0.5f * btnConfig.initTextHeightOff;
         initBtnLblYOff = AppMgr.getBtnLabelYOffset();
         
         //these have to be set before setupGUIObjsAras is called from initThisWin
@@ -82,7 +81,7 @@ public class SidebarMenu extends Base_DispWindow{
         // build uiClkCoords
         //all ui objects for all windows will follow this format and share the uiClkCoords[0] value    
         // UI region for Application-wide buttons, under application flags
-        btnConfig.setAppButtonRegion(winInitVals.rectDim, (numMainFlagsToShow+3) * initTextHeightOff + clkFlgsStY);
+        btnConfig.setAppButtonRegion(winInitVals.rectDim, (numMainFlagsToShow+3) * btnConfig.initTextHeightOff);
         // Change UI FlagReg - standard init
         super.initThisWin(true);
     }//ctor
@@ -153,6 +152,11 @@ public class SidebarMenu extends Base_DispWindow{
     @Override
     protected final void setupGUIBoolSwitchAras(int firstIdx,LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {}
     
+    /**
+     * Set the function button labels based on the requirements of the application window
+     * @param _funRowIDX
+     * @param BtnLabels
+     */
     public void setAllFuncBtnLabels(int _funRowIDX, String[] BtnLabels) {btnConfig.setAllFuncBtnLabels(_funRowIDX, BtnLabels);}
     
     /**
@@ -251,12 +255,12 @@ public class SidebarMenu extends Base_DispWindow{
     protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {    
         if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
         //TODO Awful - needs to be recalced, dependent on menu being on left
-        int i = (int)((mouseY-(initBtnLblYOff + clkFlgsStY))/(initTextHeightOff));                    
+        int i = (int)((mouseY-(initBtnLblYOff + clkFlgsStY))/(btnConfig.initTextHeightOff));                    
         //msgObj.dispInfoMessage(className, "hndlMouseClick_Indiv", "Clicked on disp windows : i : " + i+"|uiClkCoords[1] = "+uiClkCoords[1]+" | UIAppButtonRegion[1] :"+UIAppButtonRegion[1]);
         
         if((i>=0) && (i<numMainFlagsToShow)){
             AppMgr.flipMainFlag(i);return true;    
-        } else if(btnConfig.checkInButtonRegion(mouseX, mouseY)) {//MyMathUtils.ptInRange((float)mouseX, (float)mouseY, UIAppButtonRegion[0], UIAppButtonRegion[1], UIAppButtonRegion[2], UIAppButtonRegion[3])){
+        } else if(btnConfig.checkInButtonRegion(mouseX, mouseY)) {
             boolean clkInBtnRegion = btnConfig.checkButtons(mouseX, mouseY, winInitVals.rectDim[2]);
             if(clkInBtnRegion) { uiMgr.setPrivFlag(mseClickedInBtnsIDX, true);}
             return clkInBtnRegion;
@@ -283,14 +287,7 @@ public class SidebarMenu extends Base_DispWindow{
 
     @Override
     protected boolean handleMouseWheel_Indiv(int ticks, float mult) {        return false;   }
-    private void drawSideBarBooleans(float btnLblYOff, float xOffHalf, float txtHeightOffHalf){
-        //draw main booleans and their state
-        ri.translate(xOffHalf,btnLblYOff);
-        ri.setColorValFill(IRenderInterface.gui_Black,255);
-        ri.showText("Boolean Flags",0,txtHeightOffHalf);
-        ri.translate(0,clkFlgsStY);
-        AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
-    }//drawSideBarBooleans    
+  
     /**
      * For windows to draw on screen
      */
@@ -306,26 +303,30 @@ public class SidebarMenu extends Base_DispWindow{
     protected final void drawMe(float animTimeMod) {
         ri.pushMatState();
             ri.pushMatState();
-                AppMgr.drawSideBarStateLights(initTextHeightOff);                //lights that reflect various states
+                AppMgr.drawSideBarStateLights(btnConfig.initTextHeightOff);                //lights that reflect various states
             ri.popMatState();        
             ri.pushMatState();
-                drawSideBarBooleans(
-                        AppMgr.getBtnLabelYOffset(), 
-                        xOffHalf, 
-                        txtHeightOffHalf);                //toggleable booleans 
+                //draw main booleans and their state
+                ri.translate(xOffHalf,initBtnLblYOff);
+                ri.setColorValFill(IRenderInterface.gui_Black,255);
+                ri.showText("Boolean Flags",0,txtHeightOffHalf);
+                ri.translate(0,clkFlgsStY);
+                AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
             ri.popMatState();    
             ri.pushMatState();            
                 btnConfig.drawSideBarButtons(
-                        AppMgr.getBtnLabelYOffset(),
+                        AppMgr.isDebugMode(),
+                        initBtnLblYOff,
                         xOffHalf,
                         AppMgr.getRowStYOffset(),
                         winInitVals.rectDim[2]);                        //draw buttons
             ri.popMatState();    
             ri.pushMatState();
-                uiMgr.drawGUIObjs(AppMgr.isDebugMode(), animTimeMod);//draw what global user-modifiable fields are currently available 
+                //draw what global user-modifiable fields are currently available
+                uiMgr.drawGUIObjs(AppMgr.isDebugMode(), animTimeMod); 
             ri.popMatState();            
             ri.pushMatState();
-                AppMgr.drawWindowGuiObjs(animTimeMod);            //draw objects for window with primary focus
+                AppMgr.drawWindowGuiObjs(animTimeMod);            //draw objects for window(s) with primary focus
             ri.popMatState();    
         ri.popMatState();
     }

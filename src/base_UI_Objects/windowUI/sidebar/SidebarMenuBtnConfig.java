@@ -45,15 +45,15 @@ public class SidebarMenuBtnConfig {
     /**
      * names for each row of buttons - idx 1 is name of row
      */
-    private String[] guiBtnRowNames;
+    private String[] _guiBtnRowNames;
     /**
      * names for each row of buttons - idx 1 is name of row
      */
-    private String[][] guiBtnLabels;
+    private String[][] _guiBtnLabels;
     /**
      * Width of labels for each button
      */
-    private Float[][] guiBtnLabelWidths;
+    private Float[][] _guiBtnLabelWidths;
     
     /**
      * default names, to return to if not specified by user
@@ -62,23 +62,23 @@ public class SidebarMenuBtnConfig {
     /**
      * whether buttons are momentary or not (on only while being clicked)
      */
-    private Boolean[][] guiBtnInst;
+    private Boolean[][] _guiBtnInst;
     /**
      * whether buttons are waiting for processing to complete (for non-momentary buttons)
      */
-    private Boolean[][] guiBtnWaitForProc;
+    private Boolean[][] _guiBtnWaitForProc;
     
     /**
      * whether buttons are disabled(-1), enabled but not clicked/on (0), or enabled and on/clicked(1)
      */
-    private int[][] guiBtnState;
+    private int[][] _guiBtnState;
     
-    public final int[] guiBtnStateFillClr = new int[]{                    //button colors based on state
+    public final int[] _guiBtnStateFillClr = new int[]{                    //button colors based on state
             IRenderInterface.gui_White,                                //disabled color for buttons
             IRenderInterface.gui_LightGray,                            //not clicked button color
             IRenderInterface.gui_LightBlue,                            //clicked button color
         };
-    public final int[] guiBtnStateTxtClr = new int[]{                    //text color for buttons
+    public final int[] _guiBtnStateTxtClr = new int[]{                    //text color for buttons
             IRenderInterface.gui_LightGray,                            //disabled color for buttons
             IRenderInterface.gui_Black,                                //not clicked button color
             IRenderInterface.gui_Black,                                //clicked button color
@@ -87,7 +87,7 @@ public class SidebarMenuBtnConfig {
     /**
      * Y coord where gui button rows end
      */
-    public final float guiBtnRowsEndY;
+    public final float _guiBtnRowsEndY;
 
     /**
      * Where buttons should start on 
@@ -95,17 +95,14 @@ public class SidebarMenuBtnConfig {
     /**
      * Size of text height offset on creation TODO get rid of this value in favor of live updates
      */
-    private float initTextHeightOff;
-
-    /**
-     * Offset for starting a new row in Y at creation TODO get rid of this value in favor of live updates
-     */
-    private float initRowStYOff;    
+    public final float initTextHeightOff;
     
     /**
      * This is the UI clickable region for the application-wide buttons, under the application flags.
      */
     private float[] UIAppButtonRegion;
+    
+    private float initRowStYOff;
     
     /**
      * Configuration for important side bar features, 
@@ -124,7 +121,7 @@ public class SidebarMenuBtnConfig {
         initRowStYOff = AppMgr.getRowStYOffset();
         // build all side bar menu buttons with format specific to instancing application
         // returns the y location of where the UI clickable region for the display window should start
-        guiBtnRowsEndY = buildBtnData(_funcRowNames, _funcBtnLabels, _debugBtnLabels, _winTitles, _inclWinNames, _inclMseOvValues);
+        _guiBtnRowsEndY = buildBtnData(_funcRowNames, _funcBtnLabels, _debugBtnLabels, _winTitles, _inclWinNames, _inclMseOvValues);
     }
 
     public void setAppButtonRegion(float[] rectDim, float yOffset) {
@@ -132,10 +129,9 @@ public class SidebarMenuBtnConfig {
         UIAppButtonRegion[0] = rectDim[0] + .01f * rectDim[2];
         UIAppButtonRegion[1] = yOffset;
         UIAppButtonRegion[2] = rectDim[0] + .99f * rectDim[2];
-        UIAppButtonRegion[3] = yOffset + initRowStYOff +guiBtnRowsEndY;        
+        UIAppButtonRegion[3] = UIAppButtonRegion[1] + _guiBtnRowsEndY + initRowStYOff;        
     }
     
-
     /**
      * Set values for ui action buttons, based on specifications of @class mySidebarMenuBtnConfig
      * Parameters user defined in main as window is specified, individual button names can be overridden in individual app windows
@@ -178,8 +174,9 @@ public class SidebarMenuBtnConfig {
         
         String[] titleArray = new String[winTitles.length-1];
         Float[] titleLengths = new Float[winTitles.length-1];
+        //display window selections - if only 1 then don't use this entry
         if((inclWinNames)&&(titleArray.length != 0)) {
-            for(int i=0;i<titleArray.length;++i) {titleArray[i] =winTitles[i+1];titleLengths[i]=ri.getTextWidth(titleArray[i]);}
+            for(int i=0;i<titleArray.length;++i) {titleArray[i]=winTitles[i+1];titleLengths[i]=ri.getTextWidth(titleArray[i]);}
             tmpBtnLabels.add(titleArray);
             tmpBtnLabelWidths.add(titleLengths);
             tmpDfltBtnLabels.add(titleArray);
@@ -192,7 +189,7 @@ public class SidebarMenuBtnConfig {
             _initBtnShowWin = true;
             ++funcBtnIDXOffset;
         } else {            _initBtnShowWin= false;        }
-        
+        //mouse-over button labels
         String[] mseOvrBtnLabels = AppMgr.getMouseOverSelBtnLabels();
         if((inclMseOvValues) && (mseOvrBtnLabels!=null) && (mseOvrBtnLabels.length > 0)) {
             tmpBtnLabels.add(mseOvrBtnLabels);
@@ -209,46 +206,54 @@ public class SidebarMenuBtnConfig {
             ++funcBtnIDXOffset;
             _initBtnMseFunc= true;
         } else {            _initBtnMseFunc= false;}
-        
-         for(int i=0;i<numBtnsPerFuncRow.length;++i) {
-            String s = funcRowNames[i];
-            String[] btnNameAra = buildBtnNameAra(numBtnsPerFuncRow[i],"Func"); 
-            Float[] btnNameLengths = new Float[btnNameAra.length];
-            tmpBtnLabels.add(btnNameAra);
-            for(int j=0;j<btnNameLengths.length;++j ) {btnNameLengths[j] = ri.getTextWidth(btnNameAra[j]);}
-            tmpBtnLabelWidths.add(btnNameLengths);            
-            tmpDfltBtnLabels.add(buildBtnNameAra(numBtnsPerFuncRow[i],"Func"));
+        //main buttons listing
+        for(int idx=0;idx<numBtnsPerFuncRow.length;++idx) {
+            String rowName = funcRowNames[idx];
+            String dfltLbl = "Func";
             
-            tmpBtnIsInst.add(buildDfltBtnFlagAra(numBtnsPerFuncRow[i]));
-            tmpBtnWaitForProc.add(buildDfltBtnFlagAra(numBtnsPerFuncRow[i]));
-            funcBtnIDXAra[i]=i+funcBtnIDXOffset;
-            tmpGuiBtnRowNames.add(s);
-        }
-        if(debugBtnRowIDX >= 0) {
-            String[] btnNameAra = buildBtnNameAra(debugBtnLabels.length,"Debug");
+            String[] btnNameAra = buildBtnNameAra(numBtnsPerFuncRow[idx],dfltLbl); 
             Float[] btnNameLengths = new Float[btnNameAra.length];
             tmpBtnLabels.add(btnNameAra);
             for(int j=0;j<btnNameLengths.length;++j ) {btnNameLengths[j] = ri.getTextWidth(btnNameAra[j]);}
             tmpBtnLabelWidths.add(btnNameLengths);            
-            tmpDfltBtnLabels.add(buildBtnNameAra(debugBtnLabels.length,"Debug"));
+            tmpDfltBtnLabels.add(buildBtnNameAra(numBtnsPerFuncRow[idx],dfltLbl));
+            
+            tmpBtnIsInst.add(buildDfltBtnFlagAra(numBtnsPerFuncRow[idx]));
+            tmpBtnWaitForProc.add(buildDfltBtnFlagAra(numBtnsPerFuncRow[idx]));
+            funcBtnIDXAra[idx]=idx+funcBtnIDXOffset;
+            tmpGuiBtnRowNames.add(rowName);
+         }
+         
+        // for debug buttons, if present
+        if(debugBtnRowIDX >= 0) {
+            String s = "DEBUG";
+            String dfltLbl = "Debug";
+            
+            String[] btnNameAra = buildBtnNameAra(debugBtnLabels.length,dfltLbl);
+            Float[] btnNameLengths = new Float[btnNameAra.length];
+            tmpBtnLabels.add(btnNameAra);
+            for(int j=0;j<btnNameLengths.length;++j ) {btnNameLengths[j] = ri.getTextWidth(btnNameAra[j]);}
+            tmpBtnLabelWidths.add(btnNameLengths);            
+            tmpDfltBtnLabels.add(buildBtnNameAra(debugBtnLabels.length,dfltLbl));
             
             tmpBtnIsInst.add(buildDfltBtnFlagAra(debugBtnLabels.length));
             tmpBtnWaitForProc.add(buildDfltBtnFlagAra(debugBtnLabels.length));
-            tmpGuiBtnRowNames.add("DEBUG");
+            tmpGuiBtnRowNames.add(s);
             btnDBGSelCmpIdx = tmpGuiBtnRowNames.size()-1;
             funcBtnIDXAra[debugBtnRowIDX]=debugBtnRowIDX+funcBtnIDXOffset;
+            
             _initBtnDBGSelCmp = true;
         } else {    _initBtnDBGSelCmp = false;    }
         
-        guiBtnRowNames = tmpGuiBtnRowNames.toArray(new String[0]);        
-        guiBtnLabels = tmpBtnLabels.toArray(new String[0][]);
-        guiBtnLabelWidths = tmpBtnLabelWidths.toArray(new Float[0][]);
+        _guiBtnRowNames = tmpGuiBtnRowNames.toArray(new String[0]);        
+        _guiBtnLabels = tmpBtnLabels.toArray(new String[0][]);
+        _guiBtnLabelWidths = tmpBtnLabelWidths.toArray(new Float[0][]);
         defaultUIBtnLabels = tmpDfltBtnLabels.toArray(new String[0][]);
-        guiBtnInst = tmpBtnIsInst.toArray(new Boolean[0][]);
-        guiBtnWaitForProc = tmpBtnWaitForProc.toArray(new Boolean[0][]);
+        _guiBtnInst = tmpBtnIsInst.toArray(new Boolean[0][]);
+        _guiBtnWaitForProc = tmpBtnWaitForProc.toArray(new Boolean[0][]);
         
-        guiBtnState = new int[guiBtnRowNames.length][];
-        for(int i=0;i<guiBtnState.length;++i) {guiBtnState[i] = new int[guiBtnLabels[i].length];}
+        _guiBtnState = new int[_guiBtnRowNames.length][];
+        for(int i=0;i<_guiBtnState.length;++i) {_guiBtnState[i] = new int[_guiBtnLabels[i].length];}
         
         //set button names
         for(int _type = 0;_type<funcBtnLabels.length;++_type) {setAllFuncBtnLabels(_type,funcBtnLabels[_type]);}
@@ -257,7 +262,7 @@ public class SidebarMenuBtnConfig {
             setAllFuncBtnLabels(debugBtnRowIDX,debugBtnLabels);
         }    
         // y span of the buttons
-        return (guiBtnRowNames.length * 2.0f) * initTextHeightOff;
+        return _guiBtnRowNames.length * (2.0f * initTextHeightOff + initRowStYOff);
     }//buildBtnData
     
     private String[] buildBtnNameAra(int numBtns, String prfx) {
@@ -279,10 +284,10 @@ public class SidebarMenuBtnConfig {
      */
     public void setAllFuncBtnLabels(int _funRowIDX, String[] BtnLabels) {
         int rowIdx = funcBtnIDXAra[_funRowIDX];        
-        String[] replAra = ((null==BtnLabels) || (BtnLabels.length != guiBtnLabels[rowIdx].length)) ? defaultUIBtnLabels[rowIdx] : BtnLabels;
-        for(int i=0;i<guiBtnLabels[rowIdx].length;++i) {
-            guiBtnLabels[rowIdx][i]=replAra[i]; 
-            guiBtnLabelWidths[rowIdx][i] = ri.getTextWidth(guiBtnLabels[rowIdx][i]);
+        String[] replAra = ((null==BtnLabels) || (BtnLabels.length != _guiBtnLabels[rowIdx].length)) ? defaultUIBtnLabels[rowIdx] : BtnLabels;
+        for(int i=0;i<_guiBtnLabels[rowIdx].length;++i) {
+            _guiBtnLabels[rowIdx][i]=replAra[i]; 
+            _guiBtnLabelWidths[rowIdx][i] = ri.getTextWidth(_guiBtnLabels[rowIdx][i]);
         }
     }//setFunctionButtonNames
     
@@ -290,9 +295,9 @@ public class SidebarMenuBtnConfig {
      * turn off buttons that may be on and should be turned off - called at release of mouse - check for mouse loc before calling (in button region)?
      */
     public final void clearAllBtnStates(){    
-        //guiBtnWaitForProc should only be set for non-momentary buttons when they are pushed and cleared when whatever they are do is complete
-        for(int row=0; row<guiBtnRowNames.length;++row){for(int col =0; col<guiBtnLabels[row].length;++col){                
-            if((guiBtnState[row][col]==1) && (guiBtnInst[row][col]  || !guiBtnWaitForProc[row][col])){    guiBtnState[row][col] = 0;}//btn is on, and either is momentary or it is not waiting for processing
+        //_guiBtnWaitForProc should only be set for non-momentary buttons when they are pushed and cleared when whatever they are do is complete
+        for(int row=0; row<_guiBtnRowNames.length;++row){for(int col =0; col<_guiBtnLabels[row].length;++col){                
+            if((_guiBtnState[row][col]==1) && (_guiBtnInst[row][col]  || !_guiBtnWaitForProc[row][col])){    _guiBtnState[row][col] = 0;}//btn is on, and either is momentary or it is not waiting for processing
         }}        
     }//clearAllBtnStates
     
@@ -302,17 +307,17 @@ public class SidebarMenuBtnConfig {
      * @param btnToKeepOn btn whose state should stay on
      */
     public final void clearRowExceptPassedBtn(int row, int btnToKeepOn) {
-        for(int col =0; col<guiBtnLabels[row].length;++col){    guiBtnState[row][col] = 0;}
-        guiBtnState[row][btnToKeepOn]=1;
+        for(int col =0; col<_guiBtnLabels[row].length;++col){    _guiBtnState[row][col] = 0;}
+        _guiBtnState[row][btnToKeepOn]=1;
     }
     
     /**
-     * set non-momentary buttons to be waiting for processing complete comand
+     * set non-momentary buttons to be waiting for processing complete command
      * @param row
      * @param col
      */
     public final void setWaitForProc(int row, int col) {
-        if(!guiBtnInst[row][col]) {    guiBtnWaitForProc[row][col] = true;}        
+        if(!_guiBtnInst[row][col]) {    _guiBtnWaitForProc[row][col] = true;}        
     }
     
     /**
@@ -322,9 +327,9 @@ public class SidebarMenuBtnConfig {
      * @return
      */
     public final String getSidebarMenuButtonLabel(int row, int col) {
-        if(row >= guiBtnLabels.length) {        return "Row " +row+" too high for max rows : "+guiBtnLabels.length;}
-        if(col >= guiBtnLabels[row].length) {    return "Col " +col+" too high for max cols @ row " + row+" : "+guiBtnLabels[row].length;}
-        return guiBtnLabels[row][col];}
+        if(row >= _guiBtnLabels.length) {        return "Row " +row+" too high for max rows : "+_guiBtnLabels.length;}
+        if(col >= _guiBtnLabels[row].length) {    return "Col " +col+" too high for max cols @ row " + row+" : "+_guiBtnLabels[row].length;}
+        return _guiBtnLabels[row][col];}
     
     /**
      * handle click on button region of menubar
@@ -332,8 +337,8 @@ public class SidebarMenuBtnConfig {
      * @param col
      */
     private final void handleButtonClick(int row, int col){
-        int val = guiBtnState[row][col];//initial state, before being changed
-        guiBtnState[row][col] = (guiBtnState[row][col] + 1)%2;//change state
+        int val = _guiBtnState[row][col];//initial state, before being changed
+        _guiBtnState[row][col] = (_guiBtnState[row][col] + 1)%2;//change state
         //if not momentary buttons, set wait for proc to true
         setWaitForProc(row,col);
         // click in window select button region
@@ -349,6 +354,32 @@ public class SidebarMenuBtnConfig {
         else {AppMgr.handleMenuBtnSelCmp(row, funcBtnIDXOffset, col, val);}        
     }    
     
+//    /**
+//     * check if buttons clicked. TODO Create a button class that will manage its own hotspot
+//     * @param mseX
+//     * @param mseY
+//     * @return
+//     */
+//    public boolean checkButtons(int mseX, int mseY, float winWidth){
+//        double stY = UIAppButtonRegion[1] + initRowStYOff, endY = 0, 
+//                stX = 0, endX, widthX; //btnLblYOff            
+//        for(int row=0; row<_guiBtnRowNames.length;++row){
+//            //account for width of button region
+//            endY = stY + initTextHeightOff;    
+//            widthX = winWidth/(1.0f * _guiBtnLabels[row].length);
+//            stX = 0;    endX = widthX;
+//            for(int col =0; col<_guiBtnLabels[row].length;++col){    
+//                if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (_guiBtnState[row][col] != -1)){
+//                    handleButtonClick(row,col);
+//                    return true;
+//                }                    
+//                stX += widthX;    endX += widthX; 
+//            }
+//            //add initTextHeightOff for button row offset
+//            stY = endY + initTextHeightOff + initRowStYOff;        
+//        }
+//        return false;
+//    }//handleButtonClick
     /**
      * check if buttons clicked. TODO Create a button class that will manage its own hotspot
      * @param mseX
@@ -356,14 +387,15 @@ public class SidebarMenuBtnConfig {
      * @return
      */
     public boolean checkButtons(int mseX, int mseY, float winWidth){
-        double stY = UIAppButtonRegion[1] + initRowStYOff, endY = 0, 
+        double stY = UIAppButtonRegion[1]+ initTextHeightOff + initRowStYOff, endY = 0, 
                 stX = 0, endX, widthX; //btnLblYOff            
-        for(int row=0; row<guiBtnRowNames.length;++row){
+        for(int row=0; row<_guiBtnRowNames.length;++row){
+            //account for width of button region
             endY = stY + initTextHeightOff;    
-            widthX = winWidth/(1.0f * guiBtnLabels[row].length);
+            widthX = winWidth/(1.0f * _guiBtnLabels[row].length);
             stX = 0;    endX = widthX;
-            for(int col =0; col<guiBtnLabels[row].length;++col){    
-                if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (guiBtnState[row][col] != -1)){
+            for(int col =0; col<_guiBtnLabels[row].length;++col){    
+                if((MyMathUtils.ptInRange(mseX, mseY,stX, stY, endX, endY)) && (_guiBtnState[row][col] != -1)){
                     handleButtonClick(row,col);
                     return true;
                 }                    
@@ -373,44 +405,67 @@ public class SidebarMenuBtnConfig {
             stY = endY + initTextHeightOff + initRowStYOff;        
         }
         return false;
-    }//handleButtonClick
-    
+    }//handleButtonClick  
     public boolean checkInButtonRegion(float mouseX, float mouseY) {
         return MyMathUtils.ptInRange(mouseX, mouseY, UIAppButtonRegion[0], UIAppButtonRegion[1], UIAppButtonRegion[2], UIAppButtonRegion[3]);
     }
     
-    public Boolean[][] getGuiBtnWaitForProc() {return guiBtnWaitForProc;}
-    public void setGuiBtnWaitForProc(Boolean[][] _guiBtnWaitForProc) {        guiBtnWaitForProc = _guiBtnWaitForProc;}
-    public int[][] getGuiBtnState() {        return guiBtnState;    }
-    public void setGuiBtnState(int[][] _guiBtnState) {    guiBtnState = _guiBtnState;    }    
+    public Boolean[][] getGuiBtnWaitForProc() {return _guiBtnWaitForProc;}
+    public void setGuiBtnWaitForProc(Boolean[][] guiBtnWaitForProc) {        _guiBtnWaitForProc = guiBtnWaitForProc;}
+    public int[][] getGuiBtnState() {        return _guiBtnState;    }
+    public void setGuiBtnState(int[][] guiBtnState) {    _guiBtnState = guiBtnState;    }    
     public float[] getUIAppBtnRegion() {return UIAppButtonRegion;}
+    
+    private void _drawButtonLines(float xWidth) {        
+        double stY = UIAppButtonRegion[1]+ initTextHeightOff + initRowStYOff;
+        ri.pushMatState();
+        ri.setStrokeWt(2.0f);
+        ri.setStroke(0,0,255,255);
+        ri.drawLine(0, UIAppButtonRegion[1],0,xWidth,UIAppButtonRegion[1],0);
+        for(int row=0; row<_guiBtnRowNames.length;++row){
+            ri.pushMatState();
+            ri.translate(0, stY, 0);
+            ri.setStroke(255,0,0,255);
+            ri.drawLine(0,0,0, xWidth,0,0);
+            ri.translate(0, initTextHeightOff, 0);
+            ri.setStroke(0,255,0,255);
+            ri.drawLine(0,0,0, xWidth,0,0);
+            //add initTextHeightOff for button row offset
+            stY += 2.0f *initTextHeightOff + initRowStYOff;                
+            ri.popMatState();
+        }        
+        ri.popMatState();
+    }
     /**
      * draw UI buttons that control functions, debug and global load/save stubs
      */
-    public void drawSideBarButtons(float btnLblYOff, float xOffHalf, float rowStYOff, float xWidth){
-        ri.translate(xOffHalf,(float)UIAppButtonRegion[1]);
+    public void drawSideBarButtons(boolean _isDebug, float btnLblYOff, float xOffHalf, float rowStYOff, float xWidth){
+        ri.pushMatState();    
+        ri.translate(xOffHalf,(float)UIAppButtonRegion[1] + initRowStYOff + initTextHeightOff*.75f);
         ri.setFill(new int[]{0,0,0}, 255);
         float halfWay;
-        for(int row=0; row<guiBtnRowNames.length;++row){
-            ri.showText(guiBtnRowNames[row],0,-initTextHeightOff*.15f);
+        for(int row=0; row<_guiBtnRowNames.length;++row){
+            ri.showText(_guiBtnRowNames[row],0,-initTextHeightOff*.15f);
             ri.translate(0,rowStYOff);
-            float xWidthOffset = xWidth/(1.0f * guiBtnLabels[row].length);
+            float xWidthOffset = xWidth/(1.0f * _guiBtnLabels[row].length);
             ri.pushMatState();
             ri.setStrokeWt(1.0f);
             ri.setColorValStroke(IRenderInterface.gui_Black,255);
             ri.noFill();
             ri.translate(-xOffHalf, 0);
-            for(int col =0; col<guiBtnLabels[row].length;++col){
-                halfWay = (xWidthOffset - guiBtnLabelWidths[row][col])/2.0f;
-                ri.setColorValFill(guiBtnStateFillClr[guiBtnState[row][col]+1],255);
+            for(int col =0; col<_guiBtnLabels[row].length;++col){
+                halfWay = (xWidthOffset - _guiBtnLabelWidths[row][col])/2.0f;
+                ri.setColorValFill(_guiBtnStateFillClr[_guiBtnState[row][col]+1],255);
                 ri.drawRect(new float[] {0,0,xWidthOffset, initTextHeightOff});    
-                ri.setColorValFill(guiBtnStateTxtClr[guiBtnState[row][col]+1],255);
-                ri.showText(guiBtnLabels[row][col], halfWay, initTextHeightOff*.75f);
+                ri.setColorValFill(_guiBtnStateTxtClr[_guiBtnState[row][col]+1],255);
+                ri.showText(_guiBtnLabels[row][col], halfWay, initTextHeightOff*.75f);
                 ri.translate(xWidthOffset, 0);
             }
             ri.popMatState();                        
             ri.translate(0,btnLblYOff);
         }
-    }//drawSideBarButtons    
+        ri.popMatState(); 
+        if(_isDebug) {       _drawButtonLines(xWidth);       }
+   }//drawSideBarButtons    
     
 }//class mySidebarMenuBtnConfig
