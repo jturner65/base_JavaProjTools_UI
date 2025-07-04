@@ -1343,37 +1343,47 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      */
     @Override
     public final boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn){
-        boolean mod = false;
-        if(!dispFlags.getShowWin()){return mod;}
+        if(!dispFlags.getShowWin()){return false;}
         boolean shiftPressed = AppMgr.shiftIsPressed();
         int delX = (mouseX-pmouseX), delY = (mouseY-pmouseY);
-        //check if modding view
-        if (shiftPressed && dispFlags.getCanChgView() && (!msClickInUIObj)) {//modifying view angle/zoom
-            AppMgr.setModView(true);    
-            if(mseBtn == 0){            handleViewChange(false,AppMgr.msSclY*delY, AppMgr.msSclX*delX);}    
-            else if (mseBtn == 1) {        handleViewChange(true,delY, 0);}    
-            return true;
-        } else if ((AppMgr.cntlIsPressed()) && dispFlags.getCanChgView() && (!msClickInUIObj)) {//modifying view focus
-            AppMgr.setModView(true);
-            handleViewTargetChange(delY, delX);
-            return true;
-        } else {//modify UI elements        
+        //check if modding view - if view can be changed and click did not occur in a UI object
+        
+        if(msClickInUIObj) {//modify UI elements        
             //any generic dragging stuff - need flag to determine if trajectory is being entered        
             //modify object that was clicked in by mouse motion
-            
             boolean retVals[] = uiMgr.handleMouseDrag(delX, delY, mseBtn, shiftPressed);
             if (retVals[1]){dispFlags.setUIObjMod(true);}
-            if (retVals[0]){return true;}
-
-            if(null!=trajMgr) {    mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn);        }
-            if(!mod) {
-                if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}    //if not drawing or editing a trajectory, force all dragging to be within window rectangle    
+            // return whether an object has been modified or not
+            return retVals[0];
+        } else { 
+            boolean mod = false;
+            if(dispFlags.getCanChgView()) {
+                // Check if modifying view
+                if(shiftPressed) {                      //modifying view angle/zoom
+                    AppMgr.setModView(true); 
+                    if(mseBtn == 0){        handleViewChange(false,AppMgr.msSclY*delY, AppMgr.msSclX*delX);}    
+                    else if (mseBtn == 1) { handleViewChange(true,delY, 0);}                   
+                    mod = true;
+                } else if (AppMgr.cntlIsPressed()) {    //modifying view focus target
+                    AppMgr.setModView(true);
+                    handleViewTargetChange(delY, delX);                  
+                    mod = true;
+                }       
+            }
+            // if nothing has been modified yet, check if there is a trajectory to modify
+            if(!mod && null!=trajMgr) {    
+                // check if a trajectory exists TODO rework this
+                mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn); 
+            }          
+            // if nothing has been modified yet, check if there is window-specific functionality to deal with
+            if(!mod && winInitVals.pointInRectDim(mouseX, mouseY)){
                 //_dispDbgMsg("handleMouseDrag","before handle indiv drag traj for window : " + this.name);
                 myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
-                mod = hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);        //handle specific, non-trajectory functionality for implementation of window
+                //handle instance-specific, non-trajectory, non-UI object functionality for implementation of window
+                return hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);           
             }
         }
-        return mod;
+        return false;
     }//handleMouseDrag
     
     /**
