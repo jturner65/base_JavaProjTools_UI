@@ -82,7 +82,7 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
     /**
      * Renderer for this object
      */
-    protected Base_GUIObjRenderer renderer;
+    private Base_GUIObjRenderer renderer;
     
     /**
      * Builds a UI object
@@ -375,6 +375,12 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
     }
     
     /**
+     * Tell the renderer to update its info about this object. Should be called whenever major
+     * changes to the object happen, such as a list box getting new values (not on regular UI interaction)
+     */
+    public final void updateRenderer() {       if(renderer != null) {      renderer.updateFromObject();        }   }
+    
+    /**
      * Verify passed coordinates are within this object's modifiable zone. 
      * If true then this object will be modified by UI actions
      * Renderer Manages hotspot. -sigh- might be better if this object owned this data.
@@ -540,18 +546,13 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
      * What to display if this UI object is single line
      * @return
      */
-    public final String getUIDispAsSingleLine() {
-        return getLabel() + getValueAsString();        
-    }
+    public final String getUIDispAsSingleLine() {return getLabel() + getValueAsString();}
     
     /**
      * What to display if this UI object is multi line
      * @return
      */
-    public final String[] getUIDispAsMultiLine() {
-        return new String[]{getLabel(), getValueAsString()};        
-    }    
-    
+    public final String[] getUIDispAsMultiLine() {return new String[]{getLabel(), getValueAsString()};}       
 
     /**
      * Return the constant name assigned to this object on creation
