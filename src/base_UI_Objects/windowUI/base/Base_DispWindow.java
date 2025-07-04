@@ -258,7 +258,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      */
     public final void initThisWin(boolean _isMenu){
         dispFlags = new WinDispStateFlags(this);    
-        // build all ui objects
+        // build all ui objects - will create uiClkCoords
         uiMgr.initAllGUIObjects();
         //run instancing window-specific initialization after all ui objects are built
         initMe();
@@ -1127,20 +1127,24 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      */
     public final void setShowWin(boolean val) {dispFlags.setShowWin(val);}
     
+    /**
+     * Toggle whether this window is being shown or not
+     */
     protected final void toggleWindowState(){
         //_dispDbgMsg("toggleWindowState","Attempting to close window : " + this.name);
         dispFlags.toggleShowWin();
-        if(dispFlagWinIDX != -1) {AppMgr.setWinVisFlag(dispFlagWinIDX, dispFlags.getShowWin());}    //value has been changed above by close box    
+        // If AppMgr owns this window (idx != -1) inform it that this window's state has been toggled
+        if(dispFlagWinIDX != -1) {AppMgr.setWinVisFlag(dispFlagWinIDX, dispFlags.getShowWin());}    //value has been changed above by close box 
+        // handle windows that are owned by other windows individually
     }
     
     /**
-     * Check for click in closeable box
+     * Check for click in closeable box and if so toggle window state
      * @param mouseX
      * @param mouseY
      * @return
      */
     protected final boolean checkClsBox(int mouseX, int mouseY){
-        //if(MyMathUtils.ptInRange(mouseX, mouseY, closeBox[0], closeBox[1], closeBox[0]+closeBox[2], closeBox[1]+closeBox[3])){toggleWindowState(); res = true;}                
         if(msePtInRect(mouseX, mouseY, closeBox)){toggleWindowState(); return true;}                
         return false;        
     }
@@ -1188,9 +1192,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param pt
      * @return
      */
-    protected final myPoint getMsePoint(myPoint pt){
-        return dispFlags.getIs3DWin() ? getMsePtAs3DPt(pt) : pt;}        //get appropriate representation of mouse location in 3d if 3d window
-    public final myPoint getMsePoint(int mouseX, int mouseY){return dispFlags.getIs3DWin() ? getMsePtAs3DPt(new myPoint(mouseX,mouseY,0)) : new myPoint(mouseX,mouseY,0);}
+    protected final myPoint getMsePoint(myPoint pt){                return dispFlags.getIs3DWin() ? getMsePtAs3DPt(pt) : pt;}        
+    /**
+     * get appropriate representation of mouse location in 3d if 3d window
+     * @param pt
+     * @return
+     */
+    public final myPoint getMsePoint(int mouseX, int mouseY){       return getMsePoint(new myPoint(mouseX,mouseY,0));}
     /**
      * return appropriate 3d representation of mouse location - in 2d this will just be mseLoc x, mse Loc y, 0
      * @param mseLoc x and y are int values of mouse x and y location
@@ -1224,6 +1232,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     public final boolean pointInRectDim(myPointf pt){return winInitVals.pointInRectDim(pt);}
     public final float getTextHeightOffset() {return AppMgr.getTextHeightOffset();}    
     
+    protected final void setMsClickInUIObj(boolean _uiObjClicked) {
+        msClickInUIObj = _uiObjClicked;
+    }
+    
     /**
      * Handle mouse interaction via a mouse click
      * @param mouseX current mouse x on screen
@@ -1234,12 +1246,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     @Override
     public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
         boolean mod = false;
-        //check if trying to close or open the window via click, if possible
+        //check if trying to close or open the window via click, if possible, even if window is closed
         if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}        
         boolean showWin = dispFlags.getShowWin();
         if(!showWin){return mod;}
+        
+        
         boolean[] retVals = new boolean[] {false,false};
-        msClickInUIObj = uiMgr.handleMouseClick(mouseX, mouseY, mseBtn, AppMgr.isClickModUIVal(), retVals);
+        setMsClickInUIObj(uiMgr.handleMouseClick(mouseX, mouseY, mseBtn, AppMgr.isClickModUIVal(), retVals));
         if (retVals[1]){dispFlags.setUIObjMod(true);}
         if (retVals[0]){return true;}
         

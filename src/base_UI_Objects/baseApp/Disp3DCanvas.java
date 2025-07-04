@@ -108,8 +108,10 @@ public class Disp3DCanvas {
         scrCtrInWorld = getPlInterSect(rawScrCtrInWorld, myVector._normalize(eyeToCtr));
         
         myPoint mseLocInWorld = getMseLocInWorld();    
-        eyeToMse.set(eyeInWorld, mseLocInWorld);        //unit vector in world coords of "eye" to mouse location
+        //unit vector in world coords of "eye" to mouse location
+        eyeToMse.set(eyeInWorld, mseLocInWorld);        
         eyeToMse._normalize();
+        // record last cycles dfCtr
         oldMseLoc.set(dfCtr);
         dfCtr = getPlInterSect(mseLocInWorld, eyeToMse);
     }//buildCanvas()
@@ -143,25 +145,36 @@ public class Disp3DCanvas {
     }
 
     /**
-     * 
+     * Retrieve the mouse location projected onto the cavnas as a 3d point
      * @return
      */
     public myPoint getMseLoc(){return new myPoint(dfCtr);    }
     /**
-     * 
+     * Retrieve the mouse location projected onto the cavnas as a 3d point
      * @return
      */
     public myPointf getMseLoc_f(){return new myPointf(dfCtr.x,dfCtr.y,dfCtr.z);    }
     /**
-     * 
+     * Retrieve the old mouse location projected onto the cavnas as a 3d point
      * @return
      */
-    public myPoint getOldMseLoc(){return new myPoint(oldMseLoc);    }    
+    public myPoint getOldMseLoc(){return new myPoint(oldMseLoc);    }  
+    /**
+     * Retrieve the old mouse location projected onto the cavnas as a 3d point
+     * @return
+     */
+    public myPointf getOldMseLoc_f(){return new myPointf(oldMseLoc.x, oldMseLoc.y, oldMseLoc.z);    }    
     /**
      * 
      * @return
      */
     public myVector getMseDragVec(){return new myVector(oldMseLoc,dfCtr);}
+    
+    /**
+     * 
+     * @return
+     */
+    public myVectorf getMseDragVec_f(){return new myVectorf(oldMseLoc,dfCtr);}
     
     /**
      * relative to passed origin
@@ -218,7 +231,7 @@ public class Disp3DCanvas {
             p.translate(dfCtr);
             //project mouse point on bounding box walls if appropriate
             if(projOnBox){AppMgr.drawProjOnBox(dfCtr);}
-            AppMgr.drawAxes(10000,1f, myPoint.ZEROPT, 100, true);//
+            AppMgr.drawRGBAxesWithEnds(10000,1f, myPointf.ZEROPT, 100);//
             //draw center point
             p.showPtAsSphere(myPointf.ZEROPT,3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
             drawText(win, ""+dfCtr+ "|fr:"+p.getFrameRate(),4.0f, 15.0f, 4.0f);
