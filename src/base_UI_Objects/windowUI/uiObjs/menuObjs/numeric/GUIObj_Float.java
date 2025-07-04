@@ -22,7 +22,7 @@ public class GUIObj_Float extends Base_GUIObj {
      * Float object has no manipulations during modification
      */
     @Override
-    protected final double modValAssign(double _val) {return _val;}
+    protected double modValAssign(double _val) {return _val;}
     
     /**
      * Set a new modifier value to use for this object
@@ -38,8 +38,6 @@ public class GUIObj_Float extends Base_GUIObj {
     }
 
     @Override
-    protected boolean checkUIObjectStatus_Indiv() {
-        return true;
-    }    
+    protected boolean checkUIObjectStatus_Indiv() {return true;    }    
         
 }//class myGUIObj_Float

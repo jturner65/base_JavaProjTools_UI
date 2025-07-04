@@ -1,28 +1,22 @@
-package base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.base;
+package base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly;
 
-import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
-
+import base_UI_Objects.windowUI.uiObjs.menuObjs.numeric.GUIObj_Float;
 /**
- * 
+ * Wrapper class for a float display object that is read only and is not changed
+ * by user interaction.
  */
-public abstract class Base_ReadOnlyGUIObj extends Base_GUIObj {
+public class GUIObj_DispFloat extends GUIObj_Float implements IReadOnlyGUIObj {
 
+    public GUIObj_DispFloat(int _objID, GUIObj_Params objParams) {super(_objID, objParams);}
     /**
-     * @param _objID
-     * @param objParams
-     */
-    public Base_ReadOnlyGUIObj(int _objID, GUIObj_Params objParams) {        super(_objID, objParams);}
-
-    @Override
-    protected final boolean checkUIObjectStatus_Indiv() {return true;   }
-    
-    /**
-     * Set a new modifier value to use for this object : Mod values for read-only fields objects will always be 0
-     * @param _unused
+     * Val can be set to whatever number desired - read only numeric objects have no bounds
+     * @param _val
+     * @return
      */
     @Override
-    public final void setNewMod(double _newval) {}
+    protected double forceBounds(double _val) {return _val;}
+
     /**
      * Read-only fields ignore any mod so just return original val
      */
@@ -43,4 +37,4 @@ public abstract class Base_ReadOnlyGUIObj extends Base_GUIObj {
      */
     @Override
     public final boolean shouldUpdateConsumer() {return false;}
-}//class Base_ReadOnlyGUIObj
+}//class GUIObj_DispFloat

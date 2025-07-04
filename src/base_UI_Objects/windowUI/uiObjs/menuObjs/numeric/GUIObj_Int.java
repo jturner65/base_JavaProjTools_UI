@@ -19,7 +19,7 @@ public class GUIObj_Int extends Base_GUIObj {
      * Called after UI modification but before range checking - this class only supports integer values.
      */
     @Override
-    protected final double modValAssign(double _val) {return Math.round(_val);}
+    protected double modValAssign(double _val) {return Math.round(_val);}
     
     /**
      * Set a new modifier value to use for this object : Mod values for integer-based objects will always be integral values

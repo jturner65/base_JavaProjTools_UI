@@ -23,9 +23,10 @@ import base_UI_Objects.windowUI.uiObjs.menuObjs.numeric.GUIObj_Float;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.numeric.GUIObj_Int;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.numeric.GUIObj_List;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_DispList;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_DispNumber;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_DispFloat;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_DispInt;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_Label;
-import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.base.Base_ReadOnlyGUIObj;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.IReadOnlyGUIObj;
 import base_UI_Objects.windowUI.uiObjs.renderer.ButtonGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.MultiLineGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.SingleLineGUIObjRenderer;
@@ -87,7 +88,7 @@ public class UIObjectManager {
     /**
      * Map list of idxs for label/read-only objects, keyed by objIdx
      */    
-    private Map<Integer, Base_ReadOnlyGUIObj> _guiReadOnlyObjIDXMap;
+    private Map<Integer, IReadOnlyGUIObj> _guiReadOnlyObjIDXMap;
     /**
      * Map of all objects, keyed by objIdx
      */
@@ -256,24 +257,21 @@ public class UIObjectManager {
         _dbgColors = ri.getRndMatchedStrkFillClrs();
         // make fill alpha a bit lighter
         _dbgColors[1][3]=150;    
-        _privFlagsToClear = new ArrayList<Integer>();       
-        
-        //initialize arrays to hold idxs of int and float items being created.
-        _guiButtonIDXMap = new LinkedHashMap<Integer,GUIObj_Button>();
-        
-        _guiSwitchIDXMap = new LinkedHashMap<Integer,GUIObj_Switch>();
- 
-        _guiFloatValIDXMap = new LinkedHashMap<Integer, GUIObj_Float>();
-        _guiIntValIDXMap = new LinkedHashMap<Integer,GUIObj_Int> ();
-        _guiReadOnlyObjIDXMap = new LinkedHashMap<Integer, Base_ReadOnlyGUIObj>();
-        
-        _guiObjsIDXMap = new LinkedHashMap<Integer,Base_GUIObj>(); // list of modifiable gui objects
      }
         
     /**
      * UI object creation    
      */
     public void initAllGUIObjects() {
+        _privFlagsToClear = new ArrayList<Integer>();       
+        
+        // Linked maps to preserve order of items being inserted
+        _guiButtonIDXMap = new LinkedHashMap<Integer,GUIObj_Button>();        
+        _guiSwitchIDXMap = new LinkedHashMap<Integer,GUIObj_Switch>(); 
+        _guiFloatValIDXMap = new LinkedHashMap<Integer, GUIObj_Float>();
+        _guiIntValIDXMap = new LinkedHashMap<Integer,GUIObj_Int> ();
+        _guiReadOnlyObjIDXMap = new LinkedHashMap<Integer, IReadOnlyGUIObj>();        
+        _guiObjsIDXMap = new LinkedHashMap<Integer,Base_GUIObj>(); // list of modifiable gui objects        
 
         //////_guiReadOnlyObjIDXMap///////
         // build all UI objects using specifications from instancing window
@@ -395,10 +393,14 @@ public class UIObjectManager {
                 obj = new GUIObj_Label(guiObjIDX, argObj);
                 _guiReadOnlyObjIDXMap.put(guiObjIDX, (GUIObj_Label)obj);
                 break;}
-            case DispNumber :{
-                obj = new GUIObj_DispNumber(guiObjIDX, argObj);
-                _guiReadOnlyObjIDXMap.put(guiObjIDX, (GUIObj_DispNumber)obj);
+            case DispIntVal :{
+                obj = new GUIObj_DispInt(guiObjIDX, argObj);
+                _guiReadOnlyObjIDXMap.put(guiObjIDX, (GUIObj_DispInt)obj);
                 break;}
+            case DispFloatVal :{
+                obj = new GUIObj_DispFloat(guiObjIDX, argObj);
+                _guiReadOnlyObjIDXMap.put(guiObjIDX, (GUIObj_DispFloat)obj);
+                break;}            
             case DispStr : {
                 obj = new GUIObj_DispList(guiObjIDX, argObj);
                 _guiReadOnlyObjIDXMap.put(guiObjIDX, (GUIObj_DispList)obj);
@@ -680,38 +682,38 @@ public class UIObjectManager {
         return obj;
     }
     /**
-     * Build the GUIObj_Params that describes a label object
+     * Build the GUIObj_Params that describes a readon-only integer
      * @param initVal initial value for the object
      * @param label display label of the object
      * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispNumber(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispNumber(objIdx, initVal, label, dfltRndrCfgFmtVals);
+    public final GUIObj_Params uiObjInitAra_DispInt(int objIdx, double initVal, String label) {
+        return uiObjInitAra_DispInt(objIdx, initVal, label, dfltRndrCfgFmtVals);
     }
     /**
-     * Build the GUIObj_Params that describes a label object
+     * Build the GUIObj_Params that describes a readon-only integer
      * @param initVal initial value for the object
      * @param label display label of the object
      * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispNumberInLine(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispNumber(objIdx, initVal, label, dfltRndrInLineCfgFmtVals);
+    public final GUIObj_Params uiObjInitAra_DispIntInLine(int objIdx, double initVal, String label) {
+        return uiObjInitAra_DispInt(objIdx, initVal, label, dfltRndrInLineCfgFmtVals);
     }
     /**
-     * Build the GUIObj_Params that describes a label object that is multiLine
+     * Build the GUIObj_Params that describes a readon-only integer with a multi-line display
      * @param initVal initial value for the object
      * @param label display label of the object
      * NOTE : this method uses the default renderer creation format boolean values for multi-line labels. Label objects' behavior is restricted
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispNumberMultiLine(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispNumber(objIdx, initVal, label, dfltMultiLineRndrCfgFmtVals);
+    public final GUIObj_Params uiObjInitAra_DispIntMultiLine(int objIdx, double initVal, String label) {
+        return uiObjInitAra_DispInt(objIdx, initVal, label, dfltMultiLineRndrCfgFmtVals);
     }        
 
     /**
-     * Build the GUIObj_Params that describes a integer object
+     * Build the GUIObj_Params that describes a read-only integer object
      * @param initVal initial value for the object
      * @param label display label of the object
      * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
@@ -724,11 +726,63 @@ public class UIObjectManager {
      *                 - Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispNumber(int objIdx, double initVal, String label, GUIObjRenderer_Flags _rendererCfgFlags) {
-        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.DispNumber, dfltUIReadOnlyBehaviorVals, _rendererCfgFlags);
+    public final GUIObj_Params uiObjInitAra_DispInt(int objIdx, double initVal, String label, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.DispIntVal, dfltUIReadOnlyBehaviorVals, _rendererCfgFlags);
         obj.initVal = initVal;
         return obj;
+    }   
+    
+    /**
+     * Build the GUIObj_Params that describes a readon-only floating-point number
+     * @param initVal initial value for the object
+     * @param label display label of the object
+     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispFloat(int objIdx, double initVal, String label) {
+        return uiObjInitAra_DispFloat(objIdx, initVal, label, dfltRndrCfgFmtVals);
     }
+    /**
+     * Build the GUIObj_Params that describes a readon-only floating-point number
+     * @param initVal initial value for the object
+     * @param label display label of the object
+     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispFloatInLine(int objIdx, double initVal, String label) {
+        return uiObjInitAra_DispFloat(objIdx, initVal, label, dfltRndrInLineCfgFmtVals);
+    }
+    /**
+     * Build the GUIObj_Params that describes a readon-only floating-point number with a multi-line display
+     * @param initVal initial value for the object
+     * @param label display label of the object
+     * NOTE : this method uses the default renderer creation format boolean values for multi-line labels. Label objects' behavior is restricted
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispFloatMultiLine(int objIdx, double initVal, String label) {
+        return uiObjInitAra_DispFloat(objIdx, initVal, label, dfltMultiLineRndrCfgFmtVals);
+    }        
+
+    /**
+     * Build the GUIObj_Params that describes a read-only floating-point number object
+     * @param initVal initial value for the object
+     * @param label display label of the object
+     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
+     *                 - Should be multiline
+     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *                 - Force this object to be on a new row/line (For side-by-side layouts)
+     *                 - Text should be centered (default is false)
+     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
+     *                 - Should have ornament
+     *                 - Ornament color should match label color
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispFloat(int objIdx, double initVal, String label, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.DispFloatVal, dfltUIReadOnlyBehaviorVals, _rendererCfgFlags);
+        obj.initVal = initVal;
+        return obj;
+    }    
+    
     /**
      * Build the GUIObj_Params that describes a label object that displays a string
      * @param initVal initial value for the object
@@ -1360,14 +1414,15 @@ public class UIObjectManager {
         //Determine whether int (int or list) or float
         GUIObj_Type objType = UIobj.getObjType();
         switch (objType) {
-            case IntVal : {            setUI_IntVal(UIobj, UIidx);            break;}
-            case ListVal : {            setUI_ListVal(UIobj, UIidx);            break;}
+            case IntVal : {          setUI_IntVal(UIobj, UIidx);          break;}
+            case ListVal : {         setUI_ListVal(UIobj, UIidx);         break;}
             case FloatVal : {        setUI_FloatVal(UIobj, UIidx);        break;}
             case LabelVal : {        setUI_LabelVal(UIobj, UIidx);        break;}
-            case DispNumber : {      setUI_LabelVal(UIobj, UIidx);        break;}
-            case DispStr : {         setUI_LabelVal(UIobj, UIidx);       break;}
-            case Button : {            setUI_BtnVal(UIobj, UIidx);            break;}
-            case Switch : {            setUI_SwitchVal(UIobj, UIidx);        break;}
+            case DispIntVal : {      setUI_LabelVal(UIobj, UIidx);        break;}
+            case DispFloatVal : {    setUI_LabelVal(UIobj, UIidx);        break;}
+            case DispStr : {         setUI_LabelVal(UIobj, UIidx);        break;}
+            case Button : {          setUI_BtnVal(UIobj, UIidx);          break;}
+            case Switch : {          setUI_SwitchVal(UIobj, UIidx);       break;}
             default : {    _dispWarnMsg("setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());    break;}            
         }//switch on obj type    
     }//_setUIWinValsInternal
@@ -1845,9 +1900,9 @@ public class UIObjectManager {
      * @param mouseY y location on screen
      * @param mseBtn which button is pressed : 0 is left, 1 is right
      * @param isClickModUIVal whether criteria for modifying click without dragging have been specified for this application (i.e. shift is pressed or alt is pressed) 
-     * @param retVals : idx 0 is if an object has been modified
-     *                     idx 1 is if we should set "setUIObjMod" to true
-     * @return _msClickObj
+     * @param retVals : idx 0 is if an object has been clicked in
+     *                  idx 1 is if we should set "setUIObjMod" to true
+     * @return _msClickObj is not equal to null
      */
     public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn, boolean isClickModUIVal, boolean[] retVals){
         _msClickObj = null;
@@ -1860,15 +1915,16 @@ public class UIObjectManager {
                 _msBtnClicked = mseBtn; 
                 _msClickObj = _guiObjsIDXMap.get(idx);
                 _msClickObj.setIsClicked();
+                retVals[0] = true;
                 if(isClickModUIVal){//allows for click-mod without dragging
                     _setUIObjValFromClickAlone(_msClickObj);
                     //Check if modification from click has changed the value of the object
                     if(_msClickObj.getIsDirty()) {retVals[1] = true;}
                 }                 
-                retVals[0] = true;
             }
+            return _msClickObj != null;    
         }            
-        return _msClickObj != null;
+        return false;
     }//handleMouseClick
     
     /**

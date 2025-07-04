@@ -1,5 +1,8 @@
 package base_UI_Objects.windowUI.uiObjs.menuObjs.buttons;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
@@ -248,10 +251,30 @@ public class GUIObj_Button extends Base_GUIObj {
         double curVal = getVal();
         setNewMax(buttonVals.length-1);
         curVal = setVal(curVal);
-        if(renderer != null) {      renderer.updateFromObject();        }
+        updateRenderer();
         return (int) curVal;        
     }
-     
+    
+    /**
+     * Add a string to the end of this button object's list of possible states
+     * @param val
+     * @param setAsDefault
+     * @return
+     */
+    public final int addListVal(String val, boolean setAsDefault) {
+        if(!val.isEmpty()) {
+            ArrayList<String> tmpAra = new ArrayList<String>(Arrays.asList(buttonVals));
+            tmpAra.add(val);
+            buttonVals = tmpAra.toArray(new String[0]);        
+            if(setAsDefault) {setNewDefaultButtons(buttonVals);}
+        }
+        //Update new max value
+        double curVal = buttonVals.length-1;
+        setNewMax(buttonVals.length-1);
+        curVal = setVal(curVal);
+        updateRenderer();
+        return (int) curVal;    
+    }
     /**
      * Return the string representation of this button's state
      * @param idx

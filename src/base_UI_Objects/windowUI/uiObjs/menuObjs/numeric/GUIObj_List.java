@@ -51,7 +51,7 @@ public class GUIObj_List extends GUIObj_Int {
      * @param _unused
      */
     @Override
-    public final void setNewMod(double _unused){    
+    public void setNewMod(double _unused){    
         modMult = 1.0;
         formatStr = "%.0f";
     }
@@ -101,7 +101,7 @@ public class GUIObj_List extends GUIObj_Int {
         double curVal = getVal();
         setNewMax(listVals.length-1);
         curVal = setVal(curVal);
-        if(renderer != null) {        renderer.updateFromObject();        }
+        updateRenderer();
         return (int) curVal;        
     }
     
@@ -122,7 +122,7 @@ public class GUIObj_List extends GUIObj_Int {
         double curVal = listVals.length-1;
         setNewMax(listVals.length-1);
         curVal = setVal(curVal);
-        if(renderer != null) {      renderer.updateFromObject();        }
+        updateRenderer();
         return (int) curVal;    
     }
     
