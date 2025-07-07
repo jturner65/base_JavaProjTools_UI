@@ -121,10 +121,10 @@ public abstract class Base_GUIObjRenderer {
             String _rendererType) {
         ri=_ri;    
         owner = _owner;
-         cfgFlags = _argObj.getRenderCreationFormatFlags();
+        cfgFlags = _argObj.getRenderCreationFormatFlags();
 
-         //_clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 0 (stroke)
-         int[][] _clrs = _argObj.getStrkFillTextColors();
+        //_clrs array of stroke, fill and possibly text colors. If only 2 elements, text is idx 0 (stroke)
+        int[][] _clrs = _argObj.getStrkFillTextColors();
         // stroke color, fill color, text color for label
         rectStrkFillColor = new int[2][4];
         strkClr = new int[4];
@@ -141,11 +141,13 @@ public abstract class Base_GUIObjRenderer {
         halfTxtHeight = .65f*txtHeight;
         
         // highlight colors
-        hlRectStrkFillColor = ri.getRndMatchedStrkFillClrs();
-        //make fill alpha a bit lighter
-        hlRectStrkFillColor[1][3] = 150;
+        // set to a specific color if read only object
+        hlRectStrkFillColor = _argObj.getReadOnlyColors();
+        if (hlRectStrkFillColor == null) {hlRectStrkFillColor= ri.getRndMatchedStrkFillClrs();}
+        //make fill alpha a bit lighter if needed
+        if (hlRectStrkFillColor[1][3] == 255) {hlRectStrkFillColor[1][3] = 150;}
         //build prefix ornament to display
-        if (getHasOrnament()) {            _ornament = new GUI_PrefixObj(_off, hlRectStrkFillColor[0]);} 
+        if (getHasOrnament()) {           _ornament = new GUI_PrefixObj(_off, hlRectStrkFillColor[0]);} 
         else {                            _ornament = new GUI_NoPrefixObj();}        
         
         rendererType = _rendererType;
@@ -155,7 +157,7 @@ public abstract class Base_GUIObjRenderer {
     }//ctor
     
     public boolean getIsMultiLine() {return cfgFlags.getIsMultiLine();}
-    public boolean getIsOneObjPerLine() {return cfgFlags.getIsOneObjPerLine();}
+    public boolean getIsOneObjPerRow() {return cfgFlags.getIsOneObjPerRow();}
     public boolean getForceStartNewLine() {return cfgFlags.getForceStartNewLine();}
     public boolean getIsCentered() {return cfgFlags.getIsCentered();}
     public boolean getHasOutline() {return cfgFlags.getHasOutline();}

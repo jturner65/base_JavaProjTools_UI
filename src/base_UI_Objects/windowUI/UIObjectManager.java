@@ -14,6 +14,7 @@ import base_UI_Objects.windowUI.base.IUIManagerOwner;
 import base_UI_Objects.windowUI.base.WinAppPrivStateFlags;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObjConfig_Flags;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_UI_Objects.windowUI.uiObjs.collection.GUIObj_GroupParams;
@@ -110,105 +111,6 @@ public class UIObjectManager {
      * structure to facilitate communicating UI changes with functional code
      */
     private UIDataUpdater _uiUpdateData;
-    
-    /**
-     * Boolean array of default behavior boolean values, if formatting is not otherwise specified
-     *         idx 0: value is sent to owning window,  
-     *         idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *         idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *         idx 3: object is read only
-     */
-    private static final boolean[] dfltUIBehaviorVals = new boolean[]{true,false,false,false};    
-    /**
-     * Boolean array of default behavior boolean values for label/read-only constructs
-     *         idx 0: value is sent to owning window,  
-     *         idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *         idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *         idx 3: object is read only
-     */    
-    private static final boolean[] dfltUIReadOnlyBehaviorVals = new boolean[] {false,false,false,true};
-    /**
-     * Configuration structure of default renderer format values, if renderer configuration is not otherwise specified, for a single-line, non-switch/button object : 
-     *             - Should be multiline
-     *             - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *             - Force this object to be on a new row/line (For side-by-side layouts)
-     *             - Text should be centered (default is false)
-     *             - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *             - Should have ornament
-     *             - Ornament color should match label color 
-     */
-    private static final GUIObjRenderer_Flags dfltRndrCfgFmtVals = new GUIObjRenderer_Flags();
-    static {
-        dfltRndrCfgFmtVals.setIsMultiLine(false);
-        dfltRndrCfgFmtVals.setIsOneObjPerLine(true);
-        dfltRndrCfgFmtVals.setForceStartNewLine(false);
-        dfltRndrCfgFmtVals.setIsCentered(false);
-        dfltRndrCfgFmtVals.setHasOutline(false);
-        dfltRndrCfgFmtVals.setHasOrnament(true);
-        dfltRndrCfgFmtVals.setOrnmntClrMatch(false);
-    }
-    /**
-     * Configuration structure of default renderer format values, if renderer configuration is not otherwise specified, for a single-line, non-switch/button object that we wish to share a line/row with others
-     *          - Should be multiline
-     *          - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *          - Force this object to be on a new row/line (For side-by-side layouts)
-     *          - Text should be centered (default is false)
-     *          - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *          - Should have ornament
-     *          - Ornament color should match label color 
-     */
-    private static final GUIObjRenderer_Flags dfltRndrInLineCfgFmtVals = new GUIObjRenderer_Flags();
-    static {
-        dfltRndrInLineCfgFmtVals.setIsMultiLine(false);
-        dfltRndrInLineCfgFmtVals.setIsOneObjPerLine(false);
-        dfltRndrInLineCfgFmtVals.setForceStartNewLine(false);
-        dfltRndrInLineCfgFmtVals.setIsCentered(false);
-        dfltRndrInLineCfgFmtVals.setHasOutline(false);
-        dfltRndrInLineCfgFmtVals.setHasOrnament(false);
-        dfltRndrInLineCfgFmtVals.setOrnmntClrMatch(false);
-    }
-        
-    /**
-     * Configuration structure of default renderer format values, if renderer configuration is not otherwise specified, for a multi-line non-switch/button object : 
-     *             - Should be multiline
-     *             - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *             - Force this object to be on a new row/line (For side-by-side layouts)
-     *             - Text should be centered (default is false)
-     *             - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *             - Should have ornament
-     *             - Ornament color should match label color 
-     */
-    private static final GUIObjRenderer_Flags dfltMultiLineRndrCfgFmtVals = new GUIObjRenderer_Flags();
-    static {
-        dfltMultiLineRndrCfgFmtVals.setIsMultiLine(true);
-        dfltMultiLineRndrCfgFmtVals.setIsOneObjPerLine(false);
-        dfltMultiLineRndrCfgFmtVals.setForceStartNewLine(false);
-        dfltMultiLineRndrCfgFmtVals.setIsCentered(true);
-        dfltMultiLineRndrCfgFmtVals.setHasOutline(true);
-        dfltMultiLineRndrCfgFmtVals.setHasOrnament(false);
-        dfltMultiLineRndrCfgFmtVals.setOrnmntClrMatch(false);
-    }
-    
-    /**
-     * Configuration structure of default renderer format values, if renderer configuration is not otherwise specified, for a toggle switch/button backed by a flags structure
-     *             - Should be multiline
-     *             - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *             - Force this object to be on a new row/line (For side-by-side layouts)
-     *             - Text should be centered (default is false)
-     *             - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *             - Should have ornament
-     *             - Ornament color should match label color 
-     */
-    private static final GUIObjRenderer_Flags dfltBtnRndrCfgFmtVals = new GUIObjRenderer_Flags();
-    static {
-        dfltBtnRndrCfgFmtVals.setIsMultiLine(false);
-        dfltBtnRndrCfgFmtVals.setIsOneObjPerLine(false);
-        dfltBtnRndrCfgFmtVals.setForceStartNewLine(false);
-        dfltBtnRndrCfgFmtVals.setIsCentered(false);
-        dfltBtnRndrCfgFmtVals.setHasOutline(true);
-        dfltBtnRndrCfgFmtVals.setHasOrnament(false);
-        dfltBtnRndrCfgFmtVals.setOrnmntClrMatch(false);
-    }    
     
     /**
      * Boolean array of default button type format values, if not otherwise specified 
@@ -327,7 +229,7 @@ public class UIObjectManager {
         //TODO put non-switch button values into int map
         //for (Integer idx : _guiButtonIDXs) {            intValues.put(idx, _guiObjsIDXMap.get(idx).getValueAsInt());}    
         TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
-        for (var entry :  _guiFloatValIDXMap.entrySet()) {        floatValues.put(entry.getKey(), entry.getValue().getValueAsFloat());}
+        for (var entry :  _guiFloatValIDXMap.entrySet()) {          floatValues.put(entry.getKey(), entry.getValue().getValueAsFloat());}
         TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>();
         //TODO 
 //        for (var switchIdxs : _guiSwitchIDXMap.entrySet()) {
@@ -445,12 +347,13 @@ public class UIObjectManager {
         
         for (Map.Entry<String, GUIObj_Params> entry : tmpUIObjMap.entrySet()) {
             GUIObj_Params params = entry.getValue();
+            params.setName(entry.getKey());
             if(params.isAGroupOfObjs()) {
                 GUIObj_GroupParams grpParams = (GUIObj_GroupParams) params;
                 // build a group of objects described within the argObj's group map as a single row of UI objects
                 Map<String, GUIObj_Params> tmpUIColMap = grpParams.getParamsGroupMap();
                 // Build all the gui objs and hotspots for this row of values
-                yStart = _buildGUIObjsAndHotSpots(tmpUIColMap, new LinkedHashMap<String, GUIObj_Params>(),grpParams.getNumObjsPerLine(), xStart, yStart);
+                yStart = _buildGUIObjsAndHotSpots(tmpUIColMap, new LinkedHashMap<String, GUIObj_Params>(), grpParams.getNumObjsPerLine(), xStart, yStart);
             } else {                
                 int i = params.objIdx;
                 _buildObj(i, entry, guiSwitchIDXMap, guiNotSwitchIDXMap);
@@ -464,7 +367,7 @@ public class UIObjectManager {
         }
         
         // offset for each element
-        float yOffset = AppMgr.getTextHeightOffset();   
+        float yOffset = AppMgr.getCloseTextHeightOffset();   
         // main non-toggle switch button components
         if(guiNotSwitchIDXMap.size() > 0) {     yStart =_buildHotSpotRects(objPerLine, yOffset, xStart, yStart, guiNotSwitchIDXMap);  }
         // now address toggle buttons' clickable regions    
@@ -551,7 +454,7 @@ public class UIObjectManager {
             // Number of partitions required for object
             int objNumParts = partitionWidths.get(objPartWidth);
             // if only 1 per line, if this object should force to start a new line,  or if object is too wide for current line
-            if ((uiObj.getIsOneObjPerLine()) || (uiObj.getForceStartNewLine()) || (objPartWidth + currLineWidth > uiObjAreaWidth)) {
+            if ((uiObj.getIsOneObjPerRow()) || (uiObj.getForceStartNewLine()) || (objPartWidth + currLineWidth > uiObjAreaWidth)) {
                 // too big for current row, put on a new row.
                 if(currLineNumParts != ttlNumPartitions) {                    
                     // if fewer current partitions than allowable number, repartition rowPerObjPartSize to fill row
@@ -627,634 +530,787 @@ public class UIObjectManager {
     public final void refreshPrivFlags() {        _privFlags.refreshAllFlags();    }
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // UI object initialization and interaction
-    
-    //////////////////////////////////////////
-    /// Start Build GUIObj_Params
-    
-    
+    /// UI object initialization and interaction
+       
     /**
-     * Build the GUIObj_Params that describes a label object
-     * @param label display label of the object
-     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
+     * Build a GUIObjConfig_Flags used to format/configure a UI object. Returns a construct set
+     * with default values based on passed flags that can be subsequently modified if necessary by the consumer
+     * 
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     *         
+     * @param isReadOnly if the UI object should be read-only or data enterable
+     * @param isRanged if the UI object should be display the min/max range of the object instead of a value.
+     *          TODO : Support for non-read-only range object (i.e. to be used in sampling perhaps).
+     *          needs to be added. Until then, specifying isRanged forces isReadOnly to be true.
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Label(int objIdx, String label) {
-        return uiObjInitAra_Label(objIdx, label, dfltRndrCfgFmtVals);
-    }        
-    /**
-     * Build the GUIObj_Params that describes a label object in line with multiple other objects
-     * @param label display label of the object
-     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_LabelInLine(int objIdx, String label) {
-        return uiObjInitAra_Label(objIdx, label, dfltRndrInLineCfgFmtVals);
+    public final GUIObjConfig_Flags buildGUIObjConfigFlags(boolean isReadOnly, boolean isRanged) {
+        return new GUIObjConfig_Flags(isReadOnly, isRanged);     
     }
     
     /**
-     * Build the GUIObj_Params that describes a label object that is multiLine
-     * @param label display label of the object
-     * NOTE : this method uses the default renderer creation format boolean values for multi-line labels. Label objects' behavior is restricted
+     * Build a GUIObjRenderer_Flags used to construct an appropriate renderer for a UI object. Returns a construct set
+     * with default values based on passed flags that can be subsequently modified if necessary by the consumer
+     * 
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX       : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color                                                                               
+     *                                                                                                                                                                                           
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whehter this object spans an entire UI row 
+     * @param _isButton whether the object is a button/switch or a direct-input object
+     * @param _isReadOnly whether the object is readonly or modifiable
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_LabelMultiLine(int objIdx, String label) {
-        return uiObjInitAra_Label(objIdx, label, dfltMultiLineRndrCfgFmtVals);
+    public final GUIObjRenderer_Flags buildGUIObjRendererFlags(boolean _isMultiLine, boolean _isOnePerRow, boolean _isButton, boolean _isReadOnly) {
+        return new GUIObjRenderer_Flags(_isMultiLine, _isOnePerRow, _isButton, _isReadOnly);
+    }
+    
+    //////////////////////////////////////////
+    /// Start Build GUIObj_Params
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Label UI object initialization and interaction    
+    
+    /**
+     * Build a label with default configuration - single line, does not span entire row
+     * @param _objIdx the desired object index
+     * @param _label display label used for object
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Label(int _objIdx, String _label) {
+        return uiObjInitAra_Label(_objIdx, _label, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(false, false, false, true));
+    }
+    /**
+     * Build a label with specified constraints
+     * @param _objIdx the desired object index
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whehter this object spans an entire UI row
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Label(int _objIdx, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
+        return uiObjInitAra_Label(_objIdx, _label, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true));
     }        
 
     /**
-     * Build the GUIObj_Params that describes a integer object
-     * @param label display label of the object
-     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
-     *                 - Should be multiline
-     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *                 - Force this object to be on a new row/line (For side-by-side layouts)
-     *                 - Text should be centered (default is false)
-     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *                 - Should have ornament
-     *                 - Ornament color should match label color
+     * Build the GUIObj_Params that describes a label object
+     * @param _objIdx object index
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Label(int objIdx,  String label, GUIObjRenderer_Flags _rendererCfgFlags) {
-        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.LabelVal, dfltUIReadOnlyBehaviorVals, _rendererCfgFlags);
+    public final GUIObj_Params uiObjInitAra_Label(int _objIdx, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.LabelVal, _uiObjConfigFlags, _rendererCfgFlags);
         //labels should ignore all values
         obj.initVal = 0;
         return obj;
     }
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// ReadOnly Integer/Integer Range UI object initialization and interaction      
+   
     /**
      * Build the GUIObj_Params that describes a readon-only integer
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
+     * @param _objIdx object index
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whehter this object spans an entire UI row
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispInt(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispInt(objIdx, initVal, label, dfltRndrCfgFmtVals);
+    public final GUIObj_Params uiObjInitAra_DispInt(int _objIdx, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow) {       
+        return uiObjInitAra_DispInt(_objIdx, _initVal, _label, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true));
     }
-    /**
-     * Build the GUIObj_Params that describes a readon-only integer
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_DispIntInLine(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispInt(objIdx, initVal, label, dfltRndrInLineCfgFmtVals);
-    }
-    /**
-     * Build the GUIObj_Params that describes a readon-only integer with a multi-line display
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default renderer creation format boolean values for multi-line labels. Label objects' behavior is restricted
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_DispIntMultiLine(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispInt(objIdx, initVal, label, dfltMultiLineRndrCfgFmtVals);
-    }        
 
     /**
      * Build the GUIObj_Params that describes a read-only integer object
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
-     *                 - Should be multiline
-     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *                 - Force this object to be on a new row/line (For side-by-side layouts)
-     *                 - Text should be centered (default is false)
-     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *                 - Should have ornament
-     *                 - Ornament color should match label color
+     * @param _objIdx object index
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispInt(int objIdx, double initVal, String label, GUIObjRenderer_Flags _rendererCfgFlags) {
-        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.DispIntVal, dfltUIReadOnlyBehaviorVals, _rendererCfgFlags);
-        obj.initVal = initVal;
+    public final GUIObj_Params uiObjInitAra_DispInt(int _objIdx, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispIntVal, _uiObjConfigFlags, _rendererCfgFlags);
+        obj.initVal = _initVal;
         return obj;
-    }   
+    }    
+    /**
+     * Build the GUIObj_Params that describes a readon-only integer range of values
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispIntRange(int _objIdx, double[] _minMaxMod, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
+        return uiObjInitAra_DispIntRange(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(true, true), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true));
+    }
+    /**
+     * Build the GUIObj_Params that describes a read-only integer object showing a range of values
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value     * 
+     * @param _rendererCfgFlags structure that holds various renderer configuration data
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispIntRange(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispIntVal, _uiObjConfigFlags, _rendererCfgFlags);
+        obj.setMinMaxMod(_minMaxMod);
+        obj.initVal = _initVal;
+        return obj;
+    }
     
-    /**
-     * Build the GUIObj_Params that describes a readon-only floating-point number
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_DispFloat(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispFloat(objIdx, initVal, label, dfltRndrCfgFmtVals);
-    }
-    /**
-     * Build the GUIObj_Params that describes a readon-only floating-point number
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_DispFloatInLine(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispFloat(objIdx, initVal, label, dfltRndrInLineCfgFmtVals);
-    }
-    /**
-     * Build the GUIObj_Params that describes a readon-only floating-point number with a multi-line display
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default renderer creation format boolean values for multi-line labels. Label objects' behavior is restricted
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_DispFloatMultiLine(int objIdx, double initVal, String label) {
-        return uiObjInitAra_DispFloat(objIdx, initVal, label, dfltMultiLineRndrCfgFmtVals);
-    }        
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// ReadOnly Float/Float Range UI object initialization and interaction       
 
     /**
      * Build the GUIObj_Params that describes a read-only floating-point number object
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
-     *                 - Should be multiline
-     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *                 - Force this object to be on a new row/line (For side-by-side layouts)
-     *                 - Text should be centered (default is false)
-     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *                 - Should have ornament
-     *                 - Ornament color should match label color
+     * @param _objIdx object index
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispFloat(int objIdx, double initVal, String label, GUIObjRenderer_Flags _rendererCfgFlags) {
-        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.DispFloatVal, dfltUIReadOnlyBehaviorVals, _rendererCfgFlags);
-        obj.initVal = initVal;
-        return obj;
-    }    
-    
+    public final GUIObj_Params uiObjInitAra_DispFloat(int _objIdx, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
+       return uiObjInitAra_DispFloat(_objIdx, _initVal, _label, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true));
+    }  
     /**
-     * Build the GUIObj_Params that describes a label object that displays a string
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
+     * Build the GUIObj_Params that describes a read-only floating-point number object
+     * @param _objIdx object index
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispString(int objIdx, double initVal, String label, String[] listElems) {
-        return uiObjInitAra_DispString(objIdx, initVal, label, listElems, dfltRndrCfgFmtVals);
-    }
-    /**
-     * Build the GUIObj_Params that describes a label object that displays a string
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default UI format boolean values. Label objects' behavior is restricted
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_DispStringInLine(int objIdx, double initVal, String label, String[] listElems) {
-        return uiObjInitAra_DispString(objIdx, initVal, label, listElems, dfltRndrInLineCfgFmtVals);
-    }
-    /**
-     * Build the GUIObj_Params that describes a read-only object that displays a string and is multiLine
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default renderer creation format boolean values for multi-line labels. Label objects' behavior is restricted
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_DispStringMultiLine(int objIdx, double initVal, String label, String[] listElems) {
-        return uiObjInitAra_DispString(objIdx, initVal, label, listElems, dfltMultiLineRndrCfgFmtVals);
-    }       
-
-    /**
-     * Build the GUIObj_Params that describes a integer object
-     * @param initStrVal initial value for the object
-     * @param label display label of the object
-     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
-     *              - Should be multiline
-     *              - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *              - Force this object to be on a new row/line (For side-by-side layouts)
-     *              - Text should be centered (default is false)
-     *              - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *              - Should have ornament
-     *              - Ornament color should match label color
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_DispString(int objIdx, double initVal, String label, String[] listElems, GUIObjRenderer_Flags _rendererCfgFlags) {
-        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.DispStr, dfltUIReadOnlyBehaviorVals, _rendererCfgFlags);
-        obj.initVal = initVal;
-        obj.setListVals(listElems);    
-        return obj;
-    }
-            
-    /**
-     * Build the GUIObj_Params that describes a integer object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default behavior and UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String label) {
-        return uiObjInitAra_Int(objIdx, minMaxMod, initVal, label, dfltUIBehaviorVals, dfltRndrCfgFmtVals);
-    }    
-    
-    /**
-     * Build the GUIObj_Params that describes a integer object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default behavior and UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_IntInLine(int objIdx, double[] minMaxMod, double initVal, String label) {
-        return uiObjInitAra_Int(objIdx, minMaxMod, initVal, label, dfltUIBehaviorVals, dfltRndrInLineCfgFmtVals);
-    }    
-    /**
-     * Build the GUIObj_Params that describes a integer object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * NOTE : this method uses the default UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String label, boolean[] configBoolVals) {
-        return uiObjInitAra_Int(objIdx, minMaxMod, initVal, label, configBoolVals, dfltRndrCfgFmtVals);
-    }    
-    
-    /**
-     * Build the GUIObj_Params that describes a integer object that is multi-line
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String label) {
-        return uiObjInitAra_Int(objIdx, minMaxMod, initVal, label, dfltUIBehaviorVals, dfltMultiLineRndrCfgFmtVals);
-    }    
-    
-    /**
-     * Build the GUIObj_Params that describes a integer object that is multi-line
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * NOTE : this method uses the defaultmulti-line enabled UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_IntMultiLine(int objIdx, double[] minMaxMod, double initVal, String label, boolean[] configBoolVals) {
-        return uiObjInitAra_Int(objIdx, minMaxMod, initVal, label, configBoolVals, dfltMultiLineRndrCfgFmtVals);
-    }    
-    
-    /**
-     * Build the GUIObj_Params that describes a integer object
-     * @param objIdx The predefined index constant for this gui object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
-     *                 - Should be multiline
-     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *                 - Force this object to be on a new row/line (For side-by-side layouts)
-     *                 - Text should be centered (default is false)
-     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *                 - Should have ornament
-     *                 - Ornament color should match label color 
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_Int(int objIdx, double[] minMaxMod, double initVal, String label, boolean[] configBoolVals, GUIObjRenderer_Flags _rendererCfgFlags) {
-        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.IntVal, configBoolVals, _rendererCfgFlags);
-        obj.setMinMaxMod(minMaxMod);
-        obj.initVal = initVal;
-        return obj;
-    }
-        
-    /**
-     * Build the GUIObj_Params that describes a float object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default behavior and UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String label) {
-        return uiObjInitAra_Float(objIdx, minMaxMod, initVal, label, dfltUIBehaviorVals, dfltRndrCfgFmtVals);
-    }
-    
-    /**
-     * Build the GUIObj_Params that describes a float object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default behavior and UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_FloatInLine(int objIdx, double[] minMaxMod, double initVal, String label) {
-        return uiObjInitAra_Float(objIdx, minMaxMod, initVal, label, dfltUIBehaviorVals, dfltRndrInLineCfgFmtVals);
-    }
-    
-    /**
-     * Build the GUIObj_Params that describes a float object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * NOTE : this method uses the default UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String label, boolean[] configBoolVals) {
-        return uiObjInitAra_Float(objIdx, minMaxMod, initVal, label, configBoolVals, dfltRndrCfgFmtVals);
-    }
-        
-    /**
-     * Build the GUIObj_Params that describes a float object that is multi-line
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * NOTE : this method uses the default behavior and multi-line enabled UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String label) {
-        return uiObjInitAra_Float(objIdx, minMaxMod, initVal, label, dfltUIBehaviorVals, dfltMultiLineRndrCfgFmtVals);
+    public final GUIObj_Params uiObjInitAra_DispFloat(int _objIdx, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+       GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispFloatVal, _uiObjConfigFlags, _rendererCfgFlags);
+       obj.initVal = _initVal;
+       return obj;
     }
 
     /**
-     * Build the GUIObj_Params that describes a float object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * NOTE : this method uses the default multi-line enabled UI format boolean values
+     * Build the GUIObj_Params that describes a read-only floating-point number range of values object
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_FloatMultiLine(int objIdx, double[] minMaxMod, double initVal, String label, boolean[] configBoolVals) {
-        return uiObjInitAra_Float(objIdx, minMaxMod, initVal, label, configBoolVals, dfltMultiLineRndrCfgFmtVals);
+    public final GUIObj_Params uiObjInitAra_DispFloatRange(int _objIdx, double[] _minMaxMod, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
+        return uiObjInitAra_DispFloatRange(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(true, true), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true));
+    }
+
+    /**
+     * Build the GUIObj_Params that describes a read-only floating-point number range of values object 
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispFloatRange(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispFloatVal, _uiObjConfigFlags, _rendererCfgFlags);
+        obj.setMinMaxMod(_minMaxMod);
+        obj.initVal = _initVal;
+        return obj;
+    }    
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// ReadOnly Label:String UI object initialization and interaction
+
+    /**
+     * Build the GUIObj_Params that describes a read-only object that displays a specific string from a list of possibilities (i.e. read-only list box)
+     * @param _objIdx object index
+     * @param _initVal the index in the list of possibilities to use as the initial 
+     * @param _label display label used for object
+     * @param _listElems list of elements this object manages
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispString(int _objIdx, double _initVal, String _label, String[] _listElems, boolean _isMultiLine, boolean _isOnePerRow) {
+        return uiObjInitAra_DispString(_objIdx, _initVal, _label, _listElems, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true));
+    }
+
+    /**
+     * Build the GUIObj_Params that describes a read-only object that displays a specific string from a list of possibilities (i.e. read-only list box)
+     * @param _objIdx object index
+     * @param _initVal the index in the list of possibilities to use as the initial 
+     * @param _label display label used for object
+     * @param _listElems list of elements this object manages
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data 
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_DispString(int _objIdx, double _initVal, String _label, String[] _listElems,  GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispStr, _uiObjConfigFlags, _rendererCfgFlags);
+        obj.initVal = _initVal;
+        obj.setListVals(_listElems);    
+        return obj;
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Interactive Integer-based UI Object  
+    
+    /**
+     * Build the GUIObj_Params that describes an integer UI object with default configurations - 
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Int(int _objIdx, double[] _minMaxMod, double _initVal, String _label) {
+        return uiObjInitAra_Int(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, true, false, false));
+    }    
+    /**
+     * Build the GUIObj_Params that describes an integer UI object with given renderer configurations
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Int(int _objIdx, double[] _minMaxMod, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
+        return uiObjInitAra_Int(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
+    }    
+    /**
+     * Build the GUIObj_Params that describes an integer UI object
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Int(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags) {
+        return uiObjInitAra_Int(_objIdx, _minMaxMod, _initVal, _label, _uiObjConfigFlags, buildGUIObjRendererFlags(false, true, false, false));
+    }     
+    /**
+     * Build the GUIObj_Params that describes an integer UI object 
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Int(int _objIdx, double[] _minMaxMod, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow, GUIObjConfig_Flags _uiObjConfigFlags) {
+        return uiObjInitAra_Int(_objIdx, _minMaxMod, _initVal, _label, _uiObjConfigFlags, buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
     }
     
     /**
-     * Build the GUIObj_Params that describes a float object
-     * @param minMaxMod 3-element double array holding the min and max vals and the base mod value
-     * @param initVal initial value for the object
-     * @param label display label of object
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
-     *                 - Should be multiline
-     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *                 - Force this object to be on a new row/line (For side-by-side layouts)
-     *                 - Text should be centered (default is false)
-     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *                 - Should have ornament
-     *                 - Ornament color should match label color 
+     * Build the GUIObj_Params that describes a integer object
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Float(int objIdx, double[] minMaxMod, double initVal, String label, boolean[] configBoolVals, GUIObjRenderer_Flags _rendererCfgFlags) {
-        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.FloatVal, configBoolVals, _rendererCfgFlags);
-        obj.setMinMaxMod(minMaxMod);
-        obj.initVal = initVal;
+    public final GUIObj_Params uiObjInitAra_Int(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.IntVal, _uiObjConfigFlags, _rendererCfgFlags);
+        obj.setMinMaxMod(_minMaxMod);
+        obj.initVal = _initVal;
         return obj;
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Interactive Floating-point-based UI Object  
+       
+    /**
+     * Build the GUIObj_Params that describes a floating-point UI object
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Float(int _objIdx, double[] _minMaxMod, double _initVal, String _label) {
+        return uiObjInitAra_Float(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, true, false, false));
+    }
+    
+    /**
+     * Build the GUIObj_Params that describes a floating-point UI object with given renderer configurations
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Float(int _objIdx, double[] _minMaxMod, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
+        return uiObjInitAra_Float(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
+    }
+    
+    /**
+     * Build the GUIObj_Params that describes a floating-point UI object
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Float(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags) {
+        return uiObjInitAra_Float(_objIdx, _minMaxMod, _initVal, _label, _uiObjConfigFlags, buildGUIObjRendererFlags(false, true, false, false));
+    }
+    
+    /**
+     * Build the GUIObj_Params that describes a floating-point UI object
+     * @param _objIdx object index
+     * @param _minMaxMod array holding the min and max values (mod is ignored)
+     * @param _initVal the initial value to display
+     * @param _label display label used for object
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Float(int _objIdx, double[] _minMaxMod, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow, GUIObjConfig_Flags _uiObjConfigFlags) {
+        return uiObjInitAra_Float(_objIdx, _minMaxMod, _initVal, _label, _uiObjConfigFlags, buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
+    }
+   
+    /**
+     * Build the GUIObj_Params that describes a floating-point UI object
+     * @param _objIdx object index
+     * @param _initVal the index in the list of possibilities to use as the initial 
+     * @param _label display label used for object
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data 
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Float(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.FloatVal, _uiObjConfigFlags, _rendererCfgFlags);
+        obj.setMinMaxMod(_minMaxMod);
+        obj.initVal = _initVal;
+        return obj;
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Interactive List box UI object
+
+    /**
+     * Build the GUIObj_Params that describes a list object with default configuration values
+     * @param _objIdx object index
+     * @param _initVal the index in the list of possibilities to use as the initial 
+     * @param _label display label used for object
+     * @param _listElems list of elements this object manages
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_List(int _objIdx, double _initVal, String _label, String[] _listElems) {
+        return uiObjInitAra_List(_objIdx, _initVal, _label, _listElems, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, true, false, false));
+    }
+
+    /**
+     * Build the GUIObj_Params that describes a list object 
+     * @param _objIdx object index
+     * @param _initVal the index in the list of possibilities to use as the initial 
+     * @param _label display label used for object
+     * @param _listElems list of elements this object manages
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a values
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_List(int _objIdx, double _initVal, String _label, String[] _listElems, GUIObjConfig_Flags _uiObjConfigFlags) {
+        return uiObjInitAra_List(_objIdx, _initVal, _label, _listElems, _uiObjConfigFlags, buildGUIObjRendererFlags(false, true, false, false));
+    }
+
+    /**
+     * Build the GUIObj_Params that describes a list object 
+     * @param _objIdx object index
+     * @param _initVal the index in the list of possibilities to use as the initial 
+     * @param _label display label used for object
+     * @param _listElems list of elements this object manages
+     * @param _isMultiLine Whether this object exists on multiple rows
+     * @param _isOnePerRow Whether this object spans an entire UI row
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_List(int _objIdx, double _initVal, String _label, String[] _listElems, boolean _isMultiLine, boolean _isOnePerRow) {
+        return uiObjInitAra_List(_objIdx, _initVal, _label, _listElems, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
+    }
+
+    /**
+     * Build the GUIObj_Params that describes a list object 
+     * @param _objIdx object index
+     * @param _initVal the index in the list of possibilities to use as the initial 
+     * @param _label display label used for object
+     * @param _listElems list of elements this object manages
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a values
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_List(int _objIdx, double _initVal, String _label, String[] _listElems, boolean _isMultiLine, boolean _isOnePerRow, GUIObjConfig_Flags _uiObjConfigFlags) {
+        return uiObjInitAra_List(_objIdx, _initVal, _label, _listElems, _uiObjConfigFlags, buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
     }
 
     /**
      * Build the GUIObj_Params that describes a list object
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param list of elements this object manages
-     * NOTE : this method uses the default behavior and UI format boolean values
+     * @param _objIdx object index
+     * @param _initVal the index in the list of possibilities to use as the initial 
+     * @param _label display label used for object
+     * @param _listElems list of elements this object manages
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data 
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String label, String[] listElems) {
-        return uiObjInitAra_List(objIdx, initVal, label, listElems, dfltUIBehaviorVals, dfltRndrCfgFmtVals);
-    }
-
-    /**
-     * Build the GUIObj_Params that describes a list object
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param list of elements this object manages
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * NOTE : this method uses the default UI format boolean values
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String label, String[] listElems, boolean[] configBoolVals) {
-        return uiObjInitAra_List(objIdx, initVal, label, listElems, configBoolVals, dfltRndrCfgFmtVals);
-    }
-
-    /**
-     * Build the GUIObj_Params that describes a list object that is multi-line
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param list of elements this object manages
-     * NOTE : this method uses the default behavior and renderer creation format boolean values for multi-line list box
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String label, String[] listElems) {
-        return uiObjInitAra_List(objIdx, initVal, label, listElems, dfltUIBehaviorVals, dfltMultiLineRndrCfgFmtVals);
-    }
-
-
-    /**
-     * Build the GUIObj_Params that describes a list object that is multi-line
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param list of elements this object manages
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * NOTE : this method uses the default renderer creation format boolean values for multi-line list box
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String label, String[] listElems, boolean[] configBoolVals) {
-        return uiObjInitAra_List(objIdx, initVal, label, listElems, configBoolVals, dfltMultiLineRndrCfgFmtVals);
-    }
-    
-    /**
-     * Build the GUIObj_Params that describes a list object that is multi-line
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param list of elements this object manages
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
-     *                 - Should be multiline
-     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *                 - Force this object to be on a new row/line (For side-by-side layouts)
-     *                 - Text should be centered (default is false)
-     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *                 - Should have ornament
-     *                 - Ornament color should match label color 
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_ListMultiLine(int objIdx, double initVal, String label, String[] listElems, boolean[] configBoolVals, GUIObjRenderer_Flags _rendererCfgFlags) {
-        return uiObjInitAra_List(objIdx, initVal, label, listElems, configBoolVals, _rendererCfgFlags);
-    }
-        
-    /**
-     * Build the GUIObj_Params that describes a list object
-     * @param objIdx the index of this object in the guiObjAra
-     * @param initVal initial value for the object
-     * @param label display label of the object
-     * @param boolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * @param _rendererCfgFlags structure that holds various renderer configuration data (i.e. : 
-     *                 - Should be multiline
-     *                 - One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
-     *                 - Force this object to be on a new row/line (For side-by-side layouts)
-     *                 - Text should be centered (default is false)
-     *                 - Object should be rendered with outline (default for btns is true, for non-buttons is false)
-     *                 - Should have ornament
-     *                 - Ornament color should match label color
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_List(int objIdx, double initVal, String label, String[] listElems, boolean[] configBoolVals, GUIObjRenderer_Flags _rendererCfgFlags) {
-        GUIObj_Params obj = new GUIObj_Params(objIdx, label, GUIObj_Type.ListVal, configBoolVals, _rendererCfgFlags);
-        obj.setMinMaxMod(new double[] {0, listElems.length-1, 1});
-        obj.initVal = initVal;
-        obj.setListVals(listElems);    
+    public final GUIObj_Params uiObjInitAra_List(int _objIdx, double _initVal, String _label, String[] _listElems, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.ListVal, _uiObjConfigFlags, _rendererCfgFlags);
+        obj.setMinMaxMod(new double[] {0, _listElems.length-1, 1});
+        obj.initVal = _initVal;
+        obj.setListVals(_listElems);    
         return obj;    
     }    
     
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Interactive Switch/2-state button UI object backed by flags construct in owner
     /**
-     * Build the GUIObj_Params that describes a boolean switch object, backed by a flag structure
-     * @param objIdx the index of this object in the guiObjAra
-     * @param name the name of this switch
-     * @param trueLabel - label for this switch's true state
-     * @param falseLabel - label for this switch's false state
-     * @param boolFlagIdx the index of the boolean flag that interacts with this switch
-     * NOTE : this method uses the default behavior and renderer creation format boolean values for switch object
+     * Build the GUIObj_Params that describes a boolean switch object, backed by a flag structure, with default configurations
+     * @param _objIdx object index
+     * @param _label display label used for object
+     * @param _trueLabel the label for this switch's true state
+     * @param _falseLabel the label for this switch's false state
+     * @param _boolFlagIdx the index of the boolean flag that interacts with this switch
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Switch(int objIdx, String label, String trueLabel, String falseLabel, int boolFlagIdx) {
-        return uiObjInitAra_Switch(objIdx, label, trueLabel, falseLabel, 0, boolFlagIdx, dfltUIBehaviorVals, dfltUIBtnTypeVals);
+    public final GUIObj_Params uiObjInitAra_Switch(int _objIdx, String _label, String _trueLabel, String _falseLabel, int _boolFlagIdx) {
+        return uiObjInitAra_Switch(_objIdx, _label, _trueLabel, _falseLabel, _boolFlagIdx, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, false, true, false), dfltUIBtnTypeVals);
+    }
+    
+    /**
+     * Build the GUIObj_Params that describes a boolean switch object, backed by a flag structure, with default configurations
+     * @param _objIdx object index
+     * @param _label display label used for object
+     * @param _trueLabel the label for this switch's true state
+     * @param _falseLabel the label for this switch's false state
+     * @param _boolFlagIdx the index of the boolean flag that interacts with this switch
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @return
+     */
+    public final GUIObj_Params uiObjInitAra_Switch(int _objIdx, String _label, String _trueLabel, String _falseLabel, int _boolFlagIdx, GUIObjConfig_Flags _uiObjConfigFlags) {
+        return uiObjInitAra_Switch(_objIdx, _label, _trueLabel, _falseLabel, _boolFlagIdx, _uiObjConfigFlags, buildGUIObjRendererFlags(false, false, true, false), dfltUIBtnTypeVals);
     }
     
     /**
      * Build the GUIObj_Params that describes a boolean switch object, backed by a flag structure
-     * @param objIdx the index of this object in the guiObjAra
-     * @param name the name of this button
-     * @param labels the list of labels that describe the valid states for this button
-     * @param btnIdx the index of this button
-     * @param boolFlagIdx the index of the boolean flag that interacts with this button
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * @param buttonFlags Boolean array of button type format values 
-     *          idx 0: Whether this button should stay enabled until next draw frame                                                
-     *          idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
-     * NOTE : this method uses the default renderer creation format boolean values for button/switch
+     * @param _objIdx object index
+     * @param _label display label used for object
+     * @param _trueLabel the label for this switch's true state
+     * @param _falseLabel the label for this switch's false state
+     * @param _boolFlagIdx the index of the boolean flag that interacts with this switch
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data 
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Switch(int objIdx, String label, String trueLabel, String falseLabel, double initVal, int boolFlagIdx, boolean[] configBoolVals, boolean[] buttonFlags) {
+    public final GUIObj_Params uiObjInitAra_Switch(
+            int _objIdx, 
+            String _label, 
+            String _trueLabel, 
+            String _falseLabel,
+            int _boolFlagIdx, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags,
+            boolean[] buttonFlags) {
         GUIObj_Params obj;
-        String[] labels = new String[]{falseLabel, trueLabel};
+        String[] labels = new String[]{_falseLabel, _trueLabel};
         // boolean flag toggle, attached to a privFlags, 
         // TODO : develop multi-line renderer for buttons. Until then always use default
-        obj = new GUIObj_Params(objIdx, label, GUIObj_Type.Switch, boolFlagIdx, configBoolVals, dfltBtnRndrCfgFmtVals, buttonFlags);
+        obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.Switch, _boolFlagIdx, _uiObjConfigFlags, _rendererCfgFlags, buttonFlags);
         obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
-        obj.initVal = initVal;
         obj.setListVals(labels);
         // set default 2-state button colors
         obj.setBtnFillColors(btnColors);
         return obj;        
     }
     
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Interactive Multi-state button (i.e. variant of a list box)
+
     /**
-     * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a listbox)
-     * @param objIdx the index of this object in the guiObjAra
-     * @param name the name of this button
-     * @param labels the list of labels that describe the valid states for this button
-     * NOTE : this method uses the default UI behavior and button type behavior values for button object
+     * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a list box)
+     * @param _objIdx object index
+     * @param _initVal the initial selection in _labels to display
+     * @param _label display label used for object
+     * @param _labels the list of labels that describe the valid states for this button
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String label, String[] labels) {
-        return uiObjInitAra_Btn(objIdx, label, labels, 0, dfltUIBehaviorVals, dfltUIBtnTypeVals);
-    }
-    
-    /**
-     * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a listbox)
-     * @param objIdx the index of this object in the guiObjAra
-     * @param name the name of this button
-     * @param initVal the initial state this button should have
-     * @param labels the list of labels that describe the valid states for this button
-     * NOTE : this method uses the default UI behavior and button type behavior values for button object
-     * @return
-     */
-    public final GUIObj_Params uiObjInitAra_Btn(int objIdx, double initVal, String label, String[] labels) {
-        return uiObjInitAra_Btn(objIdx, label, labels, initVal, dfltUIBehaviorVals, dfltUIBtnTypeVals);
+    public final GUIObj_Params uiObjInitAra_Btn(int _objIdx, double _initVal, String _label, String[] _labels) {
+        return uiObjInitAra_Btn(_objIdx, _label, _labels, _initVal, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, false, true, false), dfltUIBtnTypeVals);
     }
 
     /**
-     * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a listbox)
-     * @param objIdx the index of this object in the guiObjAra
-     * @param name the name of this button
-     * @param labels the list of labels that describe the valid states for this button
-     * @param initVal the initial value to be enabled for this button
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *               idx 3: object is read only
-     * NOTE : this method uses the default renderer creation format boolean values for button/switch
+     * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a list box)
+     * @param _objIdx object index
+     * @param _initVal the initial selection in _labels to display
+     * @param _label display label used for object
+     * @param _labels the list of labels that describe the valid states for this button
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Btn(int objIdx, double initVal, String label, String[] labels, boolean[] configBoolVals) {
-        return uiObjInitAra_Btn(objIdx, label, labels, initVal, configBoolVals, dfltUIBtnTypeVals);        
+    public final GUIObj_Params uiObjInitAra_Btn(int _objIdx, double _initVal, String _label, String[] _labels, GUIObjConfig_Flags _uiObjConfigFlags) {
+        return uiObjInitAra_Btn(_objIdx, _label, _labels, _initVal, _uiObjConfigFlags, buildGUIObjRendererFlags(false, false, true, false), dfltUIBtnTypeVals);        
     }
 
     /**
-     * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a listbox)
-     * @param objIdx the index of this object in the guiObjAra
-     * @param name the name of this button
-     * @param labels the list of labels that describe the valid states for this button
-     * @param initVal the initial value to be enabled for this button
-     * @param configBoolVals boolean array specifying behavior (unspecified values are set to false): 
-     *               idx 0: value is sent to owning window,  
-     *               idx 1: value is sent on any modifications (while being modified, not just on release), 
-     *               idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+     * Build the GUIObj_Params that describes a button object that is not backed by a flags structure (i.e. a special variant of a list box)
+     * @param _objIdx object index
+     * @param _initVal the initial selection in _labels to display
+     * @param _label display label used for object
+     * @param _labels the list of labels that describe the valid states for this button
+     * @param _uiObjConfigFlags Object configuration flags
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
+     *         objectIsReadOnlyIDX    : object is read only
+     *         isValueRangeIDX        : object should display a value range and not a value
+     * @param _rendererCfgFlags structure that holds various renderer configuration data 
+     * Current flags are : 
+     *         isMultiLineIDX           : Should be multiline                                                                                                   
+     *         isOneObjPerRowIDX        : One object per row in UI space (i.e. default for multi-line and btn objects is false, single line non-buttons is true)
+     *         forceStartNewLineIDX     : Force this object to be on a new row/line                                                                             
+     *         centerTextIDX            : Text should be centered                                                                                               
+     *         hasOutlineIDX            : An outline around the object should be rendered                                                                       
+     *         hasOrnamentIDX           : Should have ornament                                                                                                  
+     *         ornmntClrMatchIDX        : Ornament color should match label color
      * @param buttonFlags Boolean array of button type format values 
      *          idx 0: Whether this button should stay enabled until next draw frame                                                
      *          idx 1: Whether this button waits for some external process to complete before returning to _offStateIDX State 
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Btn(int objIdx, String label, String[] labels, double initVal, boolean[] configBoolVals, boolean[] buttonFlags) {
+    public final GUIObj_Params uiObjInitAra_Btn(
+            int _objIdx, 
+            String _label, 
+            String[] _labels, 
+            double _initVal, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags,
+            boolean[] buttonFlags) {
         GUIObj_Params obj;
         // Not a toggle
         // TODO : develop multi-line renderer for buttons. Until then always use default
-        obj = new GUIObj_Params(objIdx, label, GUIObj_Type.Button, -1, configBoolVals, dfltBtnRndrCfgFmtVals, buttonFlags);        
-        obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
-        obj.initVal = (initVal >= 0 ? (initVal < labels.length ? initVal : labels.length) : 0);
-        obj.setListVals(labels);
+        obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.Button, -1, _uiObjConfigFlags, _rendererCfgFlags, buttonFlags);        
+        obj.setMinMaxMod(new double[] {0, _labels.length-1, 1});
+        obj.initVal = (_initVal >= 0 ? (_initVal < _labels.length ? _initVal : _labels.length) : 0);
+        obj.setListVals(_labels);
         // set random object state colors
-        int[][] resClrs= new int[labels.length][4];
-        for(int i=0;i<labels.length;++i) {resClrs[i] = MyMathUtils.randomIntClrAra(150, 100, 150);}
+        int[][] resClrs= new int[_labels.length][4];
+        for(int i=0;i<_labels.length;++i) {resClrs[i] = MyMathUtils.randomIntClrAra(150, 100, 150);}
         obj.setBtnFillColors(resClrs);
         return obj;        
     }
@@ -1276,8 +1332,8 @@ public class UIObjectManager {
      * Convenience method to build debug button, since used as first button in many applications.
      * @return
      */
-    public GUIObj_Params buildDebugButton(int objIdx, String trueLabel, String falseLabel) {
-        return uiObjInitAra_Switch(objIdx, "Debug Button", trueLabel, falseLabel, Base_BoolFlags.debugIDX);
+    public GUIObj_Params buildDebugButton(int _objIdx, String _trueLabel, String _falseLabel) {
+        return uiObjInitAra_Switch(_objIdx, "Debug Button", _trueLabel, _falseLabel, Base_BoolFlags.debugIDX);
     }
    
     //////////////////////////////////////////
@@ -1569,8 +1625,8 @@ public class UIObjectManager {
      * @param desc the process being attempted on the UI object (for error message)
      * @return whether or not the passed index corresponds to a valid location in the array of UI objects
      */
-    private boolean _validateUIObjectIdx(int idx, int len, String callFunc, String desc) {
-        if (!MyMathUtils.inRange(idx, 0, len)){
+    private boolean _validateUIObjectIdx(int idx, String callFunc, String desc) {
+        if (!_guiObjsIDXMap.containsKey(idx)){
             _dispErrMsg(callFunc, 
                 "Attempting to access illegal Numeric UI object to "+desc+" (idx :"+idx+" is out of range). Aborting.");
             return false;
@@ -1649,7 +1705,7 @@ public class UIObjectManager {
      * @return whether modification was performed or not
      */
     public boolean setNewUIMaxVal(int idx, double maxVal) {
-        if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIMaxVal", "set its max value")) {_guiObjsIDXMap.get(idx).setNewMax(maxVal);return true;}    
+        if (_validateUIObjectIdx(idx, "setNewUIMaxVal", "set its max value")) {_guiObjsIDXMap.get(idx).setNewMax(maxVal);return true;}    
         return false;
     }    
     
@@ -1660,7 +1716,7 @@ public class UIObjectManager {
      * @return whether modification was performed or not
      */
     public boolean setNewUIMinVal(int idx, double minVal) {
-        if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIMinVal", "set its min value")) {_guiObjsIDXMap.get(idx).setNewMin(minVal);return true;}
+        if (_validateUIObjectIdx(idx, "setNewUIMinVal", "set its min value")) {_guiObjsIDXMap.get(idx).setNewMin(minVal);return true;}
         return false;
     }
     
@@ -1671,7 +1727,7 @@ public class UIObjectManager {
      * @return value being set, or -Double.MAX_VALUE if idx is out of range
      */
     public double setNewUIValue(int idx, double val) {
-        if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIValue", "set its value")) {return _guiObjsIDXMap.get(idx).setVal(val);}
+        if (_validateUIObjectIdx(idx, "setNewUIValue", "set its value")) {return _guiObjsIDXMap.get(idx).setVal(val);}
         return -Double.MAX_VALUE;
     }        
     
@@ -1683,11 +1739,11 @@ public class UIObjectManager {
      */
     public void setNewUIDispText(int idx, boolean isNumeric, String str) {
         if (isNumeric) {
-            if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
+            if (_validateUIObjectIdx(idx, "setNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
             return;
         } else {
             //TODO support boolean UI objects
-            if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
+            if (_validateUIObjectIdx(idx, "setNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
             return;
         }
     }
@@ -1698,7 +1754,7 @@ public class UIObjectManager {
      * @return
      */
     public int[] setDispUIListVal(int idx, String val) {        
-        if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setDispUIListVal", "display passed value")) || 
+        if ((!_validateUIObjectIdx(idx, "setDispUIListVal", "display passed value")) || 
                 (!_validateIdxIsListObj(_guiObjsIDXMap.get(idx), "setDispUIListVal", "display passed value"))){return new int[0];}
         return ((GUIObj_List) _guiObjsIDXMap.get(idx)).setValInList(val);
     }
@@ -1711,7 +1767,7 @@ public class UIObjectManager {
      * @return
      */
     public int setAllUIListValues(int uiObjIdx, String[] values, boolean setAsDefault) {        
-        if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUIListValues", "set/replace all list values")) || 
+        if ((!_validateUIObjectIdx(uiObjIdx, "setAllUIListValues", "set/replace all list values")) || 
                 (!_validateIdxIsListObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUIListValues", "set/replace all list values"))){return -1;}
         return ((GUIObj_List)_guiObjsIDXMap.get(uiObjIdx)).setListVals(values, setAsDefault);
     }
@@ -1723,7 +1779,7 @@ public class UIObjectManager {
      * @return
      */
     public int[] setDispUIButtonState(int idx, String val) {        
-        if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "setDispUIButtonState", "display passed state")) || 
+        if ((!_validateUIObjectIdx(idx, "setDispUIButtonState", "display passed state")) || 
                 (!_validateIdxIsButtonObj(_guiObjsIDXMap.get(idx), "setDispUIButtonState", "display passed state"))){return new int[0];}
         return ((GUIObj_Button) _guiObjsIDXMap.get(idx)).setStateByLabel(val);
     }
@@ -1736,7 +1792,7 @@ public class UIObjectManager {
      * @return
      */
     public int setAllUIButtonStates(int uiObjIdx, String[] values, boolean setAsDefault) {        
-        if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUIButtonStates", "set/replace all button states")) || 
+        if ((!_validateUIObjectIdx(uiObjIdx, "setAllUIButtonStates", "set/replace all button states")) || 
                 (!_validateIdxIsButtonObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUIButtonStates", "set/replace all button states"))){return -1;}
         return ((GUIObj_Button)_guiObjsIDXMap.get(uiObjIdx)).setStateLabels(values, setAsDefault);
     }    
@@ -1748,7 +1804,7 @@ public class UIObjectManager {
      * @return
      */
     public int[] setDispUISwitchState(int uiObjIdx, String val) {        
-        if ((!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setDispUISwitchState", "display passed state")) || 
+        if ((!_validateUIObjectIdx(uiObjIdx, "setDispUISwitchState", "display passed state")) || 
                 (!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(uiObjIdx), "setDispUISwitchState", "display passed state"))){return new int[0];}
         return ((GUIObj_Switch)_guiObjsIDXMap.get(uiObjIdx)).setStateByLabel(val);
     }
@@ -1762,7 +1818,7 @@ public class UIObjectManager {
      */
     public int setAllUISwitchStates(int uiObjIdx, String[] values, boolean setAsDefault) {        
         if (!_validateSwitchListValues(values, "setAllUISwitchStates","set/replace both switch states") ||            
-                (!_validateUIObjectIdx(uiObjIdx, _guiObjsIDXMap.size(), "setAllUISwitchStates", "set/replace both switch states")) || 
+                (!_validateUIObjectIdx(uiObjIdx, "setAllUISwitchStates", "set/replace both switch states")) || 
                 (!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(uiObjIdx), "setAllUISwitchStates", "set/replace both switch states"))){return -1;}
         return ((GUIObj_Switch)_guiObjsIDXMap.get(uiObjIdx)).setStateLabels(values, setAsDefault);
     }
@@ -1773,7 +1829,7 @@ public class UIObjectManager {
      * @return min value allowed, or Double.MAX_VALUE if idx out of range
      */
     public double getMinUIValue(int idx) {
-        if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getMinUIValue","get its min value")) {return _guiObjsIDXMap.get(idx).getMinVal();}
+        if (_validateUIObjectIdx(idx, "getMinUIValue","get its min value")) {return _guiObjsIDXMap.get(idx).getMinVal();}
         return Double.MAX_VALUE;
     }
     
@@ -1783,7 +1839,7 @@ public class UIObjectManager {
      * @return max value allowed, or -Double.MAX_VALUE if idx out of range
      */
     public double getMaxUIValue(int idx) {
-        if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getMaxUIValue","get its max value")){return _guiObjsIDXMap.get(idx).getMaxVal();}
+        if (_validateUIObjectIdx(idx, "getMaxUIValue","get its max value")){return _guiObjsIDXMap.get(idx).getMaxVal();}
         return -Double.MAX_VALUE;
     }
     
@@ -1793,7 +1849,7 @@ public class UIObjectManager {
      * @return mod value of UI object, or 0 if idx out of range
      */
     public double getModStep(int idx) {
-        if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getModStep", "get its mod value")) {return _guiObjsIDXMap.get(idx).getModStep();}
+        if (_validateUIObjectIdx(idx, "getModStep", "get its mod value")) {return _guiObjsIDXMap.get(idx).getModStep();}
         return 0;
     }
     
@@ -1803,7 +1859,7 @@ public class UIObjectManager {
      * @return the current value of the UI object, or -Double.MAX_VALUE if idx out of range
      */
     public double getUIValue(int idx) {
-        if (_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getUIValue", "get its value")) {return _guiObjsIDXMap.get(idx).getVal();}
+        if (_validateUIObjectIdx(idx, "getUIValue", "get its value")) {return _guiObjsIDXMap.get(idx).getVal();}
         return -Double.MAX_VALUE;
     }
     
@@ -1814,7 +1870,7 @@ public class UIObjectManager {
      * @return the string value at the requested index, or "" if not a valid request
      */
     public String getListValStr(int idx, int listIdx) {        
-        if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getListValStr", "get a list value at specified idx")) || 
+        if ((!_validateUIObjectIdx(idx, "getListValStr", "get a list value at specified idx")) || 
                 (!_validateIdxIsListObj(_guiObjsIDXMap.get(idx), "getListValStr", "get a list value at specified idx"))){return "";}
         return ((GUIObj_List)_guiObjsIDXMap.get(idx)).getListValStr(listIdx);
     }
@@ -1826,7 +1882,7 @@ public class UIObjectManager {
      * @return the string value at the requested index, or "" if not a valid request
      */
     public String getButtonStateStr(int idx, int buttonStIdx) {        
-        if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getButtonStateStr", "get a button state at specified idx")) || 
+        if ((!_validateUIObjectIdx(idx, "getButtonStateStr", "get a button state at specified idx")) || 
                 (!_validateIdxIsButtonObj(_guiObjsIDXMap.get(idx), "getButtonStateStr", "get a button state at specified idx"))){return "";}
         return ((GUIObj_Button)_guiObjsIDXMap.get(idx)).getStateLabel(buttonStIdx);
     }
@@ -1838,7 +1894,7 @@ public class UIObjectManager {
      * @return the string value at the requested index, or "" if not a valid request
      */
     public String getSwitchStateStr(int idx, int switchStIdx) {        
-        if ((!_validateUIObjectIdx(idx, _guiObjsIDXMap.size(), "getSwitchStateStr", "get a switch state at specified idx")) || 
+        if ((!_validateUIObjectIdx(idx, "getSwitchStateStr", "get a switch state at specified idx")) || 
                 (!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(idx), "getSwitchStateStr", "get a switch state at specified idx"))){return "";}
         return ((GUIObj_Button)_guiObjsIDXMap.get(idx)).getStateLabel(switchStIdx);
     }

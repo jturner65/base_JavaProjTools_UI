@@ -39,9 +39,9 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
     protected int[] getStateColor() {return colors[((GUIObj_Button) owner).getButtonState()];}    
 
     @Override
-    protected void _drawUIData() {            ri.showText(owner.getValueAsString(), txtHeight , 0);}    
+    protected void _drawUIData() {            ri.showText(owner.getUIDispAsSingleLine(), txtHeight , 0);}    
     @Override
-    protected void _drawUIDataCentered() {    ri.showCenteredText(owner.getValueAsString(), _getCenterX(), 0);}
+    protected void _drawUIDataCentered() {    ri.showCenteredText(owner.getUIDispAsSingleLine(), _getCenterX(), 0);}
     
     protected void _updateLabelColors(int[][] _labelColors) {
         colors = new int[_labelColors.length][4];

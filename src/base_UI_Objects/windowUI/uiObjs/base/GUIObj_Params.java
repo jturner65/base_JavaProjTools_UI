@@ -1,6 +1,5 @@
 package base_UI_Objects.windowUI.uiObjs.base;
 
-
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.GUIObjRenderer_Flags;
 
@@ -72,6 +71,8 @@ public class GUIObj_Params {
         {0,0,0,255},             // text
     };
     
+    private int[][] readOnlyStrkFillColor = null;
+    
     /**
      * The colors corresponding to the desired fill color for the various button states/labels, or null if not a button
      */
@@ -104,7 +105,7 @@ public class GUIObj_Params {
             String _label, 
             GUIObj_Type _objType, 
             int _boolFlagIDX, 
-            boolean[] _configFlags, 
+            GUIObjConfig_Flags _configFlags, 
             GUIObjRenderer_Flags _rendererCfgFlags, 
             boolean[] _buttonFlags) {
         name = "unnamed";
@@ -133,7 +134,7 @@ public class GUIObj_Params {
      *                 - Ornament color should match label color 
      * NOTE : passes empty array to button creation flags
      */
-    public GUIObj_Params(int _objIdx, String _label, GUIObj_Type _objType, boolean[] _configFlags,    GUIObjRenderer_Flags _rendererCfgFlags) {
+    public GUIObj_Params(int _objIdx, String _label, GUIObj_Type _objType, GUIObjConfig_Flags _configFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
         this(_objIdx, _label, _objType, -1, _configFlags, _rendererCfgFlags, new boolean[0]);
     }
     
@@ -243,7 +244,10 @@ public class GUIObj_Params {
      */
     public final void setStrkFillTextColors(int[][] _colors) {
         renderColors = new int[_colors.length][];
-        for(int i=0;i<_colors.length;++i) {            System.arraycopy(_colors[i], 0, renderColors[i], 0, _colors[i].length);    }    
+        for(int i=0;i<_colors.length;++i) {
+            renderColors[i] = new int[_colors[i].length];
+            System.arraycopy(_colors[i], 0, renderColors[i], 0, _colors[i].length);    
+        }    
     }
     
     /**
@@ -251,6 +255,21 @@ public class GUIObj_Params {
      * @return
      */
     public final int[][] getStrkFillTextColors(){return renderColors;}
+    
+    public final int[][] getReadOnlyColors() {return readOnlyStrkFillColor;}
+    /**
+     * Set the stroke and fill color for this readon only object. Fill will be made lighter/more transparent than the stroke color
+     * @param _color
+     */
+    public final void setReadOnlyColors(int[] _color) {
+        readOnlyStrkFillColor = new int[2][];
+        for(int i=0;i<2;++i) {
+            readOnlyStrkFillColor[i] = new int[_color.length];
+            System.arraycopy(_color, 0, readOnlyStrkFillColor[i], 0, _color.length);    
+        }
+        // change alpha to make fill lighter than stroke
+        readOnlyStrkFillColor[1][3] *= .25;
+    } 
     
     /**
      * Whether or not this object is a button or switch

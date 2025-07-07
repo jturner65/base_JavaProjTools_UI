@@ -117,6 +117,9 @@ public class GUIObj_Button extends Base_GUIObj {
         setStartWaitingOnProc();
     }
     
+    @Override
+    protected void setDispLabel() {_dispLabel = "";}
+    
     /**
      * Get whether or not this button is momentary
      * @return
@@ -288,9 +291,6 @@ public class GUIObj_Button extends Base_GUIObj {
      */
     @Override
     protected final String getValueAsString(double _val) {  return buttonVals[(int)forceBounds(_val)];}
-    
-    @Override
-    public final String getLabel() {return getValueAsString();}
     
     /**
      * Dragging is disabled on buttons

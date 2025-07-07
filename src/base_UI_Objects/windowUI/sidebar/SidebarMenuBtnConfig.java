@@ -416,7 +416,7 @@ public class SidebarMenuBtnConfig {
     public void setGuiBtnState(int[][] guiBtnState) {    _guiBtnState = guiBtnState;    }    
     public float[] getUIAppBtnRegion() {return UIAppButtonRegion;}
     
-    private void _drawButtonLines(float xWidth) {        
+    private void _drawDBGButtonLines(float xWidth) {        
         double stY = UIAppButtonRegion[1]+ initTextHeightOff + initRowStYOff;
         ri.pushMatState();
         ri.setStrokeWt(2.0f);
@@ -465,7 +465,7 @@ public class SidebarMenuBtnConfig {
             ri.translate(0,btnLblYOff);
         }
         ri.popMatState(); 
-        if(_isDebug) {       _drawButtonLines(xWidth);       }
+        if(_isDebug) {       _drawDBGButtonLines(xWidth);       }
    }//drawSideBarButtons    
     
 }//class mySidebarMenuBtnConfig

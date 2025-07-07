@@ -2,6 +2,7 @@ package base_UI_Objects.windowUI.uiObjs.collection;
 
 import java.util.LinkedHashMap;
 
+import base_UI_Objects.windowUI.uiObjs.base.GUIObjConfig_Flags;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.GUIObjRenderer_Flags;
@@ -32,7 +33,7 @@ public class GUIObj_GroupParams extends GUIObj_Params{
      * @param _objIdx
      */
     public GUIObj_GroupParams() {
-        super(-1, "non-display object collection", GUIObj_Type.IntVal, -1,  new boolean[0], new GUIObjRenderer_Flags() , new boolean[0]);
+        super(-1, "non-display object collection", GUIObj_Type.IntVal, -1,  new GUIObjConfig_Flags(), new GUIObjRenderer_Flags() , new boolean[0]);
         _paramsGroup = new LinkedHashMap<String, GUIObj_Params>();
     }
     

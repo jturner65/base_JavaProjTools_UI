@@ -9,14 +9,12 @@ import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 public class GUIObj_Label extends Base_GUIObj implements IReadOnlyGUIObj {
 
     public GUIObj_Label(int _objID, GUIObj_Params objParams) {    super(_objID, objParams);}
-
+    
     /**
-     * set new display text for this label. Does not add ':'
-     * @param _str
+     * Don't want to add the colon to the read-only labels
      */
     @Override
-    public final void setLabel(String _str) {    label = _str;    }
-    
+    protected void setDispLabel() {_dispLabel = label + (isValueRange() ? " Range" : "");}
     /**
      * Get this UI object's value as a string - overridden by classes that do not use val directly
      * @return

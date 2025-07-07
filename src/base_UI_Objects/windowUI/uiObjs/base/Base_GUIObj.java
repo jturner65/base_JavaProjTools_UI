@@ -25,10 +25,12 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
      * UI Object ID from owning window (index in holding container)
      */
     protected final int objID;
-    /**
-     * Text to display as a label
-     */
+    
+    // Text to display as a label, without colon if appropriate    
     protected String label;
+    // version of label with colon suffix
+    protected String _dispLabel;
+    
     /**
      * Original label given to object (for reset)
      */
@@ -95,6 +97,8 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
     public Base_GUIObj(int _objID, GUIObj_Params objParams){
         objID = _objID;
         ID = GUIObjID++;
+        //UI Object configuration flags
+        cfgFlags = objParams.getUIObjConfigFlags();
         name = objParams.getName();
         setLabel(objParams.label);
         origLabel = label;
@@ -102,8 +106,6 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
         objType = objParams.objType;
         //UI Object state
         initStateFlags();
-        //UI Object configuration flags
-        cfgFlags = objParams.getUIObjConfigFlags();
         
         minVal=objParams.minMaxMod[0]; maxVal = objParams.minMaxMod[1]; setNewMod(objParams.minMaxMod[2]);
         //setNewMod sets formatStr
@@ -206,7 +208,6 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
      */
     public boolean isValueRange() {                         return cfgFlags.isValueRange();}   
     
-    
     /**
      * Reset this UI component to its initialization values
      */
@@ -215,7 +216,7 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
         setNewMax(initVals[1]);
         setNewMod(initVals[2]);
         returnToInitVal();
-        label = origLabel;
+        setLabel(origLabel);
         formatStr = origFormatStr;
         resetToInit_Indiv();
     }//resetToInit
@@ -394,12 +395,12 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
      * Draw this UI object encapsulated by a border representing the click region this UI element will respond to
      * @param animTimeMod animation time modifier to enable this object to blink
      */
-    public final void drawDebug() {            renderer.drawDebug(getIsClicked());}
+    public final void drawDebug() {            renderer.drawDebug(getIsClicked() || isReadOnly());}
     
     /**
      * Draw this UI Object, including any ornamentation if appropriate
      */
-    public final void draw() {                renderer.draw(getIsClicked());}//draw
+    public final void draw() {                renderer.draw(getIsClicked() || isReadOnly());}//draw
     
     /**
      * Draw a highlight box around this object representing the click region this UI element will respond to
@@ -454,7 +455,7 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
      * Return whether or not this object should fill the available menu space
      * @return
      */
-    public final boolean getIsOneObjPerLine() { return renderer.getIsOneObjPerLine();}
+    public final boolean getIsOneObjPerRow() { return renderer.getIsOneObjPerRow();}
     
     /**
      * Return whether or not this object should fill the available menu space
@@ -521,17 +522,17 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
         renderer = _renderer;
         setStateFlags(rendererSetIDX, true);
     }
-        
-    /**
-     * Return this object's label
-     */
-    public String getLabel() {return label;}
-    
+          
     /**
      * set new display text for this UI object - doesn't change name
      * @param _str
      */
-    public void setLabel(String _str) {    label = (_str.length() > 0 ? _str + " : " : "");    }
+    public final void setLabel(String _str) {    
+        label = _str;
+        setDispLabel();
+     }
+    //add colon to label for display
+    protected void setDispLabel() {_dispLabel = label + (label.length()>0 ? (isValueRange() ? " Range : " : " : ") : "");}
 
     /**
      * Set this UI object's value from a string
@@ -542,18 +543,33 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
         setVal(uiVal);
     }
     
+    private final String _getUIValueString() {
+        if(isValueRange()) {
+            return getRangeAsString();
+        }
+        return getValueAsString();
+    }
+    
     /**
      * What to display if this UI object is single line
      * @return
      */
-    public final String getUIDispAsSingleLine() {return getLabel() + getValueAsString();}
+    public final String getUIDispAsSingleLine() {return _dispLabel + _getUIValueString();}
     
     /**
      * What to display if this UI object is multi line
      * @return
      */
-    public final String[] getUIDispAsMultiLine() {return new String[]{getLabel(), getValueAsString()};}       
-
+    public final String[] getUIDispAsMultiLine() {return new String[]{_dispLabel, _getUIValueString()};}       
+    /**
+     * Get Min/Max range as a string
+     * @return
+     */
+    public final String getRangeAsString() {
+        return "[" + 
+                getValueAsString(minVal)+", "+ 
+                getValueAsString(maxVal)+"]";}
+    
     /**
      * Return the constant name assigned to this object on creation
      */
@@ -611,7 +627,7 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
         String[] valResAra = getStrDataForVal();
         String[] tmpRes = new String[valResAra.length+4];
         int idx = 0;
-        tmpRes[idx++] = "ID : "+ ID+"| Obj ID : " + objID  + "| Name : "+ name + "|Label : `" + getLabel()+"`";
+        tmpRes[idx++] = "ID : "+ ID+"| Obj ID : " + objID  + "| Name : "+ name + "|Label : `" + label+"`";
         tmpRes[idx++] = renderer.getHotBoxLocString();
         tmpRes[idx++] = "Treat as Int  : " + (objType == GUIObj_Type.IntVal);
         for (String valStr : valResAra) {tmpRes[idx++] = valStr;}
