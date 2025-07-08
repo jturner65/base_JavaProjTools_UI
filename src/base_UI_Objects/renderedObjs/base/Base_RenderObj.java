@@ -228,7 +228,7 @@ public abstract class Base_RenderObj {
      * @param rotAra3 3rd Applied rotation
      * @return PShape created and transformed using passed transforms
      */
-    protected PMatrix3D buildMatrixTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3) {
+    private PMatrix3D buildMatrixTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3) {
         PMatrix3D mat = new PMatrix3D();
         mat.translate(transVec.x, transVec.y, transVec.z);
         mat.scale(scaleVec.x,scaleVec.y,scaleVec.z);

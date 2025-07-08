@@ -23,9 +23,10 @@ public class JFish_RenderObj extends Base_RenderObj {
      * individual static object representation. Any animation will be owned by the instancing class
      */
     private static PShape[] objReps = null;
-    
-    private static PShape[][] bodyAra = new PShape[5][];
-    //private int numTentacles = 5;
+    /**
+     * Deformed spheres to make up the body
+     */
+    private static PShape[][] bodyAra = null;
     
     /**
      * colors for jellyfish reps
@@ -52,6 +53,9 @@ public class JFish_RenderObj extends Base_RenderObj {
         if(objReps == null) {
             objReps = new PShape[_numTypes];
             for(int i=0;i<_numTypes;++i) {objReps[i]=createObjRepForType();}
+        }
+        if (bodyAra == null) {
+            bodyAra = new PShape[_numTypes][];
         }
     }
     
@@ -108,7 +112,8 @@ public class JFish_RenderObj extends Base_RenderObj {
         for(int i=0;i<bodyAra.length;++i) {
             bodyAra[i] = new PShape[numAnimFrames];
             p.setSphereDetail(20);
-            for(int a=0; a<numAnimFrames; ++a){//for each frame of animation            
+            for(int a=0; a<numAnimFrames; ++a){//for each frame of animation
+                // each body element is a sphere with a certain scale setting to simulate deformation
                 bodyAra[i][a] = createBaseShape(PConstants.GROUP);
                 PShape indiv = createBaseShape(PConstants.SPHERE, 5.0f);                
                 //sclMult = (float) ((Math.sin(a * radAmt) * .25f) +1.0f);

@@ -550,6 +550,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         //popup window height when open
         popUpWinHeight = _viewHeight * popUpWinOpenMult;
         // set cam vals
+        // 9 vals : eye[x,y,z], scene center[x,y,z], up[x,y,z]
         _camVals = new float[]{0, 0, (float) (_viewHeightHalf / Math.tan(MyMathUtils.PI/6.0)), 0, 0, 0, 0,1,0};        
         //build _canvas
         _canvas = new Disp3DCanvas(this, ri, _viewWidth, _viewHeight);    
@@ -1397,7 +1398,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * setup for draw
      */
     private void _drawSetup(){
-        ri.setPerspective(MyMathUtils.THIRD_PI_F, _aspectRatio, .5f, _camVals[2]*100.0f);
+        ri.setPerspective(MyMathUtils.THIRD_PI_F, _aspectRatio, .01f, _camVals[2]*100.0f);
         ri.enableLights();     
         _dispWinFrames[_curFocusWin].drawSetupWin(_camVals);
     }//drawSetup
@@ -1517,7 +1518,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     
     /**
      * project passed point onto box surface based on location - to help visualize the location in 3d
-     * @param p
+     * @param ri
      */
     public final void drawProjOnBox(myPoint p){
         myPoint prjOnPlane;
@@ -1531,7 +1532,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     }//drawProjOnBox
     /**
      * project passed point onto box surface based on location - to help visualize the location in 3d
-     * @param p
+     * @param ri
      */
     public final void drawProjOnBox(myPointf p){
         myPointf prjOnPlane;

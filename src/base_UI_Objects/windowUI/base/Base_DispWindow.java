@@ -1232,6 +1232,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     public final boolean pointInRectDim(myPointf pt){return winInitVals.pointInRectDim(pt);}
     public final float getTextHeightOffset() {return AppMgr.getTextHeightOffset();}    
     
+    /**
+     * Use this to specify that there's a click in a UI object in this window or one of the subordinate windows.
+     * This is primarily so that modifying a subordinate object is always treated as modifying a UI object globally.
+     * @param _uiObjClicked
+     */
     protected final void setMsClickInUIObj(boolean _uiObjClicked) {
         msClickInUIObj = _uiObjClicked;
     }
@@ -1246,15 +1251,19 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     @Override
     public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn){
         boolean mod = false;
+        //_dispInfoMsg("handleMouseClick", "Start mouse click");
         //check if trying to close or open the window via click, if possible, even if window is closed
         if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}        
         boolean showWin = dispFlags.getShowWin();
         if(!showWin){return mod;}
         
-        
+        //Check if click in UI objects on left-side menu
         boolean[] retVals = new boolean[] {false,false};
+        //_dispInfoMsg("handleMouseClick", "About to handleMouseClick");
+        
         setMsClickInUIObj(uiMgr.handleMouseClick(mouseX, mouseY, mseBtn, AppMgr.isClickModUIVal(), retVals));
         if (retVals[1]){dispFlags.setUIObjMod(true);}
+        //_dispInfoMsg("handleMouseClick", "Return from handleMouseClick : "+msClickInUIObj);
         if (retVals[0]){return true;}
         
         //if nothing triggered yet, then specific instancing window implementation stuff
@@ -1347,8 +1356,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         boolean shiftPressed = AppMgr.shiftIsPressed();
         int delX = (mouseX-pmouseX), delY = (mouseY-pmouseY);
         //check if modding view - if view can be changed and click did not occur in a UI object
+        //_dispInfoMsg("handleMouseDrag", "Start mouse drag");
         
-        if(msClickInUIObj) {//modify UI elements        
+        if(msClickInUIObj) {//modify UI elements  
+            //_dispInfoMsg("handleMouseDrag", "In msClickInUIObj block");
             //any generic dragging stuff - need flag to determine if trajectory is being entered        
             //modify object that was clicked in by mouse motion
             boolean retVals[] = uiMgr.handleMouseDrag(delX, delY, mseBtn, shiftPressed);
@@ -1356,15 +1367,18 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
             // return whether an object has been modified or not
             return retVals[0];
         } else { 
+            //_dispInfoMsg("handleMouseDrag", "Start not msClickInUIObj block");
             boolean mod = false;
             if(dispFlags.getCanChgView()) {
                 // Check if modifying view
                 if(shiftPressed) {                      //modifying view angle/zoom
+                    //_dispInfoMsg("handleMouseDrag", "Changing view with shift");
                     AppMgr.setModView(true); 
                     if(mseBtn == 0){        handleViewChange(false,AppMgr.msSclY*delY, AppMgr.msSclX*delX);}    
                     else if (mseBtn == 1) { handleViewChange(true,delY, 0);}                   
                     mod = true;
                 } else if (AppMgr.cntlIsPressed()) {    //modifying view focus target
+                    //_dispInfoMsg("handleMouseDrag", "Changing view with ctl");
                     AppMgr.setModView(true);
                     handleViewTargetChange(delY, delX);                  
                     mod = true;
@@ -1372,12 +1386,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
             }
             // if nothing has been modified yet, check if there is a trajectory to modify
             if(!mod && null!=trajMgr) {    
+                //_dispInfoMsg("handleMouseDrag", "Trying to handle trajectories");
                 // check if a trajectory exists TODO rework this
                 mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn); 
             }          
             // if nothing has been modified yet, check if there is window-specific functionality to deal with
             if(!mod && winInitVals.pointInRectDim(mouseX, mouseY)){
-                //_dispDbgMsg("handleMouseDrag","before handle indiv drag traj for window : " + this.name);
+                //_dispInfoMsg("handleMouseDrag", "Start handle mouse drag indiv.");
+               
                 myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
                 //handle instance-specific, non-trajectory, non-UI object functionality for implementation of window
                 return hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);           

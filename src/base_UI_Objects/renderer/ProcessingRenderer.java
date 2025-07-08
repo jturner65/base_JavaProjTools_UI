@@ -507,7 +507,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     } 
     
     /**
-     * draw a 6 pointed star centered at p inscribed in circle radius r
+     * draw a 6 pointed star centered at ri inscribed in circle radius r
      */
     @Override
     public final void drawStar2D(myPointf p, float r) {
@@ -603,7 +603,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     
     /**
      * this will translate the passed box dimensions to keep them on the screen
-     * using p as start point and rectDims[2] and rectDims[3] as width and height
+     * using ri as start point and rectDims[2] and rectDims[3] as width and height
      * @param P starting point
      * @param rectDims box dimensions 
      */
@@ -1274,15 +1274,16 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     @Override
     public final void setCameraWinVals(float[] camVals) {        camera(camVals[0],camVals[1],camVals[2],camVals[3],camVals[4],camVals[5],camVals[6],camVals[7],camVals[8]);}
     /**
-     * used to handle camera location/motion
+     * used to handle camera location/motion - the final rotateX(MyMathUtils.HALF_PI_F) is to the scene with z up
      */
     @Override
-    public final void setCamOrient(float rx, float ry){rotateX(rx);rotateY(ry); rotateX(MyMathUtils.HALF_PI_F);        }//sets the rx, ry, pi/2 orientation of the camera eye    
+    public final void setCamOrient(float rx, float ry){rotateX(rx);rotateY(ry); rotateX(MyMathUtils.HALF_PI_F);}    
     /**
      * used to draw text on screen without changing mode - reverses camera orientation setting
+     * the initial rotateX(-MyMathUtils.HALF_PI_F) remove the z-up orientation
      */
     @Override
-    public final void unSetCamOrient(float rx, float ry){rotateX(-MyMathUtils.HALF_PI_F); rotateY(-ry);   rotateX(-rx); }//reverses the rx,ry,pi/2 orientation of the camera eye - paints on screen and is unaffected by camera movement
+    public final void unSetCamOrient(float rx, float ry){rotateX(-MyMathUtils.HALF_PI_F); rotateY(-ry);rotateX(-rx);}
 
     /**
      * return x screen value for 3d point

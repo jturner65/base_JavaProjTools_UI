@@ -43,7 +43,7 @@ public class ColorGradient{
         float offset = w/(1.0f * clrs.length);            //how much to move laterally in ramp for each color
         float st = x;
         for(int i = 0; i< clrs.length;++i){
-            fillAndShowLineByRBGPt(clrs[i],st, y, offset, h);//(myPoint p, float x,  float y, float w, float h)
+            fillAndShowLineByRBGPt(clrs[i],st, y, offset, h);//(myPoint ri, float x,  float y, float w, float h)
             st += offset;
         }
         ri.setFill(0,0,0,255);

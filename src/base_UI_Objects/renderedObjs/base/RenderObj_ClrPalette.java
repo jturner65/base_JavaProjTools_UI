@@ -11,7 +11,7 @@ public class RenderObj_ClrPalette {
     /**
      * Rendering functionality interface
      */
-    protected static IRenderInterface p;
+    protected static IRenderInterface ri;
     
     /**
      * This color is used across each different types of a specific render object
@@ -23,8 +23,8 @@ public class RenderObj_ClrPalette {
      */
     private RenderObj_Clr[] allTypeColors;
     
-    public RenderObj_ClrPalette(IRenderInterface _p, int _numTypes) {
-        p=_p;
+    public RenderObj_ClrPalette(IRenderInterface _ri, int _numTypes) {
+        ri=_ri;
         allTypeColors = new RenderObj_Clr[_numTypes];
     }
     
@@ -63,9 +63,9 @@ public class RenderObj_ClrPalette {
      */
     public void setColor(int idx, int[] fill,  int[] stroke, int[] emit, int[] spec, int[] amb, float stWt, float shn){
         if (idx < 0) {
-            mainColor = RenderObj_Clr.makeRenderObjColor(p, new int[][]{fill, stroke, emit, spec, amb}, stWt, shn);
+            mainColor = RenderObj_Clr.makeRenderObjColor(ri, new int[][]{fill, stroke, emit, spec, amb}, stWt, shn);
         } else if (idx < allTypeColors.length){
-            allTypeColors[idx] = RenderObj_Clr.makeRenderObjColor(p, new int[][]{fill, stroke, emit, spec, amb}, stWt, shn);    
+            allTypeColors[idx] = RenderObj_Clr.makeRenderObjColor(ri, new int[][]{fill, stroke, emit, spec, amb}, stWt, shn);    
         } else {
             System.out.println("RenderObj_ClrPalette::setColor : !!!!! Error attempting to set color @ idx " +idx + " in array of length "+ allTypeColors.length+". Aborting!");
         }
@@ -108,9 +108,6 @@ public class RenderObj_ClrPalette {
         for (int i=0;i<allTypeColors.length;++i) {allTypeColors[i].scaleAmbientColor(_scaleVal);}
     }
     
-
-
-    
     /**
      * Set fill color alpha
      * @param _clr
@@ -150,8 +147,7 @@ public class RenderObj_ClrPalette {
         mainColor.setStrokeClrAlpha(_alpha);
         for (int i=0;i<allTypeColors.length;++i) {allTypeColors[i].setStrokeClrAlpha(_alpha);}
     }
-    
-    
+        
     public void enableFill(){mainColor.enableFill();for (int i=0;i<allTypeColors.length;++i) {allTypeColors[i].enableFill();}}
     public void enableStroke(){mainColor.enableStroke();for (int i=0;i<allTypeColors.length;++i) {allTypeColors[i].enableStroke();}}
     public void enableEmissive(){mainColor.enableEmissive();for (int i=0;i<allTypeColors.length;++i) {allTypeColors[i].enableEmissive();}}

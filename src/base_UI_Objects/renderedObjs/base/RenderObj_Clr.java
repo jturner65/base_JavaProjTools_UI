@@ -12,7 +12,7 @@ import processing.core.PShape;
  * @author John Turner
  */
 public class RenderObj_Clr{
-    protected static IRenderInterface p;    
+    protected static IRenderInterface ri;    
     protected final static int[] tmpInit = new int[]{255,255,255,255};
     //alpha values for fill and stroke colors
     protected int[] alphas;
@@ -99,7 +99,7 @@ public class RenderObj_Clr{
      * @param _p
      */
     private RenderObj_Clr(IRenderInterface _p){
-        p=_p;
+        ri=_p;
         shininess = 1.0f;
         strkWt = 1.0f;
         hexColors = new int[numColorFlags];
@@ -141,7 +141,7 @@ public class RenderObj_Clr{
         boolean _hasAlpha = idxHasAlpha(_idx);
         if(_hasAlpha) {            alphas[_idx] = _srcClr[3];} 
         else {                    alphas[_idx] = -1;}
-        hexColors[_idx] = p.getClrAsHex(_srcClr, alphas[_idx]);    
+        hexColors[_idx] = ri.getClrAsHex(_srcClr, alphas[_idx]);    
     }
     /**
      * Set fill color
@@ -208,7 +208,7 @@ public class RenderObj_Clr{
         if (_mult <= 0) {
             _clr = new int[] {0,0,0,0};
         } else {
-            _clr = p.getClrFromHex(hexColors[_idx]);
+            _clr = ri.getClrFromHex(hexColors[_idx]);
             for(int i=0;i<_clr.length;++i) {_clr[i] = MyMathUtils.max(MyMathUtils.min((int) (_clr[i] * _mult), 255), 0);}
         }
         setColorsFromArray(_clr, _idx);
@@ -251,8 +251,6 @@ public class RenderObj_Clr{
      * @param _mult
      */
     public void scaleAmbientColor(float _mult) {_scalePassedColor(ambIDX, _mult);}
-    
-
     /**
      * Return stroke weight
      * @return
@@ -268,31 +266,31 @@ public class RenderObj_Clr{
      * Get int array of fill color, with alpha
      * @return
      */
-    public int[] getFillClrAra() {return p.getClrFromHex(hexColors[fillIDX]);}
+    public int[] getFillClrAra() {return ri.getClrFromHex(hexColors[fillIDX]);}
     
     /**
      * Get int array of stroke color, with alpha
      * @return
      */
-    public int[] getStrokeClrAra() {return p.getClrFromHex(hexColors[strokeIDX]);}
+    public int[] getStrokeClrAra() {return ri.getClrFromHex(hexColors[strokeIDX]);}
     
     /**
      * Get 3-element int array of emissive color
      * @return
      */
-    public int[] getEmissiveClrAra() {return p.getClrFromHex(hexColors[emitIDX]);}
+    public int[] getEmissiveClrAra() {return ri.getClrFromHex(hexColors[emitIDX]);}
     
     /**
      * Get 3-element int array of specular color
      * @return
      */
-    public int[] getSpecularClrAra() {return p.getClrFromHex(hexColors[specIDX]);}
+    public int[] getSpecularClrAra() {return ri.getClrFromHex(hexColors[specIDX]);}
     
     /**
      * Get 3-element int array of ambient color
      * @return
      */
-    public int[] getAmbientClrAra() {return p.getClrFromHex(hexColors[ambIDX]);}
+    public int[] getAmbientClrAra() {return ri.getClrFromHex(hexColors[ambIDX]);}
     
     /**
      * Get hex fill color
@@ -360,16 +358,16 @@ public class RenderObj_Clr{
      * instance all activated colors globally
      */
     public void paintColors(){
-        if(getFlags(fillIDX)){p.setFill(hexColors[fillIDX]);}
-        else {        p.setNoFill();}
+        if(getFlags(fillIDX)){ri.setFill(hexColors[fillIDX]);}
+        else {        ri.setNoFill();}
         if(getFlags(strokeIDX)){
-            p.setStrokeWt(strkWt);
-            p.setStroke(hexColors[strokeIDX]);
-        } else {            p.noStroke();        }
-        if(getFlags(specIDX)){((ProcessingRenderer) p).specular(hexColors[specIDX]);}
-        if(getFlags(emitIDX)){((ProcessingRenderer) p).emissive(hexColors[emitIDX]);}
-        if(getFlags(ambIDX)){((ProcessingRenderer) p).ambient(hexColors[ambIDX]);}
-        if(getFlags(shnIDX)){((ProcessingRenderer) p).shininess(shininess);}
+            ri.setStrokeWt(strkWt);
+            ri.setStroke(hexColors[strokeIDX]);
+        } else {            ri.noStroke();        }
+        if(getFlags(specIDX)){((ProcessingRenderer) ri).specular(hexColors[specIDX]);}
+        if(getFlags(emitIDX)){((ProcessingRenderer) ri).emissive(hexColors[emitIDX]);}
+        if(getFlags(ambIDX)){((ProcessingRenderer) ri).ambient(hexColors[ambIDX]);}
+        if(getFlags(shnIDX)){((ProcessingRenderer) ri).shininess(shininess);}
     }
     
     /**
@@ -377,8 +375,8 @@ public class RenderObj_Clr{
      * @param mult
      */
     public void setScaledFillClr(float mult){
-        int[] clrAra = p.getClrFromHex(hexColors[fillIDX]);
-        p.setFill((int)(mult*clrAra[0]),(int)(mult*clrAra[1]),(int)(mult*clrAra[2]),255);
+        int[] clrAra = ri.getClrFromHex(hexColors[fillIDX]);
+        ri.setFill((int)(mult*clrAra[0]),(int)(mult*clrAra[1]),(int)(mult*clrAra[2]),255);
     }
     
     public void setFlags(int idx, boolean val){setPrivFlag(idx, val);}
