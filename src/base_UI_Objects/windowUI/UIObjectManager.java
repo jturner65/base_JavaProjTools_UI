@@ -27,6 +27,7 @@ import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_DispList;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_DispFloat;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_DispInt;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_Label;
+import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.GUIObj_Spacer;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.readOnly.IReadOnlyGUIObj;
 import base_UI_Objects.windowUI.uiObjs.renderer.ButtonGUIObjRenderer;
 import base_UI_Objects.windowUI.uiObjs.renderer.MultiLineGUIObjRenderer;
@@ -94,6 +95,12 @@ public class UIObjectManager {
      * Map of all objects, keyed by objIdx
      */
     private Map<Integer,Base_GUIObj> _guiObjsIDXMap;
+    /**
+     * Map list of idxs for spacer objects, keyed by objIdx
+     */    
+    private Map<Integer, GUIObj_Spacer> _guiSpacerIDXMap;
+    //decrement for each spacer, always put them at the back of the IDXMaps
+    private int _spacerIdx = Integer.MAX_VALUE;
     /**
      * Base_GUIObj that was clicked on for modification
      */
@@ -173,6 +180,7 @@ public class UIObjectManager {
         _guiFloatValIDXMap = new LinkedHashMap<Integer, GUIObj_Float>();
         _guiIntValIDXMap = new LinkedHashMap<Integer,GUIObj_Int> ();
         _guiReadOnlyObjIDXMap = new LinkedHashMap<Integer, IReadOnlyGUIObj>();        
+        _guiSpacerIDXMap = new LinkedHashMap<Integer, GUIObj_Spacer>();
         _guiObjsIDXMap = new LinkedHashMap<Integer,Base_GUIObj>(); // list of modifiable gui objects        
 
         //////_guiReadOnlyObjIDXMap///////
@@ -291,6 +299,10 @@ public class UIObjectManager {
                 obj = new GUIObj_Float(guiObjIDX, argObj);
                 _guiFloatValIDXMap.put(guiObjIDX, (GUIObj_Float)obj);
                 break;}
+            case SpacerObj :{
+                obj = new GUIObj_Spacer(guiObjIDX, argObj);
+                _guiSpacerIDXMap.put(guiObjIDX,(GUIObj_Spacer)obj);
+                break;}
             case LabelVal :{
                 obj = new GUIObj_Label(guiObjIDX, argObj);
                 _guiReadOnlyObjIDXMap.put(guiObjIDX, (GUIObj_Label)obj);
@@ -349,6 +361,7 @@ public class UIObjectManager {
             GUIObj_Params params = entry.getValue();
             params.setName(entry.getKey());
             if(params.isAGroupOfObjs()) {
+                //Recurse if a group of objects
                 GUIObj_GroupParams grpParams = (GUIObj_GroupParams) params;
                 // build a group of objects described within the argObj's group map as a single row of UI objects
                 Map<String, GUIObj_Params> tmpUIColMap = grpParams.getParamsGroupMap();
@@ -367,9 +380,8 @@ public class UIObjectManager {
         }
         
         // offset for each element
-        float yOffset = AppMgr.getCloseTextHeightOffset();   
         // main non-toggle switch button components
-        if(guiNotSwitchIDXMap.size() > 0) {     yStart =_buildHotSpotRects(objPerLine, yOffset, xStart, yStart, guiNotSwitchIDXMap);  }
+        if(guiNotSwitchIDXMap.size() > 0) {     yStart =_buildHotSpotRects(objPerLine, AppMgr.getCloseTextHeightOffset(), xStart, yStart, guiNotSwitchIDXMap);  }
         // now address toggle buttons' clickable regions    
         if(guiSwitchIDXMap.size() > 0) {        
             yStart += AppMgr.getXOffsetHalf();
@@ -489,7 +501,7 @@ public class UIObjectManager {
             float maxHeight = 0;
             for(Map.Entry<Base_GUIObj, Float> entry : perRowMap.entrySet()) {
                 uiObj = entry.getKey();
-                float objHeight = uiObj.getNumTextLines() * yOffset;
+                float objHeight = uiObj.getMaxTextHeight(yOffset);
                 maxHeight = (maxHeight < objHeight ? objHeight : maxHeight);
             }
             float hotSpotStartX = hotSpotStartXBorder;
@@ -578,6 +590,36 @@ public class UIObjectManager {
     
     //////////////////////////////////////////
     /// Start Build GUIObj_Params
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Whitespace UI object initialization
+    
+    /**
+     * A spacer object is used to space the next, and subsequent, UI objects on a particular row. It takes up the given 
+     * width but does not actually represent a UI object, is not drawn and not able to be interacted with. It is only 
+     * consumed when the hotspots are created.
+     */   
+    public final GUIObj_Params uiObjectInitAra_Spacer() {    return uiObjectInitAra_Spacer(new float[] {0.0f, 0.0f}); }
+    
+    /**
+     * A spacer object is used to space the next, and subsequent, UI objects on a particular row. It takes up the given 
+     * width but does not actually represent a UI object, is not drawn and not able to be interacted with. It is only 
+     * consumed when the hotspots are created.
+     * @param dims desired width (idx 0) and height (idx 1) this object should move the next UI object by
+     * @return
+     */
+    public final GUIObj_Params uiObjectInitAra_Spacer(float[] dims) {
+        float width = dims[0] > 0 ? dims[0] : _uiClkCoords[2]-_uiClkCoords[0];
+        float height = dims[1] > 0 ? dims[1] : AppMgr.getCloseTextHeightOffset();
+        GUIObj_Params obj = new GUIObj_Params(_spacerIdx--, "", GUIObj_Type.SpacerObj, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(false, false, false, true)); 
+        obj.setSpacerDims(width, height);
+        // set color to be transparent
+        obj.setReadOnlyColors(new int[] {255,255,255,0});
+        return obj;
+    }
+
+    
+    
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Label UI object initialization and interaction    
     
@@ -588,7 +630,10 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_Label(int _objIdx, String _label) {
-        return uiObjInitAra_Label(_objIdx, _label, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(false, false, false, true));
+        GUIObjRenderer_Flags _rendererCfgFlags = buildGUIObjRendererFlags(false, false,false, true);
+        //No ornament for these please.
+        _rendererCfgFlags.setHasOrnament(false);
+        return uiObjInitAra_Label(_objIdx, _label, buildGUIObjConfigFlags(true, false), _rendererCfgFlags);
     }
     /**
      * Build a label with specified constraints
@@ -599,7 +644,10 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_Label(int _objIdx, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
-        return uiObjInitAra_Label(_objIdx, _label, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true));
+        GUIObjRenderer_Flags _rendererCfgFlags = buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true);
+        //No ornament for these please.
+        _rendererCfgFlags.setHasOrnament(false);       
+        return uiObjInitAra_Label(_objIdx, _label, buildGUIObjConfigFlags(true, false), _rendererCfgFlags);
     }        
 
     /**
@@ -624,7 +672,11 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Label(int _objIdx, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_Label(
+            int _objIdx, 
+            String _label, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
         GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.LabelVal, _uiObjConfigFlags, _rendererCfgFlags);
         //labels should ignore all values
         obj.initVal = 0;
@@ -670,7 +722,12 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispInt(int _objIdx, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_DispInt(
+            int _objIdx, 
+            double _initVal, 
+            String _label, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
         GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispIntVal, _uiObjConfigFlags, _rendererCfgFlags);
         obj.initVal = _initVal;
         return obj;
@@ -712,7 +769,13 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispIntRange(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_DispIntRange(
+            int _objIdx, 
+            double[] _minMaxMod, 
+            double _initVal, 
+            String _label, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
         GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispIntVal, _uiObjConfigFlags, _rendererCfgFlags);
         obj.setMinMaxMod(_minMaxMod);
         obj.initVal = _initVal;
@@ -757,7 +820,12 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispFloat(int _objIdx, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_DispFloat(
+            int _objIdx, 
+            double _initVal, 
+            String _label, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispFloatVal, _uiObjConfigFlags, _rendererCfgFlags);
        obj.initVal = _initVal;
        return obj;
@@ -801,7 +869,13 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispFloatRange(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_DispFloatRange(
+            int _objIdx, 
+            double[] _minMaxMod, 
+            double _initVal, 
+            String _label, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
         GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispFloatVal, _uiObjConfigFlags, _rendererCfgFlags);
         obj.setMinMaxMod(_minMaxMod);
         obj.initVal = _initVal;
@@ -822,7 +896,10 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_DispString(int _objIdx, double _initVal, String _label, String[] _listElems, boolean _isMultiLine, boolean _isOnePerRow) {
-        return uiObjInitAra_DispString(_objIdx, _initVal, _label, _listElems, buildGUIObjConfigFlags(true, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true));
+        GUIObjRenderer_Flags _rendererCfgFlags = buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, true);
+        //No ornament for these please.
+        _rendererCfgFlags.setHasOrnament(false);
+        return uiObjInitAra_DispString(_objIdx, _initVal, _label, _listElems, buildGUIObjConfigFlags(true, false), _rendererCfgFlags);
     }
 
     /**
@@ -849,7 +926,13 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_DispString(int _objIdx, double _initVal, String _label, String[] _listElems,  GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_DispString(
+            int _objIdx, 
+            double _initVal, 
+            String _label, 
+            String[] _listElems,  
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
         GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.DispStr, _uiObjConfigFlags, _rendererCfgFlags);
         obj.initVal = _initVal;
         obj.setListVals(_listElems);    
@@ -946,7 +1029,13 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Int(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_Int(
+            int _objIdx, 
+            double[] _minMaxMod, 
+            double _initVal, 
+            String _label, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
         GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.IntVal, _uiObjConfigFlags, _rendererCfgFlags);
         obj.setMinMaxMod(_minMaxMod);
         obj.initVal = _initVal;
@@ -1045,7 +1134,13 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_Float(int _objIdx, double[] _minMaxMod, double _initVal, String _label, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_Float(
+            int _objIdx, 
+            double[] _minMaxMod, 
+            double _initVal, 
+            String _label, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
         GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.FloatVal, _uiObjConfigFlags, _rendererCfgFlags);
         obj.setMinMaxMod(_minMaxMod);
         obj.initVal = _initVal;
@@ -1143,7 +1238,13 @@ public class UIObjectManager {
      *         ornmntClrMatchIDX        : Ornament color should match label color
      * @return
      */
-    public final GUIObj_Params uiObjInitAra_List(int _objIdx, double _initVal, String _label, String[] _listElems, GUIObjConfig_Flags _uiObjConfigFlags, GUIObjRenderer_Flags _rendererCfgFlags) {
+    public final GUIObj_Params uiObjInitAra_List(
+            int _objIdx, 
+            double _initVal, 
+            String _label, 
+            String[] _listElems, 
+            GUIObjConfig_Flags _uiObjConfigFlags, 
+            GUIObjRenderer_Flags _rendererCfgFlags) {
         GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.ListVal, _uiObjConfigFlags, _rendererCfgFlags);
         obj.setMinMaxMod(new double[] {0, _listElems.length-1, 1});
         obj.initVal = _initVal;
@@ -1220,11 +1321,10 @@ public class UIObjectManager {
             GUIObjConfig_Flags _uiObjConfigFlags, 
             GUIObjRenderer_Flags _rendererCfgFlags,
             boolean[] buttonFlags) {
-        GUIObj_Params obj;
         String[] labels = new String[]{_falseLabel, _trueLabel};
         // boolean flag toggle, attached to a privFlags, 
         // TODO : develop multi-line renderer for buttons. Until then always use default
-        obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.Switch, _boolFlagIdx, _uiObjConfigFlags, _rendererCfgFlags, buttonFlags);
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.Switch, _boolFlagIdx, _uiObjConfigFlags, _rendererCfgFlags, buttonFlags);
         obj.setMinMaxMod(new double[] {0, labels.length-1, 1});
         obj.setListVals(labels);
         // set default 2-state button colors
@@ -1301,10 +1401,7 @@ public class UIObjectManager {
             GUIObjConfig_Flags _uiObjConfigFlags, 
             GUIObjRenderer_Flags _rendererCfgFlags,
             boolean[] buttonFlags) {
-        GUIObj_Params obj;
-        // Not a toggle
-        // TODO : develop multi-line renderer for buttons. Until then always use default
-        obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.Button, -1, _uiObjConfigFlags, _rendererCfgFlags, buttonFlags);        
+        GUIObj_Params obj = new GUIObj_Params(_objIdx, _label, GUIObj_Type.Button, -1, _uiObjConfigFlags, _rendererCfgFlags, buttonFlags);        
         obj.setMinMaxMod(new double[] {0, _labels.length-1, 1});
         obj.initVal = (_initVal >= 0 ? (_initVal < _labels.length ? _initVal : _labels.length) : 0);
         obj.setListVals(_labels);
@@ -1408,7 +1505,7 @@ public class UIObjectManager {
      * @param UIobj object being set/modified
      * @param UIidx the index of the object in _uiUpdateData
      */
-    public final void setUI_ListVal(Base_GUIObj UIobj, int UIidx) {    setUI_IntVal(UIobj, UIidx);    }//setUI_ListVal
+    public final void setUI_ListVal(Base_GUIObj UIobj, int UIidx) { setUI_IntVal(UIobj, UIidx);    }//setUI_ListVal
 
     /**
      * Set the uiUpdateData structure and update the owner if the value has changed for a float-based UIobject
@@ -1439,7 +1536,7 @@ public class UIObjectManager {
      * @param UIobj object being set/modified
      * @param UIidx the index of the object in _uiUpdateData
      */
-    public final void setUI_BtnVal(Base_GUIObj UIobj, int UIidx) {    setUI_ListVal(UIobj, UIidx);    }//setUI_ListVal
+    public final void setUI_BtnVal(Base_GUIObj UIobj, int UIidx) { setUI_ListVal(UIobj, UIidx);    }//setUI_ListVal
     
     /**
      * Set the uiUpdateData structure and update the owner if the value has changed for a boolean switch backed by the privFlags structure
@@ -1470,15 +1567,16 @@ public class UIObjectManager {
         //Determine whether int (int or list) or float
         GUIObj_Type objType = UIobj.getObjType();
         switch (objType) {
-            case IntVal : {          setUI_IntVal(UIobj, UIidx);          break;}
-            case ListVal : {         setUI_ListVal(UIobj, UIidx);         break;}
-            case FloatVal : {        setUI_FloatVal(UIobj, UIidx);        break;}
-            case LabelVal : {        setUI_LabelVal(UIobj, UIidx);        break;}
-            case DispIntVal : {      setUI_LabelVal(UIobj, UIidx);        break;}
-            case DispFloatVal : {    setUI_LabelVal(UIobj, UIidx);        break;}
-            case DispStr : {         setUI_LabelVal(UIobj, UIidx);        break;}
-            case Button : {          setUI_BtnVal(UIobj, UIidx);          break;}
-            case Switch : {          setUI_SwitchVal(UIobj, UIidx);       break;}
+            case IntVal         : { setUI_IntVal(UIobj, UIidx);             break;}
+            case ListVal        : { setUI_ListVal(UIobj, UIidx);            break;}
+            case FloatVal       : { setUI_FloatVal(UIobj, UIidx);           break;}
+            case LabelVal       : { setUI_LabelVal(UIobj, UIidx);           break;}
+            case SpacerObj      : { /*spacers will never be interactable */ break;}
+            case DispIntVal     : { setUI_LabelVal(UIobj, UIidx);           break;}
+            case DispFloatVal   : { setUI_LabelVal(UIobj, UIidx);           break;}
+            case DispStr        : { setUI_LabelVal(UIobj, UIidx);           break;}
+            case Button         : { setUI_BtnVal(UIobj, UIidx);             break;}
+            case Switch         : { setUI_SwitchVal(UIobj, UIidx);          break;}
             default : {    _dispWarnMsg("setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());    break;}            
         }//switch on obj type    
     }//_setUIWinValsInternal
@@ -1937,17 +2035,13 @@ public class UIObjectManager {
      */
     public final boolean setWinToUIVals(int idx, double val){return val == _guiObjsIDXMap.get(idx).setVal(val);}
     /**
-     * Check if point x,y is between r[0], r[1] and r[0]+r[2], r[1]+r[3]
+     * Check if passed mouse location is within this object's _uiClkCoords.
      * @param x
      * @param y
-     * @param r rectangle - idx 0,1 is upper left corner, idx 2,3 is width, height
      * @return
      */
-    public final boolean msePtInRect(int x, int y, float[] r){return ((x >= r[0])&&(x <= r[0]+r[2])&&(y >= r[1])&&(y <= r[1]+r[3]));}
-    
     public final boolean msePtInUIClckCoords(int x, int y){
-        return ((x > _uiClkCoords[0])&&(x <= _uiClkCoords[2])
-                &&(y > _uiClkCoords[1])&&(y <= _uiClkCoords[3]));
+        return ((x > _uiClkCoords[0])&&(x <= _uiClkCoords[2])&&(y > _uiClkCoords[1])&&(y <= _uiClkCoords[3]));
     }    
     
     /**
@@ -1962,10 +2056,11 @@ public class UIObjectManager {
      */
     public final boolean handleMouseClick(int mouseX, int mouseY, int mseBtn, boolean isClickModUIVal, boolean[] retVals){
         _msClickObj = null;
-        //TODO TRACK UI COLLECTION OBJECT THAT IS CURRENTLY ACTIVE
+        //_dispInfoMsg("handleMouseClick", "Start mouse click with mse xy : ["+mouseX+","+mouseY+"] btn : "+mseBtn+" | isClickModUIVal :"+isClickModUIVal);
         if(msePtInUIClckCoords(mouseX, mouseY)){//in clickable region for UI interaction
+            //_dispInfoMsg("handleMouseClick", "Mse xy : ["+mouseX+","+mouseY+"] in UI ClckCoords : now finding object using ["+(mouseX-(int)_uiClkCoords[0])+","+(mouseY-(int)_uiClkCoords[1])+"]");
             //modify mouseX and mouseY to be relative to beginning of UI click region
-            int idx = _checkInAllObjs(mouseX-(int) _uiClkCoords[0], mouseY-(int) _uiClkCoords[1]);
+            int idx = _checkInAllObjs(mouseX-(int)_uiClkCoords[0], mouseY-(int)_uiClkCoords[1]);
             if(idx >= 0) {
                 //found in list of UI objects
                 _msBtnClicked = mseBtn; 
@@ -1979,7 +2074,9 @@ public class UIObjectManager {
                 }                 
             }
             return _msClickObj != null;    
-        }            
+        }
+        //_dispInfoMsg("handleMouseClick", "Mse xy : ["+mouseX+","+mouseY+"] not in UI ClckCoords");
+
         return false;
     }//handleMouseClick
     

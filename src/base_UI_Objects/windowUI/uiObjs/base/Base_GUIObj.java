@@ -443,13 +443,13 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
      * Return the max width feasible for this UI object's text (based on possible values + label length if any)
      * @return
      */
-    public final float getMaxTextWidth() {    return renderer.getMaxTextWidth();}
+    public float getMaxTextWidth() {    return renderer.getMaxTextWidth();}
     
     /**
-     * Return the number of text lines this object will be displaying
+     * Return the height of the text this object will be displaying
      * @return
      */
-    public final int getNumTextLines() {         return renderer.getNumTextLines();}
+    public float getMaxTextHeight(float yHeight) {         return renderer.getNumTextLines() * yHeight;}
     
     /**
      * Return whether or not this object should fill the available menu space

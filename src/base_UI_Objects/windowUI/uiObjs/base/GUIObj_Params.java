@@ -83,6 +83,15 @@ public class GUIObj_Params {
      */
     protected boolean _isAGroupOfObjs = false;
     
+    /**
+     * If this object is a spacer object, set the width it should take up
+     */
+    public float spacerWidth = 0;
+    /**
+     * If this object is a spacer object, set the height it should take up
+     */   
+    public float spacerHeight = 0;
+    
     
     /**
      * Build an info struct that describes a UI object
@@ -159,6 +168,16 @@ public class GUIObj_Params {
         setBtnFillColors(otr.btnFillColors);
         _isAGroupOfObjs = otr._isAGroupOfObjs;
     }//copy ctor
+    
+    /**
+     * If this object is a spacer, set the dims it should take up
+     * @param _w desired width to take up
+     * @param _h desired height multiple to take up (will be scaled when hotspot is created)
+     */
+    public final void setSpacerDims(float _w, float _h) {
+        spacerWidth = _w;
+        spacerHeight = _h;
+    }
     
     /**
      * Set whether the text in this object should be centered or not
