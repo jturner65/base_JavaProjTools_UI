@@ -491,6 +491,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
         initBaseFlags_Indiv();
         //instancing class version
         initAllDispWindows();
+        // Build all child windows, if such exist
+        buildSubWindows();
         //All GUI_AppWinVals objects are built by here, now set 
         for (int i=0; i< winInitVals.length;++i) {
             winInitVals[i].setBackgrndColor(bkGrndColors[i]);
@@ -511,6 +513,25 @@ public abstract class GUI_AppManager extends Java_AppManager {
         //call this in first draw loop also, if not setup yet
         initOnce();
     }
+    /**
+     * Build all subwindows if exist.
+     */
+    private final void buildSubWindows() {
+        HashMap<Integer, String[]> titlesAndDesc = getSubWindowTitles();
+        if(titlesAndDesc == null) {return;}
+        //build sub windows for every window if such are appropriate
+        for(int i=1;i<numDispWins;++i) {
+            String[] titleAndDesc = titlesAndDesc.get(i);
+            if(titleAndDesc == null) {continue;}
+            setCurFocusWin(i);
+            getDispWindow(i).buildAndSetChildWindow( -1, titleAndDesc);
+        }
+    }
+    /**
+     * Map indexed by window ID, holding an array of the titles (idx 0) and descriptions (idx 1) for every sub window
+     * @return
+     */
+    protected abstract HashMap<Integer, String[]> getSubWindowTitles();
     
     /**
      * Called in pre-draw initial setup, before first init
@@ -738,6 +759,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     public float[][] getDefaultWinAndCameraDims(){
         return new float[][] {getDefaultWinDimOpen(), getDefaultWinDimClosed(), getInitCameraValues()};
     }
+    
     /**
      * Retrieves reasonable default window open dims
      * @return
@@ -750,6 +772,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     public float[] getDefaultWinDimClosed() {return new float[]{menuWidth, 0, hideWinWidth,  _viewHeight};}
 
+    /**
+     * Retrieves the default window dimensions and camera initial values
+     * @return
+     */    
+    public float[][] getDefaultPopUpWinAndCameraDims(){
+        return new float[][] {getDefaultPopUpWinDimOpen(), getDefaultPopUpWinDimClosed(), getInitCameraValues()};
+    }
     /**
      * Retrieves reasonable default pop-up window open dims
      * @return

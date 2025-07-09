@@ -186,7 +186,14 @@ public class UI_TestProject extends GUI_AppManager {
         initXORWins(new int[]{disp3DRes1IDX,disp3DRes2IDX,disp2DResIDX}, new int[]{disp3DRes1IDX, disp3DRes2IDX,disp2DResIDX});
         
     }//initAllDispWindows
-
+    /**
+     * Map indexed by window ID, holding an array of the titles (idx 0) and descriptions (idx 1) for every sub window
+     * return null if none exist, and only put an entry in the map if one exists for that window
+     * @return
+     */
+    @Override
+    protected final HashMap<Integer, String[]> getSubWindowTitles(){ return null;}
+    
     @Override
     protected void initOnce_Indiv() {
         setWinVisFlag(disp3DRes1IDX, true);

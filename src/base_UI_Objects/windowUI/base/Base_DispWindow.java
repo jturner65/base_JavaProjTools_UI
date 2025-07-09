@@ -228,11 +228,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         //initialize the camera
         setInitCamView();
         uiMgr = new UIObjectManager(ri, this, AppMgr, msgObj);
+        //initialize window display control flags
+        dispFlags = new WinDispStateFlags(this);
     }//ctor
     
     /**
      * Independent window based constructor - use this for all windows that are built and managed
-     * independently of AppMgr
+     * independently of AppMgr (i.e. managed by another window)
      * @param _p
      * @param _AppMgr
      * @param _winIdx
@@ -253,12 +255,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     
 
     /**
-     * Must be called by inheriting class constructor!
+     * Must be called after implementation class has been constructed.
      * @param _isMenu whether this window is the side-bar menu window or not
      */
     public final void initThisWin(boolean _isMenu){
-        dispFlags = new WinDispStateFlags(this);    
         // build all ui objects - will create uiClkCoords
+        // this must be called after implementation class constructor is finished
         uiMgr.initAllGUIObjects();
         //run instancing window-specific initialization after all ui objects are built
         initMe();
@@ -277,6 +279,58 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
             trajMgr = null;
         }
     }//initThisWin
+    
+    /**
+     * This function is called to instantiate a child window owned by this window, if such exists.
+     * It is the implementation's task to construct and store that child window
+     * @param fIdx index of owning window
+     * @param _titleAndDesc title (idx 0) and description (idx 1) to use for child window
+     */
+    public final void buildAndSetChildWindow(int fIdx, String[] _titleAndDesc) {
+        float[][] _dims = AppMgr.getDefaultPopUpWinAndCameraDims();
+        //Keep popup window full width whether shown or hidden
+        _dims[1][2] = _dims[0][2];
+        //keep hidden window
+        String owner = this.getName();
+        /**
+         * Creates a struct holding a display window's necessary initialization values
+         * @param _winIdx the window's idx
+         * @param _strVals an array holding the window title(idx 0) and the window description(idx 1)
+         * @param _flags an array holding boolean values for idxs : 
+         *         0 : dispWinIs3d, 
+         *         1 : canDrawInWin; 
+         *         2 : canShow3dbox (only supported for 3D); 
+         *         3 : canMoveView
+         * @param _floatVals an array holding float arrays for 
+         *                 rectDimOpen(idx 0),
+         *                 rectDimClosed(idx 1),
+         *                 initCameraVals(idx 2)
+         * @param _intVals and array holding int arrays for
+         *                 winFillClr (idx 0),
+         *                 winStrkClr (idx 1),
+         *                 winTrajFillClr(idx 2),
+         *                 winTrajStrkClr(idx 3),
+         *                 rtSideFillClr(idx 4),
+         *                 rtSideStrkClr(idx 5)
+         * @param _sceneCenterVal center of scene, for drawing objects
+         * @param _initSceneFocusVal initial focus target for camera
+         */        
+        GUI_AppWinVals childWinAppVals = AppMgr.buildGUI_AppWinVals(-1, _titleAndDesc[0] + " " + owner, _titleAndDesc[1] + " " + owner,
+                new boolean[] {false, false, false, false},_dims,
+                new int [][] {new int[]{20,40,50,200}, ri.getClr(IRenderInterface.gui_White, 255),
+                    ri.getClr(IRenderInterface.gui_LightGray, 255),ri.getClr(IRenderInterface.gui_Gray, 255),
+                    ri.getClr(IRenderInterface.gui_Black, 200),ri.getClr(IRenderInterface.gui_White, 255)});
+        buildAndSetChildWindow_Indiv(childWinAppVals);
+    }//
+    
+    /**
+     * This function implements the instantiation of a child window owned by this window, if such exists.
+     * The implementation should be similar to how the main windows are implemented in GUI_AppManager::initAllDispWindows.
+     * If no child window exists, this implementation of this function can be empty
+     * 
+     * @param GUI_AppWinVals the window control values for the child window.
+     */    
+    protected abstract void buildAndSetChildWindow_Indiv(GUI_AppWinVals _appVals);
     
     /**
      * UIObjectManager will call this.
