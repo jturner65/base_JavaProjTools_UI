@@ -971,6 +971,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         SidebarMenuBtnConfig sideBarConfig = new SidebarMenuBtnConfig(ri, this, _funcRowNames, _funcBtnNames, _dbgBtnNames, _winTitles, _inclWinNames, _inclMseOvValues);
         _dispWinFrames[dispMenuIDX] = new SidebarMenu(ri, this, dispMenuIDX, sideBarConfig);    
         sideBarMenu = (SidebarMenu)(_dispWinFrames[dispMenuIDX]);
+        sideBarMenu.initThisWin(true);
     }
     
     /**
@@ -1155,7 +1156,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param wIdx
      * @param newWindow
      */
-    public final void setDispWindow(int wIdx, Base_DispWindow newWindow) {    _dispWinFrames[wIdx] = newWindow;}
+    public final void setDispWindow(int wIdx, Base_DispWindow newWindow) {
+        msgObj.dispConsoleInfoMessage("GUI_AppManager", "setDispWindow", "Setting disp window for idx :"+wIdx+" window name :"+newWindow.getName());
+        // this was moved from the instancing window constructor
+        newWindow.initThisWin(wIdx == 0);
+        _dispWinFrames[wIdx] = newWindow;
+    }
         
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // side bar menu stuff    

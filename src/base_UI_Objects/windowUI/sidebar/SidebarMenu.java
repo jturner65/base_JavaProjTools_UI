@@ -83,8 +83,7 @@ public class SidebarMenu extends Base_DispWindow{
         //all ui objects for all windows will follow this format and share the uiClkCoords[0] value    
         // UI region for Application-wide buttons, under application flags
         btnConfig.setAppButtonRegion(winInitVals.rectDim, (numMainFlagsToShow+3) * btnConfig.initTextHeightOff);
-        // Change UI FlagReg - standard init
-        super.initThisWin(true);
+        // Change UI FlagReg - standard init;
     }//ctor
             
     /**

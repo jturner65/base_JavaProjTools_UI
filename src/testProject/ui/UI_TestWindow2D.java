@@ -67,7 +67,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
     
     public UI_TestWindow2D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
         super(_p, _AppMgr, _winIdx);
-        super.initThisWin(false);
+        
         // Initially center circle in display screen
         circleCenter = new myPoint();
     }

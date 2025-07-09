@@ -327,9 +327,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * This function implements the instantiation of a child window owned by this window, if such exists.
      * The implementation should be similar to how the main windows are implemented in GUI_AppManager::initAllDispWindows.
      * If no child window exists, this implementation of this function can be empty
+     * If a child window is instantiated, it MUST have its init called (childWin.initThisWin(false))
      * 
      * @param GUI_AppWinVals the window control values for the child window.
-     */    
+     */  
     protected abstract void buildAndSetChildWindow_Indiv(GUI_AppWinVals _appVals);
     
     /**

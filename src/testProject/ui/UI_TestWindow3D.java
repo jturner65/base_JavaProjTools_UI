@@ -58,7 +58,7 @@ public class UI_TestWindow3D extends Base_DispWindow {
     
     public UI_TestWindow3D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
         super(_p, _AppMgr, _winIdx);
-        super.initThisWin(false);
+        
     }
 
     @Override
