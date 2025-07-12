@@ -9,7 +9,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.UIObjectManager;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
@@ -32,7 +32,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     /**
      * Render interface
      */
-    public static IRenderInterface ri;
+    public static IGraphicsAppInterface ri;
     /**
      * Gui-based application manager
      */
@@ -202,7 +202,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param _winIdx
      * @param _winInitVals
      */
-    private Base_DispWindow(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx, GUI_AppWinVals _winInitVals) {
+    private Base_DispWindow(IGraphicsAppInterface _p, GUI_AppManager _AppMgr, int _winIdx, GUI_AppWinVals _winInitVals) {
         ri=_p;
         AppMgr = _AppMgr;
         msgObj = AppMgr.msgObj;
@@ -239,7 +239,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param _AppMgr
      * @param _winIdx
      */
-    public Base_DispWindow(IRenderInterface _p, GUI_AppManager _AppMgr, GUI_AppWinVals _winInitVals) {
+    public Base_DispWindow(IGraphicsAppInterface _p, GUI_AppManager _AppMgr, GUI_AppWinVals _winInitVals) {
         this(_p, _AppMgr, -1, _winInitVals);    
     }//ctor
     
@@ -249,7 +249,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param _AppMgr
      * @param _winIdx
      */
-    public Base_DispWindow(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
+    public Base_DispWindow(IGraphicsAppInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
         this(_p, _AppMgr, _winIdx, _AppMgr.winInitVals[_winIdx]);    
     }//ctor
     
@@ -317,9 +317,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
          */        
         GUI_AppWinVals childWinAppVals = AppMgr.buildGUI_AppWinVals(-1, _titleAndDesc[0] + " " + owner, _titleAndDesc[1] + " " + owner,
                 new boolean[] {false, false, false, false},_dims,
-                new int [][] {new int[]{20,40,50,200}, ri.getClr(IRenderInterface.gui_White, 255),
-                    ri.getClr(IRenderInterface.gui_LightGray, 255),ri.getClr(IRenderInterface.gui_Gray, 255),
-                    ri.getClr(IRenderInterface.gui_Black, 200),ri.getClr(IRenderInterface.gui_White, 255)});
+                new int [][] {new int[]{20,40,50,200}, ri.getClr(IGraphicsAppInterface.gui_White, 255),
+                    ri.getClr(IGraphicsAppInterface.gui_LightGray, 255),ri.getClr(IGraphicsAppInterface.gui_Gray, 255),
+                    ri.getClr(IGraphicsAppInterface.gui_Black, 200),ri.getClr(IGraphicsAppInterface.gui_White, 255)});
         buildAndSetChildWindow_Indiv(childWinAppVals);
     }//
     
@@ -843,9 +843,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      */
     protected final void dispBttnAtLoc(String txt, float[] loc, int[] clrAra){
         ri.setFill(clrAra, clrAra[3]);
-        ri.setColorValStroke(IRenderInterface.gui_Black,255);
+        ri.setColorValStroke(IGraphicsAppInterface.gui_Black,255);
         ri.drawRect(loc);        
-        ri.setColorValFill(IRenderInterface.gui_Black,255);
+        ri.setColorValFill(IGraphicsAppInterface.gui_Black,255);
         //ri.translate(-xOff*.5f,-yOff*.5f);
         ri.showText(""+txt,loc[0] + (txt.length() * .3f),loc[1]+loc[3]*.75f);
         //ri.translate(width, 0);
@@ -863,10 +863,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         int boxFillClrIDX;
         String dispTxt;
         if(dispFlags.getShowWin()){
-            boxFillClrIDX = IRenderInterface.gui_LightGreen;
+            boxFillClrIDX = IGraphicsAppInterface.gui_LightGreen;
             dispTxt = "Close";
         } else {
-            boxFillClrIDX = IRenderInterface.gui_DarkRed;
+            boxFillClrIDX = IGraphicsAppInterface.gui_DarkRed;
             dispTxt = "Open";
         }
         ri.setColorValFill(boxFillClrIDX,255);
@@ -896,7 +896,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     }
 
     /**
-     * called by drawUI in IRenderInterface
+     * called by drawUI in IGraphicsAppInterface
      * @param modAmtMillis
      */
     public final void drawHeader(String[] res, boolean shouldDrawOnScreenText, boolean isDebug, float modAmtMillis){
@@ -1567,8 +1567,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     // End Mouse and keyboard handling
     
     /**
-     * finds closest point to p in sPts - put dist in d, returns index
-     * @param p
+     * finds closest point to ri in sPts - put dist in d, returns index
+     * @param ri
      * @param d
      * @param _pts
      * @return

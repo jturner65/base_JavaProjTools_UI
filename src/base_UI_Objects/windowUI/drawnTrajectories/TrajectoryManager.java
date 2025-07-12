@@ -6,7 +6,7 @@ import java.util.TreeMap;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Utils_Objects.io.messaging.MessageObject;
 
@@ -37,7 +37,7 @@ public class TrajectoryManager {
     public TreeMap<Integer,TreeMap<String,ArrayList<DrawnSimpleTraj>>> drwnTrajMap;                
     
     //edit circle quantities for visual cues when grab and smoothen trajectories
-    public static final int[] editCrcFillClrs = new int[] {IRenderInterface.gui_FaintMagenta, IRenderInterface.gui_FaintGreen};            
+    public static final int[] editCrcFillClrs = new int[] {IGraphicsAppInterface.gui_FaintMagenta, IGraphicsAppInterface.gui_FaintGreen};            
     public static final float[] editCrcRads = new float[] {20.0f,40.0f};            
     public static final float[] editCrcMods = new float[] {1f,2f};            
     public final myPoint[] editCrcCtrs = new myPoint[] {new myPoint(0,0,0),new myPoint(0,0,0)};            
@@ -348,7 +348,7 @@ public class TrajectoryManager {
      * @return
      */
     public double calcOffsetScale(double val, float sc, double off){double res = val - off; res *=sc; return res+=off;}
-    //finds closest point to p in sPts - put dist in d
+    //finds closest point to ri in sPts - put dist in d
     public final int findClosestPt(myPoint p, double[] d, myPoint[] _pts){
         int res = -1;
         double mindist = 99999999, _d;
@@ -382,14 +382,14 @@ public class TrajectoryManager {
      * Draw text for notifications regarding process of drawing or editing trajectory
      * 
      */
-    public void drawNotifications(IRenderInterface ri, float xLoc, float yLoc){        
+    public void drawNotifications(IGraphicsAppInterface ri, float xLoc, float yLoc){        
         if(!getFlags(canDrawTraj)) {return;}
         //debug stuff
         ri.pushMatState();    
         float[] winRectDim = ownr.getRectDims();
         ri.translate(winRectDim[0]+20,winRectDim[1]+winRectDim[3]-70, 0);
-        Base_DispWindow.AppMgr.dispMenuTxtLat("Drawing trajectory curve", ri.getClr((getFlags(drawingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, xLoc, yLoc);
-        Base_DispWindow.AppMgr.dispMenuTxtLat("Editing trajectory curve", ri.getClr((getFlags(editingTraj) ? IRenderInterface.gui_Green : IRenderInterface.gui_Red),255), true, xLoc, yLoc);
+        Base_DispWindow.AppMgr.dispMenuTxtLat("Drawing trajectory curve", ri.getClr((getFlags(drawingTraj) ? IGraphicsAppInterface.gui_Green : IGraphicsAppInterface.gui_Red),255), true, xLoc, yLoc);
+        Base_DispWindow.AppMgr.dispMenuTxtLat("Editing trajectory curve", ri.getClr((getFlags(editingTraj) ? IGraphicsAppInterface.gui_Green : IGraphicsAppInterface.gui_Red),255), true, xLoc, yLoc);
         ri.popMatState();        
     }//drawNotifications
 
@@ -397,10 +397,10 @@ public class TrajectoryManager {
     /**
      * draw a circle corresponding to a click location
      */
-    public void drawClkCircle(IRenderInterface ri){
+    public void drawClkCircle(IGraphicsAppInterface ri){
         ri.pushMatState();    
         boolean doneDrawing = true;
-        ri.noStroke();
+        ri.setNoStroke();
         for(int i =0; i<editCrcFillClrs.length;++i){
             if(editCrcCurRads[i] <= 0){continue;}
             ri.showPtAsCircle(editCrcCtrs[i], editCrcCurRads[i], editCrcFillClrs[i], -2);    
@@ -414,7 +414,7 @@ public class TrajectoryManager {
     /**
      * draw a trajectory
      */    
-    public void drawTraj_2d(IRenderInterface ri){
+    public void drawTraj_2d(IGraphicsAppInterface ri){
         if(!getFlags(canDrawTraj)) {return;}
         ri.pushMatState();    
         if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(ri);}
@@ -434,7 +434,7 @@ public class TrajectoryManager {
      * @param animTimeMod
      * @param trans
      */
-    public void drawTraj_3d(IRenderInterface ri, float modAmtMillis, myPointf trans){
+    public void drawTraj_3d(IGraphicsAppInterface ri, float modAmtMillis, myPointf trans){
         if(!getFlags(canDrawTraj)) {return;}
         ri.pushMatState();    
         ownr.drawTraj3D(modAmtMillis,trans);
@@ -448,8 +448,8 @@ public class TrajectoryManager {
      * @param s
      * @param rad
      */
-    public void showKeyPt(IRenderInterface ri,myPoint a, String s, float rad){        
-        ri.showPtWithText(a,rad, s, new myVector(10,-5,0), IRenderInterface.gui_Cyan, getFlags(trajPointsAreFlat));    
+    public void showKeyPt(IGraphicsAppInterface ri,myPoint a, String s, float rad){        
+        ri.showPtWithText(a,rad, s, new myVector(10,-5,0), IGraphicsAppInterface.gui_Cyan, getFlags(trajPointsAreFlat));    
     }    
 
     //release shift/control/alt keys

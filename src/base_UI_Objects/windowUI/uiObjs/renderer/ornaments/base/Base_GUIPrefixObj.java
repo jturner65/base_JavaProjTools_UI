@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.renderer.ornaments.base;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 /**
  * Class to describe a possible UI element that acts like an ornament in front of a UI control
@@ -10,7 +10,7 @@ import base_Render_Interface.IRenderInterface;
 public abstract class Base_GUIPrefixObj{
     public Base_GUIPrefixObj() {}
     
-    public abstract void drawPrefixObj(IRenderInterface ri);
+    public abstract void drawPrefixObj(IGraphicsAppInterface ri);
     
     public abstract void setYCenter(float _y);
     

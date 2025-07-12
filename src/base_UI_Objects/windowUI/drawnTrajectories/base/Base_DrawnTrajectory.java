@@ -8,7 +8,7 @@ import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.offsets.Normal_Offset;
 import base_UI_Objects.windowUI.drawnTrajectories.offsets.base.Base_Offset;
@@ -122,7 +122,7 @@ public abstract class Base_DrawnTrajectory {
     public void startDrawing(){    pts = new myPoint[0];len = 0; dpts = new double[0]; trajFlags.setDrawCntlRad(false);}    
     /**
      * 
-     * @param p
+     * @param ri
      */
     public void addPt(myPoint p){
         ArrayList<myPoint> tmp = new ArrayList<myPoint>(Arrays.asList(pts));
@@ -132,7 +132,7 @@ public abstract class Base_DrawnTrajectory {
     
     /**
      * add a control point to the control point structure
-     * @param p
+     * @param ri
      */
     public void addCntlPt(myPoint p){
         ArrayList<myCntlPt> tmp = new ArrayList<myCntlPt>(Arrays.asList(cntlPts));
@@ -146,7 +146,7 @@ public abstract class Base_DrawnTrajectory {
     /**
      * calculate the weight of each point by determining the distance from its two neighbors - radius is inversely proportional to weight
      * @param a
-     * @param p
+     * @param ri
      * @param b
      * @return
      */
@@ -514,7 +514,7 @@ public abstract class Base_DrawnTrajectory {
      * @param ri
      * @param i
      */
-    public void drawSelPoint(IRenderInterface ri, int i){
+    public void drawSelPoint(IGraphicsAppInterface ri, int i){
         drawSelPoint(ri, i, new int[] {255,255,0});
     }
     /**
@@ -523,11 +523,11 @@ public abstract class Base_DrawnTrajectory {
      * @param i
      * @param clr highlight color (first 3 idxs)
      */
-    public void drawSelPoint(IRenderInterface ri, int i, int[] clr){
+    public void drawSelPoint(IGraphicsAppInterface ri, int i, int[] clr){
         ri.pushMatState();
         ri.setStroke(clr,255);
-        if(trajFlags.getUsesCntlPts()){ri.showPtAsSphere(cntlPts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);} 
-        else {ri.showPtAsSphere(pts[i], 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);}
+        if(trajFlags.getUsesCntlPts()){ri.showPtAsSphere(cntlPts[i], 3.0f, 5, IGraphicsAppInterface.gui_Black, IGraphicsAppInterface.gui_Black);} 
+        else {ri.showPtAsSphere(pts[i], 3.0f, 5, IGraphicsAppInterface.gui_Black, IGraphicsAppInterface.gui_Black);}
         ri.popMatState();
     }
     
@@ -685,8 +685,8 @@ public abstract class Base_DrawnTrajectory {
         return findClosestPt(p, d,cntlPts);
     }
     /**
-     * finds closest point to p in sPts - put dist in d
-     * @param p
+     * finds closest point to ri in sPts - put dist in d
+     * @param ri
      * @param d
      * @param _pts
      * @return
@@ -763,7 +763,7 @@ public abstract class Base_DrawnTrajectory {
     protected abstract void finalizeDrawing_Priv(boolean procPts);
     
 
-    public void drawMe(IRenderInterface ri) {
+    public void drawMe(IGraphicsAppInterface ri) {
         ri.pushMatState();
         ri.setFill(fillClr,255);
         ri.setStroke(strkClr,255);
@@ -783,7 +783,7 @@ public abstract class Base_DrawnTrajectory {
      * @param useDrawnVels
      * @param flat
      */
-    public void drawMe(IRenderInterface ri, boolean useDrawnVels, boolean flat){
+    public void drawMe(IGraphicsAppInterface ri, boolean useDrawnVels, boolean flat){
         ri.pushMatState();
             ri.setFill(fillClr,255);
             ri.setStroke(strkClr,255);
@@ -910,11 +910,11 @@ public abstract class Base_DrawnTrajectory {
 
     public int getNumCntlPts() {return cntlPts.length;}
     
-    public void drawCOV(IRenderInterface ri){        
+    public void drawCOV(IGraphicsAppInterface ri){        
         if(COV == null) {return;}        
         ri.pushMatState();
         ri.setStroke(255,0,255,255);        
-        ri.showPtAsSphere(COV, 3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);        
+        ri.showPtAsSphere(COV, 3.0f, 5, IGraphicsAppInterface.gui_Black, IGraphicsAppInterface.gui_Black);        
         ri.popMatState();    
     }
     

@@ -2,7 +2,7 @@ package base_UI_Objects.simulationUI.ui;
 
 import java.util.LinkedHashMap;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.simulationUI.simExec.Base_UISimExec;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
@@ -54,7 +54,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
      */
     public static final int numBaseSimPrivFlags = 5;
 
-    public Base_UISimWindow(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
+    public Base_UISimWindow(IGraphicsAppInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
         super(_p, _AppMgr, _winIdx);
     }
     

@@ -12,8 +12,11 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.GL_PrimStyle;
+import base_Render_Interface.IGraphicsAppInterface;
+import base_Render_Interface.IMeshInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.mesh.ProcessingShape;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PShape;
@@ -21,7 +24,7 @@ import processing.event.MouseEvent;
 import processing.opengl.PGL;
 import processing.opengl.PGraphics3D;
 
-public final class ProcessingRenderer extends processing.core.PApplet implements IRenderInterface {
+public final class ProcessingRenderer extends processing.core.PApplet implements IGraphicsAppInterface {
     
     private static GUI_AppManager AppMgr;
         
@@ -69,7 +72,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     //processing being run in eclipse uses settings for variable size dimensions
     @Override
     public final void settings(){    
-        AppMgr.setIRenderInterface(this);
+        AppMgr.setIGraphicsAppInterface(this);
         int[] desDims = AppMgr.getIdealAppWindowDims();
         size(desDims[0], desDims[1],P3D);    
         //allow user to set smoothing
@@ -297,9 +300,18 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
         super.ortho(left, right, bottom, top, near, far);
     }
     
-    
+    /**
+     * Set normal for smooth shading
+     * @param x
+     * @param y
+     * @param z
+     */
     @Override
     public final void gl_normal(float x, float y, float z) {super.normal(x,y,z);}                                          // changes normal for smooth shading
+    /**
+     * Set a vertex for drawing shapes
+     * @param P
+     */
     @Override
     public final void gl_vertex(float x, float y, float z) {super.vertex(x,y,z);}                                             // vertex for shading or drawing
 
@@ -310,15 +322,29 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      */
     @Override
     public final void gl_setFill(int r, int g, int b, int alpha) {super.fill(r,g,b,alpha);}
-
+    /**
+     * Set to have no fill color for a specified object (within gl_beginShape/gl_endShape)
+     */
+    @Override
+    public final void gl_setNoFill() {super.noFill();}
     /**
      * set stroke color by value during shape building
      * @param clr rgba
      * @param alpha 
      */
     @Override
-    public final void gl_setStroke(int r, int g, int b, int alpha) {super.stroke(r,g,b,alpha);}    
-    
+    public final void gl_setStroke(int r, int g, int b, int alpha) {super.stroke(r,g,b,alpha);}
+    /**
+     * Set to have no stroke color for a specified object (within gl_beginShape/gl_endShape)
+     */
+    @Override
+    public final void gl_setNoStroke() {super.noStroke();}
+    /**
+     * Set stroke weight for a specified object (within gl_beginShape/gl_endShape)
+     * @param wt
+     */
+    @Override
+    public final void gl_setStrokeWt(float wt) {super.strokeWeight(wt);}
     
     /**
      * type needs to be -1 for blank, otherwise should be specified in PConstants
@@ -342,14 +368,8 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     @Override
     public final void gl_beginShape(GL_PrimStyle primType) {
         switch (primType) {
-            case GL_POINTS : {
-                beginShape(POINTS);
-                return;
-            }
-            case GL_LINES : {
-                beginShape(LINES);
-                return;
-            }
+            case GL_POINTS : {          beginShape(PConstants.POINTS);         return;}
+            case GL_LINES : {           beginShape(PConstants.LINES);          return;}
             case GL_LINE_LOOP : {
                 //Processing does not support line loop, so treat as polygon
                 beginShape(POLYGON);
@@ -360,30 +380,21 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
                 beginShape(LINES);
                 break;
             }
-            case GL_TRIANGLES : {
-                beginShape(TRIANGLES);
-                break;
-            }
-            case GL_TRIANGLE_STRIP : {
-                beginShape(TRIANGLE_STRIP);
-                break;
-            }
-            case GL_TRIANGLE_FAN : {
-                beginShape(TRIANGLE_FAN);
-                break;
-            }
-            case GL_QUADS : {
-                beginShape(QUADS);
-                break;
-            }
-            case GL_QUAD_STRIP : {
-                beginShape(QUAD_STRIP);
-                break;
-            }            
-            default : {
-                beginShape(POLYGON);    
-                return;
-            }        
+            case GL_TRIANGLES : {       beginShape(PConstants.TRIANGLES);      return;}
+            case GL_TRIANGLE_STRIP : {  beginShape(PConstants.TRIANGLE_STRIP); return;}
+            case GL_TRIANGLE_FAN : {    beginShape(PConstants.TRIANGLE_FAN);   return;}
+            case GL_QUADS : {           beginShape(PConstants.QUADS);          return;}
+            case GL_QUAD_STRIP : {      beginShape(PConstants.QUAD_STRIP);     return;}
+            case POINT : {              beginShape(PConstants.POINT);          return;}
+            case LINE : {               beginShape(PConstants.LINE);           return;}
+            case TRIANGLE : {           beginShape(PConstants.TRIANGLE);       return;}
+            case QUAD : {               beginShape(PConstants.QUAD);           return;}
+            case RECT : {               beginShape(PConstants.RECT);           return;}
+            case ELLIPSE : {            beginShape(PConstants.ELLIPSE);        return;}
+            case ARC : {                beginShape(PConstants.ARC);            return;}
+            case SPHERE : {             beginShape(PConstants.SPHERE);         return;}
+            case BOX : {                beginShape(PConstants.BOX);            return;}
+            default : {                 beginShape(PConstants.POLYGON);        return;}        
         };
     }//gl_beginShape
     /**
@@ -419,20 +430,20 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     @Override
     public final void drawLine(myPointf a, myPointf b, int stClr, int endClr){
         gl_beginShape(GL_PrimStyle.GL_LINES);
-        setStrokeWt(1.0f);
-        setColorValStroke(stClr, 255);
+        gl_setStrokeWt(1.0f);
+        gl_setStroke(getClr(stClr, 255), 255);
         gl_vertex(a);
-        setColorValStroke(endClr,255);
+        gl_setStroke(getClr(endClr,255), 255);
         gl_vertex(b);
         gl_endShape();
     }
     @Override
     public final void drawLine(myPointf a, myPointf b, int[] stClr, int[] endClr){
         gl_beginShape(GL_PrimStyle.GL_LINES);
-        setStrokeWt(1.0f);
-        setStroke(stClr, 255);
+        gl_setStrokeWt(1.0f);
+        gl_setStroke(stClr, 255);
         gl_vertex(a);
-        setStroke(endClr,255);
+        gl_setStroke(endClr,255);
         gl_vertex(b);
         gl_endShape();
     }
@@ -450,7 +461,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     public final void drawPointCloudWithColors(int numPts, int ptIncr, int[][] ptClrIntAra, float[] ptPosX, float[] ptPosY, float[] ptPosZ) {
         gl_beginShape(GL_PrimStyle.GL_POINTS);
         for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {    
-            setStroke(ptClrIntAra[i][0], ptClrIntAra[i][1], ptClrIntAra[i][2], 255);
+            gl_setStroke(ptClrIntAra[i][0], ptClrIntAra[i][1], ptClrIntAra[i][2], 255);
             gl_vertex(ptPosX[i], ptPosY[i], ptPosZ[i]);
         }
         gl_endShape();
@@ -468,7 +479,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     @Override
     public final void drawPointCloudWithColor(int numPts, int ptIncr, int[] ptClrIntAra, float[] ptPosX, float[] ptPosY, float[] ptPosZ) {
         gl_beginShape(GL_PrimStyle.GL_POINTS);
-        setStroke(ptClrIntAra[0], ptClrIntAra[1], ptClrIntAra[2], 255);
+        gl_setStroke(ptClrIntAra[0], ptClrIntAra[1], ptClrIntAra[2], 255);
         for(int i=0;i<=numPts-ptIncr;i+=ptIncr) {    
             gl_vertex(ptPosX[i], ptPosY[i], ptPosZ[i]);
         }
@@ -539,7 +550,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
         int[] c1 = getClr(clr1, 255);
         int[] c2 = getClr(clr2, 255);
         noFill();
-        beginShape(QUAD_STRIP);
+        gl_beginShape(GL_PrimStyle.GL_QUAD_STRIP);
             for(int i=0; i<vertList.length; i+=2) {
                 gl_setStroke(c1[0],c1[1],c1[2],255);
                 gl_vertex(vertList[i]);
@@ -553,7 +564,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
         int[] c1 = getClr(clr1, 255);
         int[] c2 = getClr(clr2, 255);
         noFill();
-        beginShape(QUAD_STRIP);
+        gl_beginShape(GL_PrimStyle.GL_QUAD_STRIP);
             for(int i=0; i<vertList.length; i+=2) {
                 gl_setStroke(c1[0],c1[1],c1[2],255);
                 gl_vertex(vertList[i]); 
@@ -567,7 +578,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
         myPoint[] vertList = AppMgr.buildCylVerts(A, B, r);
         int[] c1 = getClr(clr1, 255);
         int[] c2 = getClr(clr2, 255);
-        beginShape(QUAD_STRIP);
+        gl_beginShape(GL_PrimStyle.GL_QUAD_STRIP);
             for(int i=0; i<vertList.length; i+=2) {
                 gl_setFill(c1[0],c1[1],c1[2],255);        
                 gl_vertex(vertList[i]); 
@@ -581,13 +592,13 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
         myPointf[] vertList = AppMgr.buildCylVerts(A, B, r);
         int[] c1 = getClr(clr1, 255);
         int[] c2 = getClr(clr2, 255);
-        beginShape(QUAD_STRIP);
+        gl_beginShape(GL_PrimStyle.GL_QUAD_STRIP);
         for(int i=0; i<vertList.length; i+=2) {
             gl_setFill(c1[0],c1[1],c1[2],255);        
             gl_vertex(vertList[i]); 
             gl_setFill(c2[0],c2[1],c2[2],255);        
             gl_vertex(vertList[i+1]);}
-    gl_endShape();
+        gl_endShape();
     }
     
     //////////////////////////////////
@@ -808,8 +819,8 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
             pushMatState();  
             //make sure box doesn't extend off screen
                 transToStayOnScreen(P,rectDims);
-                setColorValFill(IRenderInterface.gui_White,150);
-                setColorValStroke(IRenderInterface.gui_Black,255);
+                setColorValFill(IGraphicsAppInterface.gui_White,150);
+                setColorValStroke(IGraphicsAppInterface.gui_Black,255);
                 setStrokeWt(2.5f);
                 drawRect(rectDims);
                 translate(rectDims[0],0,0);
@@ -1440,42 +1451,95 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     public final void setColorValStroke(int colorVal, int alpha){
         setStroke(getClr(colorVal, alpha), alpha);        
     }//setcolorValStroke    
-    @Override
-    public final void setColorValFillAmb(int colorVal, int alpha){
-        if(colorVal == gui_TransBlack) {
-            fill(0x00010100);//    have to use hex so that alpha val is not lost    
-            ambient(0,0,0);
-        } else {
-            int[] fillClr = getClr(colorVal, alpha);
-            setFill(fillClr, alpha);
-            ambient(fillClr[0],fillClr[1],fillClr[2]);
-        }        
-    }//setcolorValFill
+//    @Override
+//    public final void setColorValFillAmb(int colorVal, int alpha){
+//        if(colorVal == gui_TransBlack) {
+//            fill(0x00010100);//    have to use hex so that alpha val is not lost    
+//            ambient(0,0,0);
+//        } else {
+//            int[] fillClr = getClr(colorVal, alpha);
+//            setFill(fillClr, alpha);
+//            ambient(fillClr[0],fillClr[1],fillClr[2]);
+//        }        
+//    }//setcolorValFill
 
-    @Override
-    public final int getRndClrIndex(){return MyMathUtils.randomInt(0,IRenderInterface.gui_nextColorIDX);}        //return a random color flag value from IRenderInterface
-        
-    /**
-     * Return an array holding random 4-int stroke (idx 0) and fill (idx 1) color where the fill is a lighter, scaled version of the stroke. Alpha for both is 255
-     * @return
-     */
-    @Override
-    public final int[][] getRndMatchedStrkFillClrs(){
-        int[] strkColor = MyMathUtils.randomIntClrAra(255);
-        int[] fillClr = new int[4];
-        for(int i=0;i<3;++i ) {
-            // make fill color ~80% brighter
-            fillClr[i] = (strkColor[i] + 1024)/5;    
-        }
-        fillClr[3] = 255;
-        return new int[][] {strkColor, fillClr};
-    }//getRndMatchedStrkFillClrs
     
     @Override
     public final Integer[] getClrMorph(int[] a, int[] b, double t){
         if(t==0){return new Integer[]{a[0],a[1],a[2],a[3]};} else if(t==1){return new Integer[]{b[0],b[1],b[2],b[3]};}
         return new Integer[]{(int)(((1.0f-t)*a[0])+t*b[0]),(int)(((1.0f-t)*a[1])+t*b[1]),(int)(((1.0f-t)*a[2])+t*b[2]),(int)(((1.0f-t)*a[3])+t*b[3])};
     }
-
+    /**
+     * Create a mesh shape
+     * @return
+     */  
+    @Override
+    public IMeshInterface createBaseMesh() {
+        return new ProcessingShape(this, PShape.GEOMETRY);
+    }//createBaseMesh
+    /**
+     * Create a mesh shape
+     * @return
+     */
+    @Override
+    public IMeshInterface createBaseMesh(GL_PrimStyle meshType) {
+        switch (meshType) {
+            case GL_POINTS :        { return new ProcessingShape(this,PConstants.POINTS);        }
+            case GL_LINES :         { return new ProcessingShape(this,PConstants.LINES);         }
+            case GL_LINE_LOOP :     { return new ProcessingShape(this,PConstants.LINE_LOOP);     }           
+            case GL_LINE_STRIP :    { return new ProcessingShape(this,PConstants.LINE_STRIP);    }           
+            case GL_TRIANGLES :     { return new ProcessingShape(this,PConstants.TRIANGLES);     }
+            case GL_TRIANGLE_STRIP :{ return new ProcessingShape(this,PConstants.TRIANGLE_STRIP);}
+            case GL_TRIANGLE_FAN :  { return new ProcessingShape(this,PConstants.TRIANGLE_FAN);  }
+            case GL_QUADS :         { return new ProcessingShape(this,PConstants.QUADS);         }
+            case GL_QUAD_STRIP :    { return new ProcessingShape(this,PConstants.QUAD_STRIP);    }
+            case POINT :            { return new ProcessingShape(this,PConstants.POINT);         }
+            case LINE :             { return new ProcessingShape(this,PConstants.LINE);          }
+            case TRIANGLE :         { return new ProcessingShape(this,PConstants.TRIANGLE);      }
+            case QUAD :             { return new ProcessingShape(this,PConstants.QUAD);          }
+            case RECT :             { return new ProcessingShape(this,PConstants.RECT);          }
+            case ELLIPSE :          { return new ProcessingShape(this,PConstants.ELLIPSE);       }
+            case ARC :              { return new ProcessingShape(this,PConstants.ARC);           }
+            case SPHERE :           { return new ProcessingShape(this,PConstants.SPHERE);        }
+            case BOX :              { return new ProcessingShape(this,PConstants.BOX);           }
+            default :               { return new ProcessingShape(this,PConstants.POLYGON);       }        
+        }
+    }//createBaseMesh
+    
+    /**
+     * Create a mesh shape
+     * @return
+     */
+    @Override
+    public IMeshInterface createBaseMesh(GL_PrimStyle meshType, float...args) {
+        switch (meshType) {
+            case GL_POINTS :        { return new ProcessingShape(this,PConstants.POINTS, args);        }
+            case GL_LINES :         { return new ProcessingShape(this,PConstants.LINES, args);         }
+            case GL_LINE_LOOP :     { return new ProcessingShape(this,PConstants.LINE_LOOP, args);     }           
+            case GL_LINE_STRIP :    { return new ProcessingShape(this,PConstants.LINE_STRIP, args);    }           
+            case GL_TRIANGLES :     { return new ProcessingShape(this,PConstants.TRIANGLES, args);     }
+            case GL_TRIANGLE_STRIP :{ return new ProcessingShape(this,PConstants.TRIANGLE_STRIP, args);}
+            case GL_TRIANGLE_FAN :  { return new ProcessingShape(this,PConstants.TRIANGLE_FAN, args);  }
+            case GL_QUADS :         { return new ProcessingShape(this,PConstants.QUADS, args);         }
+            case GL_QUAD_STRIP :    { return new ProcessingShape(this,PConstants.QUAD_STRIP, args);    }
+            case POINT :            { return new ProcessingShape(this,PConstants.POINT, args);         }
+            case LINE :             { return new ProcessingShape(this,PConstants.LINE, args);          }
+            case TRIANGLE :         { return new ProcessingShape(this,PConstants.TRIANGLE, args);      }
+            case QUAD :             { return new ProcessingShape(this,PConstants.QUAD, args);          }
+            case RECT :             { return new ProcessingShape(this,PConstants.RECT, args);          }
+            case ELLIPSE :          { return new ProcessingShape(this,PConstants.ELLIPSE, args);       }
+            case ARC :              { return new ProcessingShape(this,PConstants.ARC, args);           }
+            case SPHERE :           { return new ProcessingShape(this,PConstants.SPHERE, args);        }
+            case BOX :              { return new ProcessingShape(this,PConstants.BOX, args);           }
+            default :               { return new ProcessingShape(this,PConstants.POLYGON, args);       }        
+        }        
+    }//createBaseMesh
+    
+    /**
+     * Create a mesh shape intended to be the parent of a group of shapes/meshes
+     * @return
+     */  
+    @Override
+    public IMeshInterface createBaseGroupMesh() { return new ProcessingShape(this, PConstants.GROUP);}
 
 }//ProcessingRenderer

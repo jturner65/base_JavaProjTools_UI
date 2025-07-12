@@ -3,12 +3,12 @@ package base_UI_Objects.windowUI.uiObjs;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 
 
 public class ScrollBars{
-    public IRenderInterface ri;
+    public IGraphicsAppInterface ri;
     public Base_DispWindow win;
     public static int scrBarCnt = 0;
     public int ID;
@@ -36,7 +36,7 @@ public class ScrollBars{
     
     public int[][] clrs;            //colors for thumb and up/down/left/right arrows
     
-    public ScrollBars(IRenderInterface _ri,Base_DispWindow _win){
+    public ScrollBars(IGraphicsAppInterface _ri,Base_DispWindow _win){
         ri = _ri;
         win = _win;
         ID = scrBarCnt++;
@@ -68,8 +68,8 @@ public class ScrollBars{
     }
     public void drawMe(){
         ri.pushMatState();
-        ri.setColorValFill(IRenderInterface.gui_LightGray,255);
-        ri.setColorValStroke(IRenderInterface.gui_Black,255);
+        ri.setColorValFill(IGraphicsAppInterface.gui_LightGray,255);
+        ri.setColorValStroke(IGraphicsAppInterface.gui_Black,255);
         ri.setStrokeWt(1.0f);
         ri.drawRect(vScrlDims);
         ri.drawRect(hScrlDims);

@@ -1,7 +1,7 @@
 package base_UI_Objects.windowUI.uiObjs.renderer.base;
 
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.renderer.ornaments.GUI_NoPrefixObj;
@@ -12,7 +12,7 @@ public abstract class Base_GUIObjRenderer {
     /**
      * Interface to drawing/graphics engine
      */
-    protected static IRenderInterface ri;
+    protected static IGraphicsAppInterface ri;
     
     /**
      * Object to either manage and display or not show an ornamental box in front of a UI element
@@ -115,7 +115,7 @@ public abstract class Base_GUIObjRenderer {
      * @param _rendererType whether single or multi line renderer
      */
     public Base_GUIObjRenderer (
-            IRenderInterface _ri,
+            IGraphicsAppInterface _ri,
             Base_GUIObj _owner,
             double[] _off, GUIObj_Params _argObj,
             String _rendererType) {

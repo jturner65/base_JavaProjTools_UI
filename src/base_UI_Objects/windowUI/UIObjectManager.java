@@ -8,7 +8,7 @@ import java.util.TreeMap;
 
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.IUIManagerOwner;
 import base_UI_Objects.windowUI.base.WinAppPrivStateFlags;
@@ -46,7 +46,7 @@ public class UIObjectManager {
     /**
      * Used to render objects
      */
-    public static IRenderInterface ri;
+    public static IGraphicsAppInterface ri;
     /**
      * Display window/construct owner of this UIObjectManager
      */
@@ -153,7 +153,7 @@ public class UIObjectManager {
      */
     private final int[][] _dbgColors;
     
-    public UIObjectManager(IRenderInterface _ri, IUIManagerOwner _owner, GUI_AppManager _AppMgr, MessageObject _msgObj) {
+    public UIObjectManager(IGraphicsAppInterface _ri, IUIManagerOwner _owner, GUI_AppManager _AppMgr, MessageObject _msgObj) {
         ri = _ri;
         owner = _owner;
         _uiClkCoords = new float[4];

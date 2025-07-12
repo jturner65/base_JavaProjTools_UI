@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
@@ -66,7 +66,7 @@ public class SidebarMenu extends Base_DispWindow{
      * @param _winIdx
      * @param _c
      */
-    public SidebarMenu(IRenderInterface _ri, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
+    public SidebarMenu(IGraphicsAppInterface _ri, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
         super(_ri, _AppMgr, _winIdx);
         btnConfig=_c;
         
@@ -316,7 +316,7 @@ public class SidebarMenu extends Base_DispWindow{
             ri.pushMatState();
                 //draw main booleans and their state
                 ri.translate(xOffHalf,initBtnLblYOff);
-                ri.setColorValFill(IRenderInterface.gui_Black,255);
+                ri.setColorValFill(IGraphicsAppInterface.gui_Black,255);
                 ri.showText("Boolean Flags",0,txtHeightOffHalf);
                 ri.translate(0,clkFlgsStY);
                 AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);

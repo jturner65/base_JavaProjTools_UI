@@ -1,6 +1,6 @@
 package base_UI_Objects.simulationUI.simExec;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.simulationUI.sim.Base_UISimulator;
 import base_UI_Objects.simulationUI.ui.Base_UISimWindow;
@@ -25,7 +25,7 @@ public abstract class Base_UISimExec extends Base_SimExec {
     /**
      * ref to render interface, if window-based, or null if console
      */
-    protected final IRenderInterface ri;
+    protected final IGraphicsAppInterface ri;
     
     /**
      * flags relevant to managed simulator execution - idxs in SimPrivStateFlags
@@ -93,7 +93,7 @@ public abstract class Base_UISimExec extends Base_SimExec {
      * Returns this application's render interface. Will be null if a console application 
      * @return
      */
-    public final IRenderInterface getRenderInterface() {return ri;}    
+    public final IGraphicsAppInterface getRenderInterface() {return ri;}    
     
     /**
      * Draw the current simulation results
@@ -115,7 +115,7 @@ public abstract class Base_UISimExec extends Base_SimExec {
         //Draw any header info. txtHeight is starting y for rest of text        
         ri.pushMatState();
             long curTime = (Math.round(getNowTime()/1000.0f));
-            AppMgr.showOffsetText(0,IRenderInterface.gui_Yellow, currSim.getName() + " SIMULATION OUTPUT");
+            AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Yellow, currSim.getName() + " SIMULATION OUTPUT");
             rtSideYVals[0] +=rtSideYVals[1]; ri.translate(0.0f,rtSideYVals[1], 0.0f);
             ri.pushMatState();
             AppMgr.showMenuTxt_White("Sim Time : ");

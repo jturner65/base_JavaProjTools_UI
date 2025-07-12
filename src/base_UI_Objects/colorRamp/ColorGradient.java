@@ -1,16 +1,16 @@
 package base_UI_Objects.colorRamp;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 public class ColorGradient{
-    public static IRenderInterface ri;
+    public static IGraphicsAppInterface ri;
     public ColorRamp rmp;
     public String name;
     public float x,y, w,h;
     public ColorPoint[] clrs;                //all colors in this gradient - r = x, g = z, b = y
 
-    public ColorGradient(IRenderInterface _ri, ColorRamp _rmp, float _x, float _y, String _name){
+    public ColorGradient(IGraphicsAppInterface _ri, ColorRamp _rmp, float _x, float _y, String _name){
         ri = _ri;
         rmp = _rmp;
         name = _name;

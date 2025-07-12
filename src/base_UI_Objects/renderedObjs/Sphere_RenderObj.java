@@ -1,6 +1,6 @@
 package base_UI_Objects.renderedObjs;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
@@ -25,7 +25,7 @@ public class Sphere_RenderObj extends Base_RenderObj {
 
     private static double maxAnimCntr = 1000.0;
     
-    public Sphere_RenderObj(IRenderInterface _p, int _type, int _numTypes, RenderObj_ClrPalette _clrPalette) {
+    public Sphere_RenderObj(IGraphicsAppInterface _p, int _type, int _numTypes, RenderObj_ClrPalette _clrPalette) {
         //sphere has no animation
         super(_p, _type, _numTypes, 1, _clrPalette);
     }//ctor
@@ -85,10 +85,10 @@ public class Sphere_RenderObj extends Base_RenderObj {
      */
     @Override
     protected final PShape createObjRepForType() {
-        int tmpDet = p.getSphereDetail();
-        p.setSphereDetail(5);
+        int tmpDet = ri.getSphereDetail();
+        ri.setSphereDetail(5);
         PShape obj = createBaseShape(PConstants.SPHERE, 5.0f);
-        p.setSphereDetail(tmpDet);
+        ri.setSphereDetail(tmpDet);
         return obj;
     }
     
@@ -109,7 +109,7 @@ public class Sphere_RenderObj extends Base_RenderObj {
     //nothing special (per-frame) for sphere render object
     @Override
     protected void drawMeIndiv(int idx) {
-        ((ProcessingRenderer) p).shape(objReps[type]);
+        ((ProcessingRenderer) ri).shape(objReps[type]);
     }
     @Override
     public final double getMaxAnimCounter() {return maxAnimCntr;}

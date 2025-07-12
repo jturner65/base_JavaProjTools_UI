@@ -2,7 +2,7 @@ package base_UI_Objects.windowUI.drawnTrajectories;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.base.Base_DrawnTrajectory;
@@ -245,7 +245,7 @@ public class DrawnSimpleTraj {
      * Draw trajectory.  use animTimeMod to animate/decay showing this traj TODO 
      * @param ri
      */
-    public final void drawMe(IRenderInterface ri){
+    public final void drawMe(IGraphicsAppInterface ri){
         if(drawnTraj != null){
             ri.setFill(fillClrCnst,255);
             ri.setStroke(strkClrCnst,255);

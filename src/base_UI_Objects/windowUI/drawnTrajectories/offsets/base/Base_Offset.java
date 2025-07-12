@@ -6,7 +6,7 @@ import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 /**
  * class to hold functionality to calculate offset "sidewalks"   
@@ -36,7 +36,7 @@ public abstract class Base_Offset {
      * @param _obj drawn stroke to build offset myPoints from
      */
     public abstract ArrayList<myPoint> calcOffset(myCntlPt[] cntlPts, myVector[] nAra, myVector[] tAra);                
-    public abstract void drawCntlPts(IRenderInterface ri, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived);
+    public abstract void drawCntlPts(IGraphicsAppInterface ri, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived);
     
     /**
      * build an array of points that sweeps around c clockwise in plane of norm and tan, with starting radius c.r * norm

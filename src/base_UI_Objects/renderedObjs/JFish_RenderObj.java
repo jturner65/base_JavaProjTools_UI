@@ -1,7 +1,7 @@
 package base_UI_Objects.renderedObjs;
 
 import base_Math_Objects.MyMathUtils;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
@@ -36,7 +36,7 @@ public class JFish_RenderObj extends Base_RenderObj {
     private static double maxAnimCntr = 1000.0;
 
     
-    public JFish_RenderObj(IRenderInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette)  {    
+    public JFish_RenderObj(IGraphicsAppInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette)  {    
         super(_p, _type, _numTypes, _numAnimFrames, _clrPalette);
     }//ctor
     
@@ -75,16 +75,6 @@ public class JFish_RenderObj extends Base_RenderObj {
     @Override
     protected void setObjMadeForType(boolean isMade, int _type) {madeForType[_type] = isMade;}
     
-    /**
-     * Instantiate objRep object
-     * @return
-     */
-    @Override
-    protected final PShape createObjRepForType() {
-        return createBaseShape(PConstants.GROUP);         
-    }
-
-    
     @Override
     protected void setMainColorPalette(RenderObj_ClrPalette _clrPalette){
         clrPalette = new RenderObj_ClrPalette(_clrPalette);
@@ -111,10 +101,10 @@ public class JFish_RenderObj extends Base_RenderObj {
         // Build deformed bodies
         for(int i=0;i<bodyAra.length;++i) {
             bodyAra[i] = new PShape[numAnimFrames];
-            p.setSphereDetail(20);
+            ri.setSphereDetail(20);
             for(int a=0; a<numAnimFrames; ++a){//for each frame of animation
                 // each body element is a sphere with a certain scale setting to simulate deformation
-                bodyAra[i][a] = createBaseShape(PConstants.GROUP);
+                bodyAra[i][a] = createBaseGroupShape();
                 PShape indiv = createBaseShape(PConstants.SPHERE, 5.0f);                
                 //sclMult = (float) ((Math.sin(a * radAmt) * .25f) +1.0f);
                 //indiv.scale(sclMult, sclMult, 1.0f/(sclMult * sclMult));
@@ -124,7 +114,7 @@ public class JFish_RenderObj extends Base_RenderObj {
                 bodyAra[i][a].addChild(indiv);
             }    
         }
-        p.setSphereDetail(5);            
+        ri.setSphereDetail(5);            
     }
     //any instance specific, jelly-fish specific geometry setup goes here (textures, sizes, shapes, etc)
     @Override
@@ -140,8 +130,8 @@ public class JFish_RenderObj extends Base_RenderObj {
     @Override
     protected void drawMeIndiv(int animIDX) {
         //draw animation index-specified deformed "jellyfish"
-        ((ProcessingRenderer) p).shape(objReps[type]);        
-        ((ProcessingRenderer) p).shape(bodyAra[type][animIDX]);
+        ((ProcessingRenderer) ri).shape(objReps[type]);        
+        ((ProcessingRenderer) ri).shape(bodyAra[type][animIDX]);
     }
     @Override
     public final double getMaxAnimCounter() {return maxAnimCntr;}

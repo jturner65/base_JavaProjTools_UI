@@ -1,18 +1,18 @@
 package base_UI_Objects.renderedObjs.base;
 
 import base_Math_Objects.MyMathUtils;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.renderer.ProcessingRenderer;
 import processing.core.PShape;
 
 /**
  * class that will hold the relevant information for a particular color 
  * configuration for rendering an object, with functions to render 
- * to a PShape, as well as a passed IRenderInterface
+ * to a PShape, as well as a passed IGraphicsAppInterface
  * @author John Turner
  */
 public class RenderObj_Clr{
-    protected static IRenderInterface ri;    
+    protected static IGraphicsAppInterface ri;    
     protected final static int[] tmpInit = new int[]{255,255,255,255};
     //alpha values for fill and stroke colors
     protected int[] alphas;
@@ -61,7 +61,7 @@ public class RenderObj_Clr{
      * @param shn shininess
      * @return RenderObj_Clr object
      */
-    public static RenderObj_Clr makeRenderObjColor(IRenderInterface _p, int[][] _clrs, float[] _scales, float _stWt, float _shn) {
+    public static RenderObj_Clr makeRenderObjColor(IGraphicsAppInterface _p, int[][] _clrs, float[] _scales, float _stWt, float _shn) {
         RenderObj_Clr clr = new RenderObj_Clr(_p);
         clr.setFillClrVal(_clrs[fillIDX]);
         clr.setStrokeClrVal(_clrs[strokeIDX]);
@@ -86,7 +86,7 @@ public class RenderObj_Clr{
      * @param shn shininess
      * @return RenderObj_Clr object
      */
-    public static RenderObj_Clr makeRenderObjColor(IRenderInterface _p, int[][] _clrs, float _stWt, float _shn) {
+    public static RenderObj_Clr makeRenderObjColor(IGraphicsAppInterface _p, int[][] _clrs, float _stWt, float _shn) {
         //build unit scaling vector
         float[] scales = new float[_clrs.length];
         for(int i=0;i<scales.length;++i) {scales[i]=1.0f;}        
@@ -98,7 +98,7 @@ public class RenderObj_Clr{
      * private constructors
      * @param _p
      */
-    private RenderObj_Clr(IRenderInterface _p){
+    private RenderObj_Clr(IGraphicsAppInterface _p){
         ri=_p;
         shininess = 1.0f;
         strkWt = 1.0f;
@@ -363,7 +363,7 @@ public class RenderObj_Clr{
         if(getFlags(strokeIDX)){
             ri.setStrokeWt(strkWt);
             ri.setStroke(hexColors[strokeIDX]);
-        } else {            ri.noStroke();        }
+        } else {            ri.setNoStroke();        }
         if(getFlags(specIDX)){((ProcessingRenderer) ri).specular(hexColors[specIDX]);}
         if(getFlags(emitIDX)){((ProcessingRenderer) ri).emissive(hexColors[emitIDX]);}
         if(getFlags(ambIDX)){((ProcessingRenderer) ri).ambient(hexColors[ambIDX]);}

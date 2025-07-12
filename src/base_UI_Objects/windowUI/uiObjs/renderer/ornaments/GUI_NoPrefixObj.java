@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.renderer.ornaments;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.uiObjs.renderer.ornaments.base.Base_GUIPrefixObj;
 
 /**
@@ -14,7 +14,7 @@ public class GUI_NoPrefixObj extends Base_GUIPrefixObj{
      * Nothing to draw
      */
     @Override
-    public void drawPrefixObj(IRenderInterface ri) {}
+    public void drawPrefixObj(IGraphicsAppInterface ri) {}
     @Override
     public float getWidth() {        return 0;    }
     @Override

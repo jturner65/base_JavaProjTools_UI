@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.renderer;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.uiObjs.base.Base_GUIObj;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
@@ -17,7 +17,7 @@ public class SingleLineGUIObjRenderer extends Base_GUIObjRenderer {
      * @param _off offset for ornament
      * @param _argObj GUIObjParams that describe colors, render format and other components of the owning gui object
      */
-    public SingleLineGUIObjRenderer(IRenderInterface _ri, Base_GUIObj _owner, double[] _offset, GUIObj_Params _argObj) {
+    public SingleLineGUIObjRenderer(IGraphicsAppInterface _ri, Base_GUIObj _owner, double[] _offset, GUIObj_Params _argObj) {
         super(_ri, _owner, _offset, _argObj, "Single Line");
     }
 

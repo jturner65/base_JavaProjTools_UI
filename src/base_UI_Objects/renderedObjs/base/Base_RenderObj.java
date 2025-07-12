@@ -3,7 +3,7 @@ package base_UI_Objects.renderedObjs.base;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.renderer.ProcessingRenderer;
 import processing.core.PConstants;
 import processing.core.PImage;
@@ -18,7 +18,7 @@ public abstract class Base_RenderObj {
     /**
      * Rendering functionality
      */
-    protected static IRenderInterface p;
+    protected static IGraphicsAppInterface ri;
 
     protected static final float
         pi4thrds = 4*MyMathUtils.THIRD_PI_F, 
@@ -54,14 +54,14 @@ public abstract class Base_RenderObj {
      * @param _type
      * @param _numAnimFrames # of frames for a single cycle of repeated animation
      */
-    public Base_RenderObj(IRenderInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette, PImage[] _textures) {
-        p=_p; type = _type; numTypes=_numTypes; numAnimFrames = _numAnimFrames;
+    public Base_RenderObj(IGraphicsAppInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette, PImage[] _textures) {
+        ri=_p; type = _type; numTypes=_numTypes; numAnimFrames = _numAnimFrames;
         textures = _textures;
         initObjMadeForTypeAndObjReps(numTypes);
         setObjMadeForType(initGeometry(_clrPalette),type);
     }
     
-    public Base_RenderObj(IRenderInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette) {
+    public Base_RenderObj(IGraphicsAppInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette) {
         this(_p, _type, _numTypes, _numAnimFrames, _clrPalette, new PImage[0]);
     }
     
@@ -139,10 +139,12 @@ public abstract class Base_RenderObj {
     }//    initInstObjGeometry
     
     /**
-     * Instantiate objRep object
+     * Instantiate objRep object as group
      * @return
      */
-    protected abstract PShape createObjRepForType();
+    protected PShape createObjRepForType() {
+        return createBaseGroupShape();         
+    }
 
     /**
      * builds specific instance of object render rep, including colors, textures, etc.
@@ -158,6 +160,14 @@ public abstract class Base_RenderObj {
      * build the instance of a particular object
      */
     protected abstract void buildObj();
+    
+    /**
+     * Create a shape intended to be the parent of a group of shapes/meshes
+     * @return
+     */
+    protected PShape createBaseGroupShape() {
+        return ((ProcessingRenderer) ri).createShape(PConstants.GROUP);
+    }
     
     /**
      * Create and return a processing shape (PShape) with passed arg list. 
@@ -181,19 +191,19 @@ public abstract class Base_RenderObj {
     /**
      * Create and return a processing shape (PShape) with passed arg list. 
      * TODO : replace with agnostic mesh someday.
-     * @param isEmtpy If no meshType is provided
+     * @param isEmpty If no meshType is provided
      * @param meshType PConstants-defined constant specifying the type of shape to create
      * @param args a (possibly empty) list of arguments
      * @return a Processing PShape with specified criteria
      */    
     private PShape createBaseShape(boolean isEmpty, int meshType, float... args) {
         if (isEmpty) {
-            return ((ProcessingRenderer) p).createShape();
+            return ((ProcessingRenderer) ri).createShape();
         }
         if (args.length == 0) {
-            return ((ProcessingRenderer) p).createShape(meshType);
+            return ((ProcessingRenderer) ri).createShape(meshType);
         }
-        return ((ProcessingRenderer) p).createShape(meshType, args);
+        return ((ProcessingRenderer) ri).createShape(meshType, args);
     }
     
     /**
@@ -207,7 +217,7 @@ public abstract class Base_RenderObj {
     protected int buildQuadShape(PShape _objRep, myPointf transVec, int numX, int btPt, myPointf[][] objRndr){
         PShape sh = createBaseShape();
         sh.translate(transVec.x,transVec.y,transVec.z);
-        sh.beginShape(PConstants.QUAD);
+        sh.beginShape(PConstants.QUADS);
             objectColor.shPaintColors(sh);
             for(int i = 0; i < numX; ++i){
                 shgl_vertex(sh,objRndr[btPt][0]);shgl_vertex(sh,objRndr[btPt][1]);shgl_vertex(sh,objRndr[btPt][2]);shgl_vertex(sh,objRndr[btPt][3]);btPt++;
@@ -284,7 +294,7 @@ public abstract class Base_RenderObj {
         float theta, rsThet, rcThet, rsThet2, rcThet2;
         int numTurns = 6;
         float twoPiOvNumTurns = MyMathUtils.TWO_PI_F/numTurns;
-        PShape shRes = createBaseShape(PConstants.GROUP), sh;
+        PShape shRes = createBaseGroupShape(), sh;
         //pre-calc rad-theta-sin and rad-theta-cos
         float[] rsThetAra = new float[1 + numTurns];
         float[] rcThetAra = new float[1 + numTurns];
@@ -304,7 +314,7 @@ public abstract class Base_RenderObj {
             rcThet2 = rcThetAra[i+1];
 
             sh = createAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
-            sh.beginShape(PConstants.QUAD);                      
+            sh.beginShape(PConstants.QUADS);                      
                 clr.shPaintColors(sh);
                 shgl_vertexf(sh,rsThet, 0, rcThet );
                 shgl_vertexf(sh,rsThet, height,rcThet);
@@ -314,7 +324,7 @@ public abstract class Base_RenderObj {
             shRes.addChild(sh);
             //caps
             sh = createAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
-            sh.beginShape(PConstants.TRIANGLE);                      
+            sh.beginShape(PConstants.TRIANGLES);                      
                 clr.shPaintColors(sh);
                 shgl_vertexf(sh,rsThet, height, rcThet );
                 shgl_vertexf(sh,0, height, 0 );
@@ -324,7 +334,7 @@ public abstract class Base_RenderObj {
             
             if(drawBottom){
                 sh = createAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);                
-                sh.beginShape(PConstants.TRIANGLE);
+                sh.beginShape(PConstants.TRIANGLES);
                     clr.shPaintColors(sh);
                     shgl_vertexf(sh,rsThet, 0, rcThet );
                     shgl_vertexf(sh,0, 0, 0 );

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 /**
  * Struct holding per-window object dims and colors, consumed by Base_DispWindow to create 
@@ -198,26 +198,26 @@ public class GUI_AppWinVals {
      * Set fill for the owning window
      * @param ri
      */
-    public final void setWinFill(IRenderInterface ri) {ri.setFill(fillClr, fillClr[3]);}
+    public final void setWinFill(IGraphicsAppInterface ri) {ri.setFill(fillClr, fillClr[3]);}
     
     /**
      * Set stroke for owning window
      * @param ri
      */
-    public final void setWinStroke(IRenderInterface ri) {ri.setStroke(strkClr, strkClr[3]);}
+    public final void setWinStroke(IGraphicsAppInterface ri) {ri.setStroke(strkClr, strkClr[3]);}
     
     
     /**
      * Set fill for the owning window using specified stroke color
      * @param ri
      */
-    public final void setWinFillWithStroke(IRenderInterface ri) {ri.setFill(strkClr, strkClr[3]);}    
+    public final void setWinFillWithStroke(IGraphicsAppInterface ri) {ri.setFill(strkClr, strkClr[3]);}    
     
     /**
      * Set fill and stroke for owning window
      * @param ri
      */
-    public final void setWinFillAndStroke(IRenderInterface ri) {
+    public final void setWinFillAndStroke(IGraphicsAppInterface ri) {
         ri.setFill(fillClr, fillClr[3]);
         ri.setStroke(strkClr, strkClr[3]);
     }
@@ -257,14 +257,14 @@ public class GUI_AppWinVals {
      * Draw a rectangle using the specified rectDim values for this window
      * @param ri
      */
-    public final void drawRectDim(IRenderInterface ri) {ri.drawRect(rectDim);}
+    public final void drawRectDim(IGraphicsAppInterface ri) {ri.drawRect(rectDim);}
     
     
     /**
      * Draw a rectangle using the specified rectDimClosed values for this window
      * @param ri
      */
-    public final void drawRectDimClosed(IRenderInterface ri) {ri.drawRect(rectDimClosed);}
+    public final void drawRectDimClosed(IGraphicsAppInterface ri) {ri.drawRect(rectDimClosed);}
     
     @Override
     public String toString() {

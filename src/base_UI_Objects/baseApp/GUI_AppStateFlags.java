@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 
@@ -217,13 +217,13 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
      * @param stMult
      * @param yOff
      */
-    private void dispBoolStFlag(IRenderInterface ri, int[] clrAra, int idx, float yOff){
+    private void dispBoolStFlag(IGraphicsAppInterface ri, int[] clrAra, int idx, float yOff){
         if(getFlag(_stateFlagsToShow.get(idx))){
             ri.setFill( _stateFlagColors[idx], 255); 
             ri.setStroke( _stateFlagColors[idx], 255);
         } else {
-            ri.setColorValFill(IRenderInterface.gui_DarkGray,255); 
-            ri.noStroke();    
+            ri.setColorValFill(IGraphicsAppInterface.gui_DarkGray,255); 
+            ri.setNoStroke();    
         }
         ri.drawSphere(5);
         //text(""+txt,-xOff,yOff*.8f);    
@@ -233,7 +233,7 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
     /**
      * draw state booleans at top of screen and their state
      */
-    public final void drawSideBarStateLights(IRenderInterface ri, float yOff){ //_numStateFlagsToShow
+    public final void drawSideBarStateLights(IGraphicsAppInterface ri, float yOff){ //_numStateFlagsToShow
         ri.translate(1.5f*_stateFlagTransX, yOff);        
         for(int idx =0; idx<_numStateFlagsToShow; ++idx){
             dispBoolStFlag(ri, _stateFlagColors[idx], idx, yOff);            

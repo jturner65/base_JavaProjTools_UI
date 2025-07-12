@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.base.Base_DrawnTrajectory;
 
@@ -195,7 +195,7 @@ public class VariableTraj extends Base_DrawnTrajectory {
      * @param flat
      */
     @Override
-    public void drawMe(IRenderInterface ri, boolean useDrawnVels, boolean flat){
+    public void drawMe(IGraphicsAppInterface ri, boolean useDrawnVels, boolean flat){
         ri.pushMatState();
             ri.setFill(fillClr,255);
             ri.setStroke(strkClr,255);

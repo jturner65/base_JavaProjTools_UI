@@ -2,7 +2,7 @@ package base_UI_Objects.colorRamp;
 
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 public class ColorPointf extends myPointf {
     public String name;
@@ -26,16 +26,16 @@ public class ColorPointf extends myPointf {
         rad = p.rad;
     }
     
-    public void show(IRenderInterface ri, myPointf P, float r, String txt) {
+    public void show(IGraphicsAppInterface ri, myPointf P, float r, String txt) {
         ri.pushMatState();  
         ri.drawSphere(P, r, 5); 
-        ri.setColorValFill(IRenderInterface.gui_Black, 255);ri.setColorValStroke(IRenderInterface.gui_Black,255);
+        ri.setColorValFill(IGraphicsAppInterface.gui_Black, 255);ri.setColorValStroke(IGraphicsAppInterface.gui_Black,255);
         float d = 1.1f * r;
         ri.showTextAtPt(myPointf.ZEROPT, txt, new myVectorf(d,d,d));
         ri.popMatState();
     } // render sphere of radius r and center P)
 
-    public void showColor(IRenderInterface ri ){
+    public void showColor(IGraphicsAppInterface ri ){
         ri.setFill((int)x, (int)y, (int)z, 255); 
         show(ri, this,rad, toString());
     }

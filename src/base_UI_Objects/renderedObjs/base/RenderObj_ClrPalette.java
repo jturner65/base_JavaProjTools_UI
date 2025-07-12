@@ -1,6 +1,6 @@
 package base_UI_Objects.renderedObjs.base;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 /**
  * A full palette of colors to use with a render object
@@ -11,7 +11,7 @@ public class RenderObj_ClrPalette {
     /**
      * Rendering functionality interface
      */
-    protected static IRenderInterface ri;
+    protected static IGraphicsAppInterface ri;
     
     /**
      * This color is used across each different types of a specific render object
@@ -23,7 +23,7 @@ public class RenderObj_ClrPalette {
      */
     private RenderObj_Clr[] allTypeColors;
     
-    public RenderObj_ClrPalette(IRenderInterface _ri, int _numTypes) {
+    public RenderObj_ClrPalette(IGraphicsAppInterface _ri, int _numTypes) {
         ri=_ri;
         allTypeColors = new RenderObj_Clr[_numTypes];
     }

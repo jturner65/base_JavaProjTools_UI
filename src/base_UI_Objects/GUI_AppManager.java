@@ -16,7 +16,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.baseApp.Disp3DCanvas;
 import base_UI_Objects.baseApp.GUI_AppStateFlags;
 import base_UI_Objects.renderer.ProcessingRenderer;
@@ -41,7 +41,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     /**
      * rendering engine interface, providing expected methods.
      */
-    protected static IRenderInterface ri = null;
+    protected static IGraphicsAppInterface ri = null;
     /**
      * Multiple of screen height that font size should be
      */
@@ -55,7 +55,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     private Disp3DCanvas _canvas;    
     /**
-     * Reference to GL Window underlying IRenderInterface surface
+     * Reference to GL Window underlying IGraphicsAppInterface surface
      */
     public GLWindow window;    
     /**
@@ -344,8 +344,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
     public float msSclX, msSclY;                                            
 
     public final int[][] triColors = new int[][] {
-        {IRenderInterface.gui_DarkMagenta,IRenderInterface.gui_DarkBlue,IRenderInterface.gui_DarkGreen,IRenderInterface.gui_DarkCyan}, 
-        {IRenderInterface.gui_LightMagenta,IRenderInterface.gui_LightBlue,IRenderInterface.gui_LightGreen,IRenderInterface.gui_TransCyan}};
+        {IGraphicsAppInterface.gui_DarkMagenta,IGraphicsAppInterface.gui_DarkBlue,IGraphicsAppInterface.gui_DarkGreen,IGraphicsAppInterface.gui_DarkCyan}, 
+        {IGraphicsAppInterface.gui_LightMagenta,IGraphicsAppInterface.gui_LightBlue,IGraphicsAppInterface.gui_LightGreen,IGraphicsAppInterface.gui_TransCyan}};
     
         
     // Maintain copy of memory map    
@@ -404,7 +404,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
           return rawArgsMap;
     }//handleRuntimeArgs
     
-    public final void setIRenderInterface(IRenderInterface _pa) {
+    public final void setIGraphicsAppInterface(IGraphicsAppInterface _pa) {
         if (null == ri) {ri=_pa;}
         ri.initRenderInterface();
     }    
@@ -537,7 +537,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * Called in pre-draw initial setup, before first init
      * potentially override setup variables on per-project basis.
      * Do not use for setting background color or Skybox anymore.
-     *      (Current settings in IRenderInterface implementation)     
+     *      (Current settings in IGraphicsAppInterface implementation)     
      *      strokeCap(PROJECT);
      *      textSize(txtSz);
      *      textureMode(NORMAL);            
@@ -1106,7 +1106,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     
     /**
      * This will build a 6 element array of color int arrays, based on the integer tags provided.
-     * @param _tags IRenderInterface constants reflecting specific colors
+     * @param _tags IGraphicsAppInterface constants reflecting specific colors
      *                 winFillClr (idx 0),
      *                 winStrkClr (idx 1),
      *                 winTrajFillClr(idx 2),
@@ -1371,7 +1371,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     }
         
     /**
-     * primary sim and draw loop.  Called from draw in IRenderInterface class
+     * primary sim and draw loop.  Called from draw in IGraphicsAppInterface class
      */
     public final boolean mainSimAndDrawLoop() {
         //Finish final init if not done already
@@ -1415,7 +1415,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     }// getStatusBarString
      
     /**
-     * sim loop, called from IRenderInterface draw method
+     * sim loop, called from IGraphicsAppInterface draw method
      * @param modAmtMillis milliseconds since last frame started
      */
     protected boolean execSimDuringDrawLoop(float modAmtMillis) {
@@ -1532,7 +1532,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         ri.setStroke(0,0,0,255);
         ri.translate(0, _viewHeight);
         ri.drawRect(0, -getTextHeightOffset(), _viewWidth, getTextHeightOffset());        
-        ri.setColorValFill(IRenderInterface.gui_Black, 255);ri.setColorValStroke(IRenderInterface.gui_Black, 255);
+        ri.setColorValFill(IGraphicsAppInterface.gui_Black, 255);ri.setColorValStroke(IGraphicsAppInterface.gui_Black, 255);
         ri.showText(statusBarString, getRowStYOffset(), -getRowStYOffset(),0); 
         ri.enableLights();
         ri.setEndNoDepthTest();
@@ -1545,8 +1545,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
     private final void drawBoxBnds(){
         ri.pushMatState();
         ri.setStrokeWt(3f);
-        ri.noFill();
-        ri.setColorValStroke(IRenderInterface.gui_TransGray,255);        
+        ri.setNoFill();
+        ri.setColorValStroke(IGraphicsAppInterface.gui_TransGray,255);        
         ri.drawBox3D(_3DGridDimX,_3DGridDimY,_3DGridDimZ);
         ri.popMatState();
     }    
@@ -1561,7 +1561,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         ri.translate(-p.x,-p.y,-p.z);
         for(int i = 0; i< 6; ++i){                
             prjOnPlane = bndChkInCntrdBox3D(MyMathUtils.intersectPlane(p, _boxNorms[i], _boxWallPts[i][0],_boxWallPts[i][1],_boxWallPts[i][2]));                
-            ri.showPtAsSphere(prjOnPlane,5,5,IRenderInterface.rgbClrs[i/2],IRenderInterface.rgbClrs[i/2]);                
+            ri.showPtAsSphere(prjOnPlane,5,5,IGraphicsAppInterface.rgbClrs[i/2],IGraphicsAppInterface.rgbClrs[i/2]);                
         }
         ri.popMatState();
     }//drawProjOnBox
@@ -1575,7 +1575,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         ri.translate(-p.x,-p.y,-p.z);
         for(int i  = 0; i< 6; ++i){                
             prjOnPlane = bndChkInCntrdBox3D(MyMathUtils.intersectPlane(p, _boxNorms[i], _boxWallPts[i][0],_boxWallPts[i][1],_boxWallPts[i][2]));                
-            ri.showPtAsSphere(prjOnPlane,5,5,IRenderInterface.rgbClrs[i/2],IRenderInterface.rgbClrs[i/2]);                
+            ri.showPtAsSphere(prjOnPlane,5,5,IGraphicsAppInterface.rgbClrs[i/2],IGraphicsAppInterface.rgbClrs[i/2]);                
         }
         ri.popMatState();
     }//drawProjOnBox
@@ -1605,7 +1605,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         ri.setFill(clrAra, 255); 
         ri.translate(xOff,yOff);
         if(showSphere){ri.setStroke(clrAra, 255);        ri.drawSphere(5);    } 
-        else {    ri.noStroke();        }
+        else {    ri.setNoStroke();        }
         ri.translate(-xOff,yOff);
         ri.showText(""+txt,2.0f*xOff,-yOff*.5f);    
     }
@@ -1648,7 +1648,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
             ri.setStrokeWt(stW);
             ri.translate(ctr);
             for(int i=0;i<axes.length;++i){
-                ri.setColorValStroke(IRenderInterface.rgbClrs[i],alpha);
+                ri.setColorValStroke(IGraphicsAppInterface.rgbClrs[i],alpha);
                 ri.drawLine(0,0,0,(axes[i].x)*len,(axes[i].y)*len,(axes[i].z)*len);
             }            
         ri.popMatState();    
@@ -1675,12 +1675,12 @@ public abstract class GUI_AppManager extends Java_AppManager {
         ri.pushMatState();
             ri.setStrokeWt(stW);
             ri.translate(ctr);
-            ri.showPtAsSphere(myPointf.ZEROPT,2,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
+            ri.showPtAsSphere(myPointf.ZEROPT,2,5,IGraphicsAppInterface.gui_Black,IGraphicsAppInterface.gui_Black);
             for(int i=0;i<axes.length;++i){
-                ri.showPtAsSphere(myPointf._mult(axes[i], len),2,5,IRenderInterface.rgbClrs[i],IRenderInterface.rgbClrs[i]);
+                ri.showPtAsSphere(myPointf._mult(axes[i], len),2,5,IGraphicsAppInterface.rgbClrs[i],IGraphicsAppInterface.rgbClrs[i]);
             }
             for(int i=0;i<axes.length;++i){
-                ri.setColorValStroke(IRenderInterface.rgbClrs[i],alpha);
+                ri.setColorValStroke(IGraphicsAppInterface.rgbClrs[i],alpha);
                 ri.drawLine(0,0,0,(axes[i].x)*len,(axes[i].y)*len,(axes[i].z)*len);
             }            
         ri.popMatState();    
@@ -1709,7 +1709,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
             ri.setStrokeWt(stW);
             ri.translate(ctr);
             for(int i=0;i<axes.length;++i){
-                ri.setColorValStroke(IRenderInterface.rgbClrs[i],alpha);
+                ri.setColorValStroke(IGraphicsAppInterface.rgbClrs[i],alpha);
                 myPointf transPt = myPointf._mult( _centeringAxes_f[i], len);
                 ri.translate(-transPt.x, -transPt.y, -transPt.z);
                 ri.drawLine(0,0,0,(axes[i].x)*len,(axes[i].y)*len,(axes[i].z)*len);
@@ -1730,14 +1730,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
         ri.pushMatState();
             ri.setStrokeWt(stW);
             ri.translate(ctr);
-            ri.showPtAsSphere(myPointf.ZEROPT,2,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
+            ri.showPtAsSphere(myPointf.ZEROPT,2,5,IGraphicsAppInterface.gui_Black,IGraphicsAppInterface.gui_Black);
             for(int i=0;i<3;++i) {
-                ri.setColorValStroke(IRenderInterface.rgbClrs[i],alpha);
+                ri.setColorValStroke(IGraphicsAppInterface.rgbClrs[i],alpha);
                 myPointf transPt = myPointf._mult( _centeringAxes_f[i], len);
                 myPointf axisEnd = myPointf._mult(axes[i], len);
                 ri.translate(-transPt.x, -transPt.y, -transPt.z);
-                ri.showPtAsSphere(myPointf.ZEROPT,2,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
-                ri.showPtAsSphere(axisEnd,2,5,IRenderInterface.gui_Black,IRenderInterface.gui_Black);
+                ri.showPtAsSphere(myPointf.ZEROPT,2,5,IGraphicsAppInterface.gui_Black,IGraphicsAppInterface.gui_Black);
+                ri.showPtAsSphere(axisEnd,2,5,IGraphicsAppInterface.gui_Black,IGraphicsAppInterface.gui_Black);
                 ri.drawLine(0,0,0,(axes[i].x)*len,(axes[i].y)*len,(axes[i].z)*len);
                 ri.translate(transPt);
             }            
@@ -2228,7 +2228,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     }
     /**
      * this will properly format and display a string of text, and will translate the width, so multiple strings can be displayed on the same line with different colors
-     * @param tclr color constant as defined in IRenderInterface
+     * @param tclr color constant as defined in IGraphicsAppInterface
      * @param txt
      */
     public final void showOffsetText_RightSideMenu(int tclr, String txt) {
@@ -2310,10 +2310,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
     public final void showBox_ClrAra(myPointf P, float rad, int det, int[] fclr, int[] strkclr, int tclr, String txt) {
         ri.pushMatState();  
         ri.translate(P.x,P.y,P.z);
-        ri.setColorValFill(IRenderInterface.gui_White,150);
-        ri.setColorValStroke(IRenderInterface.gui_Black,255);
+        ri.setColorValFill(IGraphicsAppInterface.gui_White,150);
+        ri.setColorValStroke(IGraphicsAppInterface.gui_Black,255);
         ri.drawRect(new float[] {0,6.0f,txt.length()*7.8f,-15});
-        tclr = IRenderInterface.gui_Black;        
+        tclr = IGraphicsAppInterface.gui_Black;        
         ri.setFill(fclr,255); ri.setStroke(strkclr,255);            
         ri.drawSphere(myPointf.ZEROPT, rad, det);
         showOffsetText(1.2f * rad,tclr, txt);

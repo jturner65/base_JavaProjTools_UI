@@ -3,7 +3,7 @@ package base_UI_Objects.renderedObjs;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
@@ -53,7 +53,7 @@ public class Boat_RenderObj extends Base_RenderObj {
      */    
     private static RenderObj_ClrPalette clrPalette;
     
-    public Boat_RenderObj(IRenderInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette, PImage[] _textures) {    
+    public Boat_RenderObj(IGraphicsAppInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette, PImage[] _textures) {    
         super(_p, _type, _numTypes, _numAnimFrames, _clrPalette, _textures);
     }//ctor
     
@@ -93,15 +93,6 @@ public class Boat_RenderObj extends Base_RenderObj {
     @Override
     public final void setMaxAnimCounter(double _maxAnimCntr) {maxAnimCntr = _maxAnimCntr;}
     
-    /**
-     * Instantiate objRep object
-     * @return
-     */
-    @Override
-    protected final PShape createObjRepForType() {
-        return createBaseShape(PConstants.GROUP);         
-    }
-
     //inherited from myRenderObj
     //colors shared by all instances/flocks of this type of render obj
     @Override
@@ -140,7 +131,7 @@ public class Boat_RenderObj extends Base_RenderObj {
         oars = new PShape[numAnimFrames];
         double animRatio = maxAnimCntr/(1.0f*numAnimFrames);
         for(int a=0; a<numAnimFrames; ++a){
-            oars[a] = createBaseShape(PConstants.GROUP);
+            oars[a] = createBaseGroupShape();
             double animCntr = (a * animRatio);
             buildOars(a, clrPalette.getMainColor(), animCntr, 1, new myVectorf(0, 0.3f, 3));
             buildOars(a, clrPalette.getMainColor(), animCntr, -1, new myVectorf(0, 0.3f, 3));         
@@ -188,8 +179,8 @@ public class Boat_RenderObj extends Base_RenderObj {
 
     @Override //representation-specific drawing code (i.e. oars settings for boats)
     protected void drawMeIndiv(int animIDX){//which oars array instance of oars to show - oars move relative to speed of boid
-        ((ProcessingRenderer) p).shape(objReps[type]);        
-        ((ProcessingRenderer) p).shape(oars[animIDX]);
+        ((ProcessingRenderer) ri).shape(objReps[type]);        
+        ((ProcessingRenderer) ri).shape(oars[animIDX]);
     }//drawMe
     
     private myPointf[] buildSailPtAra(float len){
@@ -260,7 +251,7 @@ public class Boat_RenderObj extends Base_RenderObj {
                 transVec, scaleVec, new float[4], 
                 new myPointf(0,4.5f,0), new float[] {MyMathUtils.HALF_PI_F, 0,0,1},
                 trans2VecDisp, new float[4]);
-        sh.beginShape(); 
+        sh.beginShape(PConstants.POLYGON); 
         sh.fill(0xFFFFFFFF);    
         sh.noStroke();
         if(renderSigil) {
@@ -277,7 +268,7 @@ public class Boat_RenderObj extends Base_RenderObj {
                     transVec, scaleVec, new float[] {MyMathUtils.THIRD_PI_F, 1,0,0}, 
                     new myPointf(0,5.0f,0), new float[] {MyMathUtils.HALF_PI_F, 0,0,1},
                     new myPointf(1,-1.5f,0), new float[4]);    
-            sh.beginShape(); 
+            sh.beginShape(PConstants.POLYGON); 
             sh.fill(0xFFFFFFFF);    
             sh.noStroke();
             setObjTexture(sh, 0);
@@ -295,7 +286,7 @@ public class Boat_RenderObj extends Base_RenderObj {
     private void buildBodyBottom(PShape _objRep, myPointf[][] boatVerts, int i, int lastIDX, int numX){
         PShape sh = createBaseShape();
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.TRIANGLE);            
+        sh.beginShape(PConstants.TRIANGLES);            
             getObjTypeColor().shPaintColors(sh);
             sh.vertex(boatVerts[i][lastIDX].x, boatVerts[i][lastIDX].y,     boatVerts[i][lastIDX].z);    sh.vertex(0, 1, lastIDX-1);    sh.vertex(boatVerts[(i+1)%numX][lastIDX].x, boatVerts[(i+1)%numX][lastIDX].y,     boatVerts[(i+1)%numX][lastIDX].z);    
         sh.endShape(PConstants.CLOSE);
@@ -303,7 +294,7 @@ public class Boat_RenderObj extends Base_RenderObj {
 
         sh = createBaseShape();
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.QUAD);        
+        sh.beginShape(PConstants.QUADS);        
             getObjTypeColor().shPaintColors(sh);
             sh.vertex(boatVerts[i][0].x, boatVerts[i][0].y, boatVerts[i][0].z);sh.vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z -.5f);    sh.vertex(boatVerts[(i+1)%numX][0].x * .75f, boatVerts[(i+1)%numX][0].y * .75f,     boatVerts[(i+1)%numX][0].z -.5f);sh.vertex(boatVerts[(i+1)%numX][0].x, boatVerts[(i+1)%numX][0].y,     boatVerts[(i+1)%numX][0].z );
         sh.endShape(PConstants.CLOSE);
@@ -311,7 +302,7 @@ public class Boat_RenderObj extends Base_RenderObj {
         
         sh = createBaseShape();
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.TRIANGLE);        
+        sh.beginShape(PConstants.TRIANGLES);        
             getObjTypeColor().shPaintColors(sh);
             sh.vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z  -.5f);    sh.vertex(0, 0, boatVerts[i][0].z - 1);    sh.vertex(boatVerts[(i+1)%numX][0].x * .75f, boatVerts[(i+1)%numX][0].y * .75f,     boatVerts[(i+1)%numX][0].z  -.5f);    
         sh.endShape(PConstants.CLOSE);        

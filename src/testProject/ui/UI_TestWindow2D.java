@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
@@ -65,7 +65,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
     
     protected myPoint circleCenter;
     
-    public UI_TestWindow2D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
+    public UI_TestWindow2D(IGraphicsAppInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
         super(_p, _AppMgr, _winIdx);
         
         // Initially center circle in display screen

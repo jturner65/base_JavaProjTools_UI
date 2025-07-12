@@ -6,12 +6,12 @@ import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 
 
 public class ColorRamp  {
-    private static IRenderInterface ri;    
+    private static IGraphicsAppInterface ri;    
     private static GUI_AppManager AppMgr;
     public int R0=250, G0=245, B0=20, R1=17, G1=60, B1=242, k=30;
     
@@ -38,7 +38,7 @@ public class ColorRamp  {
     public Layer layer;
 
     
-    public ColorRamp(IRenderInterface _ri, GUI_AppManager _AppMgr){
+    public ColorRamp(IGraphicsAppInterface _ri, GUI_AppManager _AppMgr){
         ri = _ri;      AppMgr = _AppMgr;
         layer = new Layer(50, 10);
         float[] gridDims = AppMgr.get3dGridDims();

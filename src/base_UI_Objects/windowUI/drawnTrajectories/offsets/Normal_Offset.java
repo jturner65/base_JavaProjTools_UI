@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import base_Math_Objects.vectorObjs.doubles.myCntlPt;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.drawnTrajectories.offsets.base.Base_Offset;
 
 /**
@@ -41,7 +41,7 @@ public class Normal_Offset extends Base_Offset{
 //          myPoints[i].drawNorm((derived ? 0 : 1), nAra[i], tAra[i]);
 //      }
 //  }
-  public void drawCntlPts(IRenderInterface ri, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived) {
+  public void drawCntlPts(IGraphicsAppInterface ri, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived) {
       ri.pushMatState();
       int clrInt = 0;
       for(int i = 0; i < myPoints.length; ++i){

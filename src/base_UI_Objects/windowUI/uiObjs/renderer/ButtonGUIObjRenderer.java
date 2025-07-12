@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.renderer;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_UI_Objects.windowUI.uiObjs.menuObjs.buttons.GUIObj_Button;
 import base_UI_Objects.windowUI.uiObjs.renderer.base.Base_GUIObjRenderer;
@@ -28,7 +28,7 @@ public class ButtonGUIObjRenderer extends Base_GUIObjRenderer {
      *                         while multi line will be some fraction of this wide.
      * @param _argObj GUIObjParams that describe colors, render format and other components of the owning gui object
      */
-    public ButtonGUIObjRenderer(IRenderInterface _ri, GUIObj_Button _owner, double[] _offset, GUIObj_Params _argObj) {
+    public ButtonGUIObjRenderer(IGraphicsAppInterface _ri, GUIObj_Button _owner, double[] _offset, GUIObj_Params _argObj) {
         super(_ri, _owner, _offset, _argObj, "Button Renderer");
         _updateLabelColors( _argObj.getBtnFillColors());
         updateFromObject();

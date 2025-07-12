@@ -3,7 +3,7 @@ package base_UI_Objects.windowUI.sidebar;
 import java.util.ArrayList;
 
 import base_Math_Objects.MyMathUtils;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 
 /**
@@ -20,7 +20,7 @@ public class SidebarMenuBtnConfig {
     /**
      * Render interface
      */
-    public static IRenderInterface ri;
+    public static IGraphicsAppInterface ri;
 
     /**
      * Index in button rows corresponding to the mouse-over display control buttons
@@ -74,14 +74,14 @@ public class SidebarMenuBtnConfig {
     private int[][] _guiBtnState;
     
     public final int[] _guiBtnStateFillClr = new int[]{                    //button colors based on state
-            IRenderInterface.gui_White,                                //disabled color for buttons
-            IRenderInterface.gui_LightGray,                            //not clicked button color
-            IRenderInterface.gui_LightBlue,                            //clicked button color
+            IGraphicsAppInterface.gui_White,                                //disabled color for buttons
+            IGraphicsAppInterface.gui_LightGray,                            //not clicked button color
+            IGraphicsAppInterface.gui_LightBlue,                            //clicked button color
         };
     public final int[] _guiBtnStateTxtClr = new int[]{                    //text color for buttons
-            IRenderInterface.gui_LightGray,                            //disabled color for buttons
-            IRenderInterface.gui_Black,                                //not clicked button color
-            IRenderInterface.gui_Black,                                //clicked button color
+            IGraphicsAppInterface.gui_LightGray,                            //disabled color for buttons
+            IGraphicsAppInterface.gui_Black,                                //not clicked button color
+            IGraphicsAppInterface.gui_Black,                                //clicked button color
         };    
     
     /**
@@ -115,7 +115,7 @@ public class SidebarMenuBtnConfig {
      * @param _inclWinNames include the names of all the instanced windows
      * @param _inclMseOvValues include a row for possible mouse over values
      */
-    public SidebarMenuBtnConfig(IRenderInterface _ri, GUI_AppManager _AppMgr, String[] _funcRowNames, String[][] _funcBtnLabels, String[] _debugBtnLabels, String[] _winTitles, boolean _inclWinNames, boolean _inclMseOvValues) {
+    public SidebarMenuBtnConfig(IGraphicsAppInterface _ri, GUI_AppManager _AppMgr, String[] _funcRowNames, String[][] _funcBtnLabels, String[] _debugBtnLabels, String[] _winTitles, boolean _inclWinNames, boolean _inclMseOvValues) {
         ri=_ri; AppMgr = _AppMgr;
         initTextHeightOff = AppMgr.getTextHeightOffset();
         initRowStYOff = AppMgr.getRowStYOffset();
@@ -450,8 +450,8 @@ public class SidebarMenuBtnConfig {
             float xWidthOffset = xWidth/(1.0f * _guiBtnLabels[row].length);
             ri.pushMatState();
             ri.setStrokeWt(1.0f);
-            ri.setColorValStroke(IRenderInterface.gui_Black,255);
-            ri.noFill();
+            ri.setColorValStroke(IGraphicsAppInterface.gui_Black,255);
+            ri.setNoFill();
             ri.translate(-xOffHalf, 0);
             for(int col =0; col<_guiBtnLabels[row].length;++col){
                 halfWay = (xWidthOffset - _guiBtnLabelWidths[row][col])/2.0f;

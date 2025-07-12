@@ -5,7 +5,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 
@@ -18,7 +18,7 @@ public class Disp3DCanvas {
     /**
      * GL-interface for rendering and screen<->world coords transforms
      */
-    private static IRenderInterface ri;
+    private static IGraphicsAppInterface ri;
     
     /**
      * Screen ctr location in world coords
@@ -46,7 +46,7 @@ public class Disp3DCanvas {
      */
     private float rawCtrDepth;
     
-    public Disp3DCanvas(GUI_AppManager _AppMgr, IRenderInterface _ri, int w, int h) {
+    public Disp3DCanvas(GUI_AppManager _AppMgr, IGraphicsAppInterface _ri, int w, int h) {
         ri = _ri;
         AppMgr = _AppMgr;
         mseFillClr = new int[] {0,0,0,255};
@@ -233,7 +233,7 @@ public class Disp3DCanvas {
             if(projOnBox){AppMgr.drawProjOnBox(dfCtr);}
             AppMgr.drawRGBAxesWithEnds(10000,1f, myPointf.ZEROPT, 100);//
             //draw center point
-            ri.showPtAsSphere(myPointf.ZEROPT,3.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
+            ri.showPtAsSphere(myPointf.ZEROPT,3.0f, 5, IGraphicsAppInterface.gui_Black, IGraphicsAppInterface.gui_Black);
             drawText(win, ""+dfCtr+ "|fr:"+ri.getFrameRate(),4.0f, 15.0f, 4.0f);
         ri.popMatState();            
     }//drawMseEdge        

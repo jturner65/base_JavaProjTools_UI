@@ -1,6 +1,6 @@
 package base_UI_Objects.simulationUI.sim;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.simulationUI.simExec.Base_UISimExec;
 import base_UI_Objects.simulationUI.ui.Base_UISimWindow;
@@ -25,7 +25,7 @@ public abstract class Base_UISimulator extends Base_Simulator {
     /**
      * ref to render interface, if window-based, or null if console
      */
-    public final IRenderInterface ri;
+    public final IGraphicsAppInterface ri;
     
     /**
      * Build this UI-enabled simulator - must be owned by a UI-enabled exec 

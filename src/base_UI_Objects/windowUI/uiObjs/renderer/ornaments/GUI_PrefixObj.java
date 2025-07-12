@@ -1,6 +1,6 @@
 package base_UI_Objects.windowUI.uiObjs.renderer.ornaments;
 
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.windowUI.uiObjs.renderer.ornaments.base.Base_GUIPrefixObj;
 
 /**
@@ -48,11 +48,11 @@ public class GUI_PrefixObj extends Base_GUIPrefixObj{
     }
         
     @Override
-    public void drawPrefixObj(IRenderInterface ri) {
+    public void drawPrefixObj(IGraphicsAppInterface ri) {
         //outside push/pop because translating beyond the initial for both rectangle and UI object
         ri.translate(initDrawTransX,0,0);
         ri.pushMatState();
-            ri.noStroke();
+            ri.setNoStroke();
             ri.setFill(bxclr,bxclr[3]);
             ri.translate(boxDrawTrans[0],boxDrawTrans[1],0);
             ri.drawRect(boxDim);

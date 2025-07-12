@@ -8,7 +8,7 @@ import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
@@ -56,7 +56,7 @@ public class UI_TestWindow3D extends Base_DispWindow {
     protected myPointf startLoc;
     protected myPointf endLoc;
     
-    public UI_TestWindow3D(IRenderInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
+    public UI_TestWindow3D(IGraphicsAppInterface _p, GUI_AppManager _AppMgr, int _winIdx) {
         super(_p, _AppMgr, _winIdx);
         
     }
@@ -142,7 +142,7 @@ public class UI_TestWindow3D extends Base_DispWindow {
     @Override
     protected void drawMe(float animTimeMod) {
         ri.pushMatState();    
-            ri.drawCylinder_NoFill(startLoc,endLoc, 20.0f, IRenderInterface.gui_Red, IRenderInterface.gui_Green);
+            ri.drawCylinder_NoFill(startLoc,endLoc, 20.0f, IGraphicsAppInterface.gui_Red, IGraphicsAppInterface.gui_Green);
         ri.popMatState();    
     }
     
