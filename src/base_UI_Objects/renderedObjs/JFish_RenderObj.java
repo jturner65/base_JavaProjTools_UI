@@ -2,12 +2,12 @@ package base_UI_Objects.renderedObjs;
 
 import base_Math_Objects.MyMathUtils;
 import base_Render_Interface.IGraphicsAppInterface;
+import base_Render_Interface.shape.IMeshInterface;
+import base_Render_Interface.shape.IPrimShapeInterface;
+import base_Render_Interface.shape.PrimitiveType;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
-import base_UI_Objects.renderer.ProcessingRenderer;
-import processing.core.PConstants;
-import processing.core.PShape;
 
 /**
  * jellyfish pshape, with multiple component shapes that are animated
@@ -22,11 +22,11 @@ public class JFish_RenderObj extends Base_RenderObj {
     /**
      * individual static object representation. Any animation will be owned by the instancing class
      */
-    private static PShape[] objReps = null;
+    private static IMeshInterface[] objReps = null;
     /**
      * Deformed spheres to make up the body
      */
-    private static PShape[][] bodyAra = null;
+    private static IMeshInterface[][] bodyAra = null;
     
     /**
      * colors for jellyfish reps
@@ -51,11 +51,11 @@ public class JFish_RenderObj extends Base_RenderObj {
             for(int i=0;i<_numTypes;++i) {madeForType[i]=false;}
         }
         if(objReps == null) {
-            objReps = new PShape[_numTypes];
-            for(int i=0;i<_numTypes;++i) {objReps[i]=createObjRepForType();}
+            objReps = new IMeshInterface[_numTypes];
+            for(int i=0;i<_numTypes;++i) {objReps[i]=(IMeshInterface) createObjRepForType();}
         }
         if (bodyAra == null) {
-            bodyAra = new PShape[_numTypes][];
+            bodyAra = new IMeshInterface[_numTypes][];
         }
     }
     
@@ -100,18 +100,18 @@ public class JFish_RenderObj extends Base_RenderObj {
         }
         // Build deformed bodies
         for(int i=0;i<bodyAra.length;++i) {
-            bodyAra[i] = new PShape[numAnimFrames];
+            bodyAra[i] = new IMeshInterface[numAnimFrames];
             ri.setSphereDetail(20);
             for(int a=0; a<numAnimFrames; ++a){//for each frame of animation
                 // each body element is a sphere with a certain scale setting to simulate deformation
-                bodyAra[i][a] = createBaseGroupShape();
-                PShape indiv = createBaseShape(PConstants.SPHERE, 5.0f);                
+                bodyAra[i][a] = ri.createBaseGroupMesh();
+                IPrimShapeInterface indiv = ri.createBasePrim(PrimitiveType.SPHERE, 5.0f);                
                 //sclMult = (float) ((Math.sin(a * radAmt) * .25f) +1.0f);
                 //indiv.scale(sclMult, sclMult, 1.0f/(sclMult * sclMult));
                 indiv.scale(scaleVec[a][0], scaleVec[a][1],scaleVec[a][2]);                
                 //call shSetPaintColors since we need to use set<type> style functions of Pshape when outside beginShape-endShape
                 clrPalette.getInstanceColor(i).shSetShapeColors(indiv);        
-                bodyAra[i][a].addChild(indiv);
+                bodyAra[i][a].addChildShape(indiv);
             }    
         }
         ri.setSphereDetail(5);            
@@ -130,8 +130,8 @@ public class JFish_RenderObj extends Base_RenderObj {
     @Override
     protected void drawMeIndiv(int animIDX) {
         //draw animation index-specified deformed "jellyfish"
-        ((ProcessingRenderer) ri).shape(objReps[type]);        
-        ((ProcessingRenderer) ri).shape(bodyAra[type][animIDX]);
+        objReps[type].draw();     
+        bodyAra[type][animIDX].draw();
     }
     @Override
     public final double getMaxAnimCounter() {return maxAnimCntr;}

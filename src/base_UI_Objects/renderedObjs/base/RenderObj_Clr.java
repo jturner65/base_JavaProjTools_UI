@@ -2,8 +2,9 @@ package base_UI_Objects.renderedObjs.base;
 
 import base_Math_Objects.MyMathUtils;
 import base_Render_Interface.IGraphicsAppInterface;
+import base_Render_Interface.shape.IMeshInterface;
+import base_Render_Interface.shape.base.IShapeInterface;
 import base_UI_Objects.renderer.ProcessingRenderer;
-import processing.core.PShape;
 
 /**
  * class that will hold the relevant information for a particular color 
@@ -323,17 +324,17 @@ public class RenderObj_Clr{
      * between "beginShape/endShape"
      * @param sh the shape to receive these colors
      */
-    public void shPaintColors(PShape sh){
-        if(getFlags(fillIDX)){sh.fill(hexColors[fillIDX], alphas[fillIDX]);}
-        else {        sh.noFill();}
+    public void shPaintColors(IMeshInterface sh){
+        if(getFlags(fillIDX)){sh.gl_setFill(hexColors[fillIDX], alphas[fillIDX]);}
+        else {        sh.gl_setNoFill();}
         if(getFlags(strokeIDX)){
-            sh.strokeWeight(strkWt);
-            sh.stroke(hexColors[strokeIDX],alphas[strokeIDX]);
-        } else {            sh.noStroke();        }
-        if(getFlags(specIDX)){sh.specular(hexColors[specIDX]);}
-        if(getFlags(emitIDX)){sh.emissive(hexColors[emitIDX]);}
-        if(getFlags(ambIDX)){sh.ambient(hexColors[ambIDX]);}
-        if(getFlags(shnIDX)){sh.shininess(shininess);}
+            sh.gl_setStrokeWt(strkWt);
+            sh.gl_setStroke(hexColors[strokeIDX],alphas[strokeIDX]);
+        } else {            sh.gl_setNoStroke();        }
+        if(getFlags(specIDX)){sh.gl_setSpecular(hexColors[specIDX]);}
+        if(getFlags(emitIDX)){sh.gl_setEmissive(hexColors[emitIDX]);}
+        if(getFlags(ambIDX)){sh.gl_setAmbient(hexColors[ambIDX]);}
+        if(getFlags(shnIDX)){sh.gl_setShininess(shininess);}
     }
 
     
@@ -341,13 +342,13 @@ public class RenderObj_Clr{
      * instance all activated colors in passed PShape for constructed PShape, set all colors.  Not between "beginShape/endShape"
      * @param sh the shape to receive these colors
      */
-    public void shSetShapeColors(PShape sh){
+    public void shSetShapeColors(IShapeInterface sh){
         if(getFlags(fillIDX)){sh.setFill(hexColors[fillIDX]);}
-        else {        sh.setFill(false);}
+        else {        sh.setNoFill();}
         if(getFlags(strokeIDX)){
-            sh.setStrokeWeight(strkWt);            
+            sh.setStrokeWt(strkWt);            
             sh.setStroke(hexColors[strokeIDX]);
-        } else {    sh.setStroke(false);}
+        } else {    sh.setNoStroke();}
         if(getFlags(specIDX)){sh.setSpecular(hexColors[specIDX]);}
         if(getFlags(emitIDX)){sh.setEmissive(hexColors[emitIDX]);}
         if(getFlags(ambIDX)){sh.setAmbient(hexColors[ambIDX]);}

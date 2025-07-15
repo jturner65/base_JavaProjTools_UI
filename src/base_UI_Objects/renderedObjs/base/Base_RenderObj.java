@@ -4,11 +4,13 @@ import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
-import base_UI_Objects.renderer.ProcessingRenderer;
-import processing.core.PConstants;
+import base_Render_Interface.shape.GL_PrimitiveType;
+import base_Render_Interface.shape.IMeshInterface;
+import base_Render_Interface.shape.IPrimShapeInterface;
+import base_Render_Interface.shape.PrimitiveType;
+import base_Render_Interface.shape.base.IShapeInterface;
+//import processing.core.PConstants;
 import processing.core.PImage;
-import processing.core.PMatrix3D;
-import processing.core.PShape;
 
 /**
  * Base class describing a rendered mesh object
@@ -121,7 +123,7 @@ public abstract class Base_RenderObj {
     /**
      * Set a texture to use for the passed shape via texture array index. Call between beginShape and endShape
      */
-    protected void setObjTexture(PShape sh, int idx) {
+    protected void setObjTexture(IMeshInterface sh, int idx) {
         if((textures==null) || (idx >= textures.length)) {return;}
         //sh.texture(textures[idx]);
     }
@@ -142,9 +144,7 @@ public abstract class Base_RenderObj {
      * Instantiate objRep object as group
      * @return
      */
-    protected PShape createObjRepForType() {
-        return createBaseGroupShape();         
-    }
+    protected IShapeInterface createObjRepForType() {        return createBaseGroupShape();   }
 
     /**
      * builds specific instance of object render rep, including colors, textures, etc.
@@ -165,46 +165,44 @@ public abstract class Base_RenderObj {
      * Create a shape intended to be the parent of a group of shapes/meshes
      * @return
      */
-    protected PShape createBaseGroupShape() {
-        return ((ProcessingRenderer) ri).createShape(PConstants.GROUP);
+    protected IMeshInterface createBaseGroupShape() {
+        return ri.createBaseGroupMesh();
+    }
+    /**
+     * Create a mesh shape that will be specified in beginShape command
+     * @param meshType
+     * @return
+     */
+    protected IMeshInterface createBaseMeshShape() {
+        return ri.createBaseMesh();
+    }
+    /**
+     * Create a mesh shape that is built using glBegin/glEnd commands (glPrimitive)
+     * @param meshType
+     * @return
+     */
+    protected IMeshInterface createBaseMeshShape(GL_PrimitiveType meshType) {
+        return ri.createBaseMesh(meshType);
     }
     
     /**
      * Create and return a processing shape (PShape) with passed arg list. 
-     * TODO : replace with agnostic mesh someday.
-     * @param meshType PConstants-defined constant specifying the type of shape to create
-     * @param args a (possibly empty) list of arguments
-     * @return a Processing PShape with specified criteria
-     */    
-    protected PShape createBaseShape(int meshType, float... args) {
-        return createBaseShape(false, meshType, args);
+     * @param primType the type of primitive to create
+     * @param args
+     * @return
+     */
+    protected IPrimShapeInterface createBasePrimShape(PrimitiveType primType, float... args) {
+        return ri.createBasePrim(primType, args);
     }
     /**
      * Create and return a processing shape (PShape) with no args. 
      * TODO : replace with agnostic mesh someday.
      * @return a Processing PShape with specified criteria
      */    
-    protected PShape createBaseShape() {
-        return createBaseShape(true, -1);
+    protected IMeshInterface createBaseShape() {
+        return ri.createBaseMesh();
     }
     
-    /**
-     * Create and return a processing shape (PShape) with passed arg list. 
-     * TODO : replace with agnostic mesh someday.
-     * @param isEmpty If no meshType is provided
-     * @param meshType PConstants-defined constant specifying the type of shape to create
-     * @param args a (possibly empty) list of arguments
-     * @return a Processing PShape with specified criteria
-     */    
-    private PShape createBaseShape(boolean isEmpty, int meshType, float... args) {
-        if (isEmpty) {
-            return ((ProcessingRenderer) ri).createShape();
-        }
-        if (args.length == 0) {
-            return ((ProcessingRenderer) ri).createShape(meshType);
-        }
-        return ((ProcessingRenderer) ri).createShape(meshType, args);
-    }
     
     /**
      * build quad shape from object points using object base color
@@ -214,58 +212,17 @@ public abstract class Base_RenderObj {
      * @param objRndr
      * @return
      */
-    protected int buildQuadShape(PShape _objRep, myPointf transVec, int numX, int btPt, myPointf[][] objRndr){
-        PShape sh = createBaseShape();
+    protected int buildQuadShape(IShapeInterface _objRep, myPointf transVec, int numX, int btPt, myPointf[][] objRndr){
+        IMeshInterface sh = createBaseMeshShape();
         sh.translate(transVec.x,transVec.y,transVec.z);
-        sh.beginShape(PConstants.QUADS);
+        sh.gl_beginShape(GL_PrimitiveType.GL_QUADS);
             objectColor.shPaintColors(sh);
             for(int i = 0; i < numX; ++i){
                 shgl_vertex(sh,objRndr[btPt][0]);shgl_vertex(sh,objRndr[btPt][1]);shgl_vertex(sh,objRndr[btPt][2]);shgl_vertex(sh,objRndr[btPt][3]);btPt++;
             }//for i                
-        sh.endShape(PConstants.CLOSE);
-        _objRep.addChild(sh);        
+        sh.gl_endShape(true);
+        _objRep.addChildShape(sh);        
         return btPt;
-    }
-        
-    /**
-     * Create a PShape transform matrix. Necessary because post 3.3.3 processing got rid of pshape matrix stack
-     * @param transVec First applied transform - initial translation
-     * @param scaleVec Scale applied after translate
-     * @param rotAra First applied rotation
-     * @param trans2Vec 2nd Applied translation
-     * @param rotAra2 2nd Applied rotation
-     * @param trans3Vec 3rd Applied translation
-     * @param rotAra3 3rd Applied rotation
-     * @return PShape created and transformed using passed transforms
-     */
-    private PMatrix3D buildMatrixTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3) {
-        PMatrix3D mat = new PMatrix3D();
-        mat.translate(transVec.x, transVec.y, transVec.z);
-        mat.scale(scaleVec.x,scaleVec.y,scaleVec.z);
-        mat.rotate(rotAra[0],rotAra[1],rotAra[2],rotAra[3]);
-        mat.translate(trans2Vec.x, trans2Vec.y, trans2Vec.z);
-        mat.rotate(rotAra2[0],rotAra2[1],rotAra2[2],rotAra2[3]);
-        mat.translate(trans3Vec.x, trans3Vec.y, trans3Vec.z);
-        mat.rotate(rotAra3[0],rotAra3[1],rotAra3[2],rotAra3[3]);    
-        return mat;
-    }
-    
-    /**
-     * Create a PShape and set its initial transformations.
-     * @param transVec First applied transform - initial translation
-     * @param scaleVec Scale applied after translate
-     * @param rotAra First applied rotation
-     * @param trans2Vec 2nd Applied translation
-     * @param rotAra2 2nd Applied rotation
-     * @param trans3Vec 3rd Applied translation
-     * @param rotAra3 3rd Applied rotation
-     * @return PShape created and transformed using passed transforms
-     */
-    protected PShape createAndSetInitialTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3){    
-        PShape sh = createBaseShape();
-        PMatrix3D mat = buildMatrixTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
-        sh.applyMatrix(mat);
-        return sh;
     }
     
     /**
@@ -284,7 +241,7 @@ public abstract class Base_RenderObj {
      * @param rotAra3
      * @return
      */
-    protected PShape buildPole(
+    protected IMeshInterface buildPole(
             int poleNum, RenderObj_Clr clr, 
             float rad, float height, 
             boolean drawBottom, 
@@ -294,7 +251,7 @@ public abstract class Base_RenderObj {
         float theta, rsThet, rcThet, rsThet2, rcThet2;
         int numTurns = 6;
         float twoPiOvNumTurns = MyMathUtils.TWO_PI_F/numTurns;
-        PShape shRes = createBaseGroupShape(), sh;
+        IMeshInterface shRes = createBaseGroupShape(), sh;
         //pre-calc rad-theta-sin and rad-theta-cos
         float[] rsThetAra = new float[1 + numTurns];
         float[] rcThetAra = new float[1 + numTurns];
@@ -313,34 +270,34 @@ public abstract class Base_RenderObj {
             rsThet2 = rsThetAra[i+1];
             rcThet2 = rcThetAra[i+1];
 
-            sh = createAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
-            sh.beginShape(PConstants.QUADS);                      
+            sh = ri.createBaseMeshAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
+            sh.gl_beginShape(GL_PrimitiveType.GL_QUADS);                      
                 clr.shPaintColors(sh);
-                shgl_vertexf(sh,rsThet, 0, rcThet );
-                shgl_vertexf(sh,rsThet, height,rcThet);
-                shgl_vertexf(sh,rsThet2, height,rcThet2);
-                shgl_vertexf(sh,rsThet2, 0, rcThet2);
-            sh.endShape(PConstants.CLOSE);    
-            shRes.addChild(sh);
+                sh.gl_vertex(rsThet, 0, rcThet );
+                sh.gl_vertex(rsThet, height,rcThet);
+                sh.gl_vertex(rsThet2, height,rcThet2);
+                sh.gl_vertex(rsThet2, 0, rcThet2);
+            sh.gl_endShape(true);    
+            shRes.addChildShape(sh);
             //caps
-            sh = createAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
-            sh.beginShape(PConstants.TRIANGLES);                      
+            sh = ri.createBaseMeshAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
+            sh.gl_beginShape(GL_PrimitiveType.GL_TRIANGLES);                      
                 clr.shPaintColors(sh);
-                shgl_vertexf(sh,rsThet, height, rcThet );
-                shgl_vertexf(sh,0, height, 0 );
-                shgl_vertexf(sh,rsThet2, height, rcThet2 );
-            sh.endShape(PConstants.CLOSE);
-            shRes.addChild(sh);
+                sh.gl_vertex(rsThet, height, rcThet );
+                sh.gl_vertex(0, height, 0 );
+                sh.gl_vertex(rsThet2, height, rcThet2 );
+            sh.gl_endShape(true);    
+            shRes.addChildShape(sh);
             
             if(drawBottom){
-                sh = createAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);                
-                sh.beginShape(PConstants.TRIANGLES);
+                sh = ri.createBaseMeshAndSetInitialTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);                
+                sh.gl_beginShape(GL_PrimitiveType.GL_TRIANGLES);
                     clr.shPaintColors(sh);
-                    shgl_vertexf(sh,rsThet, 0, rcThet );
-                    shgl_vertexf(sh,0, 0, 0 );
-                    shgl_vertexf(sh,rsThet2, 0, rcThet2);
-                sh.endShape(PConstants.CLOSE);
-                shRes.addChild(sh);
+                    sh.gl_vertex(rsThet, 0, rcThet );
+                    sh.gl_vertex(0, 0, 0 );
+                    sh.gl_vertex(rsThet2, 0, rcThet2);
+                sh.gl_endShape(true);    
+                shRes.addChildShape(sh);
             }
         }//for i
         return shRes;
@@ -374,9 +331,8 @@ public abstract class Base_RenderObj {
     protected abstract void drawMeIndiv(int animPhase);
     
     //public void shgl_vTextured(PShape sh, myPointf P, float u, float v) {sh.vertex(P.x,P.y,P.z,u,v);}                          // vertex with texture coordinates
-    public void shgl_vertexf(PShape sh, float x, float y, float z){sh.vertex(x,y,z);}     // vertex for shading or drawing
-    public void shgl_vertex(PShape sh, myPointf P){sh.vertex(P.x,P.y,P.z);}     // vertex for shading or drawing
-    public void shgl_normal(PShape sh, myVectorf V){sh.normal(V.x,V.y,V.z);    } // changes normal for smooth shading
+    public void shgl_vertex(IMeshInterface sh, myPointf P){sh.gl_vertex(P.x,P.y,P.z);}     // vertex for shading or drawing
+    public void shgl_normal(IMeshInterface sh, myVectorf V){sh.gl_normal(V.x,V.y,V.z);    } // changes normal for smooth shading
 
 }//abstract class myRenderObj
 

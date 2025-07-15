@@ -4,13 +4,12 @@ import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
+import base_Render_Interface.shape.GL_PrimitiveType;
+import base_Render_Interface.shape.IMeshInterface;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
-import base_UI_Objects.renderer.ProcessingRenderer;
-import processing.core.PConstants;
 import processing.core.PImage;
-import processing.core.PShape;
 
 /**
  * build a registered pre-rendered instantiatable object for each objRep - speeds up display by orders of magnitude
@@ -25,7 +24,7 @@ public class Boat_RenderObj extends Base_RenderObj {
     /**
      * individual static object representation. Any animation will be owned by the instancing class
      */
-    private static PShape[] objReps = null;    
+    private static IMeshInterface[] objReps = null;    
     /**
      * precalc consts
      */
@@ -37,7 +36,7 @@ public class Boat_RenderObj extends Base_RenderObj {
         
     //extra pshapes for this object
     //1 array for each type of objRep, 1 element for each animation frame of oar motion
-    private static PShape[] oars;                                        
+    private static IMeshInterface[] oars;                                        
     //UV ara shaped like sail
     private static final myPointf[] uvAra = new myPointf[]{
             new myPointf(0,0,0),new myPointf(0,1,0),
@@ -68,8 +67,8 @@ public class Boat_RenderObj extends Base_RenderObj {
             for(int i=0;i<_numTypes;++i) {madeForType[i]=false;}
         }
         if(objReps == null) {
-            objReps = new PShape[_numTypes];
-            for(int i=0;i<_numTypes;++i) {objReps[i]=createObjRepForType();}
+            objReps = new IMeshInterface[_numTypes];
+            for(int i=0;i<_numTypes;++i) {objReps[i]=(IMeshInterface) createObjRepForType();}
         }
     }
     
@@ -128,7 +127,7 @@ public class Boat_RenderObj extends Base_RenderObj {
         //build boat body arrays
         initBoatBody();    
         //create pshape groups of oars, for each frame of animation, shared across all instances
-        oars = new PShape[numAnimFrames];
+        oars = new IMeshInterface[numAnimFrames];
         double animRatio = maxAnimCntr/(1.0f*numAnimFrames);
         for(int a=0; a<numAnimFrames; ++a){
             oars[a] = createBaseGroupShape();
@@ -146,14 +145,14 @@ public class Boat_RenderObj extends Base_RenderObj {
     }//initInstObjGeometry
     
     //fix rotation to match desired x-forward y-up orientation
-    private void finalRotate(PShape _objRep) {
+    private void finalRotate(IMeshInterface _objRep) {
         _objRep.rotate(MyMathUtils.HALF_PI_F,0,0,1);
         _objRep.rotate(MyMathUtils.HALF_PI_F,0,1,0);    
     }
     
     @Override
     protected void buildObj(){
-        PShape _objRep = objReps[type];
+        IMeshInterface _objRep = objReps[type];
         //send color to use for masts and oars
         initBoatMasts(_objRep, clrPalette.getMainColor());
         int numZ = boatVerts[0].length-1, numX = boatVerts.length;
@@ -179,8 +178,8 @@ public class Boat_RenderObj extends Base_RenderObj {
 
     @Override //representation-specific drawing code (i.e. oars settings for boats)
     protected void drawMeIndiv(int animIDX){//which oars array instance of oars to show - oars move relative to speed of boid
-        ((ProcessingRenderer) ri).shape(objReps[type]);        
-        ((ProcessingRenderer) ri).shape(oars[animIDX]);
+        objReps[type].draw();        
+        oars[animIDX].draw();
     }//drawMe
     
     private myPointf[] buildSailPtAra(float len){
@@ -195,7 +194,7 @@ public class Boat_RenderObj extends Base_RenderObj {
      * build masts and oars(multiple orientations in a list to just show specific frames)
      * @param clr
      */
-    private void initBoatMasts(PShape _objRep, RenderObj_Clr clr){    
+    private void initBoatMasts(IMeshInterface _objRep, RenderObj_Clr clr){    
         myPointf[] trans1Ara = new myPointf[]{new myPointf(0, 3.5f, -3),new myPointf(0, 1.25f, 1),new myPointf(0, 2.2f, 5),new myPointf(0, 1.8f, 7)},
                 scale1Ara = new myPointf[]{new myPointf(.95f,.85f,1),new myPointf(1.3f,1.2f,1),new myPointf(1f,.9f,1),new myVectorf(1,1,1)};
         
@@ -207,13 +206,13 @@ public class Boat_RenderObj extends Base_RenderObj {
         float[] sailRotAra = new float[]{MyMathUtils.HALF_PI_F, 0,0,1};
         for(int j = 0; j<trans1Ara.length; ++j){//mainColor,
             if(j==3){//front sail
-                _objRep.addChild(buildPole(0, clr, .1f, 7, false, trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0,0,0), new float[]{0,0,0,0},new myVectorf(0,0,0), new float[]{0,0,0,0}));
-                _objRep.addChild(buildPole(4, clr, .05f, 3,  true, trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0, 5f, 0), sailRotAra,new myVectorf(1,-1.5f,0), new float[]{0,0,0,0}));
+                _objRep.addChildShape(buildPole(0, clr, .1f, 7, false, trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0,0,0), new float[]{0,0,0,0},new myVectorf(0,0,0), new float[]{0,0,0,0}));
+                _objRep.addChildShape(buildPole(4, clr, .05f, 3,  true, trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0, 5f, 0), sailRotAra,new myVectorf(1,-1.5f,0), new float[]{0,0,0,0}));
             }
             else{
-                _objRep.addChild(buildPole(1,clr, .1f, 10, false,trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0,0,0), new float[]{0,0,0,0}, new myVectorf(0,0,0), new float[]{0,0,0,0}));
-                _objRep.addChild(buildPole(2,clr, .05f, 7, true, trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0, 4.5f, 0), sailRotAra,new myVectorf(0,-3.5f,0), new float[]{0,0,0,0}));
-                _objRep.addChild(buildPole(3,clr, .05f, 5, true, trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0, 4.5f, 0), sailRotAra,new myVectorf(4.5f,-2.5f,0), new float[]{0,0,0,0}));
+                _objRep.addChildShape(buildPole(1,clr, .1f, 10, false,trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0,0,0), new float[]{0,0,0,0}, new myVectorf(0,0,0), new float[]{0,0,0,0}));
+                _objRep.addChildShape(buildPole(2,clr, .05f, 7, true, trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0, 4.5f, 0), sailRotAra,new myVectorf(0,-3.5f,0), new float[]{0,0,0,0}));
+                _objRep.addChildShape(buildPole(3,clr, .05f, 5, true, trans1Ara[j],  scale1Ara[j], rot1Ara[j], new myVectorf(0, 4.5f, 0), sailRotAra,new myVectorf(4.5f,-2.5f,0), new float[]{0,0,0,0}));
             }                    
         }
     }//initBoatMasts    
@@ -237,44 +236,44 @@ public class Boat_RenderObj extends Base_RenderObj {
             transVec1.set(transVec.x+dirMult*1.5f, transVec.y, transVec.z+d+disp);
             rotAra2 = new float[]{(float) ca, 0,0,dirMult};
             rotAra3 = new float[]{(float) (sa*.5f), 1,0, 0};            
-            oars[animIdx].addChild(buildPole(1,clr,.1f, 6, false, transVec1, new myPointf(1,1,1), rotAra1, myPointf.ZEROPT, rotAra2, myPointf.ZEROPT, rotAra3));    
+            oars[animIdx].addChildShape(buildPole(1,clr,.1f, 6, false, transVec1, new myPointf(1,1,1), rotAra1, myPointf.ZEROPT, rotAra2, myPointf.ZEROPT, rotAra3));    
             //fix orientation of oars
             finalRotate(oars[animIdx]);
             disp+=distMod;
         }            
     }//buildOars
 
-    private void build1Sail(PShape _objRep, boolean renderSigil, myPointf[] pts, myPointf transVec, myPointf trans2Vec, myPointf scaleVec){
+    private void build1Sail(IMeshInterface _objRep, boolean renderSigil, myPointf[] pts, myPointf transVec, myPointf trans2Vec, myPointf scaleVec){
         myPointf trans2VecDisp = new myPointf(trans2Vec);
         trans2VecDisp._add(0, -3.5f, 0);
-        PShape sh = createAndSetInitialTransform(
+        IMeshInterface sh = ri.createBaseMeshAndSetInitialTransform(
                 transVec, scaleVec, new float[4], 
                 new myPointf(0,4.5f,0), new float[] {MyMathUtils.HALF_PI_F, 0,0,1},
                 trans2VecDisp, new float[4]);
-        sh.beginShape(PConstants.POLYGON); 
-        sh.fill(0xFFFFFFFF);    
-        sh.noStroke();
+        sh.gl_beginShape(); 
+        sh.gl_setFill(0xFFFFFFFF);    
+        sh.gl_setNoStroke();
         if(renderSigil) {
             setObjTexture(sh, 0);
         }
-        for(int i=0;i<pts.length;++i){    sh.vertex(pts[i].x,pts[i].y,pts[i].z,uvAra[i].y,uvAra[i].x);}        
-        sh.endShape();
-        _objRep.addChild(sh);            
+        for(int i=0;i<pts.length;++i){    sh.gl_vertex(pts[i].x,pts[i].y,pts[i].z,uvAra[i].y,uvAra[i].x);}        
+        sh.gl_endShape();
+        _objRep.addChildShape(sh);            
     }
     
-    private void buildSail(PShape _objRep, boolean frontMast, myPointf[] pts1, myPointf[] pts2, boolean renderSigil, myPointf transVec, myPointf scaleVec){
+    private void buildSail(IMeshInterface _objRep, boolean frontMast, myPointf[] pts1, myPointf[] pts2, boolean renderSigil, myPointf transVec, myPointf scaleVec){
         if(frontMast){
-            PShape sh = createAndSetInitialTransform(
+            IMeshInterface sh = ri.createBaseMeshAndSetInitialTransform(
                     transVec, scaleVec, new float[] {MyMathUtils.THIRD_PI_F, 1,0,0}, 
                     new myPointf(0,5.0f,0), new float[] {MyMathUtils.HALF_PI_F, 0,0,1},
                     new myPointf(1,-1.5f,0), new float[4]);    
-            sh.beginShape(PConstants.POLYGON); 
-            sh.fill(0xFFFFFFFF);    
-            sh.noStroke();
+            sh.gl_beginShape(); 
+            sh.gl_setFill(0xFFFFFFFF);    
+            sh.gl_setNoStroke();
             setObjTexture(sh, 0);
-            for(int i=0;i<pts1.length;++i){    sh.vertex(pts1[i].x,pts1[i].y,pts1[i].z,uvAra[i].y,uvAra[i].x);}            
-            sh.endShape();
-            _objRep.addChild(sh);            
+            for(int i=0;i<pts1.length;++i){    sh.gl_vertex(pts1[i].x,pts1[i].y,pts1[i].z,uvAra[i].y,uvAra[i].x);}            
+            sh.gl_endShape();
+            _objRep.addChildShape(sh);            
         }
         else {            
             build1Sail(_objRep, renderSigil, pts1, transVec, myVectorf.ZEROVEC, scaleVec);
@@ -283,30 +282,30 @@ public class Boat_RenderObj extends Base_RenderObj {
     }//drawSail
     
     
-    private void buildBodyBottom(PShape _objRep, myPointf[][] boatVerts, int i, int lastIDX, int numX){
-        PShape sh = createBaseShape();
+    private void buildBodyBottom(IMeshInterface _objRep, myPointf[][] boatVerts, int i, int lastIDX, int numX){
+        IMeshInterface sh = ri.createBaseMesh();
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.TRIANGLES);            
+        sh.gl_beginShape(GL_PrimitiveType.GL_TRIANGLES);            
             getObjTypeColor().shPaintColors(sh);
-            sh.vertex(boatVerts[i][lastIDX].x, boatVerts[i][lastIDX].y,     boatVerts[i][lastIDX].z);    sh.vertex(0, 1, lastIDX-1);    sh.vertex(boatVerts[(i+1)%numX][lastIDX].x, boatVerts[(i+1)%numX][lastIDX].y,     boatVerts[(i+1)%numX][lastIDX].z);    
-        sh.endShape(PConstants.CLOSE);
-        _objRep.addChild(sh);            
+            sh.gl_vertex(boatVerts[i][lastIDX].x, boatVerts[i][lastIDX].y,     boatVerts[i][lastIDX].z);    sh.gl_vertex(0, 1, lastIDX-1);    sh.gl_vertex(boatVerts[(i+1)%numX][lastIDX].x, boatVerts[(i+1)%numX][lastIDX].y,     boatVerts[(i+1)%numX][lastIDX].z);    
+        sh.gl_endShape(true);
+        _objRep.addChildShape(sh);            
 
-        sh = createBaseShape();
+        sh = ri.createBaseMesh();
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.QUADS);        
+        sh.gl_beginShape(GL_PrimitiveType.GL_QUADS);         
             getObjTypeColor().shPaintColors(sh);
-            sh.vertex(boatVerts[i][0].x, boatVerts[i][0].y, boatVerts[i][0].z);sh.vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z -.5f);    sh.vertex(boatVerts[(i+1)%numX][0].x * .75f, boatVerts[(i+1)%numX][0].y * .75f,     boatVerts[(i+1)%numX][0].z -.5f);sh.vertex(boatVerts[(i+1)%numX][0].x, boatVerts[(i+1)%numX][0].y,     boatVerts[(i+1)%numX][0].z );
-        sh.endShape(PConstants.CLOSE);
-        _objRep.addChild(sh);            
+            sh.gl_vertex(boatVerts[i][0].x, boatVerts[i][0].y, boatVerts[i][0].z);sh.gl_vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z -.5f);    sh.gl_vertex(boatVerts[(i+1)%numX][0].x * .75f, boatVerts[(i+1)%numX][0].y * .75f,     boatVerts[(i+1)%numX][0].z -.5f);sh.gl_vertex(boatVerts[(i+1)%numX][0].x, boatVerts[(i+1)%numX][0].y,     boatVerts[(i+1)%numX][0].z );
+        sh.gl_endShape(true);
+        _objRep.addChildShape(sh);            
         
-        sh = createBaseShape();
+        sh = ri.createBaseMesh();
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.TRIANGLES);        
+        sh.gl_beginShape(GL_PrimitiveType.GL_TRIANGLES);        
             getObjTypeColor().shPaintColors(sh);
-            sh.vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z  -.5f);    sh.vertex(0, 0, boatVerts[i][0].z - 1);    sh.vertex(boatVerts[(i+1)%numX][0].x * .75f, boatVerts[(i+1)%numX][0].y * .75f,     boatVerts[(i+1)%numX][0].z  -.5f);    
-        sh.endShape(PConstants.CLOSE);        
-        _objRep.addChild(sh);
+            sh.gl_vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z  -.5f);    sh.gl_vertex(0, 0, boatVerts[i][0].z - 1);    sh.gl_vertex(boatVerts[(i+1)%numX][0].x * .75f, boatVerts[(i+1)%numX][0].y * .75f,     boatVerts[(i+1)%numX][0].z  -.5f);    
+        sh.gl_endShape(true);        
+        _objRep.addChildShape(sh);
     }
     
     //build objRep's body points

@@ -1,12 +1,11 @@
 package base_UI_Objects.renderedObjs;
 
 import base_Render_Interface.IGraphicsAppInterface;
+import base_Render_Interface.shape.PrimitiveType;
+import base_Render_Interface.shape.base.IShapeInterface;
 import base_UI_Objects.renderedObjs.base.Base_RenderObj;
 import base_UI_Objects.renderedObjs.base.RenderObj_Clr;
 import base_UI_Objects.renderedObjs.base.RenderObj_ClrPalette;
-import base_UI_Objects.renderer.ProcessingRenderer;
-import processing.core.PConstants;
-import processing.core.PShape;
 
 public class Sphere_RenderObj extends Base_RenderObj {
     /**
@@ -16,7 +15,7 @@ public class Sphere_RenderObj extends Base_RenderObj {
     /**
      * individual static object representation. Any animation will be owned by the instancing class
      */
-    private static PShape[] objReps = null;
+    private static IShapeInterface[] objReps = null;
     
     /**
      * colors for sphere reps
@@ -58,7 +57,7 @@ public class Sphere_RenderObj extends Base_RenderObj {
             for(int i=0;i<_numTypes;++i) {madeForType[i]=false;}
         }
         if(objReps == null) {
-            objReps = new PShape[_numTypes];
+            objReps = new IShapeInterface[_numTypes];
             for(int i=0;i<_numTypes;++i) {objReps[i]=createObjRepForType();}
         }
     }
@@ -84,10 +83,10 @@ public class Sphere_RenderObj extends Base_RenderObj {
      * @return
      */
     @Override
-    protected final PShape createObjRepForType() {
+    protected final IShapeInterface createObjRepForType() {
         int tmpDet = ri.getSphereDetail();
         ri.setSphereDetail(5);
-        PShape obj = createBaseShape(PConstants.SPHERE, 5.0f);
+        var obj = ri.createBasePrim(PrimitiveType.SPHERE, 5.0f);
         ri.setSphereDetail(tmpDet);
         return obj;
     }
@@ -109,7 +108,7 @@ public class Sphere_RenderObj extends Base_RenderObj {
     //nothing special (per-frame) for sphere render object
     @Override
     protected void drawMeIndiv(int idx) {
-        ((ProcessingRenderer) ri).shape(objReps[type]);
+       objReps[type].draw();
     }
     @Override
     public final double getMaxAnimCounter() {return maxAnimCntr;}
