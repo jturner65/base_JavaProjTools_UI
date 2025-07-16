@@ -52,5 +52,7 @@ public class PrimitiveShapeProcessing extends ProcessingShape implements IPrimSh
             default :           { return PConstants.POINT;        }
         }         
     }
+    @Override
+    public boolean isGLPrim() {return false;}
     
 }//class PrimitiveShapeProcessing

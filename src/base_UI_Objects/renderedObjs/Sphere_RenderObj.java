@@ -87,9 +87,12 @@ public class Sphere_RenderObj extends Base_RenderObj {
     protected final PShape createObjRepForType() {
         int tmpDet = ri.getSphereDetail();
         ri.setSphereDetail(5);
+        PShape baseObj = createBaseGroupShape();
         PShape obj = createBaseShape(PConstants.SPHERE, 5.0f);
+        obj.setStroke(false);
+        baseObj.addChild(obj);
         ri.setSphereDetail(tmpDet);
-        return obj;
+        return baseObj;
     }
     
     //no custom geometry for sphere

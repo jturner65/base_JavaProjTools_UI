@@ -113,5 +113,8 @@ public class GLPrimitiveProcessing extends ProcessingShape implements IMeshInter
         }         
     }
 
+    @Override
+    public boolean isGLPrim() {return true;}
+
 
 }// class GLPrimitiveProcessing

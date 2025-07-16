@@ -910,12 +910,6 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     ///////////
     // end text    
     
-    @Override
-    public final void setNoFill() {noFill();}
-    
-    @Override
-    public final void setNoStroke(){noStroke();}
-    
     private void checkClrInts(int fclr, int sclr) {
         if(fclr > -1){setColorValFill(fclr,255); } else if(fclr <= -2) {noFill();}        
         if(sclr > -1){setColorValStroke(sclr,255);} else if(sclr <= -2) {noStroke();}
@@ -1433,28 +1427,35 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     /////////////////////        
     ///color utils
     /////////////////////
-
+    /**
+     * set fill color by value
+     * @param clr 1st 3 values denote integer color vals
+     * @param alpha 
+     */
     @Override
     public final void setFill(int r, int g, int b, int alpha){fill(r,g,b,alpha);}
+    /**
+     * Turn off fill
+     */
+    @Override
+    public final void setNoFill() {noFill();}
+    /**
+     * set stroke color by value
+     * @param clr rgba
+     * @param alpha 
+     */
     @Override
     public final void setStroke(int r, int g, int b, int alpha){stroke(r,g,b,alpha);}
+    @Override
+    public final void setNoStroke(){noStroke();}
+    
+    
     /**
      * set stroke weight
      */
     @Override
     public final void setStrokeWt(float stW) {    strokeWeight(stW);}
-    @Override
-    public final void setColorValFill(int colorVal, int alpha){
-        if(colorVal == gui_TransBlack) {
-            fill(0x00010100);//    have to use hex so that alpha val is not lost    TODO not taking care of alpha here
-        } else {
-            setFill(getClr(colorVal, alpha), alpha);
-        }    
-    }//setcolorValFill
-    @Override
-    public final void setColorValStroke(int colorVal, int alpha){
-        setStroke(getClr(colorVal, alpha), alpha);        
-    }//setcolorValStroke    
+
 //    @Override
 //    public final void setColorValFillAmb(int colorVal, int alpha){
 //        if(colorVal == gui_TransBlack) {
@@ -1520,7 +1521,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      * @param rotAra3 3rd Applied rotation
      * @return PShape created and transformed using passed transforms
      */
-    private PMatrix3D buildMatrixTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3) {
+    private PMatrix3D _buildMatrixTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3) {
         PMatrix3D mat = new PMatrix3D();
         mat.translate(transVec.x, transVec.y, transVec.z);
         mat.scale(scaleVec.x,scaleVec.y,scaleVec.z);
@@ -1546,31 +1547,41 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     @Override
     public IMeshInterface createBaseMeshAndSetInitialTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3){    
         GLPrimitiveProcessing sh = (GLPrimitiveProcessing) createBaseMesh();
-        PMatrix3D mat = buildMatrixTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
+        PMatrix3D mat = _buildMatrixTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
         sh.applyMatrix(mat);
         return sh;
     }
     
+    /**
+     * Sets the ambient color of the material used for drawing shapes to the screen.
+     * @param r red floating point value 0-1
+     * @param g green floating point value 0-1
+     * @param b blue floating point value 0-1
+     */
+    @Override
+    public void _setAmbient(float r, float g, float b) {       super.ambient(r,g,b);}
+    /**
+     * Sets the specular color of the material used for drawing shapes to the screen.
+     * @param r red floating point value 0-1
+     * @param g green floating point value 0-1
+     * @param b blue floating point value 0-1
+     */
+    @Override
+    public void _setSpecular(float r, float g, float b) {       super.specular(r,g,b);}
+    /**
+     * Sets the emissive color of the material used for drawing shapes to the screen.
+     * @param r red floating point value 0-1
+     * @param g green floating point value 0-1
+     * @param b blue floating point value 0-1
+     */
+    @Override
+    public void _setEmissive(float r, float g, float b) {       super.emissive(r,g,b);}
 
-    /**
-     * Set ambient color to be passed hex color
-     */
-    @Override
-    public void setAmbient(int _hexClr) {super.ambient(_hexClr);}
-    /**
-     * Set specular color to be passed hex color
-     */
-    @Override
-    public void setSpecular(int _hexClr) {  super.specular(_hexClr); }
-    /**
-     * Set emissive color to be passed hex color
-     */
-    @Override
-    public void setEmissive(int _hexClr) { super.emissive(_hexClr);}
     /**
      * Set shininess to be passed float value
      */
     @Override
     public void setShininess(float shininess) { super.shininess(shininess);}
+
 
 }//ProcessingRenderer
