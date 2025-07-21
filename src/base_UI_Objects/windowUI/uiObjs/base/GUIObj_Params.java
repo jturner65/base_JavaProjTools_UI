@@ -189,12 +189,21 @@ public class GUIObj_Params {
      * Set that this GUIObj_Params describes an object that should be forced to be the first entry on a new row
      */
     public final void setIsFirstObjOnRow() {rendererCfgFlags.setForceStartNewLine(true);}
-    
     /**
      * Whether or not this represents an object should be rendered as multi-line
      * @return
      */
     public final boolean isMultiLine() {return rendererCfgFlags.getIsMultiLine();}
+    /**
+     * Set whether or not this represents an object that should have an ornament
+     * @param hasOrnament
+     */
+    public final void setHasOrnament(boolean hasOrnament) {rendererCfgFlags.setHasOrnament(hasOrnament);}
+    /**
+     * Set whether or not this represents an object that should be rendered with an outline
+     * @param hasOrnament
+     */
+    public final void setHasOutline(boolean hasOutline) {rendererCfgFlags.setHasOutline(hasOutline);}
     /**
      * Get the string labels the list/button object this construct describes use for data or state
      * @return
