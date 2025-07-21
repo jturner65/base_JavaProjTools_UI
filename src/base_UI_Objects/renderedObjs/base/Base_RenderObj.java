@@ -47,16 +47,20 @@ public abstract class Base_RenderObj {
      */
     protected int numTypes;
     
+    //private final String className;
+    
     /**
      * Class to allow for prebuilding complex rendered representations of objects as pshapes
      * @param _p
-     * @param _win
      * @param _type
+     * @param _numTypes
      * @param _numAnimFrames # of frames for a single cycle of repeated animation
+     * @param _clrPalette
+     * @param _textures
      */
     public Base_RenderObj(IGraphicsAppInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette, PImage[] _textures) {
         ri=_p; type = _type; numTypes=_numTypes; numAnimFrames = _numAnimFrames;
-        textures = _textures;
+        textures = _textures;//className = this.getClass().getSimpleName();
         initObjMadeForTypeAndObjReps(numTypes);
         setObjMadeForType(initGeometry(_clrPalette),type);
     }

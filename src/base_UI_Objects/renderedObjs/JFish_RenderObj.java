@@ -105,7 +105,7 @@ public class JFish_RenderObj extends Base_RenderObj {
             for(int a=0; a<numAnimFrames; ++a){//for each frame of animation
                 // each body element is a sphere with a certain scale setting to simulate deformation
                 bodyAra[i][a] = createBaseGroupShape();
-                PShape indiv = createBaseShape(PConstants.SPHERE, 5.0f);                
+                var indiv = createBaseShape(PConstants.SPHERE, 5.0f);                
                 //sclMult = (float) ((Math.sin(a * radAmt) * .25f) +1.0f);
                 //indiv.scale(sclMult, sclMult, 1.0f/(sclMult * sclMult));
                 indiv.scale(scaleVec[a][0], scaleVec[a][1],scaleVec[a][2]);                
