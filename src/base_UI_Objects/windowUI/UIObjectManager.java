@@ -549,11 +549,31 @@ public class UIObjectManager {
      * with default values based on passed flags that can be subsequently modified if necessary by the consumer
      * 
      * Current flags are : 
-     *         usedByWinsIDX          : value is sent to owning window,  
-     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), 
-     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),
-     *         objectIsReadOnlyIDX    : object is read only
-     *         isValueRangeIDX        : object should display a value range and not a value
+     *         usedByWinsIDX          : value is sent to owning window == !isReadOnly && !isRangeObject 
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), == default is false
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent), == default is false
+     *         objectIsReadOnlyIDX    : object is read only == isReadOnly || isRangeObject
+     *         isValueRangeIDX        : object should display a value range and not a value == isRangeObject
+     *         
+     * @param isReadOnly if the UI object should be read-only or data enterable
+     * @param isRangeObject if the UI object should be display the min/max range of the object instead of a value.
+     *          TODO : Support for non-read-only range object (i.e. to be used in sampling perhaps).
+     *          needs to be added. Until then, specifying isRanged forces isReadOnly to be true.
+     * @return
+     */
+    public final GUIObjConfig_Flags buildGUIObjConfigFlags(boolean isReadOnly, boolean isRangeObject) {
+        return new GUIObjConfig_Flags(isReadOnly, isRangeObject);     
+    }
+    /**
+     * Build a GUIObjConfig_Flags with default values used to format/configure an interactive UI object. Returns a construct set
+     * with default values based on passed flags that can be subsequently modified if necessary by the consumer
+     * 
+     * Current flags are : 
+     *         usedByWinsIDX          : value is sent to owning window,  == default is true
+     *         updateWhileModIDX      : value is sent on any modifications (while being modified, not just on release), == default is false
+     *         explicitUIDataUpdateIDX: changes to value must be explicitly sent to consumer (are not automatically sent),== default is false
+     *         objectIsReadOnlyIDX    : object is read only == default is false
+     *         isValueRangeIDX        : object should display a value range and not a value == default is false
      *         
      * @param isReadOnly if the UI object should be read-only or data enterable
      * @param isRanged if the UI object should be display the min/max range of the object instead of a value.
@@ -561,10 +581,10 @@ public class UIObjectManager {
      *          needs to be added. Until then, specifying isRanged forces isReadOnly to be true.
      * @return
      */
-    public final GUIObjConfig_Flags buildGUIObjConfigFlags(boolean isReadOnly, boolean isRanged) {
-        return new GUIObjConfig_Flags(isReadOnly, isRanged);     
+    public final GUIObjConfig_Flags buildDefaultGUIObjConfigFlags() {
+        return new GUIObjConfig_Flags(false, false);     
     }
-    
+        
     /**
      * Build a GUIObjRenderer_Flags used to construct an appropriate renderer for a UI object. Returns a construct set
      * with default values based on passed flags that can be subsequently modified if necessary by the consumer
@@ -951,7 +971,7 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_Int(int _objIdx, double[] _minMaxMod, double _initVal, String _label) {
-        return uiObjInitAra_Int(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, true, false, false));
+        return uiObjInitAra_Int(_objIdx, _minMaxMod, _initVal, _label, buildDefaultGUIObjConfigFlags(), buildGUIObjRendererFlags(false, true, false, false));
     }    
     /**
      * Build the GUIObj_Params that describes an integer UI object with given renderer configurations
@@ -964,7 +984,7 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_Int(int _objIdx, double[] _minMaxMod, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
-        return uiObjInitAra_Int(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
+        return uiObjInitAra_Int(_objIdx, _minMaxMod, _initVal, _label, buildDefaultGUIObjConfigFlags(), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
     }    
     /**
      * Build the GUIObj_Params that describes an integer UI object
@@ -1054,7 +1074,7 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_Float(int _objIdx, double[] _minMaxMod, double _initVal, String _label) {
-        return uiObjInitAra_Float(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, true, false, false));
+        return uiObjInitAra_Float(_objIdx, _minMaxMod, _initVal, _label, buildDefaultGUIObjConfigFlags(), buildGUIObjRendererFlags(false, true, false, false));
     }
     
     /**
@@ -1068,7 +1088,7 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_Float(int _objIdx, double[] _minMaxMod, double _initVal, String _label, boolean _isMultiLine, boolean _isOnePerRow) {
-        return uiObjInitAra_Float(_objIdx, _minMaxMod, _initVal, _label, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
+        return uiObjInitAra_Float(_objIdx, _minMaxMod, _initVal, _label, buildDefaultGUIObjConfigFlags(), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
     }
     
     /**
@@ -1159,7 +1179,7 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_List(int _objIdx, double _initVal, String _label, String[] _listElems) {
-        return uiObjInitAra_List(_objIdx, _initVal, _label, _listElems, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, true, false, false));
+        return uiObjInitAra_List(_objIdx, _initVal, _label, _listElems, buildDefaultGUIObjConfigFlags(), buildGUIObjRendererFlags(false, true, false, false));
     }
 
     /**
@@ -1192,7 +1212,7 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_List(int _objIdx, double _initVal, String _label, String[] _listElems, boolean _isMultiLine, boolean _isOnePerRow) {
-        return uiObjInitAra_List(_objIdx, _initVal, _label, _listElems, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
+        return uiObjInitAra_List(_objIdx, _initVal, _label, _listElems, buildDefaultGUIObjConfigFlags(), buildGUIObjRendererFlags(_isMultiLine, _isOnePerRow, false, false));
     }
 
     /**
@@ -1264,7 +1284,7 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_Switch(int _objIdx, String _label, String _trueLabel, String _falseLabel, int _boolFlagIdx) {
-        return uiObjInitAra_Switch(_objIdx, _label, _trueLabel, _falseLabel, _boolFlagIdx, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, false, true, false), dfltUIBtnTypeVals);
+        return uiObjInitAra_Switch(_objIdx, _label, _trueLabel, _falseLabel, _boolFlagIdx, buildDefaultGUIObjConfigFlags(), buildGUIObjRendererFlags(false, false, true, false), dfltUIBtnTypeVals);
     }
     
     /**
@@ -1344,7 +1364,7 @@ public class UIObjectManager {
      * @return
      */
     public final GUIObj_Params uiObjInitAra_Btn(int _objIdx, double _initVal, String _label, String[] _labels) {
-        return uiObjInitAra_Btn(_objIdx, _label, _labels, _initVal, buildGUIObjConfigFlags(false, false), buildGUIObjRendererFlags(false, false, true, false), dfltUIBtnTypeVals);
+        return uiObjInitAra_Btn(_objIdx, _label, _labels, _initVal, buildDefaultGUIObjConfigFlags(), buildGUIObjRendererFlags(false, false, true, false), dfltUIBtnTypeVals);
     }
 
     /**
