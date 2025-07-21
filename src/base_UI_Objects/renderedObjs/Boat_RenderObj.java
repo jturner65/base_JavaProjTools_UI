@@ -25,19 +25,25 @@ public class Boat_RenderObj extends Base_RenderObj {
     /**
      * individual static object representation. Any animation will be owned by the instancing class
      */
-    private static PShape[] objReps = null;    
+    private static PShape[] objReps = null; 
+    //extra pshapes for this object
+    //1 array for each type of objRep, 1 element for each animation frame of oar motion
+    private static PShape[] oars; 
+    
     /**
      * precalc consts
      */
     private static final int numOars = 5;
     //objRep geometry/construction variables
-    private static final myPointf[][] boatVerts = new myPointf[5][12];                        //seed points to build object     
-    private static myPointf[][] boatHullVerts;                                                    //points of hull
-    private static myPointf[] pts3, pts5, pts7;    
+    //TODO fix the math that synthesizes the boat hull to accept different values than 5 and 12 without deforming the hull
+    private static final int NumXPts = 5;
+    private static final int NumZPts = 12;
+    
+    private static final myPointf[][] boatVerts = new myPointf[NumXPts][NumZPts];             //seed points to build object     
+    private static myPointf[][] boatHullVerts;                                         //points of hull
+    private static myPointf[] pts3, pts5, pts7; 
         
-    //extra pshapes for this object
-    //1 array for each type of objRep, 1 element for each animation frame of oar motion
-    private static PShape[] oars;                                        
+                            
     //UV ara shaped like sail
     private static final myPointf[] uvAra = new myPointf[]{
             new myPointf(0,0,0),new myPointf(0,1,0),
@@ -54,7 +60,7 @@ public class Boat_RenderObj extends Base_RenderObj {
     private static RenderObj_ClrPalette clrPalette;
     
     public Boat_RenderObj(IGraphicsAppInterface _p, int _type, int _numTypes, int _numAnimFrames, RenderObj_ClrPalette _clrPalette, PImage[] _textures) {    
-        super(_p, _type, _numTypes, _numAnimFrames, _clrPalette, _textures);
+        super(_p, _type, _numTypes, _numAnimFrames,  _clrPalette, _textures);
     }//ctor
     
     /**
@@ -111,22 +117,25 @@ public class Boat_RenderObj extends Base_RenderObj {
     @Override
     protected void initObjGeometry() {        
         float xVert, yVert, zVert;
-        int numSlices = boatVerts[0].length, numSlicesSq = numSlices * numSlices;
+        float numSlices = NumZPts, numSlicesSq = numSlices * numSlices;
+        float zScale = 12.0f/NumZPts;
+        float xScale = 5.0f/NumXPts;
         for(int j = 0; j < numSlices; ++j){
-            zVert = j - 4;        
+            zVert = (j - 4)*zScale; 
             float sf = (1 - ((zVert+3)*(zVert+3)*(zVert+3))/(numSlicesSq * numSlices * 1.0f));
             for(int i = 0; i < boatVerts.length; ++i){
-                float ires1 = (1.5f*i - 3);
+                float tmpI = i*xScale;
+                float ires1 = (1.5f*tmpI - 3);
                 xVert = ires1 * sf;
-                yVert = (float) (((-1 * Math.sqrt(9 - (ires1*ires1)) ) * sf) + (3*(zVert-2)*(zVert-2))/(numSlicesSq * 1.0f));
-                boatVerts[i][j] = new myVectorf(xVert, yVert, zVert);
+                yVert = (float) (((-1.0f * Math.sqrt(9 - (ires1*ires1)) ) * sf) + (3.0f*(zVert-2)*(zVert-2))/numSlicesSq);
+                boatVerts[i][j] = new myPointf(xVert, yVert, zVert);
             }//for i    
         }//for j    
         pts3 = buildSailPtAra(3);
         pts5 = buildSailPtAra(5);
         pts7 = buildSailPtAra(7);
         //build boat body arrays
-        initBoatBody();    
+        _initBoatBody(); 
         //create pshape groups of oars, for each frame of animation, shared across all instances
         oars = new PShape[numAnimFrames];
         double animRatio = maxAnimCntr/(1.0f*numAnimFrames);
@@ -134,7 +143,7 @@ public class Boat_RenderObj extends Base_RenderObj {
             oars[a] = createBaseGroupShape();
             double animCntr = (a * animRatio);
             buildOars(a, clrPalette.getMainColor(), animCntr, 1, new myVectorf(0, 0.3f, 3));
-            buildOars(a, clrPalette.getMainColor(), animCntr, -1, new myVectorf(0, 0.3f, 3));         
+            buildOars(a, clrPalette.getMainColor(), animCntr, -1, new myVectorf(0, 0.3f, 3)); 
         }        
         
     }//initObjGeometry()    
@@ -148,7 +157,7 @@ public class Boat_RenderObj extends Base_RenderObj {
     //fix rotation to match desired x-forward y-up orientation
     private void finalRotate(PShape _objRep) {
         _objRep.rotate(MyMathUtils.HALF_PI_F,0,0,1);
-        _objRep.rotate(MyMathUtils.HALF_PI_F,0,1,0);    
+        _objRep.rotate(MyMathUtils.HALF_PI_F,0,1,0); 
     }
     
     @Override
@@ -156,17 +165,17 @@ public class Boat_RenderObj extends Base_RenderObj {
         PShape _objRep = objReps[type];
         //send color to use for masts and oars
         initBoatMasts(_objRep, clrPalette.getMainColor());
-        int numZ = boatVerts[0].length-1, numX = boatVerts.length;
-        int btPt = 0;        
+        int numZ = NumZPts-1, numX = boatVerts.length;
+        int btPt = 0; 
         for(int j = 0; j < numZ; ++j){
             btPt = buildQuadShape(_objRep,transYup1, numX, btPt, boatHullVerts);
         }//for j
         for(int i = 0; i < numX; ++i){    
-            buildBodyBottom(_objRep, boatVerts,i, numZ, numX);    
+            buildBodyBottom(_objRep, boatVerts,i, numZ, numX); 
         }//for i    
         for(int j = 0; j < numZ; ++j){
             btPt = buildQuadShape(_objRep, transYup1, 1, btPt, boatHullVerts);
-            btPt = buildQuadShape(_objRep, transYup1, 1, btPt, boatHullVerts);        
+            btPt = buildQuadShape(_objRep, transYup1, 1, btPt, boatHullVerts); 
         }//for j        
         myVectorf transVec2 = new myVectorf(0,1.5f,0);
         //draw rear and front castle
@@ -179,7 +188,7 @@ public class Boat_RenderObj extends Base_RenderObj {
 
     @Override //representation-specific drawing code (i.e. oars settings for boats)
     protected void drawMeIndiv(int animIDX){//which oars array instance of oars to show - oars move relative to speed of boid
-        ((ProcessingRenderer) ri).shape(objReps[type]);        
+        ((ProcessingRenderer) ri).shape(objReps[type]); 
         ((ProcessingRenderer) ri).shape(oars[animIDX]);
     }//drawMe
     
@@ -202,7 +211,7 @@ public class Boat_RenderObj extends Base_RenderObj {
         float[][] rot1Ara = new float[][]{new float[]{0,0,0,0},new float[]{0,0,0,0},new float[]{0,0,0,0},new float[]{MyMathUtils.THIRD_PI_F, 1, 0,0}};
         int idx = 0;
         for(int rep = 0; rep < 3; ++rep){buildSail(_objRep, false, pts7, pts5, (type%2==1), trans1Ara[idx],  scale1Ara[idx]);idx++; }
-        buildSail(_objRep, true, pts3, pts3, true, trans1Ara[idx],  scale1Ara[idx]);   //
+        buildSail(_objRep, true, pts3, pts3, true, trans1Ara[idx],  scale1Ara[idx]); //
         
         float[] sailRotAra = new float[]{MyMathUtils.HALF_PI_F, 0,0,1};
         for(int j = 0; j<trans1Ara.length; ++j){//mainColor,
@@ -236,8 +245,8 @@ public class Boat_RenderObj extends Base_RenderObj {
             double    sa = pi6ths + .65f*Math.sin(((animCntr + i/(1.0f*numOars)))*pi100th);
             transVec1.set(transVec.x+dirMult*1.5f, transVec.y, transVec.z+d+disp);
             rotAra2 = new float[]{(float) ca, 0,0,dirMult};
-            rotAra3 = new float[]{(float) (sa*.5f), 1,0, 0};            
-            oars[animIdx].addChild(buildPole(1,clr,.1f, 6, false, transVec1, new myPointf(1,1,1), rotAra1, myPointf.ZEROPT, rotAra2, myPointf.ZEROPT, rotAra3));    
+            rotAra3 = new float[]{(float) (sa*.5f), 1,0, 0}; 
+            oars[animIdx].addChild(buildPole(1,clr,.1f, 6, false, transVec1, new myPointf(1,1,1), rotAra1, myPointf.ZEROPT, rotAra2, myPointf.ZEROPT, rotAra3)); 
             //fix orientation of oars
             finalRotate(oars[animIdx]);
             disp+=distMod;
@@ -252,14 +261,14 @@ public class Boat_RenderObj extends Base_RenderObj {
                 new myPointf(0,4.5f,0), new float[] {MyMathUtils.HALF_PI_F, 0,0,1},
                 trans2VecDisp, new float[4]);
         sh.beginShape(PConstants.POLYGON); 
-        sh.fill(0xFFFFFFFF);    
+        sh.fill(0xFFFFFFFF); 
         sh.noStroke();
         if(renderSigil) {
             setObjTexture(sh, 0);
         }
         for(int i=0;i<pts.length;++i){    sh.vertex(pts[i].x,pts[i].y,pts[i].z,uvAra[i].y,uvAra[i].x);}        
         sh.endShape();
-        _objRep.addChild(sh);            
+        _objRep.addChild(sh); 
     }
     
     private void buildSail(PShape _objRep, boolean frontMast, myPointf[] pts1, myPointf[] pts2, boolean renderSigil, myPointf transVec, myPointf scaleVec){
@@ -267,14 +276,14 @@ public class Boat_RenderObj extends Base_RenderObj {
             PShape sh = createAndSetInitialTransform(
                     transVec, scaleVec, new float[] {MyMathUtils.THIRD_PI_F, 1,0,0}, 
                     new myPointf(0,5.0f,0), new float[] {MyMathUtils.HALF_PI_F, 0,0,1},
-                    new myPointf(1,-1.5f,0), new float[4]);    
+                    new myPointf(1,-1.5f,0), new float[4]); 
             sh.beginShape(PConstants.POLYGON); 
-            sh.fill(0xFFFFFFFF);    
+            sh.fill(0xFFFFFFFF); 
             sh.noStroke();
             setObjTexture(sh, 0);
             for(int i=0;i<pts1.length;++i){    sh.vertex(pts1[i].x,pts1[i].y,pts1[i].z,uvAra[i].y,uvAra[i].x);}            
             sh.endShape();
-            _objRep.addChild(sh);            
+            _objRep.addChild(sh); 
         }
         else {            
             build1Sail(_objRep, renderSigil, pts1, transVec, myVectorf.ZEROVEC, scaleVec);
@@ -285,91 +294,187 @@ public class Boat_RenderObj extends Base_RenderObj {
     
     private void buildBodyBottom(PShape _objRep, myPointf[][] boatVerts, int i, int lastIDX, int numX){
         PShape sh = createBaseShape();
+        int nextI = (i+1)%numX;
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.TRIANGLES);            
+        sh.beginShape(PConstants.TRIANGLES); 
             getObjTypeColor().shPaintColors(sh);
-            sh.vertex(boatVerts[i][lastIDX].x, boatVerts[i][lastIDX].y,     boatVerts[i][lastIDX].z);    sh.vertex(0, 1, lastIDX-1);    sh.vertex(boatVerts[(i+1)%numX][lastIDX].x, boatVerts[(i+1)%numX][lastIDX].y,     boatVerts[(i+1)%numX][lastIDX].z);    
+            sh.vertex(boatVerts[i][lastIDX].x, boatVerts[i][lastIDX].y, boatVerts[i][lastIDX].z); sh.vertex(0, 1, lastIDX-1); sh.vertex(boatVerts[nextI][lastIDX].x, boatVerts[nextI][lastIDX].y, boatVerts[nextI][lastIDX].z); 
         sh.endShape(PConstants.CLOSE);
-        _objRep.addChild(sh);            
+        _objRep.addChild(sh); 
 
         sh = createBaseShape();
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.QUADS);        
+        sh.beginShape(PConstants.QUADS); 
             getObjTypeColor().shPaintColors(sh);
-            sh.vertex(boatVerts[i][0].x, boatVerts[i][0].y, boatVerts[i][0].z);sh.vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z -.5f);    sh.vertex(boatVerts[(i+1)%numX][0].x * .75f, boatVerts[(i+1)%numX][0].y * .75f,     boatVerts[(i+1)%numX][0].z -.5f);sh.vertex(boatVerts[(i+1)%numX][0].x, boatVerts[(i+1)%numX][0].y,     boatVerts[(i+1)%numX][0].z );
+            sh.vertex(boatVerts[i][0].x, boatVerts[i][0].y, boatVerts[i][0].z);sh.vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z -.5f); sh.vertex(boatVerts[nextI][0].x * .75f, boatVerts[nextI][0].y * .75f, boatVerts[nextI][0].z -.5f);sh.vertex(boatVerts[nextI][0].x, boatVerts[nextI][0].y, boatVerts[nextI][0].z );
         sh.endShape(PConstants.CLOSE);
-        _objRep.addChild(sh);            
+        _objRep.addChild(sh); 
         
         sh = createBaseShape();
         sh.translate(transYup1.x, transYup1.y, transYup1.z);
-        sh.beginShape(PConstants.TRIANGLES);        
+        sh.beginShape(PConstants.TRIANGLES); 
             getObjTypeColor().shPaintColors(sh);
-            sh.vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z  -.5f);    sh.vertex(0, 0, boatVerts[i][0].z - 1);    sh.vertex(boatVerts[(i+1)%numX][0].x * .75f, boatVerts[(i+1)%numX][0].y * .75f,     boatVerts[(i+1)%numX][0].z  -.5f);    
-        sh.endShape(PConstants.CLOSE);        
+            sh.vertex(boatVerts[i][0].x * .75f, boatVerts[i][0].y * .75f, boatVerts[i][0].z  -.5f); sh.vertex(0, 0, boatVerts[i][0].z - 1); sh.vertex(boatVerts[nextI][0].x * .75f, boatVerts[nextI][0].y * .75f, boatVerts[nextI][0].z  -.5f); 
+        sh.endShape(PConstants.CLOSE); 
         _objRep.addChild(sh);
     }
-    
+   
     //build objRep's body points
-    private void initBoatBody(){
-        int numZ = boatVerts[0].length, numX = boatVerts.length, idx, pIdx = 0, araIdx = 0;
+    private void _initBoatBody(){
+        int numZ = NumZPts, numX = NumXPts, idx, araIdx = 0;
         myPointf[] tmpPtAra;
-        myPointf[][] resPtAra = new myPointf[104][];
+        int numResPts = (NumXPts + 2)*NumZPts - NumXPts + 25;
+        myPointf[][] resPtAra = new myPointf[numResPts][];
         
-        for(int j = 0; j < numZ-1; ++j){
+        for(int j = 0; j < NumZPts-1; ++j){
+            int nextJ = (j+1)%numZ;
             for(int i = 0; i < numX; ++i){
-                tmpPtAra = new myPointf[4];pIdx = 0;    tmpPtAra[pIdx++] = new myPointf(boatVerts[i][j].x,     boatVerts[i][j].y,     boatVerts[i][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[(i+1)%numX][j].x,         boatVerts[(i+1)%numX][j].y,            boatVerts[(i+1)%numX][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[(i+1)%numX][(j+1)%numZ].x,boatVerts[(i+1)%numX][(j+1)%numZ].y, boatVerts[(i+1)%numX][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[i][(j+1)%numZ].x,            boatVerts[i][(j+1)%numZ].y,             boatVerts[i][(j+1)%numZ].z);
+                int nextI = (i+1)%numX;
+                tmpPtAra = new myPointf[] {   
+                    new myPointf(boatVerts[i][j].x, boatVerts[i][j].y, boatVerts[i][j].z),
+                    new myPointf(boatVerts[nextI][j].x, boatVerts[nextI][j].y, boatVerts[nextI][j].z),
+                    new myPointf(boatVerts[nextI][nextJ].x,boatVerts[nextI][nextJ].y, boatVerts[nextI][nextJ].z),
+                    new myPointf(boatVerts[i][nextJ].x, boatVerts[i][nextJ].y, boatVerts[i][nextJ].z)
+                };
                 resPtAra[araIdx++] = tmpPtAra;
             }//for i    
-        }//for j        
-        for(int j = 0; j < numZ-1; ++j){
-            tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][j].x, boatVerts[0][j].y,      boatVerts[0][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][j].x,                     boatVerts[0][j].y +.5f,             boatVerts[0][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][(j+1)%numZ].x,            boatVerts[0][(j+1)%numZ].y + .5f, boatVerts[0][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][(j+1)%numZ].x,            boatVerts[0][(j+1)%numZ].y,      boatVerts[0][(j+1)%numZ].z);                
+        }//for j   
+        for(int j = 0; j < NumZPts-1; ++j){
+            int nextJ = (j+1)%numZ;
+            tmpPtAra = new myPointf[]{
+                        new myPointf(boatVerts[0][j].x, boatVerts[0][j].y, boatVerts[0][j].z),
+                        new myPointf(boatVerts[0][j].x, boatVerts[0][j].y +.5f, boatVerts[0][j].z),
+                        new myPointf(boatVerts[0][nextJ].x, boatVerts[0][nextJ].y + .5f, boatVerts[0][nextJ].z),
+                        new myPointf(boatVerts[0][nextJ].x, boatVerts[0][nextJ].y, boatVerts[0][nextJ].z)
+                       };     
             resPtAra[araIdx++] = tmpPtAra;
-            tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][j].x, boatVerts[numX-1][j].y,      boatVerts[numX-1][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][j].x,          boatVerts[numX-1][j].y + .5f,             boatVerts[numX-1][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][(j+1)%numZ].x, boatVerts[numX-1][(j+1)%numZ].y +.5f, boatVerts[numX-1][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][(j+1)%numZ].x, boatVerts[numX-1][(j+1)%numZ].y,      boatVerts[numX-1][(j+1)%numZ].z);                
+            tmpPtAra = new myPointf[]{
+                        new myPointf(boatVerts[numX-1][j].x, boatVerts[numX-1][j].y, boatVerts[numX-1][j].z),
+                        new myPointf(boatVerts[numX-1][j].x, boatVerts[numX-1][j].y + .5f, boatVerts[numX-1][j].z),
+                        new myPointf(boatVerts[numX-1][nextJ].x, boatVerts[numX-1][nextJ].y +.5f, boatVerts[numX-1][nextJ].z),
+                        new myPointf(boatVerts[numX-1][nextJ].x, boatVerts[numX-1][nextJ].y, boatVerts[numX-1][nextJ].z)
+                       };    
             resPtAra[araIdx++] = tmpPtAra;
         }//for j
         //draw rear castle
         for(int j = 0; j < 3; ++j){
-            tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][j].x*.9f,             boatVerts[0][j].y-.5f,              boatVerts[0][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][j].x*.9f,                     boatVerts[0][j].y+2,             boatVerts[0][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][(j+1)%numZ].x*.9f,            boatVerts[0][(j+1)%numZ].y+2, boatVerts[0][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][(j+1)%numZ].x*.9f,            boatVerts[0][(j+1)%numZ].y-.5f,      boatVerts[0][(j+1)%numZ].z);                
+            int nextJ = (j+1)%numZ;
+            tmpPtAra = new myPointf[]{
+                         new myPointf(boatVerts[0][j].x*.9f, boatVerts[0][j].y-.5f, boatVerts[0][j].z),
+                         new myPointf(boatVerts[0][j].x*.9f, boatVerts[0][j].y+2, boatVerts[0][j].z),
+                         new myPointf(boatVerts[0][nextJ].x*.9f, boatVerts[0][nextJ].y+2, boatVerts[0][nextJ].z),
+                         new myPointf(boatVerts[0][nextJ].x*.9f, boatVerts[0][nextJ].y-.5f, boatVerts[0][nextJ].z)
+            }; 
             resPtAra[araIdx++] = tmpPtAra;
-            tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y-.5f, boatVerts[numX-1][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][j].x*.9f,          boatVerts[numX-1][j].y+2,             boatVerts[numX-1][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][(j+1)%numZ].x*.9f, boatVerts[numX-1][(j+1)%numZ].y+2, boatVerts[numX-1][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][(j+1)%numZ].x*.9f, boatVerts[numX-1][(j+1)%numZ].y-.5f,      boatVerts[numX-1][(j+1)%numZ].z);                
+            tmpPtAra = new myPointf[]{
+                         new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y-.5f, boatVerts[numX-1][j].z),
+                         new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y+2, boatVerts[numX-1][j].z),
+                         new myPointf(boatVerts[numX-1][nextJ].x*.9f, boatVerts[numX-1][nextJ].y+2, boatVerts[numX-1][nextJ].z),
+                         new myPointf(boatVerts[numX-1][nextJ].x*.9f, boatVerts[numX-1][nextJ].y-.5f, boatVerts[numX-1][nextJ].z)
+            }; 
             resPtAra[araIdx++] = tmpPtAra;
-            tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][j].x*.9f,         boatVerts[0][j].y+1.5f,        boatVerts[0][j].z);    tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][j].x*.9f,         boatVerts[numX-1][j].y+1.5f,            boatVerts[numX-1][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][(j+1)%numZ].x*.9f,boatVerts[numX-1][(j+1)%numZ].y+1.5f,     boatVerts[numX-1][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][(j+1)%numZ].x*.9f,        boatVerts[0][(j+1)%numZ].y+1.5f,         boatVerts[0][(j+1)%numZ].z);                    
+            tmpPtAra = new myPointf[]{
+                         new myPointf(boatVerts[0][j].x*.9f, boatVerts[0][j].y+1.5f, boatVerts[0][j].z),
+                         new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y+1.5f, boatVerts[numX-1][j].z),
+                         new myPointf(boatVerts[numX-1][nextJ].x*.9f,boatVerts[numX-1][nextJ].y+1.5f, boatVerts[numX-1][nextJ].z),
+                         new myPointf(boatVerts[0][nextJ].x*.9f, boatVerts[0][nextJ].y+1.5f, boatVerts[0][nextJ].z)
+            }; 
             resPtAra[araIdx++] = tmpPtAra;
         }//for j
-        tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][3].x*.9f,         boatVerts[0][3].y+2,        boatVerts[0][3].z);    tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][3].x*.9f, boatVerts[0][3].y+2,boatVerts[numX-1][3].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][3].x*.9f, boatVerts[0][3].y-.5f,boatVerts[numX-1][3].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][3].x*.9f,        boatVerts[0][3].y-.5f,     boatVerts[0][3].z);            
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[0][3].x*.9f, boatVerts[0][3].y+2, boatVerts[0][3].z),    
+                     new myPointf(boatVerts[numX-1][3].x*.9f, boatVerts[0][3].y+2,boatVerts[numX-1][3].z),
+                     new myPointf(boatVerts[numX-1][3].x*.9f, boatVerts[0][3].y-.5f,boatVerts[numX-1][3].z),
+                     new myPointf(boatVerts[0][3].x*.9f, boatVerts[0][3].y-.5f, boatVerts[0][3].z)
+        }; 
         resPtAra[araIdx++] = tmpPtAra;
 
-        tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,     boatVerts[0][0].y-.5f,     boatVerts[0][0].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,     boatVerts[0][0].y+2.5f,    boatVerts[0][0].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,    boatVerts[0][0].y+2,     boatVerts[0][1].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,    boatVerts[0][0].y-1,     boatVerts[0][1].z-1);            
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y-.5f, boatVerts[0][0].z-1),
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y+2.5f, boatVerts[0][0].z-1),
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y+2, boatVerts[0][1].z-1),
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y-1, boatVerts[0][1].z-1)
+        }; 
         resPtAra[araIdx++] = tmpPtAra;
 
-        tmpPtAra = new myPointf[4];pIdx = 0;
-        tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-.5f,     boatVerts[numX-1][0].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2.5f, boatVerts[numX-1][0].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2,     boatVerts[numX-1][1].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-1,     boatVerts[numX-1][1].z-1);            
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-.5f, boatVerts[numX-1][0].z-1),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2.5f, boatVerts[numX-1][0].z-1),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2, boatVerts[numX-1][1].z-1),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-1, boatVerts[numX-1][1].z-1)
+        }; 
         resPtAra[araIdx++] = tmpPtAra;
-        tmpPtAra = new myPointf[4];    pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,         boatVerts[0][0].y+2.5f,        boatVerts[0][0].z - 1);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2.5f,    boatVerts[numX-1][0].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2f,    boatVerts[numX-1][1].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,        boatVerts[0][0].y+2f,         boatVerts[0][1].z-1);            
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y+2.5f, boatVerts[0][0].z-1),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2.5f, boatVerts[numX-1][0].z-1),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2f, boatVerts[numX-1][1].z-1),
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y+2f, boatVerts[0][1].z-1)
+        }; 
         resPtAra[araIdx++] = tmpPtAra;
-        tmpPtAra = new myPointf[4];    pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,         boatVerts[0][0].y-.5f,        boatVerts[0][0].z - 1);    tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-.5f,boatVerts[numX-1][0].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-1,boatVerts[numX-1][1].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,        boatVerts[0][0].y-1,     boatVerts[0][1].z-1);            
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y-.5f, boatVerts[0][0].z-1),   
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-.5f,boatVerts[numX-1][0].z-1),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-1,boatVerts[numX-1][1].z-1),
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y-1, boatVerts[0][1].z-1)
+        };  
         resPtAra[araIdx++] = tmpPtAra;
-        tmpPtAra = new myPointf[4];    pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,         boatVerts[0][0].y+2.5f,        boatVerts[0][0].z - 1);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2.5f,boatVerts[numX-1][0].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-.5f,boatVerts[numX-1][0].z-1);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,        boatVerts[0][0].y-.5f,     boatVerts[0][0].z-1);                
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y+2.5f, boatVerts[0][0].z-1),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y+2.5f,boatVerts[numX-1][0].z-1),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[numX-1][0].y-.5f,boatVerts[numX-1][0].z-1),
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y-.5f, boatVerts[0][0].z-1)
+        };      
         resPtAra[araIdx++] = tmpPtAra;
-        tmpPtAra = new myPointf[4];    pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y+2,        boatVerts[0][0].z);    tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[0][0].y+2,boatVerts[numX-1][0].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[0][0].y-.5f,boatVerts[numX-1][0].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][0].x*.9f,        boatVerts[0][0].y-.5f,     boatVerts[0][0].z);    
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y+2, boatVerts[0][0].z),    
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[0][0].y+2,boatVerts[numX-1][0].z),
+                     new myPointf(boatVerts[numX-1][0].x*.9f, boatVerts[0][0].y-.5f,boatVerts[numX-1][0].z),
+                     new myPointf(boatVerts[0][0].x*.9f, boatVerts[0][0].y-.5f, boatVerts[0][0].z)
+        }; 
         resPtAra[araIdx++] = tmpPtAra;
         //draw front castle
-        for(int j = numZ-4; j < numZ-1; ++j){
-            tmpPtAra = new myPointf[4];    pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][j].x*.9f,         boatVerts[0][j].y-.5f,         boatVerts[0][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][j].x*.9f,         boatVerts[0][j].y+.5f,         boatVerts[0][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][(j+1)%numZ].x*.9f,            boatVerts[0][(j+1)%numZ].y+.5f, boatVerts[0][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][(j+1)%numZ].x*.9f,            boatVerts[0][(j+1)%numZ].y-.5f,      boatVerts[0][(j+1)%numZ].z);                
+        for(int j = NumZPts-4; j < NumZPts-1; ++j){
+            int nextJ = (j+1)%numZ;
+            tmpPtAra = new myPointf[]{
+                         new myPointf(boatVerts[0][j].x*.9f, boatVerts[0][j].y-.5f, boatVerts[0][j].z),
+                         new myPointf(boatVerts[0][j].x*.9f, boatVerts[0][j].y+.5f, boatVerts[0][j].z),
+                         new myPointf(boatVerts[0][nextJ].x*.9f, boatVerts[0][nextJ].y+.5f, boatVerts[0][nextJ].z),
+                         new myPointf(boatVerts[0][nextJ].x*.9f, boatVerts[0][nextJ].y-.5f, boatVerts[0][nextJ].z)
+            };      
             resPtAra[araIdx++] = tmpPtAra;
-            tmpPtAra = new myPointf[4];pIdx = 0;    tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y-.5f,     boatVerts[numX-1][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y+.5f, boatVerts[numX-1][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][(j+1)%numZ].x*.9f, boatVerts[numX-1][(j+1)%numZ].y+.5f, boatVerts[numX-1][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][(j+1)%numZ].x*.9f, boatVerts[numX-1][(j+1)%numZ].y-.5f,      boatVerts[numX-1][(j+1)%numZ].z);                    
+            tmpPtAra = new myPointf[]{   
+                         new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y-.5f, boatVerts[numX-1][j].z),
+                         new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y+.5f, boatVerts[numX-1][j].z),
+                         new myPointf(boatVerts[numX-1][nextJ].x*.9f, boatVerts[numX-1][nextJ].y+.5f, boatVerts[numX-1][nextJ].z),
+                         new myPointf(boatVerts[numX-1][nextJ].x*.9f, boatVerts[numX-1][nextJ].y-.5f, boatVerts[numX-1][nextJ].z)
+            };          
             resPtAra[araIdx++] = tmpPtAra;
-            tmpPtAra = new myPointf[4];pIdx = 0;    tmpPtAra[pIdx++] = new myPointf(boatVerts[0][j].x*.9f,         boatVerts[0][j].y+.5f,            boatVerts[0][j].z);    tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y+.5f, boatVerts[numX-1][j].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][(j+1)%numZ].x*.9f,boatVerts[numX-1][(j+1)%numZ].y+.5f,     boatVerts[numX-1][(j+1)%numZ].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][(j+1)%numZ].x*.9f,        boatVerts[0][(j+1)%numZ].y+.5f,         boatVerts[0][(j+1)%numZ].z);
+            tmpPtAra = new myPointf[]{   
+                         new myPointf(boatVerts[0][j].x*.9f, boatVerts[0][j].y+.5f, boatVerts[0][j].z),    
+                         new myPointf(boatVerts[numX-1][j].x*.9f, boatVerts[numX-1][j].y+.5f, boatVerts[numX-1][j].z),
+                         new myPointf(boatVerts[numX-1][nextJ].x*.9f,boatVerts[numX-1][nextJ].y+.5f, boatVerts[numX-1][nextJ].z),
+                         new myPointf(boatVerts[0][nextJ].x*.9f, boatVerts[0][nextJ].y+.5f, boatVerts[0][nextJ].z)
+            };          
             resPtAra[araIdx++] = tmpPtAra;
         }//for j
-        idx = numZ-1;
-        tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][ idx].x*.9f,         boatVerts[0][ idx].y-.5f,    boatVerts[0][ idx].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][ idx].x*.9f, boatVerts[0][ idx].y-.5f,        boatVerts[0][ idx].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][ idx].x*.9f, boatVerts[0][ idx].y+.5f,        boatVerts[0][ idx].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][ idx].x*.9f,        boatVerts[0][ idx].y+.5f,     boatVerts[0][ idx].z);            
+        idx = NumZPts-1;
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[0][ idx].x*.9f, boatVerts[0][ idx].y-.5f, boatVerts[0][ idx].z),
+                     new myPointf(boatVerts[numX-1][ idx].x*.9f, boatVerts[0][ idx].y-.5f, boatVerts[0][ idx].z),
+                     new myPointf(boatVerts[numX-1][ idx].x*.9f, boatVerts[0][ idx].y+.5f, boatVerts[0][ idx].z),
+                     new myPointf(boatVerts[0][ idx].x*.9f, boatVerts[0][ idx].y+.5f, boatVerts[0][ idx].z)
+        };                      
         resPtAra[araIdx++] = tmpPtAra;
-        idx = numZ-4;
-        tmpPtAra = new myPointf[4];pIdx = 0;tmpPtAra[pIdx++] = new myPointf(boatVerts[0][ idx].x*.9f,         boatVerts[0][idx].y-.5f,    boatVerts[0][ idx].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][idx].x*.9f, boatVerts[0][idx].y-.5f,        boatVerts[0][ idx].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[numX-1][idx].x*.9f, boatVerts[0][idx].y+.5f,        boatVerts[0][ idx].z);tmpPtAra[pIdx++] = new myPointf(boatVerts[0][idx].x*.9f,        boatVerts[0][idx].y+.5f,     boatVerts[0][idx].z);            
+        idx = NumZPts-4;
+        tmpPtAra = new myPointf[]{
+                     new myPointf(boatVerts[0][ idx].x*.9f, boatVerts[0][idx].y-.5f, boatVerts[0][ idx].z),
+                     new myPointf(boatVerts[numX-1][idx].x*.9f, boatVerts[0][idx].y-.5f, boatVerts[0][ idx].z),
+                     new myPointf(boatVerts[numX-1][idx].x*.9f, boatVerts[0][idx].y+.5f, boatVerts[0][ idx].z),
+                     new myPointf(boatVerts[0][idx].x*.9f, boatVerts[0][idx].y+.5f, boatVerts[0][idx].z)
+        };                     
         resPtAra[araIdx++] = tmpPtAra;
         boatHullVerts = resPtAra;
-    }//initBoatBody    
+    }//_initBoatBody    
 
 
 }//class myBoatRndrObj
