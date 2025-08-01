@@ -38,7 +38,7 @@ public class Boat_RenderObj extends Base_RenderObj {
     //TODO fix the math that synthesizes the boat hull to accept different values than 5 and 12 without deforming the hull
     private static final int NumXPts = 5;
     private static final int NumZPts = 12;
-    
+    private static boolean boatVertsBuilt = false;
     private static final myPointf[][] boatVerts = new myPointf[NumXPts][NumZPts];             //seed points to build object     
     private static myPointf[][] boatHullVerts;                                         //points of hull
     private static myPointf[] pts3, pts5, pts7; 
@@ -120,22 +120,25 @@ public class Boat_RenderObj extends Base_RenderObj {
         float numSlices = NumZPts, numSlicesSq = numSlices * numSlices;
         float zScale = 12.0f/NumZPts;
         float xScale = 5.0f/NumXPts;
-        for(int j = 0; j < numSlices; ++j){
-            zVert = (j - 4)*zScale; 
-            float sf = (1 - ((zVert+3)*(zVert+3)*(zVert+3))/(numSlicesSq * numSlices * 1.0f));
-            for(int i = 0; i < boatVerts.length; ++i){
-                float tmpI = i*xScale;
-                float ires1 = (1.5f*tmpI - 3);
-                xVert = ires1 * sf;
-                yVert = (float) (((-1.0f * Math.sqrt(9 - (ires1*ires1)) ) * sf) + (3.0f*(zVert-2)*(zVert-2))/numSlicesSq);
-                boatVerts[i][j] = new myPointf(xVert, yVert, zVert);
-            }//for i    
-        }//for j    
-        pts3 = buildSailPtAra(3);
-        pts5 = buildSailPtAra(5);
-        pts7 = buildSailPtAra(7);
-        //build boat body arrays
-        _initBoatBody(); 
+        if(!boatVertsBuilt) {
+            for(int j = 0; j < numSlices; ++j){
+                zVert = (j - 4)*zScale; 
+                float sf = (1 - ((zVert+3)*(zVert+3)*(zVert+3))/(numSlicesSq * numSlices * 1.0f));
+                for(int i = 0; i < boatVerts.length; ++i){
+                    float tmpI = i*xScale;
+                    float ires1 = (1.5f*tmpI - 3);
+                    xVert = ires1 * sf;
+                    yVert = (float) (((-1.0f * Math.sqrt(9 - (ires1*ires1)) ) * sf) + (3.0f*(zVert-2)*(zVert-2))/numSlicesSq);
+                    boatVerts[i][j] = new myPointf(xVert, yVert, zVert);
+                }//for i    
+            }//for j    
+            pts3 = buildSailPtAra(3);
+            pts5 = buildSailPtAra(5);
+            pts7 = buildSailPtAra(7);
+            //build boat body arrays
+            _initBoatBody();
+            boatVertsBuilt = true;
+        }
         //create pshape groups of oars, for each frame of animation, shared across all instances
         if (!oarsBuilt) {
             oars = new PShape[numAnimFrames];
