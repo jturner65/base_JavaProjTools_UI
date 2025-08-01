@@ -1437,7 +1437,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * setup for draw
      */
     private void _drawSetup(){
-        ri.setPerspective(MyMathUtils.THIRD_PI_F, _aspectRatio, .01f, 10000.0f);
+        ri.setPerspective(MyMathUtils.THIRD_PI_F, _aspectRatio, .01f, _camVals[2]*100);
         ri.enableLights();     
         _dispWinFrames[_curFocusWin].drawSetupWin(_camVals);
     }//drawSetup
