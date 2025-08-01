@@ -27,7 +27,7 @@ public class Boat_RenderObj extends Base_RenderObj {
      */
     private static PShape[] objReps = null; 
     //extra pshapes for this object
-    //1 array for each type of objRep, 1 element for each animation frame of oar motion
+    //1 element for each animation frame of oar motion - all types use the same components
     private static PShape[] oars; 
     
     /**
@@ -110,7 +110,7 @@ public class Boat_RenderObj extends Base_RenderObj {
     protected RenderObj_Clr getObjTypeColor() {
         return clrPalette.getInstanceColor(type);
     }
-    
+    private static boolean oarsBuilt = false;
     /**
      * Builds geometry for object class to be instanced - only perform once per object class (not per type/instance)
      */
@@ -137,14 +137,17 @@ public class Boat_RenderObj extends Base_RenderObj {
         //build boat body arrays
         _initBoatBody(); 
         //create pshape groups of oars, for each frame of animation, shared across all instances
-        oars = new PShape[numAnimFrames];
-        double animRatio = maxAnimCntr/(1.0f*numAnimFrames);
-        for(int a=0; a<numAnimFrames; ++a){
-            oars[a] = createBaseGroupShape();
-            double animCntr = (a * animRatio);
-            buildOars(a, clrPalette.getMainColor(), animCntr, 1, new myVectorf(0, 0.3f, 3));
-            buildOars(a, clrPalette.getMainColor(), animCntr, -1, new myVectorf(0, 0.3f, 3)); 
-        }        
+        if (!oarsBuilt) {
+            oars = new PShape[numAnimFrames];
+            double animRatio = maxAnimCntr/(1.0f*numAnimFrames);
+            for(int a=0; a<numAnimFrames; ++a){
+                oars[a] = createBaseGroupShape();
+                double animCntr = (a * animRatio);
+                buildOars(a, clrPalette.getMainColor(), animCntr, 1, new myVectorf(0, 0.3f, 3));
+                buildOars(a, clrPalette.getMainColor(), animCntr, -1, new myVectorf(0, 0.3f, 3)); 
+            }
+            oarsBuilt = true;
+        }
         
     }//initObjGeometry()    
     

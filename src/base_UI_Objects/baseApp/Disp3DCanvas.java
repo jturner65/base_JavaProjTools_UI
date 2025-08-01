@@ -6,6 +6,7 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
+import base_Render_Interface.shape.GL_PrimitiveType;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 
@@ -83,16 +84,16 @@ public class Disp3DCanvas {
     /**
      * find points to define plane normal to camera eye, at set distance from camera, to use drawing canvas     
      */
-    public void buildCanvas(){    
-        //float rawCtrDepth = ri.getDepth(viewDimW2, viewDimH2);
-        myPoint rawScrCtrInWorld = ri.getWorldLoc(viewDimW2, viewDimH2, rawCtrDepth);        
-        myVector A = new myVector(rawScrCtrInWorld,  ri.getWorldLoc(viewDimW-10, 10, rawCtrDepth)),
-                B = new myVector(rawScrCtrInWorld,  ri.getWorldLoc(viewDimW-10, viewDimH-10, rawCtrDepth));    //ctr to upper right, ctr to lower right
-        drawSNorm = myVector._cross(A,B)._normalize();
+    public void buildCanvas(){
+        // Screen center in world space
+        myPoint rawScrCtrInWorld = ri.getWorldLoc(viewDimW2, viewDimH2, rawCtrDepth);
+        // Screen norm is from raw center in world to camera, at depth ==0
+        drawSNorm = new myVector(rawScrCtrInWorld, ri.getWorldLoc(viewDimW2, viewDimH2, 0))._normalize();
         //build plane using norm - have canvas go through canvas ctr in 3d
-        myVector planeTan = myVector._cross(drawSNorm, myVector._normalize(new myVector(drawSNorm.x+10000,drawSNorm.y+10,drawSNorm.z+10)))._normalize();            //result of vector crossed with normal will be in plane described by normal
-         myPoint lastPt = new myPoint(myPoint.ZEROPT, canvasDimOvSqrt2, planeTan);
-         planeTan = myVector._rotAroundAxis(planeTan, drawSNorm, MyMathUtils.THREE_QTR_PI);
+        myVector planeTan = myVector._cross(drawSNorm, myVector._normalize(new myVector(drawSNorm.x+1000,drawSNorm.y-1000,drawSNorm.z+10)))._normalize();            //result of vector crossed with normal will be in plane described by normal
+        myPoint lastPt = new myPoint(myPoint.ZEROPT, canvasDimOvSqrt2, planeTan);
+        planeTan = myVector._rotAroundAxis(planeTan, drawSNorm, MyMathUtils.THREE_QTR_PI);       
+        
         for(int i =0;i<canvas3D.length;++i){        
             //build invisible canvas to draw upon
              canvas3D[i].set(myPoint._add(lastPt, canvasDim, planeTan));
@@ -102,7 +103,7 @@ public class Disp3DCanvas {
          }
 
         //normal to canvas through eye moved far behind viewer
-        eyeInWorld = ri.getWorldLoc(viewDimW2, viewDimH2,-.00001f);
+        eyeInWorld = ri.getWorldLoc(viewDimW2, viewDimH2,AppMgr._camEyeZ);
         //eyeInWorld =myPoint._add(rawScrCtrInWorld, myPoint._dist( ri.pick(0,0,-1), rawScrCtrInWorld), drawSNorm);                                //location of "eye" in world space
         eyeToCtr.set(eyeInWorld, rawScrCtrInWorld);
         scrCtrInWorld = getPlInterSect(rawScrCtrInWorld, myVector._normalize(eyeToCtr));
@@ -212,6 +213,24 @@ public class Disp3DCanvas {
         return ray._normalize();
     }
     
+    /**
+     * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector
+     * @param color color to paint the canvas - should be translucent (Alpha should be no more than 80), 
+     *                 light for dark backgrounds and dark for light backgrounds. 
+     */
+    public final void drawCanvas(int[] color) {
+        myPointf[] bndedCanvas3D = AppMgr.buildPlaneBoxBounds(canvas3D);
+        ri.disableLights();
+        ri.pushMatState();
+        ri.gl_beginShape(GL_PrimitiveType.GL_LINE_LOOP);
+        ri.gl_setFill(color, color[3]);
+        ri.setNoStroke();
+        ri.gl_normal(eyeToMse);
+        for(int i = bndedCanvas3D.length-1;i>=0;--i){             ri.gl_vertex(bndedCanvas3D[i]);}
+        ri.gl_endShape(true);
+        ri.popMatState();
+        ri.enableLights();
+    }
 
     private final void drawText(Base_DispWindow win, String str, float x, float y, float z){
         ri.pushMatState();

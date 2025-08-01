@@ -96,7 +96,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
     /**
      * 9 element array holding camera loc, target, and orientation
      */
-    private float[] _camVals;    
+    private float[] _camVals;  
+    
+    private final double _eyeZScale = Math.tan(MyMathUtils.PI/6.0);
+    public float _camEyeZ;
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Time and date
     
@@ -572,10 +575,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
         popUpWinHeight = _viewHeight * popUpWinOpenMult;
         // set cam vals
         // 9 vals : eye[x,y,z], scene center[x,y,z], up[x,y,z]
-        _camVals = new float[]{0, 0, (float) (_viewHeightHalf / Math.tan(MyMathUtils.PI/6.0)), 0, 0, 0, 0,1,0};        
+        _camEyeZ = (float) (_viewHeightHalf / _eyeZScale);
+        _camVals = new float[]{_viewWidthHalf,_viewHeightHalf, _camEyeZ, _viewWidthHalf, _viewHeightHalf, 0, 0,1,0};        
         //build _canvas
         _canvas = new Disp3DCanvas(this, ri, _viewWidth, _viewHeight);    
-        msgObj.dispInfoMessage("GUI_AppManager","setAppWindowDims","Base applet width : " + _viewWidth + " | height : " +  _viewHeight);
+        msgObj.dispInfoMessage("GUI_AppManager","setAppWindowDims","Base applet width : " + _viewWidth + " | height : " +  _viewHeight+ " | _camEyeZ :"+_camEyeZ);
     }//setAppWindowWidth
 
 
@@ -1433,7 +1437,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * setup for draw
      */
     private void _drawSetup(){
-        ri.setPerspective(MyMathUtils.THIRD_PI_F, _aspectRatio, .01f, _camVals[2]*100.0f);
+        ri.setPerspective(MyMathUtils.THIRD_PI_F, _aspectRatio, .01f, 10000.0f);
         ri.enableLights();     
         _dispWinFrames[_curFocusWin].drawSetupWin(_camVals);
     }//drawSetup
@@ -1453,7 +1457,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
                 draw3D(modAmtMillis);
                 if(curDispWinCanShow3dbox()){drawBoxBnds();}
                 if(_dispWinFrames[_curFocusWin].chkDrawMseRet()){            _canvas.drawMseEdge(_dispWinFrames[_curFocusWin], is3DDraw);    }        
-                if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts(), winInitVals[_curFocusWin].canvasColor);}
+                //if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts(), winInitVals[_curFocusWin].canvasColor);}
+                if(doShowDrawawbleCanvas()) {_canvas.drawCanvas(winInitVals[_curFocusWin].canvasColor);}
             } else {
                 draw3D(modAmtMillis);
             }
@@ -2861,7 +2866,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @return
      */
     public final myPointf[] buildPlaneBoxBounds(myPoint[] pts) {
-        myVector tmpNorm = myVector._cross(new myVector(pts[0], pts[1]), new myVector(pts[0], pts[2]))._normalize();
+        myVector tmpNorm = myVector._cross(new myVector(pts[0], pts[1]), new myVector(pts[1], pts[2]))._normalize();
+        //msgObj.dispInfoMessage(getPrjNmShrt(),"buildPlaneBoxBounds","\t TmpNorm : "+tmpNorm.toStrBrf()+"| Avg Point : "+ ctrPt.toStrBrf()+ "| "+_canvas.dispString);
+        
         float[] eq = MyMathUtils.getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
         //works because plane is built with unit normal in equation
         return buildPlaneBoxBounds(eq);
@@ -2874,7 +2881,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @return
      */
     public final myPointf[] buildPlaneBoxBounds(myPointf[] pts) {
-        myVectorf tmpNorm = myVectorf._cross(new myVectorf(pts[0], pts[1]), new myVectorf(pts[0], pts[2]))._normalize();
+        myVectorf tmpNorm = myVectorf._cross(new myVectorf(pts[0], pts[1]), new myVectorf(pts[1], pts[2]))._normalize();
         float[] eq = MyMathUtils.getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
         //works because plane is built with unit normal in equation
         return buildPlaneBoxBounds(eq);
@@ -2887,9 +2894,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param RayDir
      * @return
      */
-    public myPointf rayintersectPlaneane(float[] eq, myPointf rayOrig, myVectorf rayDir) {        
+    public myPointf rayintersectPlane(float[] eq, myPointf rayOrig, myVectorf rayDir) {        
         Float denomVal = eq[0]* rayDir.x +eq[1]* rayDir.y+ eq[2]* rayDir.z;
-        if (denomVal == 0.0f) {        return null;}
+        // If 0 then is parallel to plane
+        if (denomVal == 0.0f) {return null;}
         Float tVal = - (eq[0]* rayOrig.x +eq[1]* rayOrig.y+ eq[2]* rayOrig.z + eq[3]) / denomVal;
         if (tVal >= 0.f && tVal <= 1.f) {       return (myPointf._add(rayOrig,tVal, rayDir));}
         return null;    
@@ -2909,7 +2917,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         ArrayList<myPointf> ptsAra = new ArrayList<myPointf>();
         for(int i=0; i<_origPerDirAra.length;++i) {
             for(int j=0;j<_origPerDirAra[i].length;++j) {
-                myPointf p = rayintersectPlaneane(eq, _origPerDirAra[i][j], _cubeDirAra[i]);
+                myPointf p = rayintersectPlane(eq, _origPerDirAra[i][j], _cubeDirAra[i]);
                 if(null!=p) {ptsAra.add(p);}
             }
         }        
@@ -2921,7 +2929,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         myVectorf baseVec = new myVectorf(planeOrigin, ptsAra.get(0));
         for(int i=0;i<ptsAra.size();++i) {
             myPointf pt = ptsAra.get(i);
-            float res = (myVectorf._angleBetween_Xprod(new myVectorf(planeOrigin, pt),baseVec));
+            float res = (myVectorf._angleBetween_Xprod(new myVectorf(planeOrigin, pt),baseVec))+MyMathUtils.TWO_PI_F;
             ptsMap.put(res, pt);
         }        
 

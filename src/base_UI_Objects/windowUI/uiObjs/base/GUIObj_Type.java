@@ -7,7 +7,16 @@ import java.util.Map;
  * @author john turner 
  */
 public enum GUIObj_Type {
-    IntVal, FloatVal, ListVal, SpacerObj, LabelVal, DispIntVal, DispFloatVal, DispStr, Button, Switch;
+    IntVal, 
+    FloatVal, 
+    ListVal, 
+    SpacerObj, 
+    LabelVal, 
+    DispIntVal, 
+    DispFloatVal, 
+    DispStr, 
+    Button, 
+    Switch;
     private static final String[] _typeExplanation = new String[]{
             "UI Object holding an integer value",
             "UI Object holding a float value",

@@ -228,30 +228,6 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
         //display window title
         surface.setTitle(winTitle);        
     }    
-    
-    /**
-     * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector
-     * @param eyeToMse vector 
-     * @param canvas3D bounded points to draw polygon edge of canvas
-     * @param color color to paint the canvas - should be translucent (Alpha should be no more than 80), 
-     *                 light for dark backgrounds and dark for light backgrounds. 
-     */
-    @Override
-    public final void drawCanvas(myVector eyeToMse, myPointf[] canvas3D, int[] color){
-        disableLights();
-        pushMatState();
-        gl_beginShape(GL_PrimitiveType.GL_LINE_LOOP);
-        gl_setFill(color, color[3]);
-        setNoStroke();
-        gl_normal(eyeToMse);
-        for(int i =canvas3D.length-1;i>=0;--i){        //build invisible canvas to draw upon
-             gl_vertex(canvas3D[i]);
-         }
-         gl_endShape(true);
-         popMatState();
-         enableLights();
-    }//drawCanvas
-
 
     /**
      * set perspective matrix based on frustum for camera
@@ -1293,7 +1269,74 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      */
     @Override
     public final void unSetCamOrient(float rx, float ry){rotateX(-MyMathUtils.HALF_PI_F); rotateY(-ry);rotateX(-rx);}
+    
+    /**
+     * Multiply the given 3 elements (i.e. a point or vector) by the modelView matrix 
+     * @param x
+     * @param y
+     * @param z
+     * @return array of 4 values [x,y,z,w] (homogeneous coord)
+     */
+    private float[] _multByModelView(float x, float y, float z) {
+        var modelView = ((PGraphics3D)g).modelview.get();
+        float[] res = new float[] {
+                modelView.m00*x + modelView.m01*y + modelView.m02*z + modelView.m03,
+                modelView.m10*x + modelView.m11*y + modelView.m12*z + modelView.m13,
+                modelView.m20*x + modelView.m21*y + modelView.m22*z + modelView.m23,
+                modelView.m30*x + modelView.m31*y + modelView.m32*z + modelView.m33
+        };
+        return res;
+    }
+    
+    /**
+     * Project a homogeneous point using internal projection matrix and find x value as fraction of width
+     * @param x
+     * @param y
+     * @param z
+     * @param w
+     * @return
+     */
+    protected float _multByProjX(float x, float y, float z, float w) {
+        var projection = ((PGraphics3D)g).projection.get();
+        float ox = projection.m00*x + projection.m01*y + projection.m02*z + projection.m03*w;
+        float ow = projection.m30*x + projection.m31*y + projection.m32*z + projection.m33*w;
+        if (Math.abs(ow) > MyMathUtils.EPS_F) {ox /= ow;}
+        return (1 + ox) / 2.0f;
+    }
+    /**
+     * Project a homogeneous point using internal projection matrix and find y value as fraction of height
+     * @param x
+     * @param y
+     * @param z
+     * @param w
+     * @return
+     */ 
+    protected float _multByProjY(float x, float y, float z, float w) {
+        var projection = ((PGraphics3D)g).projection.get();
+        float oy = projection.m10*x + projection.m11*y + projection.m12*z + projection.m13*w;
+        float ow = projection.m30*x + projection.m31*y + projection.m32*z + projection.m33*w;
+        if (Math.abs(ow) > MyMathUtils.EPS_F) {oy /= ow;}
+        float sy = (1 + oy) / 2.0f;
+        //turning value upsided down due to screen y being inverted
+        return 1 - sy;
+    }
 
+    /**
+     * Project a homogeneous point using internal projection matrix and find z value
+     * @param x
+     * @param y
+     * @param z
+     * @param w
+     * @return
+     */    
+    protected float _multByProjZ(float x, float y, float z, float w) {
+        var projection = ((PGraphics3D)g).projection.get();
+        float oz = projection.m20*x + projection.m21*y + projection.m22*z + projection.m23*w;
+        float ow = projection.m30*x + projection.m31*y + projection.m32*z + projection.m33*w;
+        if (Math.abs(ow) > MyMathUtils.EPS_F) {oz /= ow;}
+        return (1 + oz) / 2.0f;
+    }
+    
     /**
      * return x screen value for 3d point
      * @param x
@@ -1301,7 +1344,10 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      * @param z
      */
     @Override
-    public float getSceenX(float x, float y, float z) {        return screenX(x,y,z);    };
+    public float getSceenX(float x, float y, float z) {
+        float[] mvCoords = _multByModelView(x,y,z);
+        return width * _multByProjX(mvCoords[0],mvCoords[1],mvCoords[2],mvCoords[3]);        
+    }
     /**
      * return y screen value for 3d point
      * @param x
@@ -1309,7 +1355,10 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      * @param z
      */
     @Override
-    public float getSceenY(float x, float y, float z) {        return screenY(x,y,z);    };
+    public float getSceenY(float x, float y, float z) {
+        float[] mvCoords = _multByModelView(x,y,z);
+        return height * _multByProjY(mvCoords[0],mvCoords[1],mvCoords[2],mvCoords[3]);   
+    }
     /**
      * return screen value of z (Z-buffer) for 3d point
      * @param x
@@ -1317,8 +1366,11 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      * @param z
      */
     @Override
-    public float getSceenZ(float x, float y, float z) {        return screenZ(x,y,z);    };
-    
+    public float getSceenZ(float x, float y, float z) {
+        float[] mvCoords = _multByModelView(x,y,z);
+        return _multByProjZ(mvCoords[0],mvCoords[1],mvCoords[2],mvCoords[3]);   
+    }
+
     /**
      * return target frame rate
      * @return
@@ -1403,7 +1455,13 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     public myPoint getWorldLoc(int x, int y, float depthValue){ 
         //destination
         float[] unprojected = _getWorldLocFromScreenLoc(x,y,depthValue);
-        //normalize by projected depth
+        //normalize by homogeneous coord (protect against div-by-0)
+        unprojected[3] = 
+                (float)((Math.abs(unprojected[3]) > MyMathUtils.EPS_SQ) ? 
+                        unprojected[3] : 
+                        (unprojected[3] < 0) ? 
+                                -MyMathUtils.EPS_SQ : 
+                                 MyMathUtils.EPS_SQ);
         return new myPoint(unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3]);
     }
     
@@ -1418,6 +1476,11 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     public myPointf getWorldLoc_f(int x, int y, float depthValue){
         //destination
         float[] unprojected = _getWorldLocFromScreenLoc(x,y,depthValue);
+        unprojected[3] = (Math.abs(unprojected[3]) > MyMathUtils.EPS_F_SQ) ? 
+                    unprojected[3] : 
+                    (unprojected[3] < 0) ? 
+                            -MyMathUtils.EPS_F_SQ : 
+                             MyMathUtils.EPS_F_SQ;
         return new myPointf(unprojected[0]/unprojected[3], unprojected[1]/unprojected[3], unprojected[2]/unprojected[3]);
     }
     

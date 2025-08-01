@@ -35,7 +35,15 @@ public abstract class Base_Offset {
      * calculate the offset points for the drawn stroke line contained in _obj
      * @param _obj drawn stroke to build offset myPoints from
      */
-    public abstract ArrayList<myPoint> calcOffset(myCntlPt[] cntlPts, myVector[] nAra, myVector[] tAra);                
+    public abstract ArrayList<myPoint> calcOffset(myCntlPt[] cntlPts, myVector[] nAra, myVector[] tAra);
+    /**
+     * Draw the points that build this offset
+     * @param ri
+     * @param myPoints
+     * @param nAra
+     * @param tAra
+     * @param derived
+     */
     public abstract void drawCntlPts(IGraphicsAppInterface ri, myCntlPt[] myPoints, myVector[] nAra, myVector[] tAra, boolean derived);
     
     /**
