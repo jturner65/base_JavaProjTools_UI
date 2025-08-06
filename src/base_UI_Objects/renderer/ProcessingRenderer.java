@@ -18,8 +18,8 @@ import base_Render_Interface.shape.IMeshInterface;
 import base_Render_Interface.shape.IPrimShapeInterface;
 import base_Render_Interface.shape.PrimitiveType;
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.shape.GLPrimitiveProcessing;
-import base_UI_Objects.shape.PrimitiveShapeProcessing;
+import base_UI_Objects.mesh.GLPrimitiveProcessingShape;
+import base_UI_Objects.mesh.PrimitiveProcessingShape;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -352,7 +352,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      */
     @Override
     public final void gl_beginShape(GL_PrimitiveType primType) {
-        super.beginShape(GLPrimitiveProcessing.getProcFamilyFromGLPrimType(primType));
+        super.beginShape(GLPrimitiveProcessingShape.getProcFamilyFromGLPrimType(primType));
     }//gl_beginShape
     /**
      * type needs to be -1 for blank, otherwise will be CLOSE, regardless of passed value
@@ -1544,7 +1544,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      */  
     @Override
     public IMeshInterface createBaseMesh() {
-        return new GLPrimitiveProcessing(this, PShape.GEOMETRY);
+        return new GLPrimitiveProcessingShape(this, PShape.GEOMETRY);
     }//createBaseMesh
     
     /**
@@ -1555,7 +1555,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      */    
     @Override
     public IMeshInterface createBaseMesh(GL_PrimitiveType meshType) {
-        return new GLPrimitiveProcessing(this, meshType);
+        return new GLPrimitiveProcessingShape(this, meshType);
        
     }//createBaseMesh
 
@@ -1563,14 +1563,14 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      * Create a mesh group that will hold one or more IShapeInterface shapes
      */
     @Override
-    public IMeshInterface createBaseGroupMesh() {        return new GLPrimitiveProcessing(this);    }
+    public IMeshInterface createBaseGroupMesh() {        return new GLPrimitiveProcessingShape(this);    }
     /**
      * Create a primitive shape
      * @param PrimType
      * @return
      */
     public IPrimShapeInterface createBasePrim(PrimitiveType primType, float... params) {
-        return new PrimitiveShapeProcessing(this, primType, params);
+        return new PrimitiveProcessingShape(this, primType, params);
     }
     
     /**
@@ -1609,7 +1609,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      */
     @Override
     public IMeshInterface createBaseMeshAndSetInitialTransform(myPointf transVec, myPointf scaleVec, float[] rotAra, myPointf trans2Vec, float[] rotAra2, myPointf trans3Vec, float[] rotAra3){    
-        GLPrimitiveProcessing sh = (GLPrimitiveProcessing) createBaseMesh();
+        GLPrimitiveProcessingShape sh = (GLPrimitiveProcessingShape) createBaseMesh();
         PMatrix3D mat = _buildMatrixTransform(transVec, scaleVec, rotAra, trans2Vec, rotAra2, trans3Vec, rotAra3);
         sh.applyMatrix(mat);
         return sh;

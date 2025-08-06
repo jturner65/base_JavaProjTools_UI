@@ -227,19 +227,18 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * Base flag idxs
      */
     private static final int 
-            debugMode             = 0,            //whether we are in dev debug mode or not    
-            finalInitDone        = 1,            //used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
-            saveAnim             = 2,            //whether we are saving or not an anim screenie
-            showCanvas            = 3,
-            
+            debugMode         = 0,            //whether we are in dev debug mode or not    
+            finalInitDone     = 1,            //used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
+            saveAnim          = 2,            //whether we are saving or not an anim screenie
+            showCanvas        = 3,            
     //simulation
-            runSim                = 4,            //run simulation
-            singleStep            = 5,            //run single sim step
+            runSim            = 4,            //run simulation
+            singleStep        = 5,            //run single sim step
     //UI
-            showRtSideMenu        = 6,            //display the right side info menu for the current window, if it supports that display
-            showStatusBar        = 7,            //whether or not to display status bar with frames per second and mem usage
-            flipDrawnTraj          = 8,            //whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
-            clearBKG             = 9;            //whether or not background should be cleared for every draw.  defaults to true
+            showRtSideMenu    = 6,            //display the right side info menu for the current window, if it supports that display
+            showStatusBar     = 7,            //whether or not to display status bar with frames per second and mem usage
+            flipDrawnTraj     = 8,            //whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
+            clearBKG          = 9;            //whether or not background should be cleared for every draw.  defaults to true
     public final int numBaseFlags = 10;
     
     /**
@@ -1488,7 +1487,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param modAmtMillis milliseconds since last frame started
      */
     private final void draw3D(float modAmtMillis){
-        for(int i =1; i<numDispWins; ++i){
+        for(int i = 1; i<numDispWins; ++i){
             if((isShowingWindow(i)) && (_dispWinFrames[i].getIs3DWindow())){    _dispWinFrames[i].draw3D(modAmtMillis);}
         }
         //fixed xyz rgb axes for visualisation purposes and to show movement and location in otherwise empty scene
@@ -1503,7 +1502,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param modAmtMillis milliseconds since last frame started
      */    
     private final void draw2D(float modAmtMillis) {
-        for(int i =1; i<numDispWins; ++i){if (isShowingWindow(i) && !(_dispWinFrames[i].getIs3DWindow())){_dispWinFrames[i].draw2D(modAmtMillis);}}
+        for(int i = 1; i<numDispWins; ++i){if (isShowingWindow(i) && !(_dispWinFrames[i].getIs3DWindow())){_dispWinFrames[i].draw2D(modAmtMillis);}}
     }
     
     /**
@@ -1512,7 +1511,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     private final void drawUI(float modAmtMillis){    
         boolean shouldDrawOnscreenText = (isDebugMode() || showInfo);
-        for(int i =1; i<numDispWins; ++i){
+        for(int i = 1; i<numDispWins; ++i){
             _dispWinFrames[i].drawHeader(
                     sideBarMenu.getDebugData(),
                     (shouldDrawOnscreenText && (i==_curFocusWin)), 
@@ -1594,7 +1593,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         for(int idx =0; idx<_numFlagsToShow; ++idx){
             int i = _flagsToShow.get(idx);
             if(getBaseFlag(i) ){        dispMenuTxtLat(_truePFlagNames[i], _trueFlagColors[i], true, xOffHalf,yOffHalf);}
-            else {                        dispMenuTxtLat(_falsePFlagNames[i], btnGreyClr, false, xOffHalf,yOffHalf);}                    
+            else {                      dispMenuTxtLat(_falsePFlagNames[i], btnGreyClr, false, xOffHalf,yOffHalf);}                    
         }
     }//dispMenuText
     
@@ -2686,14 +2685,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
         int flIDX = idx/32, mask = 1<<(idx%32);
         _baseFlags[flIDX] = (val ?  _baseFlags[flIDX] | mask : _baseFlags[flIDX] & ~mask);
         switch(idx){
-            case debugMode             : { for(int i =1; i<_dispWinFrames.length;++i){_dispWinFrames[i].setIsGlobalDebugMode(val) ;}break;}//anything special for debugMode     
-            case finalInitDone        : { break;}//flag to handle long setup - processing seems to time out if setup takes too long, so this will continue setup in the first draw loop
-            case saveAnim             : { break;}//anything special for saveAnim             
-            case runSim                : { break;}// handleTrnsprt((val ? 2 : 1) ,(val ? 1 : 0),false); break;}        //anything special for runSim    
-            case showRtSideMenu        : {    for(int i =1; i<_dispWinFrames.length;++i){_dispWinFrames[i].setRtSideInfoWinSt(val);}break;}    //set value for every window - to show or not to show info window
-            case showStatusBar        : { break;}
-            case flipDrawnTraj        : { for(int i =1; i<_dispWinFrames.length;++i){_dispWinFrames[i].rebuildAllDrawnTrajs();}break;}                        //whether or not to flip the drawn melody trajectory, width-wise
-            case singleStep         : { break;}
+            case debugMode           : { for(int i = 1; i<_dispWinFrames.length;++i){_dispWinFrames[i].setIsGlobalDebugMode(val) ;}break;}//anything special for debugMode     
+            case finalInitDone       : { break;}//flag to handle long setup - processing seems to time out if setup takes too long, so this will continue setup in the first draw loop
+            case saveAnim            : { break;}//anything special for saveAnim             
+            case runSim              : { break;}// handleTrnsprt((val ? 2 : 1) ,(val ? 1 : 0),false); break;}        //anything special for runSim    
+            case showRtSideMenu      : { for(int i = 1; i<_dispWinFrames.length;++i){_dispWinFrames[i].setRtSideInfoWinSt(val);}break;}    //set value for every window - to show or not to show info window
+            case showStatusBar       : { break;}// show or hide lower status bar, displaying frame rate, memory usage and other quantities
+            case flipDrawnTraj       : { for(int i = 1; i<_dispWinFrames.length;++i){_dispWinFrames[i].rebuildAllDrawnTrajs();}break;}                        //whether or not to flip the drawn melody trajectory, width-wise
+            case singleStep          : { break;}
             case clearBKG            : { break;}
         }                
     }//setBaseFlag

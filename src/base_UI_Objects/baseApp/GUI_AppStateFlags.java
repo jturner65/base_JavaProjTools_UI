@@ -16,13 +16,13 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
     
     public static final int
         //debug is specified in base class as idx 0
-        valueKeyPressed        = _numBaseFlags,
+        valueKeyPressed     = _numBaseFlags,
         shiftKeyPressed     = _numBaseFlags + 1,            //shift pressed
-        altKeyPressed          = _numBaseFlags + 2,            //alt pressed
+        altKeyPressed       = _numBaseFlags + 2,            //alt pressed
         cntlKeyPressed      = _numBaseFlags + 3,            //cntrl pressed
-        mouseClicked         = _numBaseFlags + 4,            //mouse left button is held down    
-        drawing                = _numBaseFlags + 5,             //currently drawing a trajectory
-        modView                 = _numBaseFlags + 6;            //shift+mouse click+mouse move being used to modify the view
+        mouseClicked        = _numBaseFlags + 4,            //mouse left button is held down    
+        drawing             = _numBaseFlags + 5,             //currently drawing a trajectory
+        modView             = _numBaseFlags + 6;            //shift+mouse click+mouse move being used to modify the view
         
     /**
      * # of control flags being managed
@@ -195,16 +195,19 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
         setFlag(drawing, false);
     }//mouseReleased
     
+    /**
+     * Any special handling for the flags this implementation handles
+     */
     @Override
     protected void handleFlagSet_Indiv(int idx, boolean val, boolean oldval) {
         switch(idx){
-            case valueKeyPressed     : { break;}//anything special for valueKeyPressed  
-            case altKeyPressed         : { break;}//anything special for altKeyPressed     
-            case shiftKeyPressed     : { break;}//anything special for shiftKeyPressed     
-            case cntlKeyPressed        : { break;}
-            case mouseClicked         : { break;}//anything special for mouseClicked         
-            case modView             : { break;}//anything special for modView         
-            case drawing            : { break;}
+            case valueKeyPressed   : { break;}
+            case altKeyPressed     : { break;}
+            case shiftKeyPressed   : { break;}
+            case cntlKeyPressed    : { break;}
+            case mouseClicked      : { break;}
+            case modView           : { break;}
+            case drawing           : { break;}
         }                
     }
     

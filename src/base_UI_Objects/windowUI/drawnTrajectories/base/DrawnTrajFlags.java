@@ -13,17 +13,17 @@ public class DrawnTrajFlags extends Base_BoolFlags {
     public static final int 
         //construction
             isClosedIDX         = _numBaseFlags,            //object is a closed poly
-            isMadeIDX             = _numBaseFlags + 1,         //whether or not the object is finished being drawn
+            isMadeIDX           = _numBaseFlags + 1,         //whether or not the object is finished being drawn
             isFlippedIDX        = _numBaseFlags + 2,        //points being displayed are flipped (reflected)
             usesCntlPtsIDX      = _numBaseFlags + 3,        //if this curve is governed by control points (as opposed to just drawn freehand)
         //calculation    
             reCalcPointsIDX     = _numBaseFlags + 4,        //recalculate points from cntl point radii - use if radius is changed on stroke from user input
-            cntlWInvRadIDX        = _numBaseFlags + 5,        //whether the weight impact on cntl radius is inverse or direct - inverse has slow drawing be wider, direct has slow drawing be narrower
+            cntlWInvRadIDX      = _numBaseFlags + 5,        //whether the weight impact on cntl radius is inverse or direct - inverse has slow drawing be wider, direct has slow drawing be narrower
             interpStrokeIDX     = _numBaseFlags + 6,        //whether or not control-point based strokes are interpolating or not
         //display
             showCntlPntsIDX     = _numBaseFlags + 7,        //show this object's cntl points
-            useVertNormsIDX        = _numBaseFlags + 8,        //use vertex normals to shade curve
-            drawNormsIDX         = _numBaseFlags + 9,        //display normals for this object as small arrows
+            useVertNormsIDX     = _numBaseFlags + 8,        //use vertex normals to shade curve
+            drawNormsIDX        = _numBaseFlags + 9,        //display normals for this object as small arrows
             drawCntlRadIDX      = _numBaseFlags + 10,
             useProcCurveIDX     = _numBaseFlags + 11;        //toggles whether we use straight lines in vertex building or processing's curve vertex        
     private static final int _numStateFlags = _numBaseFlags + 12;

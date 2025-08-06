@@ -12,10 +12,13 @@ import base_UI_Objects.windowUI.drawnTrajectories.offsets.base.Base_Offset;
 * calculates normal offset - distance r, normal from stroke line
 * @author john
 */
-//make other classes to use different offset mechanism
+//TODO make other classes to use different offset mechanism
 public class Normal_Offset extends Base_Offset{
-    public Normal_Offset(){super(); name = "Normal offset";}
-
+    public Normal_Offset(boolean _ec){super(_ec); name = "Normal offset";}
+    
+    /**
+     * Calculate the offset
+     */
     @Override
     public  ArrayList<myPoint> calcOffset(myCntlPt[] cntlPts, myVector[] nAra, myVector[] tAra) {
         if(nAra.length != cntlPts.length){return  new ArrayList<myPoint>();}    
@@ -54,4 +57,4 @@ public class Normal_Offset extends Base_Offset{
   }
       
 
-}//myNormOffset
+}//class Normal_Offset

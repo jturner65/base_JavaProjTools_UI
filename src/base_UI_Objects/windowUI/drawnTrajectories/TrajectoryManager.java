@@ -206,7 +206,7 @@ public class TrajectoryManager {
             if(null==pt){return false;}
             this.tmpDrawnTraj.addPoint(pt);
             mod = true;
-        }else if(getFlags(editingTraj)){        //if editing trajectory has started, then process it
+        } else if(getFlags(editingTraj)){        //if editing trajectory has started, then process it
             //msgObj.dispInfoMessage("TrajectoryManager","handleMouseDrag","edit traj");    
             myPoint pt =  ownr.getMsePoint(mouseX, mouseY);
             if(null==pt){return false;}
@@ -214,7 +214,12 @@ public class TrajectoryManager {
         }
         return mod;
     }//handleMouseDrag_Traj
-
+    
+    /**
+     * Find closest trajectory to mouse click location 
+     * @param mse
+     * @return
+     */
     public DrawnSimpleTraj findTraj(myPoint mse){
         TreeMap<String,ArrayList<DrawnSimpleTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
         if((tmpTreeMap != null) && (tmpTreeMap.size() != 0)) {
@@ -304,7 +309,7 @@ public class TrajectoryManager {
     }//rebuildAllDrawnTrajs
 
     /**
-     * for adding/deleting a screen programatically  TODO
+     * for adding/deleting a screen programmatically  TODO
      * rebuild arrays of start locs whenever trajectory maps/arrays 
      * have changed - passed key is value modded in drwnTrajMap,
      * modVal is if this is a deleted screen's map(0), a new map (new screen) 

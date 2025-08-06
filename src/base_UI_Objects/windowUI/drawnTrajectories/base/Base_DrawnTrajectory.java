@@ -28,7 +28,6 @@ public abstract class Base_DrawnTrajectory {
     public static double wScale = -1;
     
     public int[] fillClr, strkClr;
-    public double len;                                //length of object
     protected static final int numReps = 4;                //default number of repetitions of subdivid/tuck/untuck
     
     public static final int trajPtRad = 2;            //radius of points
@@ -38,10 +37,11 @@ public abstract class Base_DrawnTrajectory {
      */
     private boolean ptsDerived;    
     
-    public myVector canvasNorm;                            //normal to drawing canvas == normal to plane of poly
-    protected myPoint[] origpts;                            //originally drawn points making up this curve
+    protected myVector canvasNorm;                            //normal to drawing canvas == normal to plane of poly
+    
     protected myPoint[] pts;                                //points making up this curve
     protected double[] dpts;                        //array holding distance to each point from beginning
+    protected double len;                                //length of object
     
     protected myCntlPt[] cntlPts;                        //control points describing object, if used        
     protected double[] d_cntlPts;
@@ -60,7 +60,7 @@ public abstract class Base_DrawnTrajectory {
      */
     public int lnI_Typ,                                //what interpolation type will this curve use for line operations (tuck, find myPoint at ratio of length, etc) 
                 sbI_Typ,                            //interp type for subdivision
-                swI_Typ;                            //what kind of interpolation will be used for this curve as it is swemyPoint around axis (if this is a closed sweep-poly)
+                swI_Typ;                            //what kind of interpolation will be used for this curve as it is swept around axis (if this is a closed sweep-poly)
     
     /**
      * flags about which interpolation type should be done
@@ -70,10 +70,10 @@ public abstract class Base_DrawnTrajectory {
     //add more here when we have more 
     
     public final int     //point processing flags
-        _subdivide        =0,
-        _tuck            =1,
-        _equaldist        =2,
-        _resample        =3;
+        _subdivide      =0,
+        _tuck           =1,
+        _equaldist      =2,
+        _resample       =3;
 
     /**
      * array of normals, tans, binorms for every control point,
@@ -104,7 +104,7 @@ public abstract class Base_DrawnTrajectory {
         cntlPts = new myCntlPt[0];
         trajFlags.setInitTrajFlags();
         ptsDerived = false;
-        _offset = new Normal_Offset();
+        _offset = new Normal_Offset(true);
     }
     
     /**
@@ -153,7 +153,7 @@ public abstract class Base_DrawnTrajectory {
     public float calcCntlWeight(myPoint a, myPoint p, myPoint b){    return (float)(myPoint._dist(a,p) + myPoint._dist(p,b));}
     
     @SuppressWarnings("unchecked")
-    protected final <T extends myPoint> void _moveCurveToEndPoints(T[] cntlPts, myPoint startPt, myPoint endPt, boolean flip) {
+    protected final <T extends myPoint> void _moveCurveToEndPoints(T[] cntlPts, T startPt, T endPt, boolean flip) {
         int numPoints = cntlPts.length;
         if(numPoints == 0){return;}
         
@@ -239,26 +239,26 @@ public abstract class Base_DrawnTrajectory {
 
     /**
      * subdivide, tuck, respace, resample, etc. pts of this curve
-     * @param pts
-     * @param numPts
-     * @param numReps
+     * @param _pts array of points to treat
+     * @param newNumPts new size of resampled curve
+     * @param numReps # of repetitions of subdivision/tuck/untuck to perform
      */
-    public final void processPts(myPoint[] pts, int numPts, int numReps){
+    public final void processPts(myPoint[] _pts, int newNumPts, int numReps){
         boolean isClosed = trajFlags.getIsClosed();
         //makes 1 extra vert  equilspaced between each vert, to increase resolution of curve
-        setPts(procPts(_subdivide, pts, 2, len, isClosed));
+        setPts(procPts(_subdivide, _pts, 2, len, isClosed));
         for(int i = 0; i < numReps; ++i){
-            setPts(procPts(_subdivide, pts, 2, len, isClosed));
-            setPts(procPts(_tuck, pts, .5f, len, isClosed));
-            setPts(procPts(_tuck, pts, -.5f, len, isClosed));
+            setPts(procPts(_subdivide, _pts, 2, len, isClosed));
+            setPts(procPts(_tuck, _pts, .5f, len, isClosed));
+            setPts(procPts(_tuck, _pts, -.5f, len, isClosed));
         }        //smooth curve - J4
-        setPts(procPts(_equaldist, pts, .5f, len, isClosed));
+        setPts(procPts(_equaldist, _pts, .5f, len, isClosed));
         for(int i = 0; i < numReps; ++i){
-            setPts(procPts(_subdivide, pts, 2, len, isClosed));
-            setPts(procPts(_tuck, pts, .5f, len, isClosed));
-            setPts(procPts(_tuck, pts, -.5f, len, isClosed));
+            setPts(procPts(_subdivide, _pts, 2, len, isClosed));
+            setPts(procPts(_tuck, _pts, .5f, len, isClosed));
+            setPts(procPts(_tuck, _pts, -.5f, len, isClosed));
         }        //smooth curve - J4
-        setPts(procPts(_resample, pts, numPts, len, isClosed));        
+        setPts(procPts(_resample, _pts, newNumPts, len, isClosed));        
     }    
     
     
@@ -269,17 +269,23 @@ public abstract class Base_DrawnTrajectory {
     protected final void setPts(ArrayList<myPoint> tmp){
         pts = tmp.toArray(new myPoint[0]);
         boolean isClosed = trajFlags.getIsClosed();
-        dpts = getPtDist(pts, isClosed);    
-        len=length(pts, isClosed);
+        dpts = myPoint._findAllTrajPtDists(pts, isClosed);    
+        len = myPoint._getLengthOfTraj(pts, isClosed);
     }//setPts    
-    //make a new point interpolated between either 2 or 3 points in pts ara, described by # of idxs
+    /**
+     * make a new point interpolated between either 2 or 3 points in pts ara, described by # of idxs
+     * @param pts
+     * @param idxs
+     * @param s
+     * @return
+     */
     public final myPoint makeNewPoint(myPoint[] pts, int[] idxs, double s){    return _Interp(pts[idxs[0]], s, (idxs.length == 2 ? pts[idxs[1]] : _Interp(pts[idxs[1]],.5f,pts[idxs[2]], lnI_Typ)),lnI_Typ );    }
     
     /**
      * process all points using passed algorithm on passed array of points - not all args are used by all algs.
      * @param _typ type of point processing
      * @param pts array to be processed
-     * @param val quantity used by variou processing : subdivision-> # of new pts +1, tuck-> amt to be tucked,  resample-> # of new verts
+     * @param val quantity used by various processing : subdivision-> # of new pts +1, tuck-> amt to be tucked,  resample-> # of new verts
      * @param len length of segment described by points, including ends if closed
      * @param wrap whether the point list wraps around or not
      * @return arraylist of processed points
@@ -297,9 +303,11 @@ public abstract class Base_DrawnTrajectory {
                 if(wrap){tmp.add(makeNewPoint(_pts,new int[]{_pts.length-1,_pts.length-2,0}, val));} else {tmp.add(_pts[_pts.length-1]);}            
                 return tmp;}
             case _equaldist    :{
+                // We want to account for final space between last point and first point if wrap around.
+                double numSpaces = 1.0 * ( wrap ? _pts.length : _pts.length - 1);
                 //new distance between each vertex, iterative dist travelled so far
-                double ratio = _len/(1.0f * _pts.length),curDist = 0;                                  
-                for(int i =0; i<_pts.length; ++i){tmp.add(at(curDist/_len));curDist+=ratio;}    
+                double ratio = _len/numSpaces,curDist = 0;                                  
+                for(int i =0; i<_pts.length; ++i){tmp.add(at(curDist/_len, _pts, wrap));curDist+=ratio;}    
                 tmp.add(_pts[_pts.length-1]);                
                 return tmp;}    
             case _resample    :{
@@ -308,93 +316,120 @@ public abstract class Base_DrawnTrajectory {
                 int idx, newIdx=0;        
                 for(double i = 0; i<_pts.length-1; i+=ratio){idx = (int)i;    f = i-idx;tmp.add(newIdx++,makeNewPoint(_pts,new int[]{idx,idx+1},f));}
                 if(wrap) {
-                    if(myPoint._dist(tmp.get(newIdx-1), tmp.get(0)) > ratio){    tmp.add(makeNewPoint(new myPoint[]{tmp.get(newIdx-1), tmp.get(0)},new int[]{0,1},.5f));}        //want to only add another point if last 2 points are further than ratio appart
+                    if(myPoint._dist(tmp.get(newIdx-1), tmp.get(0)) > ratio){    
+                        tmp.add(makeNewPoint(new myPoint[]{tmp.get(newIdx-1), tmp.get(0)},new int[]{0,1},.5f));
+                    }        //want to only add another point if last 2 points are further than ratio apart
                 } else {        tmp.add(_pts[_pts.length-1]);}            //always add another point if open line/loop - want to preserve end point
                 break;}    
             default :
         }        
         return tmp;
     }
-        
+     
     //CONTROL POINT-RELATED FUNCTIONS
-    //build essential orientation vectors for control points
+    /**
+     * build essential orientation vectors for control points
+     */
     public void buildCntlFrameVecAras(){
         c_nAra = buildNormals(cntlPts);
         c_tAra = buildTangents(cntlPts, false);
         c_bAra = buildBinormals(cntlPts, c_nAra, c_tAra);        //use these with cntl point radius to build stroke pts
     }//buildCntlFrameVecAras
         
-    //sets required info for points array - points and dist between pts, length, etc
+    /**
+     * sets required info for points array - points and dist between pts, length, etc
+     * @param tmp
+     */
     protected void setCPts(ArrayList<myCntlPt> tmp){
         cntlPts = tmp.toArray(new myCntlPt[0]);
-        d_cntlPts = getPtDist(cntlPts, false);    
-        cntl_len=length(cntlPts, false);
+        d_cntlPts = myPoint._findAllTrajPtDists(cntlPts, false);    
+        cntl_len = myPoint._getLengthOfTraj(cntlPts, false);
     }//setPts    
-    //make a new point interpolated between either 2 or 3 points in pts ara, described by # of idxs
+    /**
+     * make a new point interpolated between either 2 or 3 points in pts ara, described by # of idxs
+     * @param pts
+     * @param idxs
+     * @param s
+     * @return
+     */
     public myCntlPt makeNewPoint(myCntlPt[] pts, int[] idxs, double s){    return _Interp(pts[idxs[0]], s, (idxs.length == 2 ? pts[idxs[1]] : _Interp(pts[idxs[1]],.5f,pts[idxs[2]], lnI_Typ)),lnI_Typ );    }
     /**
      * process all points using passed algorithm on passed array of points - not all args are used by all algs.
      * @param _typ type of point processing
      * @param pts array to be processed
-     * @param val quantity used by variou processing : subdivision-> # of new pts +1, tuck-> amt to be tucked,  resample-> # of new verts
+     * @param val quantity used by various processing : subdivision-> # of new pts +1, tuck-> amt to be tucked,  resample-> # of new verts
      * @param len length of segment described by points, including ends if closed
      * @param wrap whether the point list wraps around or not
      * @return arraylist of processed points
      */    
-    public ArrayList<myCntlPt> procCntlPt(int _typ, myCntlPt[] pts, double val, double _len){
+    public ArrayList<myCntlPt> procCntlPt(int _typ, myCntlPt[] _pts, double val, double _len){
         ArrayList<myCntlPt> tmp = new ArrayList<myCntlPt>(); // temporary array
         switch(_typ){
             case _subdivide    :{
-                for(int i = 0; i < pts.length-1; ++i){tmp.add(pts[i]); for(int j=1;j<val;++j){tmp.add(makeNewPoint(pts,new int[]{i,i+1}, (j/(val))));}}
-                tmp.add(pts[pts.length-1]);                
+                for(int i = 0; i < _pts.length-1; ++i){tmp.add(_pts[i]); for(int j=1;j<val;++j){tmp.add(makeNewPoint(_pts,new int[]{i,i+1}, (j/(val))));}}
+                tmp.add(_pts[_pts.length-1]);                
                 return tmp;}
             case _tuck        :{
-                tmp.add(0,pts[0]);//no wrap on control points, so no  need to check
-                for(int i = 1; i < pts.length-1; ++i){    tmp.add(i,makeNewPoint(pts,new int[]{i,i-1,i+1}, val));   }
-                tmp.add(pts[pts.length-1]);            
+                tmp.add(0,_pts[0]);//no wrap on control points, so no  need to check
+                for(int i = 1; i < _pts.length-1; ++i){    tmp.add(i,makeNewPoint(_pts,new int[]{i,i-1,i+1}, val));   }
+                tmp.add(_pts[_pts.length-1]);            
                 return tmp;}
             case _equaldist    :{
-                double ratio = _len/(1.0f * pts.length),curDist = 0;                     //new distance between each vertex, iterative dist travelled so far             
-                for(int i =0; i<pts.length; ++i){tmp.add(at_C(curDist/_len, pts));curDist+=ratio;}    
-                tmp.add(pts[pts.length-1]);                
+                double ratio = _len/(1.0f * _pts.length),curDist = 0;                     //new distance between each vertex, iterative dist travelled so far             
+                for(int i = 0; i<_pts.length; ++i){tmp.add(at_C(curDist/_len, _pts));curDist+=ratio;}    
+                tmp.add(_pts[_pts.length-1]);                
                 return tmp;}    
             case _resample    :{
-                double ratio = pts.length/(1.0f * (val-1)),f;                    //distance between each vertex         
+                double ratio = _pts.length/(1.0f * (val-1)),f;                    //distance between each vertex         
                 int idx, newIdx=0;        
-                for(float i = 0; i<pts.length-1; i+=ratio){idx = (int)i;    f = i-idx;tmp.add(newIdx++,makeNewPoint(pts,new int[]{idx,idx+1},f));}            
-                tmp.add(pts[pts.length-1]);
+                for(float i = 0; i<_pts.length-1; i+=ratio){idx = (int)i;    f = i-idx;tmp.add(newIdx++,makeNewPoint(_pts,new int[]{idx,idx+1},f));}            
+                tmp.add(_pts[_pts.length-1]);
                 break;}    
             default :
         }
         return tmp;
     }    
     //end cntlmyPoint related
-    //normals, tangents, binormals at each point
-    public myVector[] buildNormals(myPoint[] _pts){
-        ArrayList<myVector> tmp = new ArrayList<myVector>();
-        for(int i =0; i<_pts.length; ++i){tmp.add(canvasNorm._normalized());    }        //make normal the canvas normal
-        return tmp.toArray(new myVector[0]);
+    /////////////////////////////////////////////////
+    ///normals, tangents, binormals at each point
+    /**
+     * Derive normals at each point to be the normal of the canvas these points were drawn upon
+     * @param _pts
+     * @return
+     */
+    public final myVector[] buildNormals(myPoint[] _pts){
+        myVector[] tmp = new myVector[_pts.length];
+        for(int i =0; i<_pts.length; ++i){tmp[i] = canvasNorm._normalized();    }        //make normal the canvas normal
+        return tmp;
     }    
         
-
-    public myVector[] buildTangents(myPoint[] _pts, boolean close){
-        ArrayList<myVector> tmp = new ArrayList<myVector>();
-        for(int i=0; i<_pts.length-1; ++i){tmp.add(myVector._unit(_pts[i], _pts[i+1]));}
-        if(close){tmp.add(myVector._unit(_pts[_pts.length-1], _pts[0]));} 
-        else {tmp.add(myVector._unit(_pts[_pts.length-2], _pts[_pts.length-1]));}
-        return tmp.toArray(new myVector[0]);
-    }    
-    public myVector[] buildBinormals(myPoint[] _pts, myVector[] n_ara, myVector[] t_ara){//build last
-        ArrayList<myVector> tmp = new ArrayList<myVector>();
-        for(int i=0; i<_pts.length; ++i){tmp.add((n_ara[i]._cross(t_ara[i]))._normalize());}
-        return tmp.toArray(new myVector[0]);
+    /**
+     * Derive tangents at each point 
+     * @param _pts
+     * @param close
+     * @return
+     */
+    public final myVector[] buildTangents(myPoint[] _pts, boolean close){
+        myVector[] tmp = new myVector[_pts.length];
+        for(int i=0; i<_pts.length-1; ++i){tmp[i] = myVector._unit(_pts[i], _pts[i+1]);}
+        //if close then add tangent from last point to first point
+        if(close){tmp[_pts.length-1] = myVector._unit(_pts[_pts.length-1], _pts[0]);}
+        // if not close than duplicate last tangent for final point
+        else {tmp[_pts.length-1] = myVector._unit(_pts[_pts.length-2], _pts[_pts.length-1]);}
+        return tmp;
     }
-
-    //find location of center of verts
-    public myPoint calcCOV(){myPoint C = new myPoint();for(int i=0;i<pts.length;++i){C._add(pts[i]);} myPoint Ct = myPoint._mult(C,1.0f/pts.length); COV=new myPoint(Ct);return COV;}
-    //find COV of passed verts
-    public myPoint calcCOVOfAra(myPoint[] pts){myPoint C = new myPoint();for(int i=0;i<pts.length;++i){C._add(pts[i]);}myPoint Ct = myPoint._mult(C,1.0f/pts.length); return Ct;}
-
+    /**
+     * 
+     * @param _pts
+     * @param n_ara
+     * @param t_ara
+     * @return
+     */
+    public final myVector[] buildBinormals(myPoint[] _pts, myVector[] n_ara, myVector[] t_ara){//build last
+        myVector[] tmp = new myVector[_pts.length];
+        for(int i=0; i<_pts.length; ++i){tmp[i] = (n_ara[i]._cross(t_ara[i]))._normalize();}
+        return tmp;
+    }
     
     /**
      * return the interpolated myVectortor between two myPoint's myVectortors given the adjacent idx's of two points in pts and the array of myVectortors
@@ -415,10 +450,16 @@ public abstract class Base_DrawnTrajectory {
     //put interpolant between adjacent axis points in s ara if needed
     public myPoint at(double t){return at(t,new double[1], len, pts, dpts);}
     //put interpolant between adjacent axis points in s ara if needed
+    public myPoint at(double t, myPoint[] _pts, boolean isClosed) {
+        double[] _dPts = myPoint._findAllTrajPtDists(_pts, isClosed);
+        double _len = myPoint._getLengthOfTraj(_pts, isClosed);
+        return at(t, new double[1], _len, _pts, _dPts);
+    }
+    //put interpolant between adjacent axis points in s ara if needed
     public myPoint at(double t, double[] s){return at(t,s, len, pts, dpts);}
     //call directly if wanting interpolant between adj axis points too
-    public myPoint at(double t, double[] s, double _len, myPoint[] pts, double[] _dpts){
-        if(t<0){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[0];} else if (t>1){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[pts.length-1];}
+    public myPoint at(double t, double[] s, double _len, myPoint[] _pts, double[] _dpts){
+        if(t<0){System.out.println("In at : t="+t+" needs to be [0,1]");return _pts[0];} else if (t>1){System.out.println("In at : t="+t+" needs to be [0,1]");return _pts[_pts.length-1];}
         double dist = t * _len;
         //built off dpts so that it will get wrap for closed curve
         for(int i=0; i<_dpts.length-1; ++i){                                        
@@ -427,20 +468,24 @@ public abstract class Base_DrawnTrajectory {
                 //pts will be 0-1 based), so normalize by distance dpts[i]
                 s[0] = ((dist-_dpts[i])/(_dpts[i+1]-_dpts[i]));        
                 //put interpolant between adjacent axis points in s ara if needed
-                return makeNewPoint(pts,new int[]{i,((i+1)%pts.length)}, s[0]);        
+                return makeNewPoint(_pts,new int[]{i,((i+1)%_pts.length)}, s[0]);        
             }                    
         }        
-        return pts[0];
+        return _pts[0];
     }//at    
     
-    public myCntlPt at_C(double t, myCntlPt[] pts){double[] _dpts = this.getPtDist(pts, false);double _len = this.length(pts, false);return at_C(t,new double[1], _len, pts, _dpts);}//put interpolant between adjacent axis points in s ara if needed
-    public myCntlPt at_C(double t, double[] s, double _len, myCntlPt[] pts, double[] _dpts){//call directly if wanting interpolant between adj axis points too
-        if(t<0){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[0];} else if (t>1){System.out.println("In at : t="+t+" needs to be [0,1]");return pts[pts.length-1];}
+    public myCntlPt at_C(double t, myCntlPt[] _cpts){
+        double[] _dpts = myPoint._findAllTrajPtDists(_cpts, false);
+        double _len = myPoint._getLengthOfTraj(_cpts, false);
+        return at_C(t,new double[1], _len, _cpts, _dpts);
+    }//put interpolant between adjacent axis points in s ara if needed
+    public myCntlPt at_C(double t, double[] s, double _len, myCntlPt[] _cpts, double[] _dpts){//call directly if wanting interpolant between adj axis points too
+        if(t<0){System.out.println("In at : t="+t+" needs to be [0,1]");return _cpts[0];} else if (t>1){System.out.println("In at : t="+t+" needs to be [0,1]");return _cpts[_cpts.length-1];}
         double dist = t * _len;
         for(int i=0; i<_dpts.length-1; ++i){                                        //built off dpts so that it will get wrap for closed curve
             if(_dpts[i+1] >= dist){
                 s[0] = ((dist-_dpts[i])/(_dpts[i+1]-_dpts[i]));                    //needs to stay between 0 and 1 (since interpolation functions between pts will be 0-1 based), so normalize by distance dpts[i]
-                return makeNewPoint(pts,new int[]{i,((i+1)%pts.length)}, s[0]);        //put interpolant between adjacent axis points in s ara if needed        
+                return makeNewPoint(_cpts,new int[]{i,((i+1)%_cpts.length)}, s[0]);        //put interpolant between adjacent axis points in s ara if needed        
             }            
         }        
         return new myCntlPt();
@@ -478,7 +523,7 @@ public abstract class Base_DrawnTrajectory {
     }//_Interp
     
     /**
-     * same as above but with doubles
+     * Same as above but with doubles
      * @param A
      * @param s
      * @param B
@@ -494,7 +539,7 @@ public abstract class Base_DrawnTrajectory {
     }//_Interp
 
     /**
-     * same as above but with myCntlPts
+     * Same as above but with myCntlPts
      * @param A
      * @param s
      * @param B
@@ -503,14 +548,14 @@ public abstract class Base_DrawnTrajectory {
      */
     protected myCntlPt _Interp(myCntlPt A, double s, myCntlPt B, int _typ){
         switch (_typ){
-            case linear_int : {    return myCntlPt.L(A, s, B);}
+            case linear_int : {    return new myCntlPt(A, s, B);}
             //add more cases for different interpolation        
-            default : {    return myCntlPt.L(A, s, B);}            //defaults to linear
+            default : {    return new myCntlPt(A, s, B);}           //defaults to linear
         }    
     }//_Interp    
 
     /**
-     * draw currently selected control point
+     * Draw currently selected control point
      * @param ri
      * @param i
      */
@@ -518,7 +563,7 @@ public abstract class Base_DrawnTrajectory {
         drawSelPoint(ri, i, new int[] {255,255,0});
     }
     /**
-     * draw currently selected control point with given highlight color
+     * Draw currently selected control point with given highlight color
      * @param ri
      * @param i
      * @param clr highlight color (first 3 idxs)
@@ -881,31 +926,36 @@ public abstract class Base_DrawnTrajectory {
         }
     }
     
+//    /**
+//     * returns array of distances to each point from beginning - needs to retain dist from last vert to first if closed
+//     * @param pts
+//     * @param wrap
+//     * @return
+//     */
+//    public final double[] getPtDist(myPoint[] pts, boolean wrap){
+//        double[] res = new double[pts.length+1];
+//        res[0]=0;
+//        for(int i=1; i<pts.length; ++i){
+//            //System.out.println("i : "+i);
+//            res[i] = res[i-1] + myPoint._dist(pts[i-1],pts[i]);
+//        }
+//        if(wrap){
+//            //System.out.println("wrap");
+//            res[pts.length] = res[pts.length-1] + myPoint._dist(pts[pts.length-1],pts[0]);
+//        } else {
+//            //System.out.println("no wrap");
+//            
+//            res[pts.length] = 0;
+//        }
+//        
+//        return res;}
     /**
-     * returns array of distances to each point from beginning - needs to retain dist from last vert to first if closed
+     * returns length of curve, including endpoint if closed
      * @param pts
-     * @param wrap
+     * @param closed
      * @return
      */
-    public final double[] getPtDist(myPoint[] pts, boolean wrap){
-        double[] res = new double[pts.length+1];
-        res[0]=0;
-        for(int i=1; i<pts.length; ++i){
-            //System.out.println("i : "+i);
-            res[i] = res[i-1] + myPoint._dist(pts[i-1],pts[i]);
-            }
-        if(wrap){
-            //System.out.println("wrap");
-            res[pts.length] = res[pts.length-1] + myPoint._dist(pts[pts.length-1],pts[0]);
-        } else {
-            //System.out.println("no wrap");
-            
-            res[pts.length] = 0;
-        }
-        
-        return res;}
-    //returns length of curve, including endpoint if closed
-    public final double length(myPoint[] pts, boolean closed){double res = 0;for(int i =0; i<pts.length-1; ++i){res += myPoint._dist(pts[i],pts[i+1]);}if(closed){res+=myPoint._dist(pts[pts.length-1],pts[0]);}return res;}
+    //public final double length(myPoint[] pts, boolean closed){double res = 0;for(int i =0; i<pts.length-1; ++i){res += myPoint._dist(pts[i],pts[i+1]);}if(closed){res+=myPoint._dist(pts[pts.length-1],pts[0]);}return res;}
 
 
     public int getNumCntlPts() {return cntlPts.length;}

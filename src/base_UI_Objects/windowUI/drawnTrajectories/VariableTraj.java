@@ -17,16 +17,17 @@ public class VariableTraj extends Base_DrawnTrajectory {
  
     protected final int numVerts = 200;                            
 
-    public myPoint[] drawnCntlPts;                        //control point locations - start point +  vel myVectortor (scaled tangent), repeat
-    public double[] d_drwnCntlPts;                    //distance between each drawnCntlPts points
-    public double drwnCntlLen;                        //len of arc of drawnCntlPts pts
+    private myPoint[] drawnCntlPts;                        //control point locations - start point +  vel myVectortor (scaled tangent), repeat
+    //TODO make private/remove
+    protected double[] d_drwnCntlPts;                    //distance between each drawnCntlPts points
+    protected double drwnCntlLen;                        //len of arc of drawnCntlPts pts
 
     public double[] cntlPtIntrps;                //interpolants for each control point as part of total, based upon radius of controlpoint - larger will be bigger. 
                                                 //for each cntl myPoint, this value will be cntl point rad / total control point rads.
     //interpolated drawn curve, weighted by drawn speed
-    public myPoint[] interpCntlPts;                    //interpolated control point locations - start point +  vel myVectortor (scaled tangent), repeat
-    public double[] d_interpPts;                    //distance between interpolated points
-    public double interpLen;                        //len of interp pts
+    private myPoint[] interpCntlPts;                    //interpolated control point locations - start point +  vel myVectortor (scaled tangent), repeat
+    private double[] d_interpPts;                    //distance between interpolated points
+    private double interpLen;                        //len of interp pts
     
     public VariableTraj(Base_DispWindow _win, myVector _canvNorm, int[] _fillClr, int[] _strkClr) {
         super(_win, _canvNorm);
@@ -85,10 +86,10 @@ public class VariableTraj extends Base_DrawnTrajectory {
             drawnCntlPts[i] = new myPoint(cntlPts[cntlPts.length-1]);
             
         }
-        d_interpPts = getPtDist(interpCntlPts, false);    
-        interpLen = length(interpCntlPts, false);
-        d_drwnCntlPts = getPtDist(drawnCntlPts, false);    
-        drwnCntlLen = length(drawnCntlPts, false);        
+        d_interpPts = myPoint._findAllTrajPtDists(interpCntlPts, false);    
+        interpLen = myPoint._getLengthOfTraj(interpCntlPts, false);
+        d_drwnCntlPts = myPoint._findAllTrajPtDists(drawnCntlPts, false);    
+        drwnCntlLen = myPoint._getLengthOfTraj(drawnCntlPts, false);        
         //smooth/equi-space interpolated cntl points
         processInterpPts( numIntCntlPts, numReps);
     }    
@@ -144,8 +145,8 @@ public class VariableTraj extends Base_DrawnTrajectory {
      */
     protected void setInterpPts(ArrayList<myPoint> tmp){
         interpCntlPts = tmp.toArray(new myPoint[0]);
-        d_interpPts = getPtDist(interpCntlPts, false);    
-        interpLen=length(interpCntlPts, false);
+        d_interpPts = myPoint._findAllTrajPtDists(interpCntlPts, false);    
+        interpLen = myPoint._getLengthOfTraj(interpCntlPts, false);
     }//setPts    
 
     /**
@@ -218,7 +219,7 @@ public class VariableTraj extends Base_DrawnTrajectory {
             } else {
                 super.drawMe(ri, useDrawnVels, flat);
             }
-            ri.popMatState();        
+        ri.popMatState();        
     }//
     
     /**
@@ -230,9 +231,6 @@ public class VariableTraj extends Base_DrawnTrajectory {
     public void moveVelCurveToEndPoints(myPoint startPt, myPoint endPt, boolean flip){
         _moveCurveToEndPoints(interpCntlPts, startPt, endPt, flip);
     }//moveVelCurveToEndPoints
-    
-
-
     
     public String toString(){
         String res = "Interpolating Spline Stroke : ";
