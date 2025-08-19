@@ -447,7 +447,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      * draw a box centered at origin with passed dimensions, in 3D
      */
     @Override
-    public final void drawBox3D(int x, int y, int z) {box(x,y,z);};
+    public final void drawBox3D(int x, int y, int z) {box(x,y,z);}
     /**
      * draw a rectangle in 2D using the passed values as x,y,w,h
      * @param a 4 element array : x,y,w,h
@@ -941,7 +941,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
         checkClrIntArrays(fclr, sclr);
         drawSphere(P, r, det);
         popMatState();
-    };
+    }
     
     /**
      * show a point as a flat circle, using double point as center
@@ -1150,8 +1150,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
         gl_beginShape(GL_PrimitiveType.GL_LINE_LOOP);
         for(int i=0;i<ara.length;++i){gl_normal(normAra[i]);gl_vertex(ara[i]);} 
         gl_endShape(true);
-    }  
-    
+    }
     
     ///end show functions
     
@@ -1170,8 +1169,11 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
             return;}        
         gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} gl_endShape();
     }
-    protected final void curveVertex2D(myPointf P) {curveVertex(P.x,P.y);};                                           // curveVertex for shading or drawing
-
+    /**
+     * curveVertex for shading or drawing in 2d
+     * @param P
+     */
+    protected final void curveVertex2D(myPointf P) {curveVertex(P.x,P.y);}
     
     /**
      * implementation of catumull rom - array needs to be at least 4 points, if not, then reuses first and last points as extra cntl points  
@@ -1185,8 +1187,12 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
             return;}        
         gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex2D(ara[i]);} gl_endShape();        
     }
-    protected final void curveVertex2D(myPoint P) {curveVertex((float)P.x,(float)P.y);};                                           // curveVertex for shading or drawing
-    
+    /**
+     * curveVertex for shading or drawing in 2d
+     * @param P
+     */
+    protected final void curveVertex2D(myPoint P) {curveVertex((float)P.x,(float)P.y);}
+
     /**
      * implementation of catumull rom - array needs to be at least 4 points, if not, then reuses first and last points as extra cntl points  
      * @param pts
@@ -1199,8 +1205,12 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
             return;}        
         gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} gl_endShape();
     }
-    protected final void curveVertex3D(myPointf P) {curveVertex(P.x,P.y,P.z);};                                           // curveVertex for shading or drawing
-
+    /**
+     * curveVertex for shading or drawing in 3d
+     * @param P
+     */
+    protected final void curveVertex3D(myPointf P) {curveVertex(P.x,P.y,P.z);} 
+    
     /**
      * implementation of catumull rom - array needs to be at least 4 points, if not, then reuses first and last points as extra cntl points  
      * @param pts
@@ -1212,8 +1222,12 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
             gl_beginShape(); curveVertex3D(ara[0]);for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} curveVertex3D(ara[ara.length-1]);gl_endShape();
             return;}        
         gl_beginShape(); for(int i=0;i<ara.length;++i){curveVertex3D(ara[i]);} gl_endShape();        
-    }    
-    protected final void curveVertex3D(myPoint P) {curveVertex((float)P.x,(float)P.y,(float)P.z);};                                           // curveVertex for shading or drawing
+    }
+    /**
+     * curveVertex for shading or drawing in 3d
+     * @param P
+     */
+    protected final void curveVertex3D(myPoint P) {curveVertex((float)P.x,(float)P.y,(float)P.z);}
 
 
     ///////////////////////////////////
@@ -1377,20 +1391,36 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      */
     @Override
     public final float getFrameRate() {return frameRate;}
+    /**
+     * Return double-based myPoint of current mouse location, with z==0
+     */
     @Override
-    public final myPoint getMouse_Raw() {return new myPoint(mouseX, mouseY,0);}                                                      // current mouse location
+    public final myPoint getMouse_Raw() {return new myPoint(mouseX, mouseY,0);}                                  
+    /**
+     * Return double-based myVector of of current mouse drag delta
+     */
     @Override
-    public final myVector getMouseDrag() {return new myVector(mouseX-pmouseX,mouseY-pmouseY,0);};                                 // vector representing recent mouse displacement
-    
+    public final myVector getMouseDrag() {return new myVector(mouseX-pmouseX,mouseY-pmouseY,0);}                
+    /**
+     * Return float-based myPointf of current mouse location, with z==0
+     */
     @Override
-    public final myPointf getMouse_Raw_f() {return new myPointf(mouseX, mouseY,0);}                                                      // current mouse location
+    public final myPointf getMouse_Raw_f() {return new myPointf(mouseX, mouseY,0);}                              
+    /**
+     * Return float-based myVectorf of of current mouse drag delta
+     */
     @Override
-    public final myVectorf getMouseDrag_f() {return new myVectorf(mouseX-pmouseX,mouseY-pmouseY,0);};                                 // vector representing recent mouse displacement
-
+    public final myVectorf getMouseDrag_f() {return new myVectorf(mouseX-pmouseX,mouseY-pmouseY,0);}            
+    /**
+     * Return integer-based array of mouse location with idx0==x, idx1==y
+     */
     @Override
-    public final int[] getMouse_Raw_Int() {return new int[] {mouseX, mouseY};}                                                      // current mouse location
+    public final int[] getMouse_Raw_Int() {return new int[] {mouseX, mouseY};}                                   
+    /**
+     * Return integer-based array of current mouse drag delta with idx0==x, idx1==y
+     */
     @Override
-    public final int[] getMouseDrag_Int() {return new int[] {mouseX-pmouseX,mouseY-pmouseY};};                          // vector representing recent mouse displacement
+    public final int[] getMouseDrag_Int() {return new int[] {mouseX-pmouseX,mouseY-pmouseY};}                 
 
     /**
      * get depth at specified screen dim location
@@ -1412,7 +1442,7 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
      * Get world location as float array from screen location + depth
      * @param x
      * @param y
-     * @param depthValue
+     * @param depthValue predetermined depth value. If -1 then calculate depth based on given screen x,y.
      * @return 4 element array. Point is idxs 0,1,2 normalized by idx 3
      */
     private float[] _getWorldLocFromScreenLoc(int x, int y, float depthValue){
@@ -1519,24 +1549,6 @@ public final class ProcessingRenderer extends processing.core.PApplet implements
     @Override
     public final void setStrokeWt(float stW) {    strokeWeight(stW);}
 
-//    @Override
-//    public final void setColorValFillAmb(int colorVal, int alpha){
-//        if(colorVal == gui_TransBlack) {
-//            fill(0x00010100);//    have to use hex so that alpha val is not lost    
-//            ambient(0,0,0);
-//        } else {
-//            int[] fillClr = getClr(colorVal, alpha);
-//            setFill(fillClr, alpha);
-//            ambient(fillClr[0],fillClr[1],fillClr[2]);
-//        }        
-//    }//setcolorValFill
-
-    
-    @Override
-    public final Integer[] getClrMorph(int[] a, int[] b, double t){
-        if(t==0){return new Integer[]{a[0],a[1],a[2],a[3]};} else if(t==1){return new Integer[]{b[0],b[1],b[2],b[3]};}
-        return new Integer[]{(int)(((1.0f-t)*a[0])+t*b[0]),(int)(((1.0f-t)*a[1])+t*b[1]),(int)(((1.0f-t)*a[2])+t*b[2]),(int)(((1.0f-t)*a[3])+t*b[3])};
-    }
     /**
      * Create a mesh shape - without a type specified, we use GEOMETRY in processing (beginShape-constructed objects)
      * USE INSTEAD OF PGraphics.createShape()

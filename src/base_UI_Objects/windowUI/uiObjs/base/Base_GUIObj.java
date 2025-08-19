@@ -26,9 +26,13 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
      */
     protected final int objID;
     
-    // Text to display as a label, without colon if appropriate    
+    /**
+     * Text to display as a label, without colon if appropriate    
+     */
     protected String label;
-    // version of label with colon suffix
+    /**
+     * version of label with colon suffix
+     */
     protected String _dispLabel;
     
     /**
@@ -209,27 +213,38 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
     public boolean isValueRange() {                         return cfgFlags.isValueRange();}   
     
     /**
-     * Reset this UI component to its initialization values
+     * Reset this UI component to its default/initialization values
      */
-    public final void resetToInit() {        
+    public final void resetToDefault() {        
         setNewMin(initVals[0]);
         setNewMax(initVals[1]);
         setNewMod(initVals[2]);
-        returnToInitVal();
+        resetToDefaultVal();
         setLabel(origLabel);
         formatStr = origFormatStr;
-        resetToInit_Indiv();
-    }//resetToInit
+        resetToDefault_Indiv();
+    }//resetToDefault
 
     /**
      * Return this object to its initial value
      */
-    public final void returnToInitVal() {setVal(initVals[3]);}
+    public final void resetToDefaultVal() {setVal(initVals[3]);}
+    
+    /**
+     * Set the value for this UI object and set it also to be the initialization value
+     * @param _newVal
+     * @return
+     */
+    public final double setValAsInit(double _newVal){
+        double newVal = setVal(_newVal);
+        initVals[3] = newVal;
+        return newVal;
+    }
     
     /**
      * Instance-specific reset - most instance classes have nothing to do here. Override for classes that require it.
      */
-    protected void resetToInit_Indiv() {}
+    protected void resetToDefault_Indiv() {}
     /**
      * Get this UI component's current value
      * @return
@@ -568,7 +583,8 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
     public final String getRangeAsString() {
         return "[" + 
                 getValueAsString(minVal)+", "+ 
-                getValueAsString(maxVal)+"]";}
+                getValueAsString(maxVal)+"]";
+    }
     
     /**
      * Return the constant name assigned to this object on creation
@@ -617,7 +633,6 @@ public abstract class Base_GUIObj implements Comparable<Base_GUIObj>{
         + "|Init Mod : " + getValueAsString(initVals[2]);
         return tmpRes;
     }
-
     
     /**
      * Retrive an array of string debug data

@@ -98,8 +98,9 @@ public abstract class Base_UISimExec extends Base_SimExec {
     /**
      * Draw the current simulation results
      * @param animTimeMod
+     * @param isGlblAppDebug
      */
-    public abstract void drawMe(float animTimeMod);
+    public abstract void drawMe(float animTimeMod, boolean isGlblAppDebug);
     
     /**
      * Draw the right side info for current sim exec
@@ -110,7 +111,7 @@ public abstract class Base_UISimExec extends Base_SimExec {
      *         idx 2 : per-line y offset for title-to-group text (small space)
      *         idx 3 : per-line y offset for text that is not grouped (slightly larger)     
      */
-    public final void drawRightSideInfoBar(float modAmtMillis, float[] rtSideYVals) {
+    public final void drawRightSideInfoBar(float modAmtMillis, float[] rtSideYVals, boolean isGlblAppDebug) {
         if(AppMgr == null) {return;}
         //Draw any header info. txtHeight is starting y for rest of text        
         ri.pushMatState();
@@ -125,7 +126,7 @@ public abstract class Base_UISimExec extends Base_SimExec {
             ri.popMatState();
             rtSideYVals[0] +=rtSideYVals[3]; ri.translate(0.0f,rtSideYVals[3], 0.0f);
     
-            ((Base_UISimulator) currSim).drawResultBar(rtSideYVals);
+            ((Base_UISimulator) currSim).drawResultBar(rtSideYVals, isGlblAppDebug);
         ri.popMatState();
     }//drawRightSideInfoBar
     

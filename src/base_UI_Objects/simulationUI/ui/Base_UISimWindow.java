@@ -136,7 +136,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
                 if(val) {
                     simExec.setConductSweepExperiment(true);
                     simExec.initializeTrials(getUIDataUpdater().getIntValue(gIDX_ExpLength), getUIDataUpdater().getIntValue(gIDX_NumExpTrials));
-                    AppMgr.setSimIsRunning(true);
+                    AppMgr.launchSim();
                     addPrivSwitchToClear(conductExpIDX);
                 } 
                 break;}
@@ -145,7 +145,7 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
                 if(val) {
                     simExec.setConductSweepExperiment(false);
                     simExec.initializeTrials(getUIDataUpdater().getIntValue(gIDX_ExpLength), getUIDataUpdater().getIntValue(gIDX_NumExpTrials));
-                    AppMgr.setSimIsRunning(true);
+                    AppMgr.launchSim();
                     addPrivSwitchToClear(conductSweepExpIDX);
                 } 
                 break;}                
@@ -352,11 +352,11 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
     protected abstract boolean simMePostExec_Indiv(float modAmtMillis, boolean done);
     
     @Override
-    protected final void drawRightSideInfoBarPriv(float modAmtMillis) {
+    protected final void drawRightSideInfoBarPriv(float modAmtMillis, boolean isGlblAppDebug) {
         float[] rtSideYOffVals = AppMgr.getRtSideYOffVals();
         ri.pushMatState();
         //display current simulation variables and data on right side menu
-        simExec.drawRightSideInfoBar(modAmtMillis, rtSideYOffVals);
+        simExec.drawRightSideInfoBar(modAmtMillis, rtSideYOffVals, isGlblAppDebug);
         //Reset y start value for next frame
         rtSideYOffVals[0] = 0;
         ri.popMatState();        
@@ -366,23 +366,25 @@ public abstract class Base_UISimWindow extends Base_DispWindow {
      * animTimeMod is in seconds.
      */
     @Override
-    protected final void drawMe(float animTimeMod) {
+    protected final void drawMe(float animTimeMod, boolean isGlblAppDebug) {
         // draw current sim - TODO move to Base_DispWindow?
-        simExec.drawMe(animTimeMod);
+        simExec.drawMe(animTimeMod, isGlblAppDebug);
     }//drawMe    
     
-    //draw custom 2d constructs below interactive component of menu
+    /**
+     * draw custom 2d constructs below interactive component of menu
+     */
     @Override
-    public final void drawCustMenuObjs(float animTimeMod){
+    public final void drawCustMenuObjs(float animTimeMod, boolean isGlblAppDebug){
         ri.pushMatState();    
         //draw any custom menu stuff here
-        drawSimCustMenuObjs(animTimeMod);
+        drawSimCustMenuObjs(animTimeMod, isGlblAppDebug);
         ri.popMatState();    
     }//drawCustMenuObjs    
     /**
      * draw any custom menu objects for sidebar menu based on simulation
      */
-    protected abstract void drawSimCustMenuObjs(float animTimeMod);
+    protected abstract void drawSimCustMenuObjs(float animTimeMod, boolean isGlblAppDebug);
 
 
 }//class Base_UISimWindow

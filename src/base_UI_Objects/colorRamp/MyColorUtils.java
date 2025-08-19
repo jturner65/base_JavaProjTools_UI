@@ -2,16 +2,24 @@ package base_UI_Objects.colorRamp;
 
 public class MyColorUtils {
 
-    // FROM: http://rsbweb.nih.gov/ij/plugins/download/Color_Space_Converter.java
-    public static final double[] D65 = {95.0429f, 100.0f, 108.8900f};
-    public static final double[] whitePoint = D65;    
-    public static final double[][] Mi  = {{ 3.2406f, -1.5372f, -0.4986f},
-                             {-0.9689f,  1.8758f,  0.0415f},
-                             { 0.0557f, -0.2040f,  1.0570f}};
-    public static final double[][] M   = {{0.4124f, 0.3576f,  0.1805f},
-                             {0.2126f, 0.7152f,  0.0722f},
-                             {0.0193f, 0.1192f,  0.9505f}};
-    
+    // FROM: https://imagej.net/ij/plugins/download/Color_Space_Converter.java
+    private static final double[] D65 = {95.0429f, 100.0f, 108.8900f};
+    private static final double[] whitePoint = D65;
+    /**
+     * XYZ to sRGB conversion
+     */    
+    private static final double[][] Mi = 
+        {{ 3.2406f, -1.5372f, -0.4986f},
+         {-0.9689f,  1.8758f,  0.0415f},
+         { 0.0557f, -0.2040f,  1.0570f}};
+    /**
+     * sRGB to XYZ conversion
+     */
+    private static final double[][] M = 
+        {{0.4124f, 0.3576f,  0.1805f},
+         {0.2126f, 0.7152f,  0.0722f},
+         {0.0193f, 0.1192f,  0.9505f}};
+    //Not used
     private MyColorUtils() {}
     
     

@@ -36,12 +36,12 @@ public class GUIObj_Button extends Base_GUIObj {
     private static final int numBtnStateFlags = 2;    
     
     /**
-     * List of different values to be displayed for this list-based object
+     * List of different values to be displayed for this list-like button object
      */
     protected String[] buttonVals = new String[]{"None"};
     
     /**
-     * Original list of different values to be displayed for this list based-object
+     * Original list of different values to be displayed for this list-like button object
      */
     protected String[] origButtonVals;
     
@@ -74,7 +74,7 @@ public class GUIObj_Button extends Base_GUIObj {
      * Instance-specific reset
      */
     @Override
-    protected void resetToInit_Indiv() {
+    protected void resetToDefault_Indiv() {
         //reset list values to be original list values
         buttonVals = new String[origButtonVals.length];
         System.arraycopy(origButtonVals, 0, buttonVals, 0, origButtonVals.length);
@@ -117,6 +117,9 @@ public class GUIObj_Button extends Base_GUIObj {
         setStartWaitingOnProc();
     }
     
+    /**
+     * No display label is used for buttons
+     */
     @Override
     protected void setDispLabel() {_dispLabel = "";}
     
@@ -162,7 +165,7 @@ public class GUIObj_Button extends Base_GUIObj {
     /**
      * Return this button to its initial state
      */
-    public final void returnToInitState() {returnToInitVal(); }
+    public final void returnToInitState() {resetToDefaultVal(); }
     
     /**
      * Return this button's state

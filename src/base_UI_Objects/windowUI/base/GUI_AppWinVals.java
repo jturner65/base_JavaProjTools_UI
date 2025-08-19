@@ -96,10 +96,10 @@ public class GUI_AppWinVals {
      *         3 : canMoveView
      */
     protected static final int
-                dispWinIs3dIDX             = 0,
+                dispWinIs3dIDX          = 0,
                 dispCanDrawInWinIDX     = 1,
                 dispCanShow3dboxIDX     = 2,
-                dispCanMoveViewIDX         = 3;
+                dispCanMoveViewIDX      = 3;
     protected static final int numDispWinBoolFlags = 4;
     
     /**

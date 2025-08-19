@@ -11,6 +11,7 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.baseApp.GUI_AppUIFlags;
 import base_UI_Objects.windowUI.UIObjectManager;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.drawnTrajectories.TrajectoryManager;
@@ -124,8 +125,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      */
     private float[] closedUIRtSideRecBox;    
         
-    //key pressed
+    /**
+     * key pressed
+     */
     protected char keyPressed = ' ';
+    /**
+     * 
+     */
     protected int keyCodePressed = 0;    
     
     ///////////////////////////////////////
@@ -269,9 +275,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         //pass all flag states to initialized structures in instancing window handler
         uiMgr.refreshPrivFlags();        
         _setClosedBox();        
-        if((!_isMenu) && (dispFlags.getHasScrollBars())){scbrs = new ScrollBars[4];    for(int i =0; i<scbrs.length;++i){scbrs[i] = new ScrollBars(ri, this);}}
         dispFlags.setIs3DWin(winInitVals.dispWinIs3D());
         dispFlags.setCanChgView(winInitVals.canMoveView());
+        if((!_isMenu) && (dispFlags.getHasScrollBars())){scbrs = new ScrollBars[4];    for(int i =0; i<scbrs.length;++i){scbrs[i] = new ScrollBars(ri, this);}}
         if(winInitVals.canDrawInWin()) {
             trajMgr = new TrajectoryManager(this,!winInitVals.dispWinIs3D());
             trajMgr.setTrajColors(winInitVals.trajFillClr, winInitVals.trajStrkClr);
@@ -334,23 +340,19 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     protected abstract void buildAndSetChildWindow_Indiv(GUI_AppWinVals _appVals);
     
     /**
-     * UIObjectManager will call this.
+     * UIObjectManager will call this to set initial state flags.
      */
     @Override
-    public void initOwnerStateDispFlags() {        initStateDispFlags();    }
-    
-    /**
-     * Set initial state and initialize gui objects. This is overridden by SidebarMenu
-     */
-    protected final void initStateDispFlags() {
+    public void initOwnerStateDispFlags() {        
         //Initialize dispFlags settings based on AppMgr
         //Does this window include a runnable sim (launched by main menu flag)
-        dispFlags.setIsRunnable(AppMgr.getBaseFlagIsShown_runSim());
+        GUI_AppUIFlags appUIFlags = AppMgr.getAppUIFlags();
+        dispFlags.setIsRunnable(appUIFlags.getBaseFlagIsShown_runSim());
         //Is this window capable of showing right side menu
-        dispFlags.setHasRtSideMenu(AppMgr.getBaseFlagIsShown_showRtSideMenu());
+        dispFlags.setHasRtSideInfoDisp(appUIFlags.getBaseFlagIsShown_showRtSideInfoDisp());
         //initialize/override any state/display flags
-        initDispFlags();                    
-    }//initStateDispFlags
+        initDispFlags(appUIFlags);                    
+    }//initOwnerStateDispFlags
     
     
     /**
@@ -359,8 +361,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     protected abstract void initMe();
     /**
      * Initialize any UI control flags appropriate for window application
+     * @param appUIFlags Snapshot of the initial flags structure for the application. 
+     * Will not reflect future changes, so should not be retained
      */
-    protected abstract void initDispFlags();
+    protected abstract void initDispFlags(GUI_AppUIFlags appUIFlags);
 
     /**
      * Build appropriate UIDataUpdater instance for application. ui manager calls this
@@ -507,7 +511,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      */
     @Override
     public final void updateFloatValFromExecCode(int idx, float value) {uiMgr.updateFloatValFromExecCode(idx, value);}
-    
+    /**
+     * This function is called on ui value update, to pass new ui values on to window-owned consumers
+     */
     @Override
     public void updateOwnerCalcObjUIVals() {updateCalcObjUIVals();}    
     /**
@@ -553,6 +559,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     protected float[] getParentWindowUIClkCoords() {
         float [] menuUIClkCoords = AppMgr.getUIRectVals(ID);        
         return new float[] {menuUIClkCoords[0],menuUIClkCoords[3],menuUIClkCoords[2],menuUIClkCoords[3]};
+    }
+    
+    
+    public final void setWindowAppFlags(GUI_AppUIFlags _appFlags) {
+        
     }
     
     
@@ -623,7 +634,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * Custom handling of when showRightSideMenu is set or cleared
      * @param val
      */
-    public void handleShowRtSideMenu(boolean val) {
+    public void handleShowRtSideInfoDisp(boolean val) {
         float visWidth = (val ?  UIRtSideRectBox[0] : closedUIRtSideRecBox[0]);        //to match whether the side bar menu is open or closed
         setVisScreenWidth(visWidth);
     }
@@ -787,6 +798,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      */
     public final float[] getRectDimClosed() {return winInitVals.rectDimClosed;}
     
+    /**
+     * Set up the locations and dims of the close box
+     */
     private final void _setClosedBox(){
         float clkBxDim = AppMgr.getClkBoxDim();
         if( dispFlags.getShowWin()){    
@@ -804,7 +818,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * Whether or not to draw the mouse reticle/rgb(xyz) projection/edge to eye
      * @return
      */
-    public final boolean chkDrawMseRet(){        return dispFlags.getDrawMseEdge();    }
+    public final boolean getDrawMseEdge(){        return dispFlags.getDrawMseEdge();    }
     
     //////////////////////
     //draw functions
@@ -823,13 +837,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * Draw this window's gui objects in sidebar menu
      * @param animTimeMod
      */
-    public final void drawWindowGuiObjs(boolean isDebug, float animTimeMod) {
+    public final void drawWindowGuiObjs(float animTimeMod, boolean isGlbDebug) {
         //draw UI Objs
-        uiMgr.drawGUIObjs(isDebug, animTimeMod);
+        uiMgr.drawGUIObjs(animTimeMod, isGlbDebug);
         //draw any custom menu objects for sidebar menu after buttons
         ri.pushMatState();
             //draw any custom menu stuff here
-            drawCustMenuObjs(animTimeMod);
+            drawCustMenuObjs(animTimeMod, isGlbDebug);
         ri.popMatState();
         //also launch custom function here if any are specified
         checkCustMenuUIObjs();        
@@ -854,7 +868,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     /**
      * draw any custom menu objects for sidebar menu
      */
-    protected abstract void drawCustMenuObjs(float animTimeMod);
+    protected abstract void drawCustMenuObjs(float animTimeMod, boolean isGlbDebug);
     
     /**
      * draw box to hide window
@@ -899,7 +913,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * called by drawUI in IGraphicsAppInterface
      * @param modAmtMillis
      */
-    public final void drawHeader(String[] res, boolean shouldDrawOnScreenText, boolean isDebug, float modAmtMillis){
+    public final void drawHeader(String[] res, boolean shouldDrawOnScreenText, boolean isGlblAppDebug, float modAmtMillis){
         if(!dispFlags.getShowWin()){return;}
         ri.pushMatState();        
         ri.setBeginNoDepthTest();
@@ -914,23 +928,23 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         }    
         if(null!=trajMgr){    trajMgr.drawNotifications(ri, AppMgr.getXOffsetHalf(), getTextHeightOffset() *.5f);    }                //if this window accepts a drawn trajectory, then allow it to be displayed
         //TODO if scroll bars are ever going to actually be supported, need to separate them from drawn trajectories
-        if(dispFlags.getHasScrollBars() && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe();}
+        if(dispFlags.getHasScrollBars() && (null!=trajMgr)){scbrs[trajMgr.curDrnTrajScrIDX].drawMe(isGlblAppDebug);}
         float yOffset = AppMgr.getTextHeightOffset();
         //draw stuff on screen, including rightSideMenu stuff, if this window supports it
         ri.translate(0.0f,yOffset);            
         //draw onscreen stuff for main window
-        drawOnScreenStuffPriv(modAmtMillis);
+        drawOnScreenStuffPriv(modAmtMillis, isGlblAppDebug);
         //draw right side info display if relevant
-        if(dispFlags.getHasRtSideMenu()) {
+        if(dispFlags.getHasRtSideInfoDisp()) {
             ri.pushMatState();
                 ri.translate(0, -yOffset);
-                drawRightSideMenu(modAmtMillis);
+                drawRightSideMenu(modAmtMillis, isGlblAppDebug);
             ri.popMatState();    
         }
         if (shouldDrawOnScreenText) {        
             ri.pushMatState();
                 ri.translate(AppMgr.getXOffsetHalf(),0.0f);
-                drawOnScreenDebugText(res, isDebug);
+                drawOnScreenDebugText(res, isGlblAppDebug);
             ri.popMatState();
         }
         ri.enableLights();    
@@ -939,7 +953,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         //cleanup after drawing
         postDraw();
     }//drawHeader
-    protected abstract void drawOnScreenStuffPriv(float modAmtMillis);
+    protected abstract void drawOnScreenStuffPriv(float modAmtMillis, boolean isGlblAppDebug);
     
     /**
      * This is called after all UI and other draw functionality has occurred.
@@ -969,17 +983,17 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param res UI debug data from dispMenu window
      * @param whether or not the global debug is enabled
      */
-    private final void drawOnScreenDebugText(String[] res, boolean isDebug) {
+    private final void drawOnScreenDebugText(String[] res, boolean isGlblAppDebug) {
         ri.pushMatState();            
             reInitInfoStr();
-            if(isDebug) {
+            if(isGlblAppDebug) {
                 addInfoStr(0,AppMgr.getMseEyeInfoString(getCamDisp()));
             } else {
                 res = msgObj.getConsoleStringsAsArray();
             }
             int numToPrint = MyMathUtils.min(res.length,80);
             for(int s=0;s<numToPrint;++s) {    addInfoStr(res[s]);}                //add info to string to be displayed for debug
-            drawInfoStr(1.0f, winInitVals.strkClr);     
+            drawInfoStr(1.0f, winInitVals.strkClr, isGlblAppDebug);     
         ri.popMatState();        
     }//drawOnScreenText
     
@@ -987,15 +1001,15 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * Draw Right side menu text
      * @param modAmtMillis milliseconds since last frame started
      */
-    private void drawRightSideMenu(float modAmtMillis) {
+    private void drawRightSideMenu(float modAmtMillis, boolean isGlblAppDebug) {
         ri.setFill(winInitVals.rtSideFillClr, winInitVals.rtSideFillClr[3]);//transparent black
-        if(dispFlags.getShowRtSideMenu()) {
+        if(dispFlags.getShowRtSideInfoDisp()) {
             ri.drawRect(UIRtSideRectBox);
             //move to manage internal text display in owning window
             ri.translate(UIRtSideRectBox[0]+5,UIRtSideRectBox[1]+AppMgr.getRtSideTxtHeightOffset(),0);
             ri.setFill(255,255,255,255);    
              //instancing class implements this function
-            drawRightSideInfoBarPriv(modAmtMillis); 
+            drawRightSideInfoBarPriv(modAmtMillis, isGlblAppDebug); 
         } else {
             //shows narrow rectangular reminder that window is there                                 
             ri.drawRect(closedUIRtSideRecBox);
@@ -1007,30 +1021,30 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * to access appropriate right-side menu specific values
      * @param modAmtMillis
      */
-    protected abstract void drawRightSideInfoBarPriv(float modAmtMillis);
+    protected abstract void drawRightSideInfoBarPriv(float modAmtMillis, boolean isGlblAppDebug);
     
     /**
      * Draw 3d windows that are currently displayed
      * @param modAmtMillis milliseconds since last frame started
      */
-    public final void draw3D(float modAmtMillis){
+    public final void draw3D(float modAmtMillis, boolean isGlblAppDebug){
         if(!dispFlags.getShowWin()){return;}
         float animTimeMod = modAmtMillis/1000.0f;
         ri.pushMatState();
         // Set current fill and stroke colors
         winInitVals.setWinFillAndStroke(ri);
         //draw instancing win-specific stuff
-        drawMe(animTimeMod);            //call instance class's draw
+        drawMe(animTimeMod, isGlblAppDebug);            //call instance class's draw
         //draw traj stuff if exists and appropriate - if this window 
         //accepts a drawn trajectory, then allow it to be displayed
-        if(null!=trajMgr){        trajMgr.drawTraj_3d(ri, animTimeMod, myPointf._add(sceneOriginVal,focusTar));}                
+        if(null!=trajMgr){        trajMgr.drawTraj_3d(ri, animTimeMod, myPointf._add(sceneOriginVal,focusTar), isGlblAppDebug);}                
         ri.popMatState();        
     }//draw3D
     /**
      * Draw window/application-specific functionality
-     * @param animTimeMod # of milliseconds since last frame dividied by 1000
+     * @param animTimeMod # of milliseconds since last frame divided by 1000
      */
-    protected abstract void drawMe(float animTimeMod);    
+    protected abstract void drawMe(float animTimeMod, boolean isGlblAppDebug);    
 
     /**
      *  Convenience for 2D windows to move origin to view center
@@ -1043,27 +1057,28 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * Draw 2d windows that are currently displayed
      * @param modAmtMillis milliseconds since last frame started
      */    
-    public final void draw2D(float modAmtMillis){
+    public final void draw2D(float modAmtMillis, boolean isGlblAppDebug){
         if(!dispFlags.getShowWin()){drawSmall();return;}
+        float animTimeMod = modAmtMillis/1000.0f;
         ri.pushMatState();
         //_dispDbgMsg("draw2D","Hitting hint code draw2D");
         ri.setBeginNoDepthTest();
         ri.disableLights();
         // Set current fill and stroke colors
         winInitVals.setWinFillAndStroke(ri);
-        //main window drawing
+        //main window drawing clear-out
         winInitVals.drawRectDim(ri);
         //draw instancing win-specific stuff
-        drawMe(modAmtMillis/1000.0f);            //call instance class's draw
+        drawMe(animTimeMod, isGlblAppDebug);            //call instance class's draw
         //draw traj stuff if exists and appropriate
-        if(null!=trajMgr){        trajMgr.drawTraj_2d(ri);}                //if this window accepts a drawn trajectory, then allow it to be displayed
+        if(null!=trajMgr){        trajMgr.drawTraj_2d(ri,animTimeMod);}                //if this window accepts a drawn trajectory, then allow it to be displayed
         ri.enableLights();
         ri.setEndNoDepthTest();
         ri.popMatState();
-    }
+    }//draw2D
 
     
-    public void drawTraj3D(float animTimeMod, myPointf trans){
+    public void drawTraj3D(float animTimeMod, myPointf trans, boolean isGlblAppDebug){
         _dispWarnMsg("drawTraj3D","I should be overridden in 3d instancing class");
 //            ri.pushMatState();    
 //            if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(animTimeMod);}
@@ -1105,13 +1120,13 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         setInfoStr(idx,str);    return idx;
     }
     private final void setInfoStr(int idx, String str){DebugInfoAra.set(idx,str);    }
-    private final void drawInfoStr(float sc, int[] fillClr){//draw text on main part of screen
+    private final void drawInfoStr(float sc, int[] fillClr, boolean isGlblAppDebug){//draw text on main part of screen
         float yOff = getTextHeightOffset();
         ri.pushMatState();        
             ri.setFill(fillClr,fillClr[3]);
             ri.scale(sc,sc);
             for(int i = 0; i < DebugInfoAra.size(); ++i){        
-                ri.showText((AppMgr.isDebugMode()?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(yOff+(yOff*i)));    }
+                ri.showText((isGlblAppDebug?(i<10?"0":"")+i+":     " : "") +"     "+DebugInfoAra.get(i)+"\n\n",0,(yOff+(yOff*i)));    }
         ri.popMatState();
     }        
     
@@ -1121,9 +1136,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * Execute a simulation
      * @param modAmtMillis
      */
-    public final void simulate(float modAmtMillis){
+    public final boolean simulate(float modAmtMillis){
         boolean simDone = simMe(modAmtMillis);
-        if(simDone) {endSim();}
+        if(simDone) {stopMe();}
+        return simDone;
     }//
     /**
      * Implemenation-specific functionality for running a simulation
@@ -1131,14 +1147,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @return
      */
     protected abstract boolean simMe(float modAmtSec);
-    
-    /**
-     * if ending simulation, call this function
-     */
-    private void endSim() {    
-        AppMgr.setSimIsRunning(false);
-        stopMe();
-    }//endSim    
+      
     /**
      * Implementation-specific functionality for ending simulation
      */
@@ -1300,7 +1309,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * Handle mouse interaction via a mouse click
      * @param mouseX current mouse x on screen
      * @param mouseY current mouse y on screen
-     * @param mseBtn which button is pressed : 0 is left, 1 is right
+     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
      * @return whether a UI object was clicked in
      */
     @Override
@@ -1308,14 +1317,12 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         boolean mod = false;
         //_dispInfoMsg("handleMouseClick", "Start mouse click");
         //check if trying to close or open the window via click, if possible, even if window is closed
-        if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}        
-        boolean showWin = dispFlags.getShowWin();
-        if(!showWin){return mod;}
+        if(dispFlags.getIsCloseable()){mod = checkClsBox(mouseX, mouseY);}    
+        if(!dispFlags.getShowWin()){return mod;}
         
         //Check if click in UI objects on left-side menu
         boolean[] retVals = new boolean[] {false,false};
-        //_dispInfoMsg("handleMouseClick", "About to handleMouseClick");
-        
+        //_dispInfoMsg("handleMouseClick", "About to handleMouseClick");        
         setMsClickInUIObj(uiMgr.handleMouseClick(mouseX, mouseY, mseBtn, AppMgr.isClickModUIVal(), retVals));
         if (retVals[1]){dispFlags.setUIObjMod(true);}
         //_dispInfoMsg("handleMouseClick", "Return from handleMouseClick : "+msClickInUIObj);
@@ -1327,9 +1334,9 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
             myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
             mod = hndlMouseClick_Indiv(mouseX, mouseY, mouseClickIn3D, mseBtn);
         }            
-        //if still nothing then check for trajectory handling
+        //if still nothing then check for trajectory handling 
         if((!mod) && (winInitVals.pointInRectDim(mouseX, mouseY)) && (trajMgr != null)){ 
-            mod = trajMgr.handleMouseClick_Traj(AppMgr.altIsPressed(), getMsePoint(mouseX, mouseY));
+            mod = trajMgr.handleMouseClick_Traj(AppMgr.altIsPressed(), getMsePoint(mouseX, mouseY), mseBtn);
         }            //click + alt for traj drawing : only allow drawing trajectory if it can be drawn and no other interaction has occurred
         return mod;
     }//handleMouseClick
@@ -1338,7 +1345,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param mouseX current mouse x on screen
      * @param mouseY current mouse y on screen
      * @param mseClckInWorld
-     * @param mseBtn
+     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
      * @return whether a custom UI object was clicked in
      */
     protected abstract boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn);
@@ -1382,7 +1389,6 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
             if (retVals[1]){dispFlags.setUIObjMod(true);}
             if (retVals[0]){return true;}
             
-            
         } else if (dispFlags.getCanChgView()) {handleViewChange(true,(mult * ticks),0);}
         return true;
     }//handleMouseWheel
@@ -1402,7 +1408,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param pmouseX previous mouse x on screen
      * @param pmouseY previous mouse y on screen
      * @param mseDragInWorld vector of mouse drag in the world, for interacting with trajectories
-     * @param mseBtn what mouse btn is pressed
+     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
      * @return whether a UI object has been modified via a drag action
      */
     @Override
@@ -1429,8 +1435,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
                 if(shiftPressed) {                      //modifying view angle/zoom
                     //_dispInfoMsg("handleMouseDrag", "Changing view with shift");
                     AppMgr.setModView(true); 
-                    if(mseBtn == 0){        handleViewChange(false,AppMgr.msSclY*delY, AppMgr.msSclX*delX);}    
-                    else if (mseBtn == 1) { handleViewChange(true,delY, 0);}                   
+                    if(mseBtn == 0){            handleViewChange(false,AppMgr.msSclY*delY, AppMgr.msSclX*delX);}    
+                    else if (mseBtn != -1) {    handleViewChange(true,delY*mseBtn, 0);}
                     mod = true;
                 } else if (AppMgr.cntlIsPressed()) {    //modifying view focus target
                     //_dispInfoMsg("handleMouseDrag", "Changing view with ctl");
@@ -1559,7 +1565,8 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     public final void endValueKeyPress() {
         if(!dispFlags.getShowWin()){return;}
         if(null!=trajMgr) {trajMgr.endValueKeyPress();}
-        keyPressed = ' ';
+        //null out key press
+        keyPressed = 0x00;
         keyCodePressed = 0;
     }
     
@@ -1567,23 +1574,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
     // End Mouse and keyboard handling
     
     /**
-     * finds closest point to ri in sPts - put dist in d, returns index
-     * @param ri
-     * @param d
-     * @param _pts
-     * @return
-     */
-    public final int findClosestPt(myPoint p, double[] d, myPoint[] _pts){
-        int res = -1;
-        double mindist = 99999999, _d;
-        for(int i=0; i<_pts.length; ++i){_d = myPoint._dist(p,_pts[i]);if(_d < mindist){mindist = _d; d[0]=_d;res = i;}}    
-        return res;
-    }
-    /**
      * 
      */
-    public final void rebuildAllDrawnTrajs(){
-        if(null!=trajMgr) {trajMgr.rebuildAllDrawnTrajs();}
+    public final void rebuildAllDrawnTrajs(boolean flip){
+        if(null!=trajMgr) {trajMgr.rebuildAllDrawnTrajs(flip);}
     }//rebuildAllDrawnTrajs
     
     /**

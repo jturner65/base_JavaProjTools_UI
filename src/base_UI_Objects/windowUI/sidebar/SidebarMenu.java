@@ -8,6 +8,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.baseApp.GUI_AppUIFlags;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
@@ -32,12 +33,13 @@ public class SidebarMenu extends Base_DispWindow{
      */
     public static final int
             //idx 0 is debug in Base_BoolFlags
-            mseClickedInBtnsIDX         = 1,                    //the mouse was clicked in the button region of the menu and a click event was processed
-            usesWinBtnDispIDX            = 2,                    //this menu displays the window title bar
-            usesMseOvrBtnDispIDX        = 3,                    //this menu uses mouse-over display text
-            usesDbgBtnDispIDX            = 4;                    //this menu displays debug side bar buttons
+            mseClickedInBtnsIDX     = 1,                    //the mouse was clicked in the button region of the menu and a click event was processed
+            usesWinBtnDispIDX       = 2,                    //this menu displays the window title bar
+            usesMseOvrBtnDispIDX    = 3,                    //this menu uses mouse-over display text
+            usesDbgBtnDispIDX       = 4;                    //this menu displays debug side bar buttons
+
     //private flag based buttons - ui menu won't display these
-    private static final int numPrivFlags = 5;
+    private static final int numBasePrivFlags = 5;
     
     //where buttons should start on side menu
     /**
@@ -64,11 +66,11 @@ public class SidebarMenu extends Base_DispWindow{
      * @param _ri
      * @param _AppMgr
      * @param _winIdx
-     * @param _c
+     * @param _btnCfg
      */
-    public SidebarMenu(IGraphicsAppInterface _ri, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _c) {
+    public SidebarMenu(IGraphicsAppInterface _ri, GUI_AppManager _AppMgr, int _winIdx, SidebarMenuBtnConfig _btnCfg) {
         super(_ri, _AppMgr, _winIdx);
-        btnConfig=_c;
+        btnConfig=_btnCfg;
         
         clkFlgsStY = (int) AppMgr.getTextHeightOffset();
         
@@ -90,11 +92,11 @@ public class SidebarMenu extends Base_DispWindow{
      * Override for SidebarMenu of setting initial state flags
      */
     @Override
-    protected final void initDispFlags() {
+    protected final void initDispFlags(GUI_AppUIFlags _notUsed) {
         //menu is never runnable
         dispFlags.setIsRunnable(false);
         //menu never has a rt side menu window
-        dispFlags.setHasRtSideMenu(false);
+        dispFlags.setHasRtSideInfoDisp(false);
         //menu is not ever closeable 
         dispFlags.setIsCloseable(false);            
     }
@@ -126,6 +128,16 @@ public class SidebarMenu extends Base_DispWindow{
         return new float[] {UIAppButtonRegion[0], uiClkCoordsYStart, UIAppButtonRegion[2], UIAppButtonRegion[3]};
     }//getParentWindowUIClkCoords
     
+    ////////////////////////////////////////////
+    ///
+    public final static int
+        gIDX_FloatVal1      = 0;
+    public static final int numBaseGUIObjs = 1;
+    
+    //current/initial values
+    protected double floatVal1 = .1;
+
+    
     /**
      * Build all UI objects to be shown in left side bar menu for this window. This is the first child class function called by initThisWin
      * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
@@ -148,17 +160,48 @@ public class SidebarMenu extends Base_DispWindow{
      *                 - Ornament color should match label color 
      */
     @Override
-    protected final void setupGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap) {}
+    protected final void setupGUIObjsAras(LinkedHashMap<String, GUIObj_Params> tmpUIObjMap) {
+        //build list select box values
+        //keyed by object idx (uiXXXIDX), entries are lists of values to use for list select ui objects
+        //tmpUIObjMap.put("gIDX_FloatVal1", uiMgr.uiObjInitAra_Float(gIDX_FloatVal1, new double[]{0,1.0f,.0001f}, floatVal1, "Float Value 1"));        
+    }
     
     /**
-     * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing DES sim windows to add to button region
+     * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing windows to add to button region
      * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
      *                 the first element is true label
      *                 the second element is false label
      *                 the third element is integer flag idx 
      */
     @Override
-    protected final void setupGUIBoolSwitchAras(int firstIdx,LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {}
+    protected final void setupGUIBoolSwitchAras(int firstIdx,LinkedHashMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {
+  
+//        LinkedHashMap<String, GUIObj_Params> tmpUIGrpBuilderMap = new LinkedHashMap<String, GUIObj_Params>(); 
+//        int grpIdx = 0;
+//        // add all previously initialized existing boolean switch vals to a group
+//        if(firstIdx > 0) {
+//            tmpUIGrpBuilderMap.put("row_"+(grpIdx++)+"_init", uiMgr.buildUIObjGroupParams(tmpUIBoolSwitchObjMap));
+//            tmpUIBoolSwitchObjMap.clear();
+//        }
+//        int idx=firstIdx;
+//        // For all groups of application switch booleans
+//        // get visible application booleans from app mgr
+//        
+//        
+//        
+//        
+//        tmpUIBoolSwitchObjMap.put("AppSwitch_"+idx, uiMgr.buildDebugButton(idx++,"Debugging", "Enable Debug"));
+//        //tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_SwitchMainBools(idx++, "button1_IDX", "Button 1 On", "Button 1 Off", button1_IDX));
+//        
+//
+//        
+//        
+//        // For each group of non-switch booleans
+//        
+//        
+//        
+//        tmpUIBoolSwitchObjMap.putAll(tmpUIGrpBuilderMap);
+    }
     
     /**
      * Set the function button labels based on the requirements of the application window
@@ -184,21 +227,25 @@ public class SidebarMenu extends Base_DispWindow{
      * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
      */
     @Override
-    public int getTotalNumOfPrivBools() {return numPrivFlags;}
+    public int getTotalNumOfPrivBools() {return numBasePrivFlags;}
     
-    //window UI object not used for sidebar menu
+    /**
+     * Window UI for all sidebar data
+     */
     @Override
-    protected UIDataUpdater buildUIDataUpdateObject() {return null;}
+    protected UIDataUpdater buildUIDataUpdateObject() {
+        return new SidebarMenuData(this);
+    }
     @Override
     protected final void updateCalcObjUIVals() {}
     @Override
     protected int[] getFlagIDXsToInitToTrue() {
         ArrayList<Integer> resAra = new ArrayList<Integer>();
-        if(btnConfig._initBtnShowWin) {        resAra.add(usesWinBtnDispIDX);}
-        if(btnConfig._initBtnMseFunc) {        resAra.add(usesMseOvrBtnDispIDX);}
-        if(btnConfig._initBtnDBGSelCmp) {    resAra.add(usesDbgBtnDispIDX);}
+        if(btnConfig._initBtnShowWin) {         resAra.add(usesWinBtnDispIDX);}
+        if(btnConfig._initBtnMseFunc) {         resAra.add(usesMseOvrBtnDispIDX);}
+        if(btnConfig._initBtnDBGSelCmp) {       resAra.add(usesDbgBtnDispIDX);}
         int[] res = new int[resAra.size()];
-        for(int i=0;i<res.length;++i) {            res[i]=resAra.get(i);        }
+        for(int i=0;i<res.length;++i) {         res[i]=resAra.get(i);        }
         return res;
     }
     
@@ -208,10 +255,10 @@ public class SidebarMenu extends Base_DispWindow{
     @Override
     public final void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal){
         switch (idx) {//special actions for each flag
-            case mseClickedInBtnsIDX     : {break;}            
-            case usesWinBtnDispIDX         : {break;}
-            case usesMseOvrBtnDispIDX     : {break;}
-            case usesDbgBtnDispIDX         : {break;}
+            case mseClickedInBtnsIDX    : {break;}            
+            case usesWinBtnDispIDX      : {break;}
+            case usesMseOvrBtnDispIDX   : {break;}
+            case usesDbgBtnDispIDX      : {break;}
         }
     }
 
@@ -267,7 +314,7 @@ public class SidebarMenu extends Base_DispWindow{
         //msgObj.dispInfoMessage(className, "hndlMouseClick_Indiv", "Clicked on disp windows : i : " + i+"|uiClkCoords[1] = "+uiClkCoords[1]+" | UIAppButtonRegion[1] :"+UIAppButtonRegion[1]);
         
         if((i>=0) && (i<numMainFlagsToShow)){
-            AppMgr.flipMainFlag(i);return true;    
+            AppMgr.toggleAppFlag(i);return true;    
         } else if(btnConfig.checkInButtonRegion(mouseX, mouseY)) {
             boolean clkInBtnRegion = btnConfig.checkButtons(mouseX, mouseY, winInitVals.rectDim[2]);
             if(clkInBtnRegion) { uiMgr.setPrivFlag(mseClickedInBtnsIDX, true);}
@@ -300,30 +347,30 @@ public class SidebarMenu extends Base_DispWindow{
      * For windows to draw on screen
      */
     @Override
-    protected final void drawOnScreenStuffPriv(float modAmtMillis) {}
+    protected final void drawOnScreenStuffPriv(float modAmtMillis, boolean isGlblAppDebug) {}
     @Override
-    protected final void drawRightSideInfoBarPriv(float modAmtMillis) {}
+    protected final void drawRightSideInfoBarPriv(float modAmtMillis, boolean isGlblAppDebug) {}
     /**
      * Draw window/application-specific functionality
-     * @param animTimeMod # of milliseconds since last frame dividied by 1000
+     * @param animTimeMod # of milliseconds since last frame divided by 1000
      */
     @Override
-    protected final void drawMe(float animTimeMod) {
+    protected final void drawMe(float animTimeMod, boolean isGlblAppDebug) {
         ri.pushMatState();
             ri.pushMatState();
-                AppMgr.drawSideBarStateLights(btnConfig.initTextHeightOff);                //lights that reflect various states
+                AppMgr.drawSideBarStateLights(animTimeMod, btnConfig.initTextHeightOff);                //lights that reflect various states
             ri.popMatState();        
             ri.pushMatState();
                 //draw main booleans and their state
                 ri.translate(xOffHalf,initBtnLblYOff);
                 ri.setColorValFill(IGraphicsAppInterface.gui_Black,255);
-                ri.showText("Boolean Flags",0,txtHeightOffHalf);
+                ri.showText("Application Control Flags",0,txtHeightOffHalf);
                 ri.translate(0,clkFlgsStY);
                 AppMgr.dispMenuText(xOffHalf,txtHeightOffHalf);
             ri.popMatState();    
             ri.pushMatState();            
                 btnConfig.drawSideBarButtons(
-                        AppMgr.isDebugMode(),
+                        isGlblAppDebug,
                         initBtnLblYOff,
                         xOffHalf,
                         AppMgr.getRowStYOffset(),
@@ -331,16 +378,16 @@ public class SidebarMenu extends Base_DispWindow{
             ri.popMatState();    
             ri.pushMatState();
                 //draw what global user-modifiable fields are currently available
-                uiMgr.drawGUIObjs(AppMgr.isDebugMode(), animTimeMod); 
+                uiMgr.drawGUIObjs(animTimeMod, isGlblAppDebug); 
             ri.popMatState();            
             ri.pushMatState();
-                AppMgr.drawWindowGuiObjs(animTimeMod);            //draw objects for window(s) with primary focus
+                AppMgr.drawWindowGuiObjs(animTimeMod, isGlblAppDebug);            //draw objects for window(s) with primary focus
             ri.popMatState();    
         ri.popMatState();
-    }
+    }//drawMe
     
     @Override
-    public final void drawCustMenuObjs(float animTimeMod){}    
+    public final void drawCustMenuObjs(float animTimeMod, boolean isGlblAppDebug){}    
     //no custom camera handling for menu , float rx, float ry, float dz are all now member variables of every window
     @Override
     protected final void setCamera_Indiv(float[] camVals){}

@@ -65,9 +65,9 @@ public class TrajectoryManager {
         drawingTraj         = 2,            //whether a trajectory is being drawn in owning window - all windows handle trajectory input, has different functions in each window
         editingTraj         = 3,            //whether a trajectory is being edited in owning window
         showTrajEditCrc     = 4,            //set this when some editing mechanism has taken place - draw a circle of appropriate diameter at mouse and shrink it quickly, to act as visual cue
-        smoothTraj             = 5,            //trajectory has been clicked nearby, time to smooth
-        trajDecays             = 6,            //drawn trajectories eventually/immediately disappear
-        trajPointsAreFlat     = 7;            //trajectory drawn points are flat (for pick, to prevent weird casting collisions    
+        smoothTraj          = 5,            //trajectory has been clicked nearby, time to smooth
+        trajDecays          = 6,            //drawn trajectories eventually/immediately disappear
+        trajPointsAreFlat   = 7;            //trajectory drawn points are flat (for pick, to prevent weird casting collisions    
     
     private static final int numTrajFlags = 8;
 
@@ -159,7 +159,13 @@ public class TrajectoryManager {
         //drawnTrajAra[curDrnTrajScrIDX][curDrnTrajStaffIDX].startBuildTraj();
         tmpDrawnTraj = buildTraj(getFlags(trajPointsAreFlat));
         tmpDrawnTraj.startBuildTraj();
-        setFlags(drawingTraj, true);
+        setShouldDraw(true);
+    }
+    
+    public void endBuildDrawObj(myPoint msePt) {
+        Base_DispWindow.AppMgr.setIsDrawing(false);
+        tmpDrawnTraj.endDrawObj(msePt);
+        setShouldDraw(false);
     }
 
     /**
@@ -174,11 +180,18 @@ public class TrajectoryManager {
     }
     
     public void handleMouseRelease_Traj(myPoint msePt) {
-        if (getFlags(editingTraj)){    this.tmpDrawnTraj.endEditObj();}    //this process assigns tmpDrawnTraj to owning window's traj array
-        if (getFlags(drawingTraj)){    this.tmpDrawnTraj.endDrawObj(msePt);}    //drawing curve    
+        if (getFlags(editingTraj)){    tmpDrawnTraj.endEditObj();}    //this process assigns tmpDrawnTraj to owning window's traj array
+        if (getFlags(drawingTraj)){    tmpDrawnTraj.endDrawObj(msePt);}    //drawing curve    
     }
-    
-    public boolean handleMouseClick_Traj(boolean keysToDrawClicked, myPoint mse){
+
+    /**
+     * 
+     * @param keysToDrawClicked
+     * @param mse
+     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
+     * @return
+     */
+    public boolean handleMouseClick_Traj(boolean keysToDrawClicked, myPoint mse, int mseBtn){
         if((!getFlags(canDrawTraj)) || (null==mse)){return false;}
         boolean mod = false;
         if(keysToDrawClicked){                    //drawing curve with click+alt - drawing on canvas
@@ -198,6 +211,16 @@ public class TrajectoryManager {
         return mod;
     }//
     
+    /**
+     * 
+     * @param mouseX
+     * @param mouseY
+     * @param pmouseX
+     * @param pmouseY
+     * @param mseDragInWorld
+     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
+     * @return
+     */
     public boolean handleMouseDrag_Traj(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn) {
         boolean mod = false;
         if(getFlags(drawingTraj)){         //if drawing trajectory has started, then process it
@@ -297,12 +320,12 @@ public class TrajectoryManager {
         //individual traj processing
     }
 
-    public void rebuildAllDrawnTrajs(){
+    public void rebuildAllDrawnTrajs(boolean flipTraj){
         for(TreeMap<String,ArrayList<DrawnSimpleTraj>> tmpTreeMap : drwnTrajMap.values()){
             if((tmpTreeMap != null) && (tmpTreeMap.size() != 0)) {
                 for(int i =0; i<tmpTreeMap.size(); ++i){
                     ArrayList<DrawnSimpleTraj> tmpAra = tmpTreeMap.get(getTrajAraKeyStr(i));            
-                    if(null!=tmpAra){    for(int j =0; j<tmpAra.size();++j){    tmpAra.get(j).rebuildDrawnTraj();}}
+                    if(null!=tmpAra){    for(int j =0; j<tmpAra.size();++j){    tmpAra.get(j).rebuildDrawnTraj(flipTraj);}}
                 }
             }    
         }            
@@ -353,20 +376,6 @@ public class TrajectoryManager {
      * @return
      */
     public double calcOffsetScale(double val, float sc, double off){double res = val - off; res *=sc; return res+=off;}
-    //finds closest point to ri in sPts - put dist in d
-    public final int findClosestPt(myPoint p, double[] d, myPoint[] _pts){
-        int res = -1;
-        double mindist = 99999999, _d;
-        for(int i=0; i<_pts.length; ++i){_d = myPoint._dist(p,_pts[i]);if(_d < mindist){mindist = _d; d[0]=_d;res = i;}}    
-        return res;
-    }
-
-    public final int findClosestPt(myPointf p, double[] d, myPointf[] _pts){
-        int res = -1;
-        double mindist = 99999999, _d;
-        for(int i=0; i<_pts.length; ++i){_d = myPointf._dist(p,_pts[i]);if(_d < mindist){mindist = _d; d[0]=_d;res = i;}}    
-        return res;
-    }
 
     public void clearAllTrajectories(){//int instrIdx){
         TreeMap<String,ArrayList<DrawnSimpleTraj>> tmpTreeMap = drwnTrajMap.get(this.curDrnTrajScrIDX);
@@ -419,7 +428,7 @@ public class TrajectoryManager {
     /**
      * draw a trajectory
      */    
-    public void drawTraj_2d(IGraphicsAppInterface ri){
+    public void drawTraj_2d(IGraphicsAppInterface ri, float modAmtMillis){
         if(!getFlags(canDrawTraj)) {return;}
         ri.pushMatState();    
         if(null != tmpDrawnTraj){tmpDrawnTraj.drawMe(ri);}
@@ -439,10 +448,10 @@ public class TrajectoryManager {
      * @param animTimeMod
      * @param trans
      */
-    public void drawTraj_3d(IGraphicsAppInterface ri, float modAmtMillis, myPointf trans){
+    public void drawTraj_3d(IGraphicsAppInterface ri, float modAmtMillis, myPointf trans, boolean isGlblAppDebug){
         if(!getFlags(canDrawTraj)) {return;}
         ri.pushMatState();    
-        ownr.drawTraj3D(modAmtMillis,trans);
+        ownr.drawTraj3D(modAmtMillis,trans, isGlblAppDebug);
         ri.popMatState();    
         if(getFlags(showTrajEditCrc)){drawClkCircle(ri);}
     }//drawTraj

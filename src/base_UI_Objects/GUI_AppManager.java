@@ -4,9 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.TreeMap;
 
 import com.jogamp.newt.opengl.GLWindow;
@@ -19,6 +17,7 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.baseApp.Disp3DCanvas;
 import base_UI_Objects.baseApp.GUI_AppStateFlags;
+import base_UI_Objects.baseApp.GUI_AppUIFlags;
 import base_UI_Objects.renderer.ProcessingRenderer;
 //import base_UI_Objects.windowUI.background.base.Base_WinBackground;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
@@ -155,9 +154,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * Width of left sidebar menu window
      */
     protected float menuWidth;            
-
+    /**
+     * 
+     */
     private final float _menuWidthScale;
+    /**
+     * 
+     */
     private final float _hideWinWidthScale;
+    /**
+     * 
+     */
     private final float _hideWinHeightScale;    
     
     /**
@@ -215,85 +222,28 @@ public abstract class GUI_AppManager extends Java_AppManager {
     // program control variables
     
     /**
+     * Make sure initialization is complete before draw process is initiated.
+     */
+    private boolean finalInitDone = false;
+    
+    /**
      * Application state flags
      */
     private GUI_AppStateFlags _appStateFlags;
     
     /**
-     * flags used to control various elements of the entire application.
+     * Flags for application control through UI interaction 
      */
-    private int[] _baseFlags;
-    /**
-     * Base flag idxs
-     */
-    private static final int 
-            debugMode         = 0,            //whether we are in dev debug mode or not    
-            finalInitDone     = 1,            //used only to call final init in first draw loop, to avoid stupid timeout error processing 3.x's setup introduced
-            saveAnim          = 2,            //whether we are saving or not an anim screenie
-            showCanvas        = 3,            
-    //simulation
-            runSim            = 4,            //run simulation
-            singleStep        = 5,            //run single sim step
-    //UI
-            showRtSideMenu    = 6,            //display the right side info menu for the current window, if it supports that display
-            showStatusBar     = 7,            //whether or not to display status bar with frames per second and mem usage
-            flipDrawnTraj     = 8,            //whether or not to flip the direction of the drawn trajectory TODO this needs to be moved to window
-            clearBKG          = 9;            //whether or not background should be cleared for every draw.  defaults to true
-    public final int numBaseFlags = 10;
+    private GUI_AppUIFlags _appUICntlFlags;
     
     /**
-     * booleans in main program - need to have labels in idx order, even if not displayed
+     * 
      */
-    private final String[] _truePFlagNames = {//needs to be in order of flags
-            "Debug Mode",
-            "Final init Done",
-            "Save Anim",
-            "Show Drawable Canvas",
-            "Stop Simulation",
-            "Single Step",
-            "Displaying Side Menu",
-            "Displaying Status Bar",
-            "Reverse Drawn Trajectory",
-            "Clearing Background"
-            };
-    
-    private final String[] _falsePFlagNames = {//needs to be in order of flags
-            "Debug Mode",    
-            "Final init Done",
-            "Save Anim", 
-            "Show Drawable Canvas",
-            "Run Simulation",
-            "Single Step",
-            "Display Side Menu",
-            "Display Status Bar",
-            "Reverse Drawn Trajectory",
-            "Clear Background"
-            };
-    /**
-     * Colors to use to display true flags
-     */
-    private int[][] _trueFlagColors;
-    
-    /**
-     * flags to actually display in menu as clickable text labels - order does matter
-     */
-    private List<Integer> _flagsToShow = Arrays.asList( 
-        debugMode,             
-        saveAnim,
-        runSim,
-        singleStep,
-        showCanvas,
-        showRtSideMenu,
-        showStatusBar
-        );
-    
-    private int _numFlagsToShow = _flagsToShow.size();
-        
     public int animCounter = 0;
     /**
      * whether or not to show start up instructions for code        
      */
-    public boolean showInfo = false;            
+    private boolean _showInfo = false;            
     
     //display-related size variables
     private int _2DGridDimX = 800, _2DGridDimY = 800;    
@@ -361,6 +311,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         _menuWidthScale = getMenuWidthMult();
         _hideWinWidthScale = getHideWinWidthMult();
         _hideWinHeightScale = getHideWinHeightMult();
+        
         popUpWinOpenMult = getPopUpWinOpenMult();
         //Get number of windows
         numDispWins = getNumDispWindows();    
@@ -369,7 +320,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         winInitVals = new GUI_AppWinVals[numDispWins];        
         //display window initialization
         _dispWinFrames = new Base_DispWindow[numDispWins];
-        //whether each 3D window uses Skybox or color background 
+        // whether each 3D window uses Skybox or color background 
         _useSkyboxBKGndAra= new boolean[numDispWins];
         // set initial text size
         _txtSize = (int) (_displayHeight * fontSizeScale);
@@ -481,17 +432,27 @@ public abstract class GUI_AppManager extends Java_AppManager {
         //Initialize application
         //Set window to point to main GL window
         window = ri.getGLWindow();
-        //init internal state flags structure
-        initBaseFlags();
         //Set dimensions for application based on applet window size and rebuild _canvas
         setAppWindowDims(width, height);
         //for every window, load either window color or window Skybox, depending on 
         //per-window specification
         //initialize the application state flags structure
-        _appStateFlags = new GUI_AppStateFlags(this);            
-        //called after window dims are set
-        initBaseFlags_Indiv();
-        //instancing class version
+        _appStateFlags = new GUI_AppStateFlags(this);
+        //initialize the UI-driven application control flags
+        _appUICntlFlags = new GUI_AppUIFlags(this);
+        // Set which flags should be shown
+        _appUICntlFlags.setAllFlagsToShow(
+                !hideAppFlag_DebugMode(), 
+                !hideAppFlag_SaveAnim(), 
+                !hideAppFlag_RunSim(), 
+                !hideAppFlag_SingleStep(), 
+                !hideAppFlag_showRtSideInfoDisp(), 
+                !hideAppFlag_showStatusBar(), 
+                !hideAppFlag_showCanvas());
+        
+        // whether to show info in header or not
+        _showInfo = true;        
+        // instancing class version
         initAllDispWindows();
         // Build all child windows, if such exist
         buildSubWindows();
@@ -499,9 +460,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
         for (int i=0; i< winInitVals.length;++i) {
             winInitVals[i].setBackgrndColor(bkGrndColors[i]);
         }
-        
-        //set clearing the background to be true
-        setBaseFlag(clearBKG,true);
         //init sim cycles count
         //visibility flags corresponding to windows
         initVisFlags();
@@ -602,28 +560,28 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * size of interaction/close window box in pxls
      * @return
      */
-    public final float getClkBoxDim() {                  return 1.25f * getTextHeight();}    
+    public final float getClkBoxDim() {                     return 1.25f * getTextHeight();}    
     /**
      * Height of a line of text 1.5 spaced
      */
-    public final float getTextHeightOffset() {          return 1.5f * getTextHeight();}
+    public final float getTextHeightOffset() {              return 1.5f * getTextHeight();}
     /**
      * Height of a line of text single spaced
      */
-    public final float getCloseTextHeightOffset() {     return 1.3825f * getTextHeight();}
+    public final float getCloseTextHeightOffset() {         return 1.3825f * getTextHeight();}
     /**
      * Height of a toggle switch button
      */
-    public final float getSwitchTextHeightOffset(){     return 2.2f * getTextHeight();}    
+    public final float getSwitchTextHeightOffset(){         return 2.2f * getTextHeight();}    
     /**
      * Based on textSize but slightly smaller for purely label/read only text
      * @return
      */
-    public final float getLabelTextHeightOffset() {       return 1.375f * getTextHeight();}    
+    public final float getLabelTextHeightOffset() {         return 1.375f * getTextHeight();}    
     /**
      * Base right side text menu per-line height offset
      */
-    public final float getRtSideTxtHeightOffset(){        return getLabelTextHeightOffset();}
+    public final float getRtSideTxtHeightOffset(){          return getLabelTextHeightOffset();}
     /**
      * Right side menu y values
      *         idx 0 : current y value for text (changes with each frame)
@@ -793,11 +751,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @return
      */
     public float[] getDefaultPopUpWinDimClosed() {return new float[]{menuWidth, _viewHeight-hideWinHeight, hideWinWidth,  hideWinHeight};}
-
-    /**
-     * this is called to determine which main flags to display in the window
-     */
-    protected abstract void initBaseFlags_Indiv();
     
     /**
      * this is called to build all the Base_DispWindows in the instancing class
@@ -811,13 +764,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
         //1-time init for program and windows
         //always default to showing left side input UI menu
         setWinVisFlag(dispMenuIDX, true);
+        //show status bar by default
+        _appUICntlFlags.setShowStatusBar(true);        
         //app-specific 1-time init
-        initOnce_Indiv();
+        initOnce_Indiv();        
         //initProgram is called every time reinitialization is desired
-        initProgram();        
-
+        initProgram(); 
         //after all init is done
-        setFinalInitDone(true);
+        finalInitDone = true;
     }//initOnce    
 
     protected abstract void initOnce_Indiv();    
@@ -956,7 +910,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
                 dispMenuIDX, 
                 new String[]{
                         "UI Window", 
-                        "User Controls"}, 
+                        "User Input:"}, 
                 new boolean[4],
                 new float[][] {
                     new float[]{0,0, menuWidth, _viewHeight}, 
@@ -1102,7 +1056,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     public final GUI_AppWinVals buildGUI_AppWinVals(int _winIdx, String _title, String _descr, boolean[] _dispFlags,  
             float[][] _floatVals, int[][] _intClrVals) {
-        int scIdx = _dispFlags[0] ? 1 : 0;//whether or not is 3d
+        int scIdx = _dispFlags[0] ? 1 : 0;// whether or not is 3d
         return new GUI_AppWinVals(_winIdx, new String[]{_title, _descr}, _dispFlags,
                 _floatVals, _intClrVals, _sceneOriginValsAra[scIdx], _sceneFcsValsAra[scIdx]); 
     }//buildGUI_AppWinVals
@@ -1331,7 +1285,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         //if(!flags[this.runSim]) {return;}//don't save until actually running simulation
         //idx 0 is directory, idx 1 is file name prefix
         String[] ssName = _dispWinFrames[_curFocusWin].getSaveFileDirName();
-        if(ssName.length != 2) {setBaseFlag(saveAnim, false);return null;}
+        if(ssName.length != 2) {_appUICntlFlags.setSaveAnim(false);return null;}
         //save(screenShotPath + prjNmShrt + ((animCounter < 10) ? "0000" : ((animCounter < 100) ? "000" : ((animCounter < 1000) ? "00" : ((animCounter < 10000) ? "0" : "")))) + animCounter + ".jpg");        
         String saveDirAndSubDir = ssName[0] + //"run_"+String.format("%02d", runCounter)  + 
                 ssName[1] + File.separatorChar;    
@@ -1349,9 +1303,6 @@ public abstract class GUI_AppManager extends Java_AppManager {
         if(_useSkyboxBKGndAra[winIdx]) {    ri.drawBkgndSphere(winIdx);} 
         else {                                ri.drawRenderBackground(winIdx);}
     }
-
-    
-    public boolean getShouldClearBKG() {return getBaseFlag(clearBKG);}
     
     /**
      * return CWD of this application
@@ -1378,17 +1329,17 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     public final boolean mainSimAndDrawLoop() {
         //Finish final init if not done already
-        if(!isFinalInitDone()) {initOnce(); return false;}    
+        if(!finalInitDone) {initOnce(); return false;}    
         float modAmtMillis = getModAmtMillis();
+        boolean isDebug = isGlblDebug();
         //simulation section
-        execSimDuringDrawLoop(modAmtMillis);
+        execSimDuringDrawLoop(modAmtMillis, isDebug);
         //drawing section                                                                //initialize camera, lights and scene orientation and set up eye movement
-        drawMainWinAndCanvas(modAmtMillis);                                                 //draw UI overlay on top of rendered results            
+        drawMainWinAndCanvas(modAmtMillis, isDebug);                                                 //draw UI overlay on top of rendered results            
         //set window title
         ri.setWindowTitle(getProjAndFrapsString());
         //Update timer mark for mem query update
-        _memChkLastTimerMark = _glblStartSimFrameTime/_memChkMillisTimer;
-        
+        _memChkLastTimerMark = _glblStartSimFrameTime/_memChkMillisTimer;        
         return true;
     }//mainSimAndDrawLoop
     
@@ -1421,12 +1372,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * sim loop, called from IGraphicsAppInterface draw method
      * @param modAmtMillis milliseconds since last frame started
      */
-    protected boolean execSimDuringDrawLoop(float modAmtMillis) {
+    protected boolean execSimDuringDrawLoop(float modAmtMillis, boolean isDebug) {
         //simulation section
-        if(isRunSim() ){
+        if(_appUICntlFlags.doRunSim()){
             //run simulation
-            for(int i = 1; i<numDispWins; ++i){if((isShowingWindow(i)) && (_dispWinFrames[i].getIsRunnable())){_dispWinFrames[i].simulate(modAmtMillis);}}
-            if(isSingleStep()){setSimIsRunning(false);}
+            //for(int i = 1; i<numDispWins; ++i){if((isShowingWindow(i)) && (_dispWinFrames[i].getIsRunnable())){_dispWinFrames[i].simulate(modAmtMillis); break;}}
+            if(_dispWinFrames[_curFocusWin].getIsRunnable()) {
+                boolean isDone =_dispWinFrames[_curFocusWin].simulate(modAmtMillis);
+                if(isDone || _appUICntlFlags.doSingleStep()){   stopSim(); }            
+            }
             return true;
         }        //play in current window
         return false;
@@ -1445,33 +1399,29 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * main draw loop
      @param modAmtMillis milliseconds since last frame started
      */
-    private final void drawMainWinAndCanvas(float modAmtMillis){
+    private final void drawMainWinAndCanvas(float modAmtMillis, boolean isDebug){
         ri.pushMatState();
         _drawSetup();
         boolean is3DDraw = (_curFocusWin == -1) || (curDispWinIs3D()); 
         if(is3DDraw){    //allow for single window to have focus, but display multiple windows    
-            //if refreshing screen, this clears screen, sets background
-            if(getShouldClearBKG()) {
-                drawBackground(_curFocusWin);                
-                draw3D(modAmtMillis);
-                if(curDispWinCanShow3dbox()){drawBoxBnds();}
-                if(_dispWinFrames[_curFocusWin].chkDrawMseRet()){            _canvas.drawMseEdge(_dispWinFrames[_curFocusWin], is3DDraw);    }        
-                //if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts(), winInitVals[_curFocusWin].canvasColor);}
-                if(doShowDrawawbleCanvas()) {_canvas.drawCanvas(winInitVals[_curFocusWin].canvasColor);}
-            } else {
-                draw3D(modAmtMillis);
-            }
+            //if refreshing screen, this clears screen, sets background        
+            drawBackground(_curFocusWin);                
+            draw3D(modAmtMillis, isDebug);
+            if(curDispWinCanShow3dbox()){drawBoxBnds();}
+            if(_dispWinFrames[_curFocusWin].getDrawMseEdge()){            _canvas.drawMseEdge(_dispWinFrames[_curFocusWin], is3DDraw);    }        
+            //if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts(), winInitVals[_curFocusWin].canvasColor);}
+            if(_appUICntlFlags.doShowDrawawbleCanvas()) {_canvas.drawCanvas(winInitVals[_curFocusWin].canvasColor);}            
             ri.popMatState(); 
         } else {    //either/or 2d window
             //2d windows paint window box so background is always cleared
             _canvas.buildCanvas();
             _canvas.drawMseEdge(_dispWinFrames[_curFocusWin], is3DDraw);
             ri.popMatState(); 
-            draw2D(modAmtMillis);
+            draw2D(modAmtMillis, isDebug);
         }
-        drawMePost_Indiv(modAmtMillis, is3DDraw);
+        drawMePost_Indiv(modAmtMillis, is3DDraw, isDebug);
         //Draw UI and on-screen elements
-        drawUI(modAmtMillis);
+        drawUI(modAmtMillis, isDebug);
     }//draw    
     
     
@@ -1480,19 +1430,19 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param modAmtMillis milliseconds since last frame started
      * @param is3DDraw
      */
-    protected abstract void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw);
+    protected abstract void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw, boolean isDebug);
 
     /**
      * Draw 3d windows that are currently displayed
      * @param modAmtMillis milliseconds since last frame started
      */
-    private final void draw3D(float modAmtMillis){
+    private final void draw3D(float modAmtMillis, boolean isDebug){
         for(int i = 1; i<numDispWins; ++i){
-            if((isShowingWindow(i)) && (_dispWinFrames[i].getIs3DWindow())){    _dispWinFrames[i].draw3D(modAmtMillis);}
+            if((isShowingWindow(i)) && (_dispWinFrames[i].getIs3DWindow())){    _dispWinFrames[i].draw3D(modAmtMillis, isDebug);}
         }
         //fixed xyz rgb axes for visualisation purposes and to show movement and location in otherwise empty scene
-        //drawAxes(100,3, _axes3DCenter, 200, false); 
-        drawCenteredRGBAxesWithEnds(200,3,_axes3DCenter,_glblAxes_f, 200);
+        //drawCenteredRGBAxesWithEnds(200,3,_axes3DCenter,_glblAxes_f, 200);
+        drawRGBAxesWithEnds(200,3,_axes3DCenter,_glblAxes_f, 200);
         //build target _canvas
         _canvas.buildCanvas();
     }//draw3D
@@ -1501,27 +1451,27 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * Draw 2d windows that are currently displayed but not sidebar menu, which is drawn via drawUI()
      * @param modAmtMillis milliseconds since last frame started
      */    
-    private final void draw2D(float modAmtMillis) {
-        for(int i = 1; i<numDispWins; ++i){if (isShowingWindow(i) && !(_dispWinFrames[i].getIs3DWindow())){_dispWinFrames[i].draw2D(modAmtMillis);}}
+    private final void draw2D(float modAmtMillis, boolean isDebug) {
+        for(int i = 1; i<numDispWins; ++i){if (isShowingWindow(i) && !(_dispWinFrames[i].getIs3DWindow())){_dispWinFrames[i].draw2D(modAmtMillis, isDebug);}}
     }
     
     /**
      * Draw UI components on screen surface
      * @param modAmtMillis milliseconds since last frame started
      */
-    private final void drawUI(float modAmtMillis){    
-        boolean shouldDrawOnscreenText = (isDebugMode() || showInfo);
+    private final void drawUI(float modAmtMillis, boolean isDebug){ 
+        boolean shouldDrawOnscreenText = (isDebug || _showInfo);
         for(int i = 1; i<numDispWins; ++i){
             _dispWinFrames[i].drawHeader(
                     sideBarMenu.getDebugData(),
                     (shouldDrawOnscreenText && (i==_curFocusWin)), 
-                    isDebugMode(), 
+                    isDebug, 
                     modAmtMillis);}
-        sideBarMenu.draw2D(modAmtMillis);
-        sideBarMenu.drawHeader(new String[0], false, isDebugMode(), modAmtMillis);
+        sideBarMenu.draw2D(modAmtMillis, isDebug);
+        sideBarMenu.drawHeader(new String[0], false, isDebug, modAmtMillis);
         _dispWinFrames[_curFocusWin].updateConsoleStrs();    
         //build and set statusbar if should be used
-        if(doShowStatusBar()) {
+        if(_appUICntlFlags.doShowStatusBar()) {
             drawWindowStatusBar(getStatusBarString(_memChkLastTimerMark != _glblStartSimFrameTime/_memChkMillisTimer));
         }        
     }//drawUI
@@ -1588,13 +1538,8 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param xOffHalf
      * @param yOffHalf
      */
-    private final int[] btnGreyClr = new int[]{180,180,180};
     public final void dispMenuText(float xOffHalf, float yOffHalf) {
-        for(int idx =0; idx<_numFlagsToShow; ++idx){
-            int i = _flagsToShow.get(idx);
-            if(getBaseFlag(i) ){        dispMenuTxtLat(_truePFlagNames[i], _trueFlagColors[i], true, xOffHalf,yOffHalf);}
-            else {                      dispMenuTxtLat(_falsePFlagNames[i], btnGreyClr, false, xOffHalf,yOffHalf);}                    
-        }
+        _appUICntlFlags.dispMenuText(xOffHalf, yOffHalf);
     }//dispMenuText
     
     /**
@@ -1617,15 +1562,15 @@ public abstract class GUI_AppManager extends Java_AppManager {
     /**
      * draw state booleans at top of screen and their state
      */
-    public final void drawSideBarStateLights(float yOff){ _appStateFlags.drawSideBarStateLights(ri, yOff);}
+    public final void drawSideBarStateLights(float animTimeMod,float yOff){ _appStateFlags.drawSideBarStateLights(ri, animTimeMod, yOff);}
     
     /**
      * called by sidebar menu to display current window's UI components
      */
-    public final void drawWindowGuiObjs(float animTimeMod){
+    public final void drawWindowGuiObjs(float animTimeMod, boolean isGlblAppDebug){
         if(_curFocusWin != -1){
             ri.pushMatState();
-            _dispWinFrames[_curFocusWin].drawWindowGuiObjs(isDebugMode(), animTimeMod);                    //draw what user-modifiable fields are currently available
+            _dispWinFrames[_curFocusWin].drawWindowGuiObjs(animTimeMod, isGlblAppDebug);                    //draw what user-modifiable fields are currently available
             ri.popMatState();    
         }
     }//
@@ -2509,7 +2454,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     public final void sendKeyPressToWindows(char key, int keyCode) {
         handleKeyPress(key,keyCode);    //handle all other (non-numeric) keys in instancing class
         for(int i=0; i<numDispWins; ++i){_dispWinFrames[i].setValueKeyPress(key, keyCode);}
-        _appStateFlags.setValueKeyPressed(true);
+        _appStateFlags.setValueKeyPressed(key, true);
     }
         
     /**
@@ -2526,7 +2471,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @return
      */
     public myVectorf mouseForceAtLoc(float msClickForce, myPointf _loc, boolean attractMode){
-        myPointf mouseFrcLoc = getTransMseLoc(new myPointf(_3DGridDimX/2.0f, _3DGridDimY/2.0f, _3DGridDimZ/2.0f));// new myPointf(c.dfCtr.x+_3DGridDimX/2.0f,c.dfCtr.y+_3DGridDimY/2.0f,c.dfCtr.z+_3DGridDimZ/2.0f);// new myVector(lstClkX,0,lstClkY);//translate click location to where the space where the boids are    
+        myPointf mouseFrcLoc = getTransMseLoc(new myPointf(_3DGridDimX/2.0f, _3DGridDimY/2.0f, _3DGridDimZ/2.0f));    
         myVectorf resFrc = new myVectorf(_loc, mouseFrcLoc);        
         float sqDist = resFrc.sqMagn;
         if(sqDist<MyMathUtils.EPS_F){sqDist=MyMathUtils.EPS_F;}
@@ -2627,7 +2572,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         _winVisFlags[flIDX] = (val ?  _winVisFlags[flIDX] | mask : _winVisFlags[flIDX] & ~mask);
         switch (idx){
             case dispMenuIDX     : { sideBarMenu.setShowWin(val);    break;}
-            default             : {    setVisFlag_Indiv(idx, val);    }
+            default              : {    setVisFlag_Indiv(idx, val);    }
         }
     }
 
@@ -2662,85 +2607,34 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @return
      */
     public final boolean isShowingWindow(int i){return getWinVisFlag(i);}//showUIMenu is first flag of window showing flags, visFlags are defined in instancing class
-
+   
     /**
-     * base class flags init
+     * Set debug mode on/off for all windows
+     * @param val
      */
-    private final void initBaseFlags(){
-        _baseFlags = new int[1 + numBaseFlags/32];
-        _trueFlagColors = new int[numBaseFlags][3];        
-        
-        for(int i = 0; i < numBaseFlags; ++i){ 
-            forceBaseFlag(i,false);
-             _trueFlagColors[i] = MyMathUtils.randomIntClrAra(150, 100, 150);                    
-        }
-    }//initBaseFlags()
-    
+    public final void setAllWinIsDebugMode(boolean val) {           for(int i = 1; i<_dispWinFrames.length;++i){_dispWinFrames[i].setIsGlobalDebugMode(val) ;}}
     /**
      * 
-     * @param idx
      * @param val
      */
-    protected final void setBaseFlag(int idx, boolean val){
-        int flIDX = idx/32, mask = 1<<(idx%32);
-        _baseFlags[flIDX] = (val ?  _baseFlags[flIDX] | mask : _baseFlags[flIDX] & ~mask);
-        switch(idx){
-            case debugMode           : { for(int i = 1; i<_dispWinFrames.length;++i){_dispWinFrames[i].setIsGlobalDebugMode(val) ;}break;}//anything special for debugMode     
-            case finalInitDone       : { break;}//flag to handle long setup - processing seems to time out if setup takes too long, so this will continue setup in the first draw loop
-            case saveAnim            : { break;}//anything special for saveAnim             
-            case runSim              : { break;}// handleTrnsprt((val ? 2 : 1) ,(val ? 1 : 0),false); break;}        //anything special for runSim    
-            case showRtSideMenu      : { for(int i = 1; i<_dispWinFrames.length;++i){_dispWinFrames[i].setRtSideInfoWinSt(val);}break;}    //set value for every window - to show or not to show info window
-            case showStatusBar       : { break;}// show or hide lower status bar, displaying frame rate, memory usage and other quantities
-            case flipDrawnTraj       : { for(int i = 1; i<_dispWinFrames.length;++i){_dispWinFrames[i].rebuildAllDrawnTrajs();}break;}                        //whether or not to flip the drawn melody trajectory, width-wise
-            case singleStep          : { break;}
-            case clearBKG            : { break;}
-        }                
-    }//setBaseFlag
-    /**
-     * force base flag - bypass any window setting
-     * @param idx
-     * @param val
-     */
-    private void forceBaseFlag(int idx, boolean val) {        
-        int flIDX = idx/32, mask = 1<<(idx%32);
-        _baseFlags[flIDX] = (val ?  _baseFlags[flIDX] | mask : _baseFlags[flIDX] & ~mask);
-    }
-    //get baseclass flag
-    protected final boolean getBaseFlag(int idx){int bitLoc = 1<<(idx%32);return (_baseFlags[idx/32] & bitLoc) == bitLoc;}    
-    protected final void clearBaseFlags(int[] idxs){        for(int idx : idxs){setBaseFlag(idx,false);}    }    
+    public final void setAllWinShowRtSideInfoDisp(boolean val) {    for(int i = 1; i<_dispWinFrames.length;++i){_dispWinFrames[i].setRtSideInfoWinSt(val);}}
+   
 
     /**
      * used to toggle the value of a flag
      * @param idx
      */
-    public final void flipMainFlag(int i) {
-        int flagIDX = _flagsToShow.get(i);
-        setBaseFlag(flagIDX,!getBaseFlag(flagIDX));
+    public final void toggleAppFlag(int i) {
+        //i is the index in the sequence of flags to show, not the key of the map.
+        _appUICntlFlags.toggleFlagByIDX(i);
     }    
-    /**
-     * get the current state (T/F) of state flags (Such as if shift is pressed or not) specified by idx in _stateFlagsToShow List
-     * @param idx the actual idx of the state flag
-     * @return
-     */
-    public final boolean getStateFlagState(int idx) {return getBaseFlag(idx);}
+
     /**
      * get number of main flags to display in right side menu
      * @return
      */
-    public final int getNumFlagsToShow() {return _numFlagsToShow;}
-    
-    public final boolean isDebugMode() {return getBaseFlag(debugMode);}
-    
-    public final boolean doShowDrawawbleCanvas() {return getBaseFlag(showCanvas);}
-    
-    public final boolean isFinalInitDone() {return getBaseFlag(finalInitDone);}
-    public final boolean isRunSim() {return getBaseFlag(runSim);}
-    public final boolean isSingleStep() {return getBaseFlag(singleStep);}
-    public final boolean doSaveAnim() {return getBaseFlag(saveAnim);}
-    public final boolean doFlipTraj() {return getBaseFlag(flipDrawnTraj);}
-    public final boolean doShowRtSideMenu() {return getBaseFlag(showRtSideMenu);}
-    public final boolean doShowStatusBar() {return getBaseFlag(showStatusBar);}
-    
+    public final int getNumFlagsToShow() {return _appUICntlFlags.getNumFlagsToShow();}
+  
     public final boolean valueKeyIsPressed() {return _appStateFlags.valueKeyIsPressed();}
     public final boolean shiftIsPressed() {return _appStateFlags.shiftIsPressed();}
     public final boolean altIsPressed() {return _appStateFlags.altIsPressed();}
@@ -2759,72 +2653,109 @@ public abstract class GUI_AppManager extends Java_AppManager {
     public final boolean curDispWinCanShow3dbox() {return winInitVals[_curFocusWin].canShow3dbox();}
     public final boolean curDispWinCanMoveView() {return winInitVals[_curFocusWin].canMoveView();}
     public final boolean curDispWinIs3D() {return winInitVals[_curFocusWin].dispWinIs3D();}
-    
-    public final void setSimIsRunning(boolean val) {setBaseFlag(runSim,val);}
-    public final void toggleSimIsRunning() {setBaseFlag(runSim, !getBaseFlag(runSim));}
-    public final void setSimIsSingleStep(boolean val) {setBaseFlag(singleStep,val);}
-    public final void setShowRtSideMenu(boolean val) {setBaseFlag(showRtSideMenu,val);}
-    public final void setShowStatusBar(boolean val) {setBaseFlag(showStatusBar,val);}
-    public final void setClearBackgroundEveryStep(boolean val) {setBaseFlag(clearBKG,val);}
         
     public final void setMouseClicked(boolean val) { _appStateFlags.setMouseClicked(val);}
     public final void setModView(boolean val) {_appStateFlags.setModView(val);}
     public final void setIsDrawing(boolean val) {_appStateFlags.setIsDrawing(val);}
-    public final void setFinalInitDone(boolean val) {setBaseFlag(finalInitDone, val);}    
-    public final void setSaveAnim(boolean val) {setBaseFlag(saveAnim, val);}
-    public final void toggleSaveAnim() {setBaseFlag(saveAnim, !getBaseFlag(saveAnim));}
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Top-level UI flags to show
-
-    protected final void setBaseFlagToShow_debugMode(boolean val) {_setBaseFlagToShow(debugMode, val);}
-    protected final void setBaseFlagToShow_saveAnim(boolean val) {_setBaseFlagToShow(saveAnim, val);}
-    protected final void setBaseFlagToShow_runSim(boolean val) {_setBaseFlagToShow(runSim, val);}
-    protected final void setBaseFlagToShow_singleStep(boolean val) {_setBaseFlagToShow(singleStep, val);}
-    protected final void setBaseFlagToShow_showRtSideMenu(boolean val) {_setBaseFlagToShow(showRtSideMenu, val);}    
-    protected final void setBaseFlagToShow_showStatusBar(boolean val) {_setBaseFlagToShow(showStatusBar, val);}    
-    protected final void setBaseFlagToShow_showDrawableCanvas(boolean val) {_setBaseFlagToShow(showCanvas, val);}    
     
-    public final boolean getBaseFlagIsShown_debugMode() {return _getBaseFlagIsShown(debugMode);}
-    public final boolean getBaseFlagIsShown_saveAnim() {return _getBaseFlagIsShown(saveAnim);}
-    public final boolean getBaseFlagIsShown_runSim() {return _getBaseFlagIsShown(runSim);}
-    public final boolean getBaseFlagIsShown_singleStep() {return _getBaseFlagIsShown(singleStep);}
-    public final boolean getBaseFlagIsShown_showRtSideMenu() {return _getBaseFlagIsShown(showRtSideMenu);}
-    public final boolean getBaseFlagIsShown_showStatusBar() {return _getBaseFlagIsShown(showStatusBar);}
-    public final boolean getBaseFlagIsShown_showDrawableCanvas() {return _getBaseFlagIsShown(showCanvas);}
+    /**
+     * Returns a snapshot of the application flags at this moment.
+     * @return
+     */
+    public final GUI_AppUIFlags getAppUIFlags() { return new GUI_AppUIFlags(_appUICntlFlags);}
     
-
-    //determine primary application flags that are actually being displayed or not displayed
-    private final void _setBaseFlagToShow(int idx, boolean val) {
-        HashMap<Integer, Integer> tmpMapOfFlags = new HashMap<Integer, Integer>();
-        for(Integer flag : _flagsToShow) {            tmpMapOfFlags.put(flag, 0);        }
-        if(val) {tmpMapOfFlags.put(idx, 0);    } else {tmpMapOfFlags.remove(idx);}
-        _flagsToShow = new ArrayList<Integer>(tmpMapOfFlags.keySet());
-        _numFlagsToShow = _flagsToShow.size();
-    }//_setBaseFlagToShow
-    
-    private final boolean _getBaseFlagIsShown(int idx) {
-        for(Integer flag : _flagsToShow) { if (flag == idx) {return true;}}
-        return false;
-    }
+    public final boolean isGlblDebug() {return _appUICntlFlags.getIsDebug();}
+    /**
+     * Toggle the command for running the simulation
+     */
+    public final void toggleSimIsRunning() {_appUICntlFlags.toggleSimIsRunning();}
+    /**
+     * Toggle the save anim flag
+     */
+    public final void toggleSaveAnim() {_appUICntlFlags.toggleSaveAnim();}
+    /**
+     * Start a simulation
+     */
+    public final void launchSim() {_appUICntlFlags.setRunSim(true);}
+    /**
+     * Stop simulation
+     */
+    public final void stopSim() {_appUICntlFlags.setRunSim(false);}
+    /**
+     * Whether or not this application should hide the debug app flag, which enables
+     * UI debug display, among other things.
+     * @return
+     */
+    protected abstract boolean hideAppFlag_DebugMode();
+    /**
+     * Whether or not this application should hide the "save anim" flag, which will
+     * allow for saving a screen shot or sequence of screen shots.
+     * @return
+     */
+    protected abstract boolean hideAppFlag_SaveAnim();
+    /**
+     * Whether or not this application should display the 'run simulation' flag, which
+     * in turn will start and stop simulation execution.
+     * @return
+     */
+    protected abstract boolean hideAppFlag_RunSim();
+    /**
+     * Whether or not this application should display the 'single step' flag, which
+     * in turn limits simulation execution to just a single step when enabled.
+     * @return
+     */
+    protected abstract boolean hideAppFlag_SingleStep();
+    /**
+     * Whether or not this application should show the 'Display Right-side Info Window' 
+     * display flag, which in turn will show/hide a window on the right side of the  
+     * screen holding various application-specific data.
+     * @return
+     */
+    protected abstract boolean hideAppFlag_showRtSideInfoDisp();
+    /**
+     * Whether or not this application should show the 'display status bar' display flag,
+     * which in turn will show/hide the status bar, which displays frame rate, memory and other
+     * important usage values.
+     * @return
+     */
+    protected abstract boolean hideAppFlag_showStatusBar();
+    /**
+     * Whether or not this application should show the 'Show Canvas' button, which 
+     * controls whether the drawing canvas should be displayed (in 3-d windows)
+     * @return
+     */
+    protected abstract boolean hideAppFlag_showCanvas();
     
     /**
      * gives multiplier based on whether shift, alt or cntl (or any combo) is pressed
      * @return
      */
-    public final double clickValModMult(){return ((altIsPressed() ? .1 : 1.0) * (shiftIsPressed() ? 10.0 : 1.0));}    
+    public final double clickValModMult(){return ((altIsPressed() ? .1 : 1.0) * (_appStateFlags.shiftIsPressed() ? 10.0 : 1.0));}    
     
     /**
      * Specify criteria for modifying click without dragging (i.e. shift is pressed or alt is pressed) 
      * @return
      */
     public abstract boolean isClickModUIVal();
-
+    /**
+     * 
+     * @return
+     */
     public final SidebarMenu getSideBarMenuWindow() {return sideBarMenu;}
+    /**
+     * 
+     * @return
+     */
     public final String getCurFocusDispWindowName() {return getDispWindowName(_curFocusWin);}
+    /**
+     * 
+     * @param idx
+     * @return
+     */
     public final String getDispWindowName(int idx) { 
-        if ((idx >= 0) && (idx < _dispWinFrames.length)){
-            return _dispWinFrames[idx].getName();
-        }
+        if ((idx >= 0) && (idx < _dispWinFrames.length)){ return _dispWinFrames[idx].getName();        }
         return "None";
     }
     /**
@@ -2854,9 +2785,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * Return the points describing a plane orthogonal to the eye vector and bound to the 3d Cube bounds.
      * @return
      */
-    public myPointf[] getCanvasDrawPlanePts() {
-        return buildPlaneBoxBounds(_canvas.getCanvasCorners());
-    }
+    public myPointf[] getCanvasDrawPlanePts() { return buildPlaneBoxBounds(_canvas.getCanvasCorners());    }
         
     /**
      * This will take given set of points and will calculate a set of points that make up the 
@@ -2866,12 +2795,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     public final myPointf[] buildPlaneBoxBounds(myPoint[] pts) {
         myVector tmpNorm = myVector._cross(new myVector(pts[0], pts[1]), new myVector(pts[1], pts[2]))._normalize();
-        //msgObj.dispInfoMessage(getPrjNmShrt(),"buildPlaneBoxBounds","\t TmpNorm : "+tmpNorm.toStrBrf()+"| Avg Point : "+ ctrPt.toStrBrf()+ "| "+_canvas.dispString);
-        
         float[] eq = MyMathUtils.getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
-        //works because plane is built with unit normal in equation
+        // works because plane is built with unit normal in equation
         return buildPlaneBoxBounds(eq);
-    }
+    }//buildPlaneBoxBounds
     
     /**
      * This will take given set of points and will calculate a set of points that make up the 
@@ -2882,7 +2809,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     public final myPointf[] buildPlaneBoxBounds(myPointf[] pts) {
         myVectorf tmpNorm = myVectorf._cross(new myVectorf(pts[0], pts[1]), new myVectorf(pts[1], pts[2]))._normalize();
         float[] eq = MyMathUtils.getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
-        //works because plane is built with unit normal in equation
+        // works because plane is built with unit normal in equation
         return buildPlaneBoxBounds(eq);
     }
     
@@ -2910,7 +2837,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @return
      */
     public final myPointf[] buildPlaneBoxBounds(float[] eq) {
-        //works because plane is built with unit normal in equation
+        // works because plane is built with unit normal in equation
         myPointf planeOrigin = new myPointf(-eq[0]*eq[3],-eq[1]*eq[3],-eq[2]*eq[3]);
         //Find intersection between this object's plane and every edge of world axis aligned bound box.
         ArrayList<myPointf> ptsAra = new ArrayList<myPointf>();
@@ -2941,9 +2868,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param B center point of endcap B
      * @return vec array of {AB, ScreenNorm, ScreenTan}
      */
-    public myVector[] buildViewBasedFrame(myPoint A, myPoint B) {
-        return MyMathUtils.buildFrameAroundNormal(A, B, getDrawSNorm());        
-    }
+    public myVector[] buildViewBasedFrame(myPoint A, myPoint B) {return MyMathUtils.buildFrameAroundNormal(A, B, getDrawSNorm());}
     
     /**
      * build a frame based on world orientation given two passed points
@@ -2951,9 +2876,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param B center point of endcap B
      * @return float vec array of {AB, ScreenNorm, ScreenTan}
      */
-    public myVectorf[] buildViewBasedFrame(myPointf A, myPointf B) {
-        return MyMathUtils.buildFrameAroundNormal(A, B, getDrawSNorm_f());
-    }
+    public myVectorf[] buildViewBasedFrame(myPointf A, myPointf B) {return MyMathUtils.buildFrameAroundNormal(A, B, getDrawSNorm_f());    }
         
     /**
      * Derive the points of a cylinder of radius r around axis through A and B
@@ -2962,9 +2885,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param r desired radius of cylinder
      * @return array of points for cylinder
      */
-    public myPoint[] buildCylVerts(myPoint A, myPoint B, double r) {
-        return MyMathUtils.buildCylVerts(A,B,r, getDrawSNorm());
-    }//build list of all cylinder vertices 
+    public myPoint[] buildCylVerts(myPoint A, myPoint B, double r) {return MyMathUtils.buildCylVerts(A,B,r, getDrawSNorm());}//build list of all cylinder vertices 
     
     /**
      * Derive the points of a cylinder of radius r around axis through A and B
@@ -2973,9 +2894,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param r desired radius of cylinder
      * @return array of points for cylinder
      */
-    public myPointf[] buildCylVerts(myPointf A, myPointf B, float r) {
-        return MyMathUtils.buildCylVerts(A,B,r, getDrawSNorm_f());
-    }//build list of all cylinder vertices 
+    public myPointf[] buildCylVerts(myPointf A, myPointf B, float r) {return MyMathUtils.buildCylVerts(A,B,r, getDrawSNorm_f());}//build list of all cylinder vertices 
     
     /**
      * random location within coords[0] and coords[1] extremal corners of a cube - bnds is to give a margin of possible random values
@@ -3021,7 +2940,14 @@ public abstract class GUI_AppManager extends Java_AppManager {
         return new int[]{(int)(255*(t.x-_cubeBnds[0][0])/_cubeBnds[1][0]),(int)(255*(t.y-_cubeBnds[0][1])/_cubeBnds[1][1]),(int)(255*(t.z-_cubeBnds[0][2])/_cubeBnds[1][2]),255};
     }
 
-    //set color based on passed point r= x, g = z, b=y
+    /**
+     * set color based on passed point r= x, g = z, b=y
+     * @param p
+     * @param x
+     * @param y
+     * @param w
+     * @param h
+     */
     public final void fillAndShowLineByRBGPt(myPoint p, float x,  float y, float w, float h){
         ri.setFill((int)p.x,(int)p.y,(int)p.z, 255);
         ri.setStroke((int)p.x,(int)p.y,(int)p.z, 255);

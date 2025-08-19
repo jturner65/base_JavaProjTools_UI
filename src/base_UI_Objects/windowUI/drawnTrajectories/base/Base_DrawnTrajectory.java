@@ -727,21 +727,9 @@ public abstract class Base_DrawnTrajectory {
     
     //overriding base class for cntrl-point driven constructs
     public int findClosestPt(myPoint p, double[] d){    
-        return findClosestPt(p, d,cntlPts);
+        return myPoint._findClosestPtToPt(cntlPts, p, d);
     }
-    /**
-     * finds closest point to ri in sPts - put dist in d
-     * @param ri
-     * @param d
-     * @param _pts
-     * @return
-     */
-    protected final int findClosestPt(myPoint p, double[] d, myPoint[] _pts){
-        int res = -1;
-        double mindist = 99999999, _d;
-        for(int i=0; i<_pts.length; ++i){_d = myPoint._dist(p,_pts[i]);if(_d < mindist){mindist = _d; d[0]=_d;res = i;}}    
-        return res;
-    }
+
     /**
      * reorder verts so that they start at newStIdx - only done for closed  meshes, so should wrap around. 
      * should be called by implementing class

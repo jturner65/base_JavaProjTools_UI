@@ -20,7 +20,6 @@ public enum TrajOffsetType {
     private static final String[] _typeName = new String[]{"Normal Offset", "Ball Offset", "Radial Offset"};
     private TrajOffsetType(int _val) {  value = _val;}
     
-    
     private static Map<Integer, TrajOffsetType> valmap = new HashMap<Integer, TrajOffsetType>(); 
     private static Map<Integer, TrajOffsetType> map = new HashMap<Integer, TrajOffsetType>(); 
     static { for (TrajOffsetType enumV : TrajOffsetType.values()) { valmap.put(enumV.value, enumV); map.put(enumV.ordinal(), enumV);}}
@@ -32,6 +31,4 @@ public enum TrajOffsetType {
     @Override
     public String toString() { return ""+this.name()+":"+_typeExplanation[ordinal()]; }    
     public String toStrBrf() { return ""+_typeName[ordinal()]; }    
-
-
 }//enum TrajOffsetType

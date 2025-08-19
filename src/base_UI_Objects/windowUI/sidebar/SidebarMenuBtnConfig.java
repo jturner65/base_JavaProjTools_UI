@@ -123,7 +123,12 @@ public class SidebarMenuBtnConfig {
         // returns the y location of where the UI clickable region for the display window should start
         _guiBtnRowsEndY = buildBtnData(_funcRowNames, _funcBtnLabels, _debugBtnLabels, _winTitles, _inclWinNames, _inclMseOvValues);
     }
-
+    
+    /**
+     * Derive the rectangular bounds for the Application-wide ui region 
+     * @param rectDim
+     * @param yOffset
+     */
     public void setAppButtonRegion(float[] rectDim, float yOffset) {
         UIAppButtonRegion = new float[4];        
         UIAppButtonRegion[0] = rectDim[0] + .01f * rectDim[2];
@@ -143,7 +148,7 @@ public class SidebarMenuBtnConfig {
      * @param inclMseOvValues include a row for possible mouse over values
      * @return
      */
-    public float buildBtnData(
+    private float buildBtnData(
             String[] funcRowNames, 
             String[][] funcBtnLabels, 
             String[] debugBtnLabels, 

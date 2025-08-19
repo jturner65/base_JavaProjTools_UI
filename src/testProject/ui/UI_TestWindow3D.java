@@ -10,6 +10,7 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.baseApp.GUI_AppUIFlags;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
@@ -23,9 +24,9 @@ public class UI_TestWindow3D extends Base_DispWindow {
      * idxs - need one per ui object
      */
     public final static int
-        gIDX_FloatVal1         = 0,
+        gIDX_FloatVal1      = 0,
         gIDX_IntVal1        = 1,
-        gIDX_ListVal1        = 2,
+        gIDX_ListVal1       = 2,
         gIDX_IntVal2        = 3,
         gIDX_IntVal3        = 4;
 
@@ -37,10 +38,10 @@ public class UI_TestWindow3D extends Base_DispWindow {
     public static final int 
             //debug is 0
             button1_IDX     = 1,
-            button2_IDX        = 2,
+            button2_IDX     = 2,
             button3_IDX     = 3,
-            button4_IDX        = 4,
-            button5_IDX        = 5,
+            button4_IDX     = 4,
+            button5_IDX     = 5,
             button6_IDX     = 6,
             button7_IDX     = 7,
             button8_IDX     = 8,
@@ -60,9 +61,13 @@ public class UI_TestWindow3D extends Base_DispWindow {
         super(_p, _AppMgr, _winIdx);
         
     }
-
+    /**
+     * Initialize any UI control flags appropriate for window application
+     * @param appUIFlags Snapshot of the initial flags structure for the application. 
+     * Will not reflect future changes, so should not be retained
+     */
     @Override
-    protected void initDispFlags() {}
+    protected void initDispFlags(GUI_AppUIFlags _notUsed) {}
 
     @Override
     protected void initMe() {
@@ -140,14 +145,14 @@ public class UI_TestWindow3D extends Base_DispWindow {
     }    
     
     @Override
-    protected void drawMe(float animTimeMod) {
+    protected void drawMe(float animTimeMod, boolean isGlblAppDebug) {
         ri.pushMatState();    
             ri.drawCylinder_NoFill(startLoc,endLoc, 20.0f, IGraphicsAppInterface.gui_Red, IGraphicsAppInterface.gui_Green);
         ri.popMatState();    
     }
     
     protected void setEndAndScalePoints() {
-        float scale = 100.0f / (1.000000001f * startLoc._dist(0,0,0));
+        float scale = 100.0f / (1.000000001f * startLoc.dist(0,0,0));
         startLoc._mult(scale);        
         endLoc.set(-startLoc.x, -startLoc.y, -startLoc.z);
     }
@@ -197,7 +202,7 @@ public class UI_TestWindow3D extends Base_DispWindow {
     protected void setUI_FloatValsCustom(int UIidx, float val, float oldVal) {}
 
     @Override
-    protected void drawCustMenuObjs(float animTimeMod) {}
+    protected void drawCustMenuObjs(float animTimeMod, boolean isGlblAppDebug) {}
 
     @Override
     public void handleSideMenuMseOvrDispSel(int btn, boolean val) {}
@@ -291,10 +296,10 @@ public class UI_TestWindow3D extends Base_DispWindow {
     protected void setCamera_Indiv(float[] camVals) {}
 
     @Override
-    protected void drawRightSideInfoBarPriv(float modAmtMillis) {}
+    protected void drawRightSideInfoBarPriv(float modAmtMillis, boolean isGlblAppDebug) {}
 
     @Override
-    protected void drawOnScreenStuffPriv(float modAmtMillis) {}
+    protected void drawOnScreenStuffPriv(float modAmtMillis, boolean isGlblAppDebug) {}
 
     @Override
     protected boolean handleMouseWheel_Indiv(int ticks, float mult) {

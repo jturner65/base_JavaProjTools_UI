@@ -88,16 +88,16 @@ public abstract class Base_UISimulator extends Base_Simulator {
      * Render the pertinent data for this simulator
      * @param animTimeMod in seconds, time that has passed since last draw call
      */
-    public final void drawMe(float animTimeMod) {
+    public final void drawMe(float animTimeMod, boolean isGlblAppDebug) {
         //scale animation by frameTimeScale
-        drawMe_Indiv(animTimeMod* frameTimeScale);
+        drawMe_Indiv(animTimeMod* frameTimeScale, isGlblAppDebug);
     }
     
     /**
      * Render the pertinent data for the implementation simulator
      * @param animTimeMod time since last draw call, scaled by frameTimeScale
      */
-    protected abstract void drawMe_Indiv(float animTimeMod);
+    protected abstract void drawMe_Indiv(float animTimeMod, boolean isGlblAppDebug);
     
     /**
      * draw result information on right sidebar
@@ -108,7 +108,7 @@ public abstract class Base_UISimulator extends Base_Simulator {
      *         idx 3 : per-line y offset for text that is not grouped (slightly larger)
      *         
      */
-    public final void drawResultBar( float[] yVals ) {
+    public final void drawResultBar( float[] yVals, boolean isGlblAppDebug ) {
         //TODO: Add any simulation-agnostic information to display here
         
         // implementation details

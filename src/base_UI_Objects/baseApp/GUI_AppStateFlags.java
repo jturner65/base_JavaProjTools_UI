@@ -16,7 +16,7 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
     
     public static final int
         //debug is specified in base class as idx 0
-        valueKeyPressed     = _numBaseFlags,
+        valueKeyPressed     = _numBaseFlags,                //key has been pressed
         shiftKeyPressed     = _numBaseFlags + 1,            //shift pressed
         altKeyPressed       = _numBaseFlags + 2,            //alt pressed
         cntlKeyPressed      = _numBaseFlags + 3,            //cntrl pressed
@@ -27,19 +27,20 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
     /**
      * # of control flags being managed
      */
-    private static final int numPrivFlags = _numBaseFlags+7;
+    private static final int _numPrivFlags = _numBaseFlags+7;
     
     /**
-     * Display UI indicator that varius mod keys are pressed
+     * Display UI indicator for what keys are pressed and what UI-driven actions are occurring
      */
-    private static final List<Integer> _stateFlagsToShow = Arrays.asList( 
+    private static final List<Integer> _stateFlagsToShow = Arrays.asList(
+        valueKeyPressed,
         shiftKeyPressed,            //shift pressed
-        altKeyPressed,                //alt pressed
-        cntlKeyPressed,                //cntrl pressed
-        mouseClicked,                //mouse left button is held down    
-        drawing,                     //currently drawing
-        modView                         //shift+mouse click+mouse move being used to modify the view                    
-            );
+        altKeyPressed,              //alt pressed
+        cntlKeyPressed,             //cntrl pressed
+        mouseClicked,               //mouse left button is held down    
+        drawing,                    //currently drawing
+        modView                     //shift+mouse click+mouse move being used to modify the view                    
+        );
     private static final int _numStateFlagsToShow = _stateFlagsToShow.size();
     
     /**
@@ -52,44 +53,59 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
      */
     private static float _stateFlagTransX;
     
-    private static final String[] _stateFlagDispNames = {"Shift","Alt","Cntl","Click", "Draw","View"};
+    private static final String[] _stateFlagDispNames = {"Key","Shift","Alt","Cntl","Click","Draw","View"};
     /**
      * Colors for state flags
      */
-    private static int[][] _stateFlagColors = new int[_numStateFlagsToShow][3];    
+    private static final int[][] _stateFlagColors = new int[_numStateFlagsToShow][3];    
     static {
-        _stateFlagColors[0] = new int[]{255,0,0};
-        _stateFlagColors[1] = new int[]{0,255,0};
-        _stateFlagColors[2] = new int[]{0,0,255};
-        _stateFlagColors[3] = new int[]{255,0,255};
-        _stateFlagColors[4] = new int[]{255,255,0};
-        _stateFlagColors[5] = new int[]{0,255,255};
+        int idx=0;        
+        _stateFlagColors[idx++] = new int[]{0,0,0};
+        _stateFlagColors[idx++] = new int[]{255,0,0};
+        _stateFlagColors[idx++] = new int[]{0,255,0};
+        _stateFlagColors[idx++] = new int[]{0,0,255};
+        _stateFlagColors[idx++] = new int[]{255,0,255};
+        _stateFlagColors[idx++] = new int[]{255,255,0};
+        _stateFlagColors[idx++] = new int[]{0,255,255};
     }
     
     /**
+     * Color for flags that are off
+     */
+    private static final int[] _offColor = new int[] {80,80,80};
+    /**
      * multiplier for displacement to display text label for _stateFlagDispNames
      */
-    private static final float[] _stateFlagWidthMult = new float[]{-3.0f,-3.0f,-3.0f,-3.2f,-3.5f,-2.5f};
-    private static float[] _stateFlagWidth = new float[_stateFlagWidthMult.length];
+    private static final float[] _stateFlagWidth = new float[_numStateFlagsToShow];
     static {
         for(int i=0;i<_stateFlagDispNames.length;++i) {
-            _stateFlagWidth[i] = _stateFlagDispNames[i].length() * _stateFlagWidthMult[i];
+            _stateFlagWidth[i] = _stateFlagDispNames[i].length() * -3.0f;
         }    
     }
+    
+    /**
+     * What key is currently being pressed, or null if none
+     */
+    private char _keyPressed;
+    
     /**
      * Constructor
      */
     public GUI_AppStateFlags(GUI_AppManager _appMgr) {
-        super(numPrivFlags);
+        super(_numPrivFlags);
         appMgr = _appMgr;
-        _stateFlagTransX = appMgr.getMenuWidth() / (1.0f*_numStateFlagsToShow+ 1);
+        _stateFlagTransX = appMgr.getMenuWidth() / (1.0f*_numStateFlagsToShow + 1);
+        _keyPressed = 0x00;
     }
 
     /**
      * Copy constructor
      * @param _otr
      */
-    public GUI_AppStateFlags(Base_BoolFlags _otr) {        super(_otr);}
+    public GUI_AppStateFlags(GUI_AppStateFlags _otr) {        
+        super(_otr);
+        _keyPressed = _otr._keyPressed;
+    }
 
     @Override
     protected void handleSettingDebug(boolean val) {}
@@ -114,7 +130,10 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
     public final void setCntlPressed(boolean val) {setFlag(cntlKeyPressed,val);}
     
     public final boolean valueKeyIsPressed() {return getFlag(valueKeyPressed);}
-    public final void setValueKeyPressed(boolean val){setFlag(valueKeyPressed,val);}
+    public final void setValueKeyPressed(char key, boolean val){
+        _keyPressed = val ? key: 0x00;       
+        setFlag(valueKeyPressed,val);
+    }
     
     public final boolean mouseIsClicked() {return getFlag(mouseClicked);}
     public final void setMouseClicked(boolean val) {setFlag(mouseClicked,val);}
@@ -136,15 +155,16 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
     }
     //modview tied to shift key
     private static int[] shiftKeyFlags = new int []{shiftKeyPressed, modView}; 
-    private void endShiftKey(){            
-        setAllFlagsToFalse(shiftKeyFlags);    
+    
+    private void endShiftKey(){             
+        setAllFlagsToFalse(shiftKeyFlags);
         for(int i=0; i<appMgr.numDispWins; ++i){appMgr.getDispWindow(i).endShiftKey();}
     }
-    private void endAltKey(){            setAltPressed(false);
-        for(int i=0; i<appMgr.numDispWins; ++i){appMgr.getDispWindow(i).endAltKey();}
-    }
-    private void endCntlKey(){            setCntlPressed(false);for(int i=0; i<appMgr.numDispWins; ++i){appMgr.getDispWindow(i).endCntlKey();}}
-    private void endValueKeyPressed() {    setValueKeyPressed(false);            
+    private void endAltKey(){               setAltPressed(false);for(int i=0; i<appMgr.numDispWins; ++i){appMgr.getDispWindow(i).endAltKey();}}
+    private void endCntlKey(){              setCntlPressed(false);for(int i=0; i<appMgr.numDispWins; ++i){appMgr.getDispWindow(i).endCntlKey();}}
+    
+    private void endValueKeyPressed() {     
+        setValueKeyPressed((char) 0x00, false);            
         for(int i=0; i<appMgr.numDispWins; ++i){appMgr.getDispWindow(i).endValueKeyPress();}
     }
     
@@ -160,7 +180,9 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
         if(isLeftClick){                    _myMouseClicked(mouseX, mouseY,0);} 
         else if (isRightClick) {            _myMouseClicked(mouseX, mouseY,1);}
     }// mousePressed        
-    private void _myMouseClicked(int mouseX, int mouseY, int mseBtn){     for(int i=0; i<appMgr.numDispWins; ++i){if (appMgr.getDispWindow(i).handleMouseClick(mouseX, mouseY,mseBtn)){return;}}}
+    private void _myMouseClicked(int mouseX, int mouseY, int mseBtn){     
+        for(int i=0; i<appMgr.numDispWins; ++i){if (appMgr.getDispWindow(i).handleMouseClick(mouseX, mouseY,mseBtn)){return;}}
+    }
     
     /**
      * Handle mouse being dragged from old position to new position
@@ -176,7 +198,9 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
         if(isLeftClick){                    _myMouseDragged(mouseX, mouseY, pmouseX, pmouseY,drag,0);}
         else if (isRightClick) {            _myMouseDragged(mouseX, mouseY, pmouseX, pmouseY,drag,1);}
     }//mouseDragged()
-    private void _myMouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector drag, int mseBtn){    for(int i=0; i<appMgr.numDispWins; ++i){if (appMgr.getDispWindow(i).handleMouseDrag(mouseX, mouseY, pmouseX, pmouseY,drag,mseBtn)) {return;}}}
+    private void _myMouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector drag, int mseBtn){    
+        for(int i=0; i<appMgr.numDispWins; ++i){if (appMgr.getDispWindow(i).handleMouseDrag(mouseX, mouseY, pmouseX, pmouseY,drag,mseBtn)) {return;}}
+    }
     
     /**
      * Handle mouse wheel
@@ -211,7 +235,6 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
         }                
     }
     
-    
     /**
      * display state flag indicator at top of window
      * @param txt
@@ -220,26 +243,39 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
      * @param stMult
      * @param yOff
      */
-    private void dispBoolStFlag(IGraphicsAppInterface ri, int[] clrAra, int idx, float yOff){
-        if(getFlag(_stateFlagsToShow.get(idx))){
-            ri.setFill( _stateFlagColors[idx], 255); 
-            ri.setStroke( _stateFlagColors[idx], 255);
-        } else {
-            ri.setColorValFill(IGraphicsAppInterface.gui_DarkGray,255); 
-            ri.setNoStroke();    
-        }
+    private void dispBoolStFlag(IGraphicsAppInterface ri, String label, float width, int[] clrAra, int idx, float yOff){
+        ri.setFill(clrAra, 255); 
+        ri.setStroke(clrAra, 255);
         ri.drawSphere(5);
         //text(""+txt,-xOff,yOff*.8f);    
-        ri.showText(""+_stateFlagDispNames[idx], _stateFlagWidth[idx],yOff*.8f);    
+        ri.showText(label, width,yOff*.8f);    
     }    
-        
+   
     /**
-     * draw state booleans at top of screen and their state
+     * Draw state booleans at top of screen and their state
+     * @param ri
+     * @param animTimeMod
+     * @param yOff
      */
-    public final void drawSideBarStateLights(IGraphicsAppInterface ri, float yOff){ //_numStateFlagsToShow
-        ri.translate(1.5f*_stateFlagTransX, yOff);        
-        for(int idx =0; idx<_numStateFlagsToShow; ++idx){
-            dispBoolStFlag(ri, _stateFlagColors[idx], idx, yOff);            
+    public final void drawSideBarStateLights(IGraphicsAppInterface ri, float animTimeMod, float yOff){ //_numStateFlagsToShow
+        ri.translate(1.5f*_stateFlagTransX, yOff);
+        //For 'key' flag - special handling to display key pressed
+        int[] clrToUse;
+        String label;
+        float width;
+        if(getFlag(_stateFlagsToShow.get(0))) {
+            clrToUse = _stateFlagColors[0];
+            label = _stateFlagDispNames[0]+":(`"+_keyPressed+"`)";
+            width = label.length() * -3.0f;
+        } else {
+            clrToUse = _offColor;
+            label = _stateFlagDispNames[0];
+            width = _stateFlagWidth[0];
+        }
+        dispBoolStFlag(ri, label, width, clrToUse, 0, yOff);
+        ri.translate(_stateFlagTransX,0);        
+        for(int idx = 1; idx<_numStateFlagsToShow; ++idx){
+            dispBoolStFlag(ri, _stateFlagDispNames[idx], _stateFlagWidth[idx], getFlag(_stateFlagsToShow.get(idx)) ? _stateFlagColors[idx] : _offColor, idx, yOff);
             ri.translate(_stateFlagTransX,0);
         }
     }

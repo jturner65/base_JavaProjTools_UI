@@ -107,20 +107,25 @@ public class UI_TestProject extends GUI_AppManager {
      */
     @Override
     protected void setupAppDims_Indiv() {}
-
+    
     @Override
-    protected void initBaseFlags_Indiv() {
-        setBaseFlagToShow_debugMode(true);
-        setBaseFlagToShow_saveAnim(true); 
-        setBaseFlagToShow_runSim(true);
-        setBaseFlagToShow_singleStep(true);
-        setBaseFlagToShow_showRtSideMenu(true);    
-        setBaseFlagToShow_showStatusBar(true);
-    }//initBaseFlags_Indiv
+    protected boolean hideAppFlag_DebugMode() {             return false;}
+    @Override
+    protected boolean hideAppFlag_SaveAnim() {              return false;}
+    @Override
+    protected boolean hideAppFlag_RunSim() {                return false;}
+    @Override
+    protected boolean hideAppFlag_SingleStep() {            return false;}
+    @Override
+    protected boolean hideAppFlag_showRtSideInfoDisp() {    return false;}
+    @Override
+    protected boolean hideAppFlag_showStatusBar() {         return false;}
+    @Override
+    protected boolean hideAppFlag_showCanvas() {            return false;}
+    
 
     @Override
     protected void initAllDispWindows() {
-        showInfo = true;
         String[] _winTitles = new String[]{"","UI Test Window 3D 1","UI Test Window 3D 2","UI Test Window 2D"},
                 _winDescr = new String[]{"", "Light Background Test 3D Window 1","Dark Background Test 3D Window 2","Test 2D Window"};
 
@@ -197,7 +202,6 @@ public class UI_TestProject extends GUI_AppManager {
     @Override
     protected void initOnce_Indiv() {
         setWinVisFlag(disp3DRes1IDX, true);
-        setShowStatusBar(true);
     }
     @Override
     protected void initProgram_Indiv() {    }
@@ -240,7 +244,7 @@ public class UI_TestProject extends GUI_AppManager {
      * @param is3DDraw
      */
     @Override
-    protected void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw) {}
+    protected void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw, boolean isGlblAppDebug) {}
 
 
     @Override
@@ -301,5 +305,8 @@ public class UI_TestProject extends GUI_AppManager {
         // TODO Auto-generated method stub
         return true;
     }
+
+
+
 
 }//UI_TestProject

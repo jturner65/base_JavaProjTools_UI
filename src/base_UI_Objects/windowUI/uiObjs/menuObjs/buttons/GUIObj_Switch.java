@@ -41,6 +41,17 @@ public class GUIObj_Switch extends GUIObj_Button {
      */
     public final boolean setValueFromBoolean(boolean _val) {        setVal(_val ? 1.0 : 0); return getValueAsBoolean();    }
     
+    /**
+     * Set passed boolean value as the default value for this switch object
+     * @param _val
+     * @return
+     */
+    public final boolean setDefaultValueFromBoolean(boolean _val) { 
+        double newVal = setVal(_val ? 1.0 : 0);
+        initVals[3] = newVal;
+        return getValueAsBoolean();        
+    }
+    
     public final boolean setBooleanLabelVals(String[] labels, boolean setAsDefault) {
         if(labels.length != 2) {            
             labels = new String[]{"List for boolean switch not properly constructed! Must have explicitly 2 values"}; 

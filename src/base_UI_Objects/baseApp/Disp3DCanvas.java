@@ -25,8 +25,17 @@ public class Disp3DCanvas {
      * Screen ctr location in world coords
      */        
     private myPoint scrCtrInWorld;
+    /**
+     * Eye location in the world
+     */
     private myPoint eyeInWorld; 
+    /**
+     * Previous mse location
+     */
     private myPoint oldMseLoc;
+    /**
+     * Current mouse location projected onto current canvas
+     */
     private myPoint dfCtr;                                                        //mouse location projected onto current drawing canvas
 
     private final float canvasDim = 15000,
@@ -103,7 +112,7 @@ public class Disp3DCanvas {
          }
 
         //normal to canvas through eye moved far behind viewer
-        eyeInWorld = ri.getWorldLoc(viewDimW2, viewDimH2,AppMgr._camEyeZ);
+        eyeInWorld = ri.getWorldLoc(viewDimW2, viewDimH2, AppMgr._camEyeZ);
         //eyeInWorld =myPoint._add(rawScrCtrInWorld, myPoint._dist( ri.pick(0,0,-1), rawScrCtrInWorld), drawSNorm);                                //location of "eye" in world space
         eyeToCtr.set(eyeInWorld, rawScrCtrInWorld);
         scrCtrInWorld = getPlInterSect(rawScrCtrInWorld, myVector._normalize(eyeToCtr));

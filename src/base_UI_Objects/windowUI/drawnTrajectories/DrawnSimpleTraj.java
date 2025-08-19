@@ -87,9 +87,9 @@ public class DrawnSimpleTraj {
     }
     //scale edit points and cntl points
     public void reCalcCntlPoints(float scale){
-        for(int i = 0; i<edtCrvEndPts.length; ++i){    edtCrvEndPts[i].y = trajMgr.calcOffsetScale_f(edtCrvEndPts[i].y,scale,topOffY);edtCrvEndPts[i].z = 0; }//edtCrvEndPts[curDrnTrajScrIDX][i].y -= topOffY; edtCrvEndPts[curDrnTrajScrIDX][i].y *= scale;edtCrvEndPts[curDrnTrajScrIDX][i].y += topOffY;    }    
+        for(int i = 0; i<edtCrvEndPts.length; ++i){    edtCrvEndPts[i].y = trajMgr.calcOffsetScale_f(edtCrvEndPts[i].y,scale,topOffY);edtCrvEndPts[i].z = 0; }    
         if(drawnTraj != null){
-            drawnTraj.scaleMeY(false,scale,topOffY);//only for display - rescaling changes the notes slightly so don't recalc notes
+            drawnTraj.scaleMeY(false,scale,topOffY);
         }
     }//reCalcCntlPoints/
     
@@ -115,12 +115,12 @@ public class DrawnSimpleTraj {
         float chkDist = trajFlags[ownrWinIs3dIDX] ? msClkPt3DRad : msClkPtRad;
         //first check endpoints, then check curve points
         double[] distTocPts = new double[1];            //using array as pointer, passing by reference
-        int cntpIdx = trajMgr.findClosestPt(mse, distTocPts, edtCrvEndPts);    
+        int cntpIdx = myPoint._findClosestPtToPt(edtCrvEndPts, mse, distTocPts);    
         if(distTocPts[0] < chkDist){                        startEditEndPoint(cntpIdx);} 
         else {
             double[] distToPts = new double[1];            //using array as pointer, passing by reference
             myPoint[] pts = drawnTraj.getDrawnPtAra(false);
-            int pIdx = trajMgr.findClosestPt(mse, distToPts, pts);
+            int pIdx = myPoint._findClosestPtToPt(pts, mse, distToPts);
             //win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","startEditObj","Handle TrajClick 2 startEditObj : " + name);
             if(distToPts[0] < chkDist){//close enough to mod
                 trajMgr.setEditCueCircle(0,mse);
@@ -142,10 +142,10 @@ public class DrawnSimpleTraj {
     public boolean clickedMe(myPoint mse){
         float chkDist = trajFlags[ownrWinIs3dIDX] ? msClkPt3DRad : msClkPtRad;    
         double[] distToPts = new double[1];            //using array as pointer, passing by reference
-        int cntpIdx = trajMgr.findClosestPt(mse, distToPts, edtCrvEndPts);    
+        int cntpIdx = myPoint._findClosestPtToPt(edtCrvEndPts, mse, distToPts);    
         if(distToPts[0] < chkDist){return true;}
         distToPts[0] = 9999;
-        int pIdx = trajMgr.findClosestPt(mse, distToPts, drawnTraj.getDrawnPtAra(false));
+        int pIdx = myPoint._findClosestPtToPt(drawnTraj.getDrawnPtAra(false), mse, distToPts);
         return (distToPts[0] < chkDist);
     }
     
@@ -156,7 +156,7 @@ public class DrawnSimpleTraj {
             //edtCrvEndPts[editEndPt]._add(diff);        
             calcPerpPoints();
             drawnTraj.remakeDrawnTraj(false);
-            rebuildDrawnTraj();    
+            rebuildDrawnTraj(false);    
         } else {//scale all traj points based on modification of pts 2 or 3 - only allow them to move along the perp axis            
             myVector abRotAxis = myVector._rotAroundAxis(new myVector(edtCrvEndPts[0],edtCrvEndPts[1]), AppMgr.getDrawSNorm())._normalize();
             float dist = (float)myPoint._dist(edtCrvEndPts[2], edtCrvEndPts[3]);
@@ -200,7 +200,7 @@ public class DrawnSimpleTraj {
     public void endEditObj(){
         if((drawnTrajPickedIdx != -1) || (editEndPt != -1) || trajMgr.getIsSmoothing()){//editing curve
             drawnTraj.remakeDrawnTraj(false);
-            rebuildDrawnTraj();        
+            rebuildDrawnTraj(false);        
         }
 //        else if( win.getFlags(Base_DispWindow.smoothTraj)){        
 //            drawnTraj.remakeDrawnTraj(false);    
@@ -223,7 +223,7 @@ public class DrawnSimpleTraj {
             //win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","endDrawObj","Size of pts ara after finalize (use drawn vels : " +false + " ): " + pts.length);
             edtCrvEndPts[0] = new myPoint(pts[0]);
             edtCrvEndPts[1] = new myPoint(pts[pts.length-1]);
-            rebuildDrawnTraj();
+            rebuildDrawnTraj(false);
             //win.getMsgObj().dispInfoMessage("DrawnSimpleTraj","endDrawObj","In Traj : " + this.ID + " endDrawObj ");
             trajMgr.processTrajectory(this);
         } else {
@@ -258,14 +258,14 @@ public class DrawnSimpleTraj {
     
     //Unused is for moveVelCurveToEndPoints
     @SuppressWarnings("unused")
-    public void rebuildDrawnTraj(){
+    public void rebuildDrawnTraj(boolean flipTraj){
         //Once edge is drawn
         calcPerpPoints();
         if(drawnTraj != null){
             if(drawnTraj.trajFlags.getIsMade()){                  
                 //Initialize the array that stores the path
                 int a= 0, b= 1;
-                boolean flipTraj = Base_DispWindow.AppMgr.doFlipTraj();
+                //boolean flipTraj = Base_DispWindow.AppMgr.doFlipTraj();
                 if(flipTraj){     a = 1; b= 0;}
                 //TODO
                 if(false){//pathBetweenPts =

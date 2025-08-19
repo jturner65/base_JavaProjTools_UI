@@ -66,7 +66,7 @@ public class ScrollBars{
             {hScrlDims[0]+hScrlDims[2]-thk,hScrlDims[1],thk,thk}};        //right
 
     }
-    public void drawMe(){
+    public void drawMe(boolean isGlblAppDebug){
         ri.pushMatState();
         ri.setColorValFill(IGraphicsAppInterface.gui_LightGray,255);
         ri.setColorValStroke(IGraphicsAppInterface.gui_Black,255);

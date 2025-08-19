@@ -40,7 +40,7 @@ public class GUIObj_List extends GUIObj_Int {
      * Instance-specific reset
      */
     @Override
-    protected void resetToInit_Indiv() {
+    protected void resetToDefault_Indiv() {
         //reset list values to be original list values
         listVals = new String[origListVals.length];
         System.arraycopy(origListVals, 0, listVals, 0, origListVals.length);
@@ -79,7 +79,7 @@ public class GUIObj_List extends GUIObj_Int {
      * Set the passed list as the original/default list for this object
      * @param vals
      */
-    private void setNewDefaultList(String[] vals) {
+    private void _setNewDefaultList(String[] vals) {
         origListVals = new String[vals.length];
         System.arraycopy(vals, 0, origListVals, 0, vals.length);    
     }
@@ -95,7 +95,7 @@ public class GUIObj_List extends GUIObj_Int {
         else {
             listVals = new String[vals.length];
             System.arraycopy(vals, 0, listVals, 0, vals.length);
-            if (setAsDefault) {setNewDefaultList(listVals);}
+            if (setAsDefault) {_setNewDefaultList(listVals);}
         }
         //Update new max value
         double curVal = getVal();
@@ -116,7 +116,7 @@ public class GUIObj_List extends GUIObj_Int {
             ArrayList<String> tmpAra = new ArrayList<String>(Arrays.asList(listVals));
             tmpAra.add(val);
             listVals = tmpAra.toArray(new String[0]);        
-            if(setAsDefault) {setNewDefaultList(listVals);}
+            if(setAsDefault) {_setNewDefaultList(listVals);}
         }
         //Update new max value
         double curVal = listVals.length-1;

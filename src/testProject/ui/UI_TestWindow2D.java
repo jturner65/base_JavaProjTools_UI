@@ -8,6 +8,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.baseApp.GUI_AppUIFlags;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
@@ -71,9 +72,13 @@ public class UI_TestWindow2D extends Base_DispWindow {
         // Initially center circle in display screen
         circleCenter = new myPoint();
     }
-
+    /**
+     * Initialize any UI control flags appropriate for window application
+     * @param appUIFlags Snapshot of the initial flags structure for the application. 
+     * Will not reflect future changes, so should not be retained
+     */
     @Override
-    protected void initDispFlags() {}
+    protected void initDispFlags(GUI_AppUIFlags _notUsed) {}
 
     @Override
     protected void initMe() {}    
@@ -153,7 +158,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
 
 
     @Override
-    protected void drawMe(float animTimeMod) {
+    protected void drawMe(float animTimeMod, boolean isGlblAppDebug) {
         ri.pushMatState();
             moveTo2DRectCenter();
             ri.setFill(new int[] {255,255,255}, 255);
@@ -179,7 +184,7 @@ public class UI_TestWindow2D extends Base_DispWindow {
     protected void setUI_FloatValsCustom(int UIidx, float val, float oldVal) {}
 
     @Override
-    protected void drawCustMenuObjs(float animTimeMod) {}
+    protected void drawCustMenuObjs(float animTimeMod, boolean isGlblAppDebug) {}
 
     @Override
     public void handleSideMenuMseOvrDispSel(int btn, boolean val) {}
@@ -273,10 +278,10 @@ public class UI_TestWindow2D extends Base_DispWindow {
     protected void setCamera_Indiv(float[] camVals) {}
 
     @Override
-    protected void drawRightSideInfoBarPriv(float modAmtMillis) {}
+    protected void drawRightSideInfoBarPriv(float modAmtMillis, boolean isGlblAppDebug) {}
 
     @Override
-    protected void drawOnScreenStuffPriv(float modAmtMillis) {}
+    protected void drawOnScreenStuffPriv(float modAmtMillis, boolean isGlblAppDebug) {}
 
     @Override
     protected void updateCalcObjUIVals() {}
