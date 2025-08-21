@@ -1509,30 +1509,188 @@ public class UIObjectManager {
      */
     public final boolean checkAndSetFloatVal(int idx, float value) {return _uiUpdateData.checkAndSetFloatVal(idx, value);}    
     /**
-     * These are called externally from execution code object to synchronize ui values that might change during execution
+     * These are called externally from execution code object to synchronize ui values that might change during execution from UI data updater
      * @param idx of particular type of object
      * @param value value to set
      */
     public final void updateBoolValFromExecCode(int idx, boolean value) {setPrivFlag(idx, value);_uiUpdateData.setBoolValue(idx, value);}
     /**
-     * These are called externally from execution code object to synchronize ui values that might change during execution
+     * These are called externally from execution code object to synchronize ui values that might change during execution from UI data updater
      * @param idx of particular type of object
      * @param value value to set
      */
     public final void updateIntValFromExecCode(int idx, int value) {        _guiObjsIDXMap.get(idx).setVal(value);_uiUpdateData.setIntValue(idx, value);}
     /**
-     * These are called externally from execution code object to synchronize ui values that might change during execution
+     * These are called externally from execution code object to synchronize ui values that might change during execution from UI data updater
      * @param idx of particular type of object
      * @param value value to set
      */
     public final void updateFloatValFromExecCode(int idx, float value) {    _guiObjsIDXMap.get(idx).setVal(value);_uiUpdateData.setFloatValue(idx, value);}
+
+    /**
+     * Sets the passed UI object's new max value. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes
+     * @param maxVal
+     * @return whether modification was performed or not
+     */
+    public boolean forceNewUIMaxVal(int uiObjIdx, double maxVal) {
+        if (_validateUIObjectIdx(uiObjIdx, "forceNewUIMaxVal", "set its max value")) {
+            Base_GUIObj obj = _guiObjsIDXMap.get(uiObjIdx);
+            obj.setNewMax(maxVal);
+            if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+            return true;
+        }    
+        return false;
+    }    
+    
+    /**
+     * Sets the passed UI object's new min value. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes.
+     * @param minVal
+     * @return whether modification was performed or not
+     */
+    public boolean forceNewUIMinVal(int uiObjIdx, double minVal) {
+        if (_validateUIObjectIdx(uiObjIdx, "forceNewUIMinVal", "set its min value")) {
+            Base_GUIObj obj = _guiObjsIDXMap.get(uiObjIdx);
+            obj.setNewMin(minVal);
+            if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Force a value to be set in the numeric UI object at the passed idx. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes and returns -Double.MAX_VALUE
+     * @param val
+     * @return value being set, or -Double.MAX_VALUE if idx is out of range
+     */
+    public double forceNewUIValue(int uiObjIdx, double val) {
+        if (_validateUIObjectIdx(uiObjIdx, "forceNewUIValue", "set its value")) {
+            Base_GUIObj obj = _guiObjsIDXMap.get(uiObjIdx);
+            double setVal = obj.setVal(val);
+            if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+            return setVal;
+        }
+        return -Double.MAX_VALUE;
+    }        
+    
+    /**
+     * Set the display text of the passed UI Object, either numeric or boolean. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx
+     * @param isNumeric
+     * @param str
+     */
+    public void forceNewUIDispText(int uiObjIdx, boolean isNumeric, String str) {
+        if (isNumeric) {
+            if (_validateUIObjectIdx(uiObjIdx, "forceNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(uiObjIdx).setLabel(str);}
+        } else {
+            //TODO support boolean UI objects?
+            if (_validateUIObjectIdx(uiObjIdx, "forceNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(uiObjIdx).setLabel(str);}
+        }
+    }//forceNewUIDispText
+    /**
+     * Specify a string to display in the idx'th List UI Object, if it exists, and is a list object. Updates UIDataUpdater if appropriate for object state.
+     * @param idx
+     * @param val
+     * @return
+     */
+    public int[] forceNewUIDispListVal(int uiObjIdx, String val) {        
+        if (!_validateUIObjectIdx(uiObjIdx, "forceNewUIDispListVal", "display passed value")){return new int[0];}
+        Base_GUIObj obj =  _guiObjsIDXMap.get(uiObjIdx); 
+        if(!_validateIdxIsListObj(obj, "forceNewUIDispListVal", "display passed value")){return new int[0];}
+        int[] res = ((GUIObj_List)obj).setValInList(val);
+        if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+        return res;
+    }//forceNewUIDispListVal
+    
+    /**
+     * Set all the values in the uiObjIdx List UI Object, if it exists, and is a list object. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx the list obj's index
+     * @param values the list of values to set
+     * @param setAsDefault whether or not these new values should be set as the default values
+     * @return
+     */
+    public int forceNewUIAllListValues(int uiObjIdx, String[] values, boolean setAsDefault) {        
+        if (!_validateUIObjectIdx(uiObjIdx, "forceNewUIAllListValues", "set/replace all list values")){return -1;}
+        Base_GUIObj obj = _guiObjsIDXMap.get(uiObjIdx); 
+        if (!_validateIdxIsListObj(obj, "forceNewUIAllListValues", "set/replace all list values")){return -1;}
+        int res = ((GUIObj_List)obj).setListVals(values, setAsDefault);
+        if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+        return res;
+    }//forceNewUIAllListValues
+    
+    /**
+     * Specify a state for a button to be in based on the passed string. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx
+     * @param val
+     * @return
+     */
+    public int[] forceNewUIDispButtonState(int uiObjIdx, String val) {        
+        if (!_validateUIObjectIdx(uiObjIdx, "forceNewUIDispButtonState", "display passed state")){return new int[0];}
+        Base_GUIObj obj = _guiObjsIDXMap.get(uiObjIdx);
+        if (!_validateIdxIsButtonObj(obj, "forceNewUIDispButtonState", "display passed state")){return new int[0];}
+        int[] res = ((GUIObj_Button)obj).setStateByLabel(val);
+        if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+        return res;
+    }//forceNewUIDispButtonState
+    
+    /**
+     * Set all the state names in the uiObjIdx Button Object, if it exists, and is a button. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx the button obj's index
+     * @param values the new state names to set for the button
+     * @param setAsDefault whether or not these new values should be set as the default states for this button
+     * @return
+     */
+    public int forceNewUIAllButtonStates(int uiObjIdx, String[] values, boolean setAsDefault) {        
+        if (!_validateUIObjectIdx(uiObjIdx, "forceNewUIAllButtonStates", "set/replace all button states")) {return -1;}
+        Base_GUIObj obj = _guiObjsIDXMap.get(uiObjIdx);  
+        if (!_validateIdxIsButtonObj(obj, "forceNewUIAllButtonStates", "set/replace all button states")){return -1;}
+        int res = ((GUIObj_Button)obj).setStateLabels(values, setAsDefault);
+        if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+        return res;
+    }//forceNewUIAllButtonStates    
+    
+    /**
+     * Specify the state for a 2-state toggle switch object backed by privFlags to be in based on the passed string. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx
+     * @param val
+     * @return
+     */
+    public int[] forceNewUIDispSwitchState(int uiObjIdx, String val) {        
+        if (!_validateUIObjectIdx(uiObjIdx, "forceNewUIDispSwitchState", "display passed state")){return new int[0];}
+        Base_GUIObj obj = _guiObjsIDXMap.get(uiObjIdx);
+        if (!_validateIdxIsSwitchObj(obj, "forceNewUIDispSwitchState", "display passed state")){return new int[0];}
+        int[] res =  ((GUIObj_Switch)obj).setStateByLabel(val);
+        if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+        return res;
+    }//forceNewUIDispSwitchState
+    
+    /**
+     * Set all the state names in the uiObjIdx 2-state toggle switch object backed by privFlags, if it exists, and is a button. Updates UIDataUpdater if appropriate for object state.
+     * @param uiObjIdx the button obj's index
+     * @param values the new state names to set for the button
+     * @param setAsDefault whether or not these new values should be set as the default states for this button
+     * @return
+     */
+    public int forceNewUIAllSwitchStates(int uiObjIdx, String[] values, boolean setAsDefault) {        
+        if (!_validateSwitchListValues(values, "forceNewUIAllSwitchStates","set/replace both switch states") ||            
+                (!_validateUIObjectIdx(uiObjIdx, "forceNewUIAllSwitchStates", "set/replace both switch states")))  {return -1;}
+        Base_GUIObj obj = _guiObjsIDXMap.get(uiObjIdx);  
+        if (!_validateIdxIsSwitchObj(obj, "forceNewUIAllSwitchStates", "set/replace both switch states")){return -1;}
+        int res = ((GUIObj_Switch)obj).setStateLabels(values, setAsDefault);
+        if(obj.shouldUpdateWin(true)) {updateOwnerWithUIVal(obj);}
+        return res;
+    }//forceNewUIAllSwitchStates
+    
+    
     
     /**
      * Set the uiUpdateData structure and update the owner if the value has changed for an int-based UIobject (integer or list)
      * @param UIobj object being set/modified
      * @param UIidx the index of the object in _uiUpdateData
      */
-    public final void setUI_IntVal(Base_GUIObj UIobj, int UIidx) {
+    private final void _setUI_IntVal(Base_GUIObj UIobj, int UIidx) {
         int ival = UIobj.getValueAsInt();
         int origVal = _uiUpdateData.getIntValue(UIidx);
         if(checkAndSetIntVal(UIidx, ival)) {
@@ -1540,21 +1698,21 @@ public class UIObjectManager {
             //Special per-obj int handling, if pertinent
             owner.setUI_OwnerIntValsCustom(UIidx, ival, origVal);
         }
-    }//setUI_IntVal
+    }//_setUI_IntVal
     
     /**
      * Set the uiUpdateData structure and update the owner if the value has changed for an list-based UIobject (i.e. special case of int object)
      * @param UIobj object being set/modified
      * @param UIidx the index of the object in _uiUpdateData
      */
-    public final void setUI_ListVal(Base_GUIObj UIobj, int UIidx) { setUI_IntVal(UIobj, UIidx);    }//setUI_ListVal
+    private final void _setUI_ListVal(Base_GUIObj UIobj, int UIidx) { _setUI_IntVal(UIobj, UIidx);    }//_setUI_ListVal
 
     /**
      * Set the uiUpdateData structure and update the owner if the value has changed for a float-based UIobject
      * @param UIobj object being set/modified
      * @param UIidx the index of the object in _uiUpdateData
      */
-    public final void setUI_FloatVal(Base_GUIObj UIobj, int UIidx) {
+    private final void _setUI_FloatVal(Base_GUIObj UIobj, int UIidx) {
         float val = UIobj.getValueAsFloat();
         float origVal = _uiUpdateData.getFloatValue(UIidx);
         if(checkAndSetFloatVal(UIidx, val)) {
@@ -1562,30 +1720,30 @@ public class UIObjectManager {
             //Special per-obj float handling, if pertinent
             owner.setUI_OwnerFloatValsCustom(UIidx, val, origVal);
         }        
-    }//setUI_FloatVal
+    }//_setUI_FloatVal
     
     /**
      * Set the uiUpdateData structure and update the owner if the value has changed for a label. Currently a NO-OP, since labels are not intended to be backed by UI updates.
      * @param UIobj
      * @param UIidx
      */
-    public final void setUI_LabelVal(Base_GUIObj UIobj, int UIidx) {
+    private final void _setUI_LabelVal(Base_GUIObj UIobj, int UIidx) {
         _dispWarnMsg("setUI_LabelVal", "Attempting to process the value `" + UIobj.getValueAsString()+"` from the `" + UIobj.getName()+ "` read-only object.");    
-    }
+    }//_setUI_LabelVal
     
     /**
      * Set the uiUpdateData structure and update the owner if the value has changed for a non-boolean-flag-based button object (i.e. special case of list object)
      * @param UIobj object being set/modified
      * @param UIidx the index of the object in _uiUpdateData
      */
-    public final void setUI_BtnVal(Base_GUIObj UIobj, int UIidx) { setUI_ListVal(UIobj, UIidx);    }//setUI_ListVal
+    private final void _setUI_BtnVal(Base_GUIObj UIobj, int UIidx) { _setUI_ListVal(UIobj, UIidx);    }//setUI_ListVal
     
     /**
      * Set the uiUpdateData structure and update the owner if the value has changed for a boolean switch backed by the privFlags structure
      * @param UIobj object being set/modified
      * @param UIidx the index of the object in _uiUpdateData
      */
-    public final void setUI_SwitchVal(Base_GUIObj UIobj, int UIidx) {
+    private final void _setUI_SwitchVal(Base_GUIObj UIobj, int UIidx) {
         // Let flag state drive everything
         GUIObj_Switch switchObj = ((GUIObj_Switch)UIobj);
         boolean boolVal = switchObj.getValueAsBoolean();
@@ -1598,7 +1756,7 @@ public class UIObjectManager {
             //was Special per-obj boolean handling, if pertinent
             // ---FLAGS STRUCTURE SHOULD HANDLE THIS ALREADY---
         }                                
-    }//setUI_SwitchVal
+    }//_setUI_SwitchVal
         
     /***
      * Set UI values by object type, sending value to owner and updater
@@ -1609,16 +1767,16 @@ public class UIObjectManager {
         //Determine whether int (int or list) or float
         GUIObj_Type objType = UIobj.getObjType();
         switch (objType) {
-            case IntVal         : { setUI_IntVal(UIobj, UIidx);             break;}
-            case ListVal        : { setUI_ListVal(UIobj, UIidx);            break;}
-            case FloatVal       : { setUI_FloatVal(UIobj, UIidx);           break;}
-            case LabelVal       : { setUI_LabelVal(UIobj, UIidx);           break;}
-            case SpacerObj      : { /*spacers will never be interactable */ break;}
-            case DispIntVal     : { setUI_LabelVal(UIobj, UIidx);           break;}
-            case DispFloatVal   : { setUI_LabelVal(UIobj, UIidx);           break;}
-            case DispStr        : { setUI_LabelVal(UIobj, UIidx);           break;}
-            case Button         : { setUI_BtnVal(UIobj, UIidx);             break;}
-            case Switch         : { setUI_SwitchVal(UIobj, UIidx);          break;}
+            case IntVal         : { _setUI_IntVal(UIobj, UIidx);             break;}
+            case ListVal        : { _setUI_ListVal(UIobj, UIidx);            break;}
+            case FloatVal       : { _setUI_FloatVal(UIobj, UIidx);           break;}
+            case LabelVal       : { _setUI_LabelVal(UIobj, UIidx);           break;}
+            case SpacerObj      : { /*spacers will never be interactable */  break;}
+            case DispIntVal     : { _setUI_LabelVal(UIobj, UIidx);           break;}
+            case DispFloatVal   : { _setUI_LabelVal(UIobj, UIidx);           break;}
+            case DispStr        : { _setUI_LabelVal(UIobj, UIidx);           break;}
+            case Button         : { _setUI_BtnVal(UIobj, UIidx);             break;}
+            case Switch         : { _setUI_SwitchVal(UIobj, UIidx);          break;}
             default : {    _dispWarnMsg("setUIWinVals", "Attempting to set a value for an unknown UI object for a " + objType.toStrBrf());    break;}            
         }//switch on obj type    
     }//_setUIWinValsInternal
@@ -1627,13 +1785,29 @@ public class UIObjectManager {
      * Update the data adapter's data from the UI Object with the passed idx. Mostly called after a UI value has changed through user input.
      * @param UIidx index of object within gui obj ara
      */
-    public final void updateOwnerWithUIVal(int UIidx) {            _setUIWinValsInternal(_guiObjsIDXMap.get(UIidx), UIidx);    }//setUIWinVals    
+    protected final void updateOwnerWithUIVal(int UIidx) {            
+        // _dispErrMsg("updateOwnerWithUIVal", "Updating UIobj with idx :"+UIidx);
+        _setUIWinValsInternal(_guiObjsIDXMap.get(UIidx), UIidx);    }//setUIWinVals    
     
     /**
      * Update the data adapter's data from the passed UI Object. Mostly called after a UI value has changed through user input.
      * @param UIidx index of object within gui obj ara
      */
-    public final void updateOwnerWithUIVal(Base_GUIObj UIobj) {    _setUIWinValsInternal(UIobj, UIobj.getObjID());    }//setUIWinVals    
+    protected final void updateOwnerWithUIVal(Base_GUIObj UIobj) {    
+        // _dispErrMsg("updateOwnerWithUIVal", "Updating UIobj :"+UIobj.getUIDispAsSingleLine());
+        _setUIWinValsInternal(UIobj, UIobj.getObjID());    }//setUIWinVals    
+
+    /**
+     * Send all UI values to UIUpdater that have changed since last update
+     */
+    private final void updateOwnerWithAllNewUIVals(String src) {
+        // _dispErrMsg("updateOwnerWithAllNewUIVals", "Updating all objs called from "+src );
+        for(var entry : _guiObjsIDXMap.entrySet()) {
+            var obj = entry.getValue();
+            if(obj.shouldUpdateWin(true)){updateOwnerWithUIVal(obj);}
+        }
+    }
+        
     
     /**
      * Reset guiObj given by passed index to starting/default value
@@ -1651,7 +1825,7 @@ public class UIObjectManager {
      */
     public final void resetUIVals(boolean forceVals){
         for (var entry : _guiObjsIDXMap.entrySet()) {        entry.getValue().resetToDefault();        }
-        if (!forceVals) {            updateOwnerWithAllNewUIVals();        }
+        if (!forceVals) {            updateOwnerWithAllNewUIVals("resetUIVals");        }
     }//resetUIVals    
         
     /**
@@ -1667,17 +1841,7 @@ public class UIObjectManager {
         obj.setValFromStrTokens(toks);
         updateOwnerWithUIVal(obj);//update window's values with UI construct's values
     }//setValFromFileStr
-    
-    /**
-     * Send all UI values to UIUpdater that have changed since last update
-     */
-    public final void updateOwnerWithAllNewUIVals() {
-        for(var entry : _guiObjsIDXMap.entrySet()) {
-            var obj = entry.getValue();
-            if(obj.shouldUpdateWin(true)){updateOwnerWithUIVal(obj);}
-        }
-    }
-        
+
     /**
      * call after single draw - will clear window-based priv buttons that are momentary
      */
@@ -1842,132 +2006,7 @@ public class UIObjectManager {
         }
         return true;
     }
-        
-    /**
-     * Sets the passed UI object's new max value. Does not update UIDataUpdater
-     * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes
-     * @param maxVal
-     * @return whether modification was performed or not
-     */
-    public boolean forceNewUIMaxVal(int idx, double maxVal) {
-        if (_validateUIObjectIdx(idx, "forceNewUIMaxVal", "set its max value")) {_guiObjsIDXMap.get(idx).setNewMax(maxVal);return true;}    
-        return false;
-    }    
-    
-    /**
-     * Sets the passed UI object's new min value. Does not update UIDataUpdater
-     * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes.
-     * @param minVal
-     * @return whether modification was performed or not
-     */
-    public boolean forceNewUIMinVal(int idx, double minVal) {
-        if (_validateUIObjectIdx(idx, "forceNewUIMinVal", "set its min value")) {_guiObjsIDXMap.get(idx).setNewMin(minVal);return true;}
-        return false;
-    }
-    
-    /**
-     * Force a value to be set in the numeric UI object at the passed idx. Does not update UIDataUpdater
-     * @param idx index in numeric UI object array for the object to access. If out of range, aborts without performing any changes and returns -Double.MAX_VALUE
-     * @param val
-     * @return value being set, or -Double.MAX_VALUE if idx is out of range
-     */
-    public double forceNewUIValue(int idx, double val) {
-        if (_validateUIObjectIdx(idx, "forceNewUIValue", "set its value")) {return _guiObjsIDXMap.get(idx).setVal(val);}
-        return -Double.MAX_VALUE;
-    }        
-    
-    /**
-     * Set the display text of the passed UI Object, either numeric or boolean. Does not update UIDataUpdater
-     * @param idx
-     * @param isNumeric
-     * @param str
-     */
-    public void forceNewUIDispText(int idx, boolean isNumeric, String str) {
-        if (isNumeric) {
-            if (_validateUIObjectIdx(idx, "forceNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
-            return;
-        } else {
-            //TODO support boolean UI objects
-            if (_validateUIObjectIdx(idx, "forceNewUIDispText", "set its display text")) {_guiObjsIDXMap.get(idx).setLabel(str);}
-            return;
-        }
-    }
-    /**
-     * Specify a string to display in the idx'th List UI Object, if it exists, and is a list object. Does not update UIDataUpdater
-     * @param idx
-     * @param val
-     * @return
-     */
-    public int[] forceNewUIDispListVal(int idx, String val) {        
-        if ((!_validateUIObjectIdx(idx, "forceNewUIDispListVal", "display passed value")) || 
-                (!_validateIdxIsListObj(_guiObjsIDXMap.get(idx), "forceNewUIDispListVal", "display passed value"))){return new int[0];}
-        return ((GUIObj_List) _guiObjsIDXMap.get(idx)).setValInList(val);
-    }
-    
-    /**
-     * Set all the values in the uiObjIdx List UI Object, if it exists, and is a list object. Does not update UIDataUpdater
-     * @param uiObjIdx the list obj's index
-     * @param values the list of values to set
-     * @param setAsDefault whether or not these new values should be set as the default values
-     * @return
-     */
-    public int forceNewUIAllListValues(int uiObjIdx, String[] values, boolean setAsDefault) {        
-        if ((!_validateUIObjectIdx(uiObjIdx, "forceNewUIAllListValues", "set/replace all list values")) || 
-                (!_validateIdxIsListObj(_guiObjsIDXMap.get(uiObjIdx), "forceNewUIAllListValues", "set/replace all list values"))){return -1;}
-        return ((GUIObj_List)_guiObjsIDXMap.get(uiObjIdx)).setListVals(values, setAsDefault);
-    }
-    
-    /**
-     * Specify a state for a button to be in based on the passed string. Does not update UIDataUpdater
-     * @param idx
-     * @param val
-     * @return
-     */
-    public int[] forceNewUIDispButtonState(int idx, String val) {        
-        if ((!_validateUIObjectIdx(idx, "forceNewUIDispButtonState", "display passed state")) || 
-                (!_validateIdxIsButtonObj(_guiObjsIDXMap.get(idx), "forceNewUIDispButtonState", "display passed state"))){return new int[0];}
-        return ((GUIObj_Button) _guiObjsIDXMap.get(idx)).setStateByLabel(val);
-    }
-    
-    /**
-     * Set all the state names in the uiObjIdx Button Object, if it exists, and is a button. Does not update UIDataUpdater
-     * @param uiObjIdx the button obj's index
-     * @param values the new state names to set for the button
-     * @param setAsDefault whether or not these new values should be set as the default states for this button
-     * @return
-     */
-    public int forceNewUIAllButtonStates(int uiObjIdx, String[] values, boolean setAsDefault) {        
-        if ((!_validateUIObjectIdx(uiObjIdx, "forceNewUIAllButtonStates", "set/replace all button states")) || 
-                (!_validateIdxIsButtonObj(_guiObjsIDXMap.get(uiObjIdx), "forceNewUIAllButtonStates", "set/replace all button states"))){return -1;}
-        return ((GUIObj_Button)_guiObjsIDXMap.get(uiObjIdx)).setStateLabels(values, setAsDefault);
-    }    
-    
-    /**
-     * Specify the state for a 2-state toggle switch object backed by privFlags to be in based on the passed string. Does not update UIDataUpdater
-     * @param uiObjIdx
-     * @param val
-     * @return
-     */
-    public int[] forceNewUIDispSwitchState(int uiObjIdx, String val) {        
-        if ((!_validateUIObjectIdx(uiObjIdx, "forceNewUIDispSwitchState", "display passed state")) || 
-                (!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(uiObjIdx), "forceNewUIDispSwitchState", "display passed state"))){return new int[0];}
-        return ((GUIObj_Switch)_guiObjsIDXMap.get(uiObjIdx)).setStateByLabel(val);
-    }
-    
-    /**
-     * Set all the state names in the uiObjIdx 2-state toggle switch object backed by privFlags, if it exists, and is a button. Does not update UIDataUpdater
-     * @param uiObjIdx the button obj's index
-     * @param values the new state names to set for the button
-     * @param setAsDefault whether or not these new values should be set as the default states for this button
-     * @return
-     */
-    public int forceNewUIAllSwitchStates(int uiObjIdx, String[] values, boolean setAsDefault) {        
-        if (!_validateSwitchListValues(values, "forceNewUIAllSwitchStates","set/replace both switch states") ||            
-                (!_validateUIObjectIdx(uiObjIdx, "forceNewUIAllSwitchStates", "set/replace both switch states")) || 
-                (!_validateIdxIsSwitchObj(_guiObjsIDXMap.get(uiObjIdx), "forceNewUIAllSwitchStates", "set/replace both switch states"))){return -1;}
-        return ((GUIObj_Switch)_guiObjsIDXMap.get(uiObjIdx)).setStateLabels(values, setAsDefault);
-    }
-        
+               
     /**
      * Retrieve the min value of a numeric UI object
      * @param idx index in numeric UI object array for the object to access.
@@ -2167,7 +2206,7 @@ public class UIObjectManager {
             _msClickObj.dragModVal(modAmt);
             if(_msClickObj.getIsDirty()) {
                 retVals[1] = true;
-                if(_msClickObj.shouldUpdateWin(false)){updateOwnerWithUIVal(_msClickObj);}
+                if(_msClickObj.shouldUpdateWin(false)){ updateOwnerWithUIVal(_msClickObj);}
             }
             retVals[0] = true;
         }    
@@ -2196,7 +2235,8 @@ public class UIObjectManager {
      *             idx 1 is if we should set setUIObjMod to true in caller 
      */
     public final boolean[] handleMouseDrag(int delX, int delY, int mseBtn, boolean shiftPressed) {
-        //TODO USE UI COLLECTION OBJECT THAT IS CURRENTLY ACTIVE        
+        //TODO USE UI COLLECTION OBJECT THAT IS CURRENTLY ACTIVE  
+        // _dispErrMsg("handleMouseDrag","dragging");
         return _handleMouseModInternal(delX+(delY*-(shiftPressed ? 50.0f : 5.0f)));}    
     
     /**
@@ -2212,12 +2252,15 @@ public class UIObjectManager {
      */
     public final boolean handleMouseRelease(boolean objModified) {
         if(_msClickObj != null) {
+            // If no modification has occurred, set value from a click
             if(!objModified) {
                 //_dispInfoMsg("handleMouseRelease", "Object : "+_msClickObj+" was clicked clicked but getUIObjMod was false");
                 //means object was clicked in but not drag modified through drag or shift-clic - use this to modify by clicking
                 _setUIObjValFromClickAlone(_msClickObj);
             }         
-            updateOwnerWithAllNewUIVals();
+            //updateOwnerWithAllNewUIVals("mse release");
+            // Will only have modified one object by mouse release
+            if(_msClickObj.getIsDirty()) {            updateOwnerWithUIVal(_msClickObj);            }
             _msClickObj.clearIsClicked();
             _msClickObj = null;    
         }
