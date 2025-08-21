@@ -471,7 +471,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
         _memChkLastTimerMark = _glblStartSimFrameTime/_memChkMillisTimer; 
                 
         //call this in first draw loop also, if not setup yet
-        initOnce();
+        _initOnce();
     }
     /**
      * Build all subwindows if exist.
@@ -539,7 +539,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
         msgObj.dispInfoMessage("GUI_AppManager","setAppWindowDims","Base applet width : " + _viewWidth + " | height : " +  _viewHeight+ " | _camEyeZ :"+_camEyeZ);
     }//setAppWindowWidth
 
-
+    /**
+     * 
+     * @return
+     */
     public final float getMenuWidth() {return menuWidth;}
     
     /**
@@ -760,7 +763,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     /**
      * 1 time initialization of programmatic things that won't change
      */
-    public final void initOnce() {
+    private final void _initOnce() {
         //1-time init for program and windows
         //always default to showing left side input UI menu
         setWinVisFlag(dispMenuIDX, true);
@@ -773,7 +776,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
         //after all init is done
         finalInitDone = true;
     }//initOnce    
-
+    /**
+     * Application-specific one-time initialization
+     */
     protected abstract void initOnce_Indiv();    
     
     /**
@@ -783,6 +788,9 @@ public abstract class GUI_AppManager extends Java_AppManager {
         for (int i=1; i<_dispWinFrames.length;++i) {    _dispWinFrames[i].reInitInfoStr();}        
         initProgram_Indiv();
     }//initProgram    
+    /**
+     * Application-specific re-initialization 
+     */
     protected abstract void initProgram_Indiv();
     
     //specify windows that cannot be shown simultaneously here
@@ -1270,6 +1278,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
     
     }//loadFromFile
     
+    /**
+     * 
+     * @param file
+     */
     public final void saveToFile(File file){
         if (file == null) {
             msgObj.dispConsoleWarningMessage("GUI_AppManager", "saveToFile", "Save was cancelled.");
@@ -1280,7 +1292,10 @@ public abstract class GUI_AppManager extends Java_AppManager {
         _dispWinFrames[_curFocusWin].saveToFile(file);
     }//saveToFile    
     
-
+    /**
+     * 
+     * @return
+     */
     public final String getAnimPicName() {
         //if(!flags[this.runSim]) {return;}//don't save until actually running simulation
         //idx 0 is directory, idx 1 is file name prefix
@@ -1296,28 +1311,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // draw/display functions
     /**
-     * Draw background
-     * @param winIdx
-     */
-    private final void drawBackground(int winIdx) {
-        if(_useSkyboxBKGndAra[winIdx]) {    ri.drawBkgndSphere(winIdx);} 
-        else {                                ri.drawRenderBackground(winIdx);}
-    }
-    
-    /**
-     * return CWD of this application
+     * Get time difference current start and last call to getModAmtMillis (last draw), 
+     * and set the global values tracking these.
      * @return
      */
-    public String getApplicationPath() {
-        String res = System.getProperty("user.dir");
-        return res;
-    }
-
-    /**
-     * get difference between frames and set both glbl times
-     * @return
-     */
-    private float getModAmtMillis() {
+    private float _getModAmtMillis() {
         _glblStartSimFrameTime = timeMgr.getMillisFromProgStart();
         float modAmtMillis = (_glblStartSimFrameTime - _glblLastSimFrameTime);
         _glblLastSimFrameTime = _glblStartSimFrameTime;
@@ -1329,13 +1327,13 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     public final boolean mainSimAndDrawLoop() {
         //Finish final init if not done already
-        if(!finalInitDone) {initOnce(); return false;}    
-        float modAmtMillis = getModAmtMillis();
+        if(!finalInitDone) {_initOnce(); return false;}    
+        float modAmtMillis = _getModAmtMillis();
         boolean isDebug = isGlblDebug();
         //simulation section
-        execSimDuringDrawLoop(modAmtMillis, isDebug);
+        _execSimDuringDrawLoop(modAmtMillis, isDebug);
         //drawing section                                                                //initialize camera, lights and scene orientation and set up eye movement
-        drawMainWinAndCanvas(modAmtMillis, isDebug);                                                 //draw UI overlay on top of rendered results            
+        _drawMainWinAndCanvas(modAmtMillis, isDebug);                                                 //draw UI overlay on top of rendered results            
         //set window title
         ri.setWindowTitle(getProjAndFrapsString());
         //Update timer mark for mem query update
@@ -1372,7 +1370,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * sim loop, called from IGraphicsAppInterface draw method
      * @param modAmtMillis milliseconds since last frame started
      */
-    protected boolean execSimDuringDrawLoop(float modAmtMillis, boolean isDebug) {
+    private boolean _execSimDuringDrawLoop(float modAmtMillis, boolean isDebug) {
         //simulation section
         if(_appUICntlFlags.doRunSim()){
             //run simulation
@@ -1385,6 +1383,34 @@ public abstract class GUI_AppManager extends Java_AppManager {
         }        //play in current window
         return false;
     }//execSimDuringDrawLoop
+
+    /**
+     * main draw loop
+     @param modAmtMillis milliseconds since last frame started
+     */
+    private final void _drawMainWinAndCanvas(float modAmtMillis, boolean isDebug){
+        ri.pushMatState();
+        _drawSetup();
+        boolean is3DDraw = (_curFocusWin == -1) || (curDispWinIs3D()); 
+        if(is3DDraw){    //allow for single window to have focus, but display multiple windows    
+            //if refreshing screen, this clears screen, sets background        
+            _drawBackground(_curFocusWin);                
+            _draw3D(modAmtMillis, isDebug);
+            if(curDispWinCanShow3dbox()){_drawBoxBnds();}
+            if(_dispWinFrames[_curFocusWin].getDrawMseEdge()){      _canvas.drawMseEdge(_dispWinFrames[_curFocusWin], is3DDraw);} 
+            if(_appUICntlFlags.doShowDrawawbleCanvas()) {           _canvas.drawCanvas(winInitVals[_curFocusWin].canvasColor);}            
+            ri.popMatState(); 
+        } else {    //either/or 2d window
+            //2d windows paint window box so background is always cleared
+            _canvas.buildCanvas();
+            _canvas.drawMseEdge(_dispWinFrames[_curFocusWin], is3DDraw);
+            ri.popMatState(); 
+            _draw2D(modAmtMillis, isDebug);
+        }
+        drawMePost_Indiv(modAmtMillis, is3DDraw, isDebug);
+        //Draw UI and on-screen elements last
+        _drawUI(modAmtMillis, isDebug);
+    }//draw  
     
     /**
      * setup for draw
@@ -1396,47 +1422,19 @@ public abstract class GUI_AppManager extends Java_AppManager {
     }//drawSetup
     
     /**
-     * main draw loop
-     @param modAmtMillis milliseconds since last frame started
+     * Draw background
+     * @param winIdx
      */
-    private final void drawMainWinAndCanvas(float modAmtMillis, boolean isDebug){
-        ri.pushMatState();
-        _drawSetup();
-        boolean is3DDraw = (_curFocusWin == -1) || (curDispWinIs3D()); 
-        if(is3DDraw){    //allow for single window to have focus, but display multiple windows    
-            //if refreshing screen, this clears screen, sets background        
-            drawBackground(_curFocusWin);                
-            draw3D(modAmtMillis, isDebug);
-            if(curDispWinCanShow3dbox()){drawBoxBnds();}
-            if(_dispWinFrames[_curFocusWin].getDrawMseEdge()){            _canvas.drawMseEdge(_dispWinFrames[_curFocusWin], is3DDraw);    }        
-            //if(doShowDrawawbleCanvas()) {ri.drawCanvas(getEyeToMse(), getCanvasDrawPlanePts(), winInitVals[_curFocusWin].canvasColor);}
-            if(_appUICntlFlags.doShowDrawawbleCanvas()) {_canvas.drawCanvas(winInitVals[_curFocusWin].canvasColor);}            
-            ri.popMatState(); 
-        } else {    //either/or 2d window
-            //2d windows paint window box so background is always cleared
-            _canvas.buildCanvas();
-            _canvas.drawMseEdge(_dispWinFrames[_curFocusWin], is3DDraw);
-            ri.popMatState(); 
-            draw2D(modAmtMillis, isDebug);
-        }
-        drawMePost_Indiv(modAmtMillis, is3DDraw, isDebug);
-        //Draw UI and on-screen elements
-        drawUI(modAmtMillis, isDebug);
-    }//draw    
-    
-    
-    /**
-     * Individual extending Application Manager post-drawMe functions
-     * @param modAmtMillis milliseconds since last frame started
-     * @param is3DDraw
-     */
-    protected abstract void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw, boolean isDebug);
+    private final void _drawBackground(int winIdx) {
+        if(_useSkyboxBKGndAra[winIdx]) {        ri.drawBkgndSphere(winIdx);} 
+        else {                                  ri.drawRenderBackground(winIdx);}
+    }   
 
     /**
      * Draw 3d windows that are currently displayed
      * @param modAmtMillis milliseconds since last frame started
      */
-    private final void draw3D(float modAmtMillis, boolean isDebug){
+    private final void _draw3D(float modAmtMillis, boolean isDebug){
         for(int i = 1; i<numDispWins; ++i){
             if((isShowingWindow(i)) && (_dispWinFrames[i].getIs3DWindow())){    _dispWinFrames[i].draw3D(modAmtMillis, isDebug);}
         }
@@ -1451,15 +1449,22 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * Draw 2d windows that are currently displayed but not sidebar menu, which is drawn via drawUI()
      * @param modAmtMillis milliseconds since last frame started
      */    
-    private final void draw2D(float modAmtMillis, boolean isDebug) {
+    private final void _draw2D(float modAmtMillis, boolean isDebug) {
         for(int i = 1; i<numDispWins; ++i){if (isShowingWindow(i) && !(_dispWinFrames[i].getIs3DWindow())){_dispWinFrames[i].draw2D(modAmtMillis, isDebug);}}
     }
+    
+    /**
+     * Individual extending Application Manager post-drawMe functions
+     * @param modAmtMillis milliseconds since last frame started
+     * @param is3DDraw
+     */
+    protected abstract void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw, boolean isDebug);
     
     /**
      * Draw UI components on screen surface
      * @param modAmtMillis milliseconds since last frame started
      */
-    private final void drawUI(float modAmtMillis, boolean isDebug){ 
+    private final void _drawUI(float modAmtMillis, boolean isDebug){ 
         boolean shouldDrawOnscreenText = (isDebug || _showInfo);
         for(int i = 1; i<numDispWins; ++i){
             _dispWinFrames[i].drawHeader(
@@ -1472,11 +1477,11 @@ public abstract class GUI_AppManager extends Java_AppManager {
         _dispWinFrames[_curFocusWin].updateConsoleStrs();    
         //build and set statusbar if should be used
         if(_appUICntlFlags.doShowStatusBar()) {
-            drawWindowStatusBar(getStatusBarString(_memChkLastTimerMark != _glblStartSimFrameTime/_memChkMillisTimer));
+            _drawWindowStatusBar(getStatusBarString(_memChkLastTimerMark != _glblStartSimFrameTime/_memChkMillisTimer));
         }        
     }//drawUI
     
-    private final void drawWindowStatusBar(String statusBarString) { 
+    private final void _drawWindowStatusBar(String statusBarString) { 
         ri.pushMatState();
         ri.setBeginNoDepthTest();
         ri.disableLights();
@@ -1496,7 +1501,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
     /**
      * draw bounding box for 3d
      */
-    private final void drawBoxBnds(){
+    private final void _drawBoxBnds(){
         ri.pushMatState();
         ri.setStrokeWt(3f);
         ri.setNoFill();

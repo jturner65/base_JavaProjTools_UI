@@ -107,7 +107,7 @@ public class UIObjectManager {
     private Base_GUIObj _msClickObj;
     
     /**
-     * mouse button clicked - consumed for individual click mod : 0 is left, 1 is right, 10 is both, -1 is none
+     * mouse button clicked - consumed for individual click mod : 0 is left, 1 is right, -1 is none
      */
     private int _msBtnClicked;
     /**
@@ -207,7 +207,8 @@ public class UIObjectManager {
         _uiClkCoords[3] = _buildGUIObjsForMenu(tmpUIObjMap, tmpUIBoolSwitchObjMap, 2, _uiClkCoords);
         _uiClkCoords[3] += AppMgr.getRowStYOffset();
         
-        // Get total number of booleans (not just buttons) for application
+        // Get total number of private booleans
+        // (not just switches) used by the application
         int _numPrivFlags = owner.getTotalNumOfPrivBools();
         
         // init specific application state flags and UI switch booleans
@@ -2094,7 +2095,7 @@ public class UIObjectManager {
      * handle a mouse click
      * @param mouseX x location on screen
      * @param mouseY y location on screen
-     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
+     * @param mseBtn which button is pressed : 0 is left, 1 is right
      * @param isClickModUIVal whether criteria for modifying click without dragging have been specified for this application (i.e. shift is pressed or alt is pressed) 
      * @param retVals : idx 0 is if an object has been clicked in
      *                  idx 1 is if we should set "setUIObjMod" to true

@@ -70,13 +70,17 @@ public class TrajectoryManager {
         trajPointsAreFlat   = 7;            //trajectory drawn points are flat (for pick, to prevent weird casting collisions    
     
     private static final int numTrajFlags = 8;
-
-
-    public TrajectoryManager(Base_DispWindow _ownr, boolean _trajIsFlat) {
+    
+    /**
+     * 
+     * @param _ownr
+     * @param _trajIs2D
+     */
+    public TrajectoryManager(Base_DispWindow _ownr, boolean _trajIs2D) {
         ownr=_ownr; msgObj = ownr.getMsgObj();
         initFlags();
         setFlags(canDrawTraj, true);
-        setFlags(trajPointsAreFlat, _trajIsFlat);
+        setFlags(trajPointsAreFlat, _trajIs2D);
         initTmpTrajStuff();
     }
     
@@ -188,7 +192,7 @@ public class TrajectoryManager {
      * 
      * @param keysToDrawClicked
      * @param mse
-     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
+     * @param mseBtn which button is pressed : 0 is left, 1 is right
      * @return
      */
     public boolean handleMouseClick_Traj(boolean keysToDrawClicked, myPoint mse, int mseBtn){
@@ -218,7 +222,7 @@ public class TrajectoryManager {
      * @param pmouseX
      * @param pmouseY
      * @param mseDragInWorld
-     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
+     * @param mseBtn which button is pressed : 0 is left, 1 is right
      * @return
      */
     public boolean handleMouseDrag_Traj(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn) {
