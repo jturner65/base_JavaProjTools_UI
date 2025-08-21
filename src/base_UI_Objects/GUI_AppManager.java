@@ -1696,22 +1696,87 @@ public abstract class GUI_AppManager extends Java_AppManager {
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // _canvas functions
     
+    /**
+     * Retrieve double-based point for world location 
+     * @return
+     */
+    public final myPoint getEyeLoc(){return _canvas.getEyeInWorld();    }
+    /**
+     * Retrieve float-based point for world location 
+     * @return
+     */
+    public final myPointf getEyeLoc_f(){return _canvas.getEyeInWorld_f();    }    
+    /**
+     * Retrieve double-based viewport normal in world space
+     * @return
+     */
     public final myVector getDrawSNorm() {return _canvas.getDrawSNorm();}
+    /**
+     * Retrieve float-based viewport normal in world space
+     * @return
+     */
     public final myVectorf getDrawSNorm_f() {return _canvas.getDrawSNorm_f();}
+    /**
+     * Retrieve normalized double-based vector from camera eye to mouse
+     * @return
+     */
     public final myVector getEyeToMse() {return _canvas.getEyeToMse();}
+    /**
+     * Retrieve normalized float-based vector from camera eye to mouse
+     * @return
+     */
     public final myVectorf getEyeToMse_f() {return _canvas.getEyeToMse_f();}
+    /**
+     * Derive normalized double-based vector for up in World space
+     * @return
+     */
+    public final myVector getUScrUpInWorld(){       myVector res = new myVector(ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f),ri.getWorldLoc(_viewWidthHalf, _viewHeight,-.00001f)); return res._normalize();}    
+    /**
+     * Derive normalized double-based vector for right in World space
+     * @return
+     */
+    public final myVector getUScrRightInWorld(){    myVector res = new myVector(ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f),ri.getWorldLoc(_viewWidth, _viewHeightHalf,-.00001f)); return res._normalize();}
+    /**
+     * Derive normalized float-based vector for up in World space
+     * @return
+     */
+    public final myVectorf getUScrUpInWorldf(){     myVectorf res = new myVectorf(ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f),ri.getWorldLoc(_viewWidthHalf,_viewHeight,-.00001f));    return res._normalize();}    
+    /**
+     * Derive normalized float-based vector for right in World space
+     * @return
+     */
+    public final myVectorf getUScrRightInWorldf(){  myVectorf res = new myVectorf(ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f),ri.getWorldLoc(_viewWidth, _viewHeightHalf,-.00001f));   return res._normalize();}
 
-    public final myVector getUScrUpInWorld(){            myVector res = new myVector(ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f),ri.getWorldLoc(_viewWidthHalf, _viewHeight,-.00001f));        return res._normalize();}    
-    public final myVector getUScrRightInWorld(){        myVector res = new myVector(ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f),ri.getWorldLoc(_viewWidth, _viewHeightHalf,-.00001f));        return res._normalize();}
-    public final myVectorf getUScrUpInWorldf(){        myVectorf res = new myVectorf(ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f),ri.getWorldLoc(_viewWidthHalf,_viewHeight,-.00001f));    return res._normalize();}    
-    public final myVectorf getUScrRightInWorldf(){    myVectorf res = new myVectorf(ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f),ri.getWorldLoc(_viewWidth, _viewHeightHalf,-.00001f));    return res._normalize();}
-    public final myPoint getEyeLoc(){return ri.getWorldLoc(_viewWidthHalf, _viewHeightHalf,-.00001f);    }
-    
+    /**
+     * Retrieve a double-based point of the mouse location projected onto the cavnas in world space
+     * @return
+     */
     public final myPoint getMseLoc(){            return _canvas.getMseLoc();}
+    /**
+     * Retrieve a float-based point of the mouse location projected onto the cavnas in world space
+     * @return
+     */
     public final myPointf getMseLoc_f(){        return _canvas.getMseLoc_f();}
-    public final myPoint getOldMseLoc(){        return _canvas.getOldMseLoc();}    
-    public final myPointf getOldMseLoc_f(){        return _canvas.getOldMseLoc_f();}    
+    /**
+     * Retrieve a double-based point of previous step's mouse location
+     * @return
+     */
+    public final myPoint getOldMseLoc(){        return _canvas.getOldMseLoc();}
+    /**
+     * Retrieve a float-based point of previous step's mouse location 
+     * @return
+     */
+    public final myPointf getOldMseLoc_f(){        return _canvas.getOldMseLoc_f();}
+    /**
+     * Retrieve a double-based vector of the mouse drag from old location to current location, in world space
+     * @return
+     */
     public final myVector getMseDragVec(){    return _canvas.getMseDragVec();}
+    /**
+     * Retrieve a double-based vector of the mouse drag from old location to current location, in world space
+     * @return
+     */
+    public final myVectorf getMseDragVec_f(){    return _canvas.getMseDragVec_f();}
     /**
      * return a unit vector from the screen location of the mouse pointer in the world to the reticle location in the world - for ray casting onto objects the mouse is over
      * @param glbTrans
@@ -1719,40 +1784,57 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     public final myVector getMse2DtoMse3DinWorld(myPoint glbTrans){
         int[] mse = ri.getMouse_Raw_Int();
-        myVector res = new myVector(ri.getWorldLoc(mse[0], mse[1],-.00001f),getMseLoc(glbTrans) );        
+        myVector res = new myVector(ri.getWorldLoc(mse[0], mse[1],-.00001f),getMseLocRelToOrigin(glbTrans) );        
         return res._normalize();
     }
     /**
      * relative to passed origin
-     * @param glbTrans
+     * @param origin
      * @return
      */
-    public final myPoint getMseLoc(myPoint glbTrans){            return _canvas.getMseLoc(glbTrans);    }
+    public final myPoint getMseLocRelToOrigin(myPoint origin){            return _canvas.getMseLocRelToOrigin(origin);    }
     /**
-     * relative to passed origin as float point
+     * relative to passed origin as float point 
      * @param glbTrans
      * @return
      */
-    public final myPoint getMseLoc(myPointf glbTrans){            return _canvas.getMseLoc(new myPoint(glbTrans.x, glbTrans.y, glbTrans.z));    }
+    public final myPointf getMseLocRelToOrigin_f(myPointf glbTrans){            return _canvas.getMseLocRelToOrigin_f(glbTrans);    }
     /**
-     * move by passed translation
+     * Retrieve a double-based point of mouse location transformed by passed translation
      * @param glbTrans
      * @return
      */
-    public final myPointf getTransMseLoc(myPointf glbTrans){    return _canvas.getTransMseLoc(glbTrans);    }
+    public myPoint getTransMseLoc(myPoint glbTrans){            return _canvas.getTransMseLoc(glbTrans);}
+    
+    /**
+     * Retrieve a float-based point of mouse location transformed by passed translation
+     * @param glbTrans
+     * @return
+     */
+    public final myPointf getTransMseLoc_f(myPointf glbTrans){  return _canvas.getTransMseLoc_f(glbTrans);    }
     /**
      * dist from mouse to passed location
      * @param glbTrans
      * @return
      */
-    public final float getMseDist(myPointf glbTrans){            return _canvas.getMseDist(glbTrans);}
-    public final myPoint getOldMseLoc(myPoint glbTrans){        return _canvas.getOldMseLoc(glbTrans);}
-    
+    public final float getMseDist(myPointf glbTrans){           return _canvas.getMseDist(glbTrans);}
     /**
-     * get normalized ray from eye loc to mouse loc
+     * Retrieve a double-based point of the last frame's mouse location transformed by passed translation
+     * @param glbTrans
      * @return
      */
-    public final myVectorf getEyeToMouseRay_f() {                return _canvas.getEyeToMouseRay_f();    }    
+    public final myPoint getOldMseLocRelToOrigin(myPoint glbTrans){        return _canvas.getOldMseLocRelToOrigin(glbTrans);}
+    /**
+     * Retrieve a float-based point of the last frame's mouse location transformed by passed translation
+     * @param glbTrans
+     * @return
+     */
+    public final myPointf getOldMseLocRelToOrigin_f(myPointf glbTrans){        return _canvas.getOldMseLocRelToOrigin_f(glbTrans);}
+//    /**
+//     * get normalized ray from eye loc to mouse loc
+//     * @return
+//     */
+//    public final myVectorf getEyeToMouseRay_f() {                return _canvas.getEyeToMouseRay_f();    }    
     
     /**
      * return display string holding sreen and world mouse and eye locations 
@@ -2795,6 +2877,19 @@ public abstract class GUI_AppManager extends Java_AppManager {
      */
     public final myPointf[] buildPlaneBoxBounds(myPoint[] pts) {
         myVector tmpNorm = myVector._cross(new myVector(pts[0], pts[1]), new myVector(pts[1], pts[2]))._normalize();
+        float[] eq = MyMathUtils.getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
+        // works because plane is built with unit normal in equation
+        return buildPlaneBoxBounds(eq);
+    }//buildPlaneBoxBounds
+    
+    /**
+     * This will take given set of points and will calculate a set of points that make up the 
+     * perimeter of the plane within the specified bounds.
+     * @param tmpNorm
+     * @param pts
+     * @return
+     */
+    public final myPointf[] buildPlaneBoxBounds(myVector tmpNorm, myPoint[] pts) {
         float[] eq = MyMathUtils.getPlanarEqFromPointAndNorm(tmpNorm, pts[0]);
         // works because plane is built with unit normal in equation
         return buildPlaneBoxBounds(eq);

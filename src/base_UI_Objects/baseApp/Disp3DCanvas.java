@@ -17,6 +17,11 @@ import base_UI_Objects.windowUI.base.Base_DispWindow;
  */
 public class Disp3DCanvas {
     /**
+     * Owning application manager
+     */
+    private GUI_AppManager AppMgr;
+
+    /**
      * GL-interface for rendering and screen<->world coords transforms
      */
     private static IGraphicsAppInterface ri;
@@ -30,13 +35,13 @@ public class Disp3DCanvas {
      */
     private myPoint eyeInWorld; 
     /**
-     * Previous mse location
+     * Previous mse location on canvas
      */
-    private myPoint oldMseLoc;
+    private myPoint oldMseInWorldOnCanvas;
     /**
      * Current mouse location projected onto current canvas
      */
-    private myPoint dfCtr;                                                        //mouse location projected onto current drawing canvas
+    private myPoint mseInWorldOnCanvas;                                                        //mouse location projected onto current drawing canvas
 
     private final float canvasDim = 15000,
             canvasDimOvSqrt2 = MyMathUtils.INV_SQRT_2_F * canvasDim;             //canvas dimension for "virtual" 3d        
@@ -48,9 +53,7 @@ public class Disp3DCanvas {
     private int viewDimW, viewDimH,viewDimW2, viewDimH2;
     
     private int[] mseFillClr;
-    
-    private GUI_AppManager AppMgr;
-    
+     
     /**
      * Screen-space depth in window of screen-space halfway point.
      */
@@ -70,8 +73,8 @@ public class Disp3DCanvas {
         eyeInWorld = new myPoint();        
         scrCtrInWorld = new myPoint();
         eyeInWorld = new myPoint();
-        oldMseLoc  = new myPoint();
-        dfCtr = new myPoint();                                            //mouse location projected onto current drawing canvas
+        oldMseInWorldOnCanvas  = new myPoint();
+        mseInWorldOnCanvas = new myPoint();                                            //mouse location projected onto current drawing canvas
         eyeToMse = new myVector();        
         eyeToCtr = new myVector();    
         drawSNorm = new myVector();    
@@ -115,23 +118,19 @@ public class Disp3DCanvas {
         eyeInWorld = ri.getWorldLoc(viewDimW2, viewDimH2, AppMgr._camEyeZ);
         //eyeInWorld =myPoint._add(rawScrCtrInWorld, myPoint._dist( ri.pick(0,0,-1), rawScrCtrInWorld), drawSNorm);                                //location of "eye" in world space
         eyeToCtr.set(eyeInWorld, rawScrCtrInWorld);
-        scrCtrInWorld = getPlInterSect(rawScrCtrInWorld, myVector._normalize(eyeToCtr));
+        scrCtrInWorld = getPtIntersectWithCanvas(rawScrCtrInWorld, myVector._normalize(eyeToCtr));
+        // record last cycle's mouseLocOnCanvas
+        oldMseInWorldOnCanvas.set(mseInWorldOnCanvas);
         
-        myPoint mseLocInWorld = getMseLocInWorld();    
-        //unit vector in world coords of "eye" to mouse location
+        //get mouse loc in world at scrCtrInWorld depth
+        myPoint mseLocInWorld = _getMseLocInWorldAtScreenCtr();
+        // small difference between these two.
+        mseInWorldOnCanvas = getPtIntersectWithCanvas(mseLocInWorld, eyeToMse);
+        //unit vector in world coords of "eye" to mouse location on canvas
         eyeToMse.set(eyeInWorld, mseLocInWorld);        
         eyeToMse._normalize();
-        // record last cycles dfCtr
-        oldMseLoc.set(dfCtr);
-        dfCtr = getPlInterSect(mseLocInWorld, eyeToMse);
+        
     }//buildCanvas()
-    
-    public myVector getDrawSNorm() {return drawSNorm;}
-    public myVectorf getDrawSNorm_f() {return new myVectorf(drawSNorm);}
-    public myPoint[] getCanvasCorners() {return canvas3D;}
-    
-    public myVector getEyeToMse() {return eyeToMse;}
-    public myVectorf getEyeToMse_f() {return new myVectorf(eyeToMse.x,eyeToMse.y,eyeToMse.z);}
 
     /**
      * find pt in canvas drawing plane that corresponds with point and camera eye normal
@@ -139,88 +138,152 @@ public class Disp3DCanvas {
      * @param unitT camera eye normal
      * @return
      */
-    public myPoint getPlInterSect(myPoint pt, myVector unitT){
+    public myPoint getPtIntersectWithCanvas(myPoint pt, myVector unitT){
          // return intersection point in canvas plane
         return MyMathUtils.intersectPlane(pt, unitT, canvas3D[0],canvas3D[1],canvas3D[2]);        
     }//getPlInterSect    
 
     /**
-     * Mouse location in world at given depth
+     * Mouse location in world at scrCtrInWorld depth
      * @return
      */
-    public myPoint getMseLocInWorld() {
+    private myPoint _getMseLocInWorldAtScreenCtr() {
         float ctrDepth = ri.getSceenZ((float)scrCtrInWorld.x, (float)scrCtrInWorld.y, (float)scrCtrInWorld.z);
         int[] mse = ri.getMouse_Raw_Int();
         return ri.getWorldLoc(mse[0],mse[1],ctrDepth);        
     }
+    
+    
+    
+    /**
+     * Retrieve a double-based point of the eye location in world space
+     * @return
+     */
+    public myPoint getEyeInWorld() {return new myPoint(eyeInWorld);}
+    
+    /**
+     * Retrieve a float-based point of the eye location in world space
+     * @return
+     */
+    public myPointf getEyeInWorld_f() {return new myPointf(eyeInWorld.x, eyeInWorld.y, eyeInWorld.z);}
+    
+    /**
+     * Retrieve the double-based vector for the normal to the viewport/canvas 
+     * @return
+     */
+    public myVector getDrawSNorm() {return new myVector(drawSNorm);}
+    /**
+     * Retrieve the float-based vector for the normal to the viewport/canvas 
+     * @return
+     */
+    public myVectorf getDrawSNorm_f() {return new myVectorf(drawSNorm);}
+    /**
+     * Retrieve the array of 4 corners of the canvas, which is parallel to the viewport at some z distance
+     * @return
+     */
+    public myPoint[] getCanvasCorners() {
+        return new myPoint[] {
+                new myPoint(canvas3D[0]),
+                new myPoint(canvas3D[1]),
+                new myPoint(canvas3D[2]),
+                new myPoint(canvas3D[3]),
+        };
+    }
+    /**
+     * Retrieve double-based normalized vector from eye to mouse on canvas in world space
+     * @return
+     */
+    public myVector getEyeToMse() {return new myVector(eyeToMse);}
+    /**
+     * Retrieve float-based normalized vector from eye to mouse on canvas in world space
+     * @return
+     */
+    public myVectorf getEyeToMse_f() {return new myVectorf(eyeToMse.x,eyeToMse.y,eyeToMse.z);}
+    /**
+     * Retrieve the mouse location projected onto the cavnas as a 3d point
+     * @return
+     */
+    public myPoint getMseLoc(){return new myPoint(mseInWorldOnCanvas);    }
+    /**
+     * Retrieve the mouse location projected onto the cavnas as a 3d point
+     * @return
+     */
+    public myPointf getMseLoc_f(){return new myPointf(mseInWorldOnCanvas.x,mseInWorldOnCanvas.y,mseInWorldOnCanvas.z);    }
+    /**
+     * Retrieve a double-based point of the old mouse location projected onto the cavnas as a 3d point
+     * @return
+     */
+    public myPoint getOldMseLoc(){return new myPoint(oldMseInWorldOnCanvas);    }  
+    /**
+     * Retrieve a float-based point of the old mouse location projected onto the cavnas as a 3d point
+     * @return
+     */
+    public myPointf getOldMseLoc_f(){return new myPointf(oldMseInWorldOnCanvas.x, oldMseInWorldOnCanvas.y, oldMseInWorldOnCanvas.z);    }    
+    /**
+     * Retrieve a double-based vector of the mouse drag from old location to current location, on canvas in world space
+     * @return
+     */
+    public myVector getMseDragVec(){return new myVector(oldMseInWorldOnCanvas,mseInWorldOnCanvas);}
+    /**
+     * Retrieve a float-based vector of the mouse drag from old location to current location, on canvas in world space
+     * @return
+     */
+    public myVectorf getMseDragVec_f(){return new myVectorf(oldMseInWorldOnCanvas,mseInWorldOnCanvas);}    
+    /**
+     * Retrieve a double-based point of mouse location on drawable canvas relative to passed origin
+     * @param origin
+     * @return
+     */
+    public myPoint getMseLocRelToOrigin(myPoint origin){return myPoint._sub(mseInWorldOnCanvas, origin);    }
+    /**
+     * Retrieve a float-based point of mouse location on drawable canvas relative to passed origin
+     * @param origin
+     * @return
+     */
+    public myPointf getMseLocRelToOrigin_f(myPointf origin){
+        return new myPointf(mseInWorldOnCanvas.x-origin.x,mseInWorldOnCanvas.y-origin.y,mseInWorldOnCanvas.z-origin.z);    
+    }
+    
+    /**
+     * Retrieve a double-based point of mouse location transformed by passed translation
+     * @param glbTrans
+     * @return
+     */
+    public myPoint getTransMseLoc(myPoint glbTrans){return myPoint._add(mseInWorldOnCanvas, glbTrans);    }    
+    /**
+     * Retrieve a float-based point of mouse location transformed by passed translation
+     * @param glbTrans
+     * @return
+     */
+    public myPointf getTransMseLoc_f(myPointf glbTrans){return myPointf._add(mseInWorldOnCanvas, glbTrans);    }
+    /**
+     * Retrieve a double-based point of the last frame's mouse location transformed by passed translation
+     * @param glbTrans
+     * @return
+     */
+    public myPoint getOldMseLocRelToOrigin(myPoint origin){return myPoint._sub(oldMseInWorldOnCanvas, origin);    }
+    /**
+     * Retrieve a float-based point of the last frame's mouse location transformed by passed translation
+     * @param glbTrans
+     * @return
+     */
+    public myPointf getOldMseLocRelToOrigin_f(myPointf origin){
+        return new myPointf(oldMseInWorldOnCanvas.x-origin.x,oldMseInWorldOnCanvas.y-origin.y,oldMseInWorldOnCanvas.z-origin.z);    
+    }
 
     /**
-     * Retrieve the mouse location projected onto the cavnas as a 3d point
+     * Calc dist from mouse to passed location
+     * @param glbTrans
      * @return
      */
-    public myPoint getMseLoc(){return new myPoint(dfCtr);    }
+    public double getMseDist(myPoint glbTrans){return new myVector(mseInWorldOnCanvas, glbTrans).magn;    }
     /**
-     * Retrieve the mouse location projected onto the cavnas as a 3d point
+     * Calc dist from mouse to passed location
+     * @param glbTrans
      * @return
      */
-    public myPointf getMseLoc_f(){return new myPointf(dfCtr.x,dfCtr.y,dfCtr.z);    }
-    /**
-     * Retrieve the old mouse location projected onto the cavnas as a 3d point
-     * @return
-     */
-    public myPoint getOldMseLoc(){return new myPoint(oldMseLoc);    }  
-    /**
-     * Retrieve the old mouse location projected onto the cavnas as a 3d point
-     * @return
-     */
-    public myPointf getOldMseLoc_f(){return new myPointf(oldMseLoc.x, oldMseLoc.y, oldMseLoc.z);    }    
-    /**
-     * 
-     * @return
-     */
-    public myVector getMseDragVec(){return new myVector(oldMseLoc,dfCtr);}
+    public float getMseDist(myPointf glbTrans){return new myVectorf(mseInWorldOnCanvas, glbTrans).magn;    }
     
-    /**
-     * 
-     * @return
-     */
-    public myVectorf getMseDragVec_f(){return new myVectorf(oldMseLoc,dfCtr);}
-    
-    /**
-     * relative to passed origin
-     * @param glbTrans
-     * @return
-     */
-    public myPoint getMseLoc(myPoint glbTrans){return myPoint._sub(dfCtr, glbTrans);    }
-    /**
-     * move by passed translation
-     * @param glbTrans
-     * @return
-     */
-    public myPointf getTransMseLoc(myPointf glbTrans){return myPointf._add(dfCtr, glbTrans);    }
-    /**
-     * dist from mouse to passed location
-     * @param glbTrans
-     * @return
-     */
-    public float getMseDist(myPointf glbTrans){return new myVectorf(dfCtr, glbTrans).magn;    }
-    /**
-     * 
-     * @param glbTrans
-     * @return
-     */
-    public myPoint getOldMseLoc(myPoint glbTrans){return myPoint._sub(oldMseLoc, glbTrans);    }
-    /**
-     * 
-     * @return
-     */
-    public myPoint getEyeInWorld() {return eyeInWorld;}
-    
-    //get normalized ray from eye loc to mouse loc
-    public myVectorf getEyeToMouseRay_f() {
-        myVectorf ray = new myVectorf(eyeInWorld, dfCtr);
-        return ray._normalize();
-    }
     
     /**
      * draw a translucent representation of a canvas plane ortho to eye-to-mouse vector
@@ -228,7 +291,7 @@ public class Disp3DCanvas {
      *                 light for dark backgrounds and dark for light backgrounds. 
      */
     public final void drawCanvas(int[] color) {
-        myPointf[] bndedCanvas3D = AppMgr.buildPlaneBoxBounds(canvas3D);
+        myPointf[] bndedCanvas3D = AppMgr.buildPlaneBoxBounds(drawSNorm, canvas3D);
         ri.disableLights();
         ri.pushMatState();
         ri.gl_beginShape(GL_PrimitiveType.GL_LINE_LOOP);
@@ -255,14 +318,14 @@ public class Disp3DCanvas {
             ri.setStrokeWt(1f);
             ri.setStroke(255, 0,255, 255);
             //draw line through mouse point and eye location in world    
-            ri.drawLine(eyeInWorld, dfCtr);
-            ri.translate(dfCtr);
+            ri.drawLine(eyeInWorld, mseInWorldOnCanvas);
+            ri.translate(mseInWorldOnCanvas);
             //project mouse point on bounding box walls if appropriate
-            if(projOnBox){AppMgr.drawProjOnBox(dfCtr);}
+            if(projOnBox){AppMgr.drawProjOnBox(mseInWorldOnCanvas);}
             AppMgr.drawRGBAxesWithEnds(10000,1f, myPointf.ZEROPT, 100);//
             //draw center point
             ri.showPtAsSphere(myPointf.ZEROPT,3.0f, 5, IGraphicsAppInterface.gui_Black, IGraphicsAppInterface.gui_Black);
-            drawText(win, ""+dfCtr+ "|fr:"+ri.getFrameRate(),4.0f, 15.0f, 4.0f);
+            drawText(win, ""+mseInWorldOnCanvas+ "|fr:"+ri.getFrameRate(),4.0f, 15.0f, 4.0f);
         ri.popMatState();            
     }//drawMseEdge        
 }//class Disp3DCanvas
