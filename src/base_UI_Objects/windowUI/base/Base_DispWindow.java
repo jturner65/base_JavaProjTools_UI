@@ -1309,7 +1309,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * Handle mouse interaction via a mouse click
      * @param mouseX current mouse x on screen
      * @param mouseY current mouse y on screen
-     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
+     * @param mseBtn which button is pressed : 0 is left, 1 is right
      * @return whether a UI object was clicked in
      */
     @Override
@@ -1330,9 +1330,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         
         //if nothing triggered yet, then specific instancing window implementation stuff
         if(!mod){
-            //Get 3d point if appropriate
-            myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
-            mod = hndlMouseClick_Indiv(mouseX, mouseY, mouseClickIn3D, mseBtn);
+            mod = hndlMouseClick_Indiv(mouseX, mouseY, mseBtn);
         }            
         //if still nothing then check for trajectory handling 
         if((!mod) && (winInitVals.pointInRectDim(mouseX, mouseY)) && (trajMgr != null)){ 
@@ -1345,10 +1343,10 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param mouseX current mouse x on screen
      * @param mouseY current mouse y on screen
      * @param mseClckInWorld
-     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
+     * @param mseBtn which button is pressed : 0 is left, 1 is right
      * @return whether a custom UI object was clicked in
      */
-    protected abstract boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn);
+    protected abstract boolean hndlMouseClick_Indiv(int mouseX, int mouseY, int mseBtn);
 
     /**
      * Handle mouse interaction via the mouse moving over a UI object
@@ -1362,8 +1360,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
         
         boolean uiObjMseOver = uiMgr.handleMouseMove(mouseX, mouseY);
         if (uiObjMseOver){return true;}
-        myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
-        if(hndlMouseMove_Indiv(mouseX, mouseY, mouseClickIn3D)){return true;}
+        if(hndlMouseMove_Indiv(mouseX, mouseY)){return true;}
         return false;
     }//handleMouseMove
     /**
@@ -1373,7 +1370,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param mseClckInWorld
      * @return whether a custom UI object has the mouse pointer moved over it
      */
-    protected abstract boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld);    
+    protected abstract boolean hndlMouseMove_Indiv(int mouseX, int mouseY);    
             
     /**
      * Handle mouse interaction via the mouse wheel
@@ -1408,11 +1405,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param pmouseX previous mouse x on screen
      * @param pmouseY previous mouse y on screen
      * @param mseDragInWorld vector of mouse drag in the world, for interacting with trajectories
-     * @param mseBtn which button is pressed : 0 is left, 1 is right, 10 is both
+     * @param mseBtn which button is pressed : 0 is left, 1 is right
      * @return whether a UI object has been modified via a drag action
      */
     @Override
-    public final boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn){
+    public final boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, int mseBtn){
         if(!dispFlags.getShowWin()){return false;}
         boolean shiftPressed = AppMgr.shiftIsPressed();
         int delX = (mouseX-pmouseX), delY = (mouseY-pmouseY);
@@ -1449,15 +1446,14 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
             if(!mod && null!=trajMgr) {    
                 //_dispInfoMsg("handleMouseDrag", "Trying to handle trajectories");
                 // check if a trajectory exists TODO rework this
+
+                myVector mseDragInWorld = AppMgr.getMseDragVec();
                 mod = trajMgr.handleMouseDrag_Traj(mouseX, mouseY, pmouseX, pmouseY, mseDragInWorld, mseBtn); 
             }          
             // if nothing has been modified yet, check if there is window-specific functionality to deal with
             if(!mod && winInitVals.pointInRectDim(mouseX, mouseY)){
-                //_dispInfoMsg("handleMouseDrag", "Start handle mouse drag indiv.");
-               
-                myPoint mouseClickIn3D = AppMgr.getMseLoc(sceneOriginVal);
                 //handle instance-specific, non-trajectory, non-UI object functionality for implementation of window
-                return hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY,mouseClickIn3D,mseDragInWorld,mseBtn);           
+                return hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mseBtn);           
             }
         }
         return false;
@@ -1469,13 +1465,11 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param mouseY current mouse y on screen
      * @param pmouseX previous mouse x on screen
      * @param pmouseY previous mouse y on screen
-     * @param mouseClickIn3D
-     * @param mseDragInWorld vector of mouse drag in the world, for interacting with trajectories
      * @param mseBtn what mouse btn is pressed
      * @return
      */
-    public final boolean sideBarMenu_CallWinMseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
-        return hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
+    public final boolean sideBarMenu_CallWinMseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, int mseBtn) {
+        return hndlMouseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mseBtn);
     }
     /**
      * Implementing class' necessary function for mouse drag
@@ -1488,7 +1482,7 @@ public abstract class Base_DispWindow implements IUIManagerOwner{
      * @param mseBtn what mouse btn is pressed
      * @return
      */
-    protected abstract boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn);
+    protected abstract boolean hndlMouseDrag_Indiv(int mouseX, int mouseY, int pmouseX, int pmouseY, int mseBtn);
     
     /**
      * Handle selection of mouse-over-text option buttons in menu, specifying desired mouse over text to display in sim window

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.baseApp.GUI_AppUIFlags;
@@ -223,14 +222,13 @@ public class UI_TestWindow2D extends Base_DispWindow {
     protected void setVisScreenDimsPriv() {}
 
     @Override
-    protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld) {return false;}
+    protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY) {return false;}
 
     @Override
-    protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {return false;}
+    protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, int mseBtn) {return false;}
 
     @Override
-    protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D,
-            myVector mseDragInWorld, int mseBtn) {return false;}
+    protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY, int pmouseX, int pmouseY, int mseBtn) {return false;}
 
     @Override
     protected void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc) {}

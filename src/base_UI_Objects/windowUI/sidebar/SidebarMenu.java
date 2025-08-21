@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.baseApp.GUI_AppUIFlags;
@@ -305,9 +304,9 @@ public class SidebarMenu extends Base_DispWindow{
     @Override
     protected final void handleSideMenuDebugSelDisable(int btn) {    }
     @Override
-    protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld){        return false;    }
+    protected boolean hndlMouseMove_Indiv(int mouseX, int mouseY){        return false;    }
     @Override
-    protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {    
+    protected boolean hndlMouseClick_Indiv(int mouseX, int mouseY, int mseBtn) {    
         if(!winInitVals.pointInRectDim(mouseX, mouseY)){return false;}//not in this window's bounds, quit asap for speedz
         //TODO Awful - needs to be recalced, dependent on menu being on left
         int i = (int)((mouseY-(initBtnLblYOff + clkFlgsStY))/(btnConfig.initTextHeightOff));                    
@@ -334,8 +333,8 @@ public class SidebarMenu extends Base_DispWindow{
      * @return
      */
     @Override
-    protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY,int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {        
-        boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDrag_Indiv(mouseX, mouseY,pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);    
+    protected boolean hndlMouseDrag_Indiv(int mouseX, int mouseY, int pmouseX, int pmouseY, int mseBtn) {        
+        boolean res = AppMgr.getCurFocusDispWindow().sideBarMenu_CallWinMseDrag_Indiv(mouseX, mouseY, pmouseX, pmouseY, mseBtn);    
         return res;    }
     @Override
     protected void hndlMouseRel_Indiv() {    clearAllBtnStates();}

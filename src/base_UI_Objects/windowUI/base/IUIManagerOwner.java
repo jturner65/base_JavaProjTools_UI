@@ -2,7 +2,6 @@ package base_UI_Objects.windowUI.base;
 
 import java.util.LinkedHashMap;
 
-import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
@@ -203,11 +202,10 @@ public interface IUIManagerOwner {
      * @param mouseY current mouse y on screen
      * @param pmouseX previous mouse x on screen
      * @param pmouseY previous mouse y on screen
-     * @param mseDragInWorld vector of mouse drag in the world, for interacting with trajectories
      * @param mseBtn what mouse btn is pressed
      * @return whether a UI object has been modified via a drag action
      */
-    public boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, myVector mseDragInWorld, int mseBtn);
+    public boolean handleMouseDrag(int mouseX, int mouseY,int pmouseX, int pmouseY, int mseBtn);
 
     /**
      * Handle mouse interactive when the mouse button is released - in general consider this the end of a mouse-driven interaction

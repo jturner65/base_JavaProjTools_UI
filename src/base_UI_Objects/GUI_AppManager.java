@@ -2471,7 +2471,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @return
      */
     public myVectorf mouseForceAtLoc(float msClickForce, myPointf _loc, boolean attractMode){
-        myPointf mouseFrcLoc = getTransMseLoc(new myPointf(_3DGridDimX/2.0f, _3DGridDimY/2.0f, _3DGridDimZ/2.0f));    
+        myPointf mouseFrcLoc = getTransMseLoc_f(new myPointf(_3DGridDimX/2.0f, _3DGridDimY/2.0f, _3DGridDimZ/2.0f));    
         myVectorf resFrc = new myVectorf(_loc, mouseFrcLoc);        
         float sqDist = resFrc.sqMagn;
         if(sqDist<MyMathUtils.EPS_F){sqDist=MyMathUtils.EPS_F;}
@@ -2494,7 +2494,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param isLeftClick
      * @param isRightClick
      */
-    public final void mousePressed(int mouseX, int mouseY,boolean isLeftClick, boolean isRightClick) {
+    public final void mousePressed(int mouseX, int mouseY, boolean isLeftClick, boolean isRightClick) {
         _appStateFlags.mousePressed(mouseX, mouseY, isLeftClick, isRightClick);
     }// mousePressed        
     
@@ -2508,7 +2508,7 @@ public abstract class GUI_AppManager extends Java_AppManager {
      * @param isRightClick
      */
     public final void mouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, boolean isLeftClick, boolean isRightClick){
-        _appStateFlags.mouseDragged(mouseX, mouseY, pmouseX, pmouseY, _canvas.getMseDragVec(), isLeftClick, isRightClick);
+        _appStateFlags.mouseDragged(mouseX, mouseY, pmouseX, pmouseY, isLeftClick, isRightClick);
     }//mouseDragged()
     
     /**

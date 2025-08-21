@@ -3,7 +3,6 @@ package base_UI_Objects.baseApp;
 import java.util.Arrays;
 import java.util.List;
 
-import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
@@ -167,7 +166,7 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
         setValueKeyPressed((char) 0x00, false);            
         for(int i=0; i<appMgr.numDispWins; ++i){appMgr.getDispWindow(i).endValueKeyPress();}
     }
-    
+        
     /**
      * Mouse button pressed
      * @param mouseX
@@ -194,12 +193,12 @@ public class GUI_AppStateFlags extends Base_BoolFlags {
      * @param isLeftClick
      * @param isRightClick
      */
-    public final void mouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector drag, boolean isLeftClick, boolean isRightClick){    
-        if(isLeftClick){                    _myMouseDragged(mouseX, mouseY, pmouseX, pmouseY,drag,0);}
-        else if (isRightClick) {            _myMouseDragged(mouseX, mouseY, pmouseX, pmouseY,drag,1);}
+    public final void mouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, boolean isLeftClick, boolean isRightClick){    
+        if(isLeftClick){                    _myMouseDragged(mouseX, mouseY, pmouseX, pmouseY, 0);}
+        else if (isRightClick) {            _myMouseDragged(mouseX, mouseY, pmouseX, pmouseY, 1);}
     }//mouseDragged()
-    private void _myMouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, myVector drag, int mseBtn){    
-        for(int i=0; i<appMgr.numDispWins; ++i){if (appMgr.getDispWindow(i).handleMouseDrag(mouseX, mouseY, pmouseX, pmouseY,drag,mseBtn)) {return;}}
+    private void _myMouseDragged(int mouseX, int mouseY, int pmouseX, int pmouseY, int mseBtn){    
+        for(int i=0; i<appMgr.numDispWins; ++i){if (appMgr.getDispWindow(i).handleMouseDrag(mouseX, mouseY, pmouseX, pmouseY, mseBtn)) {return;}}
     }
     
     /**
